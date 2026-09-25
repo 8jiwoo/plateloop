@@ -1,0 +1,65 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlateLoop Demo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Silkscreen&display=swap">
+<link rel="stylesheet" href="css/apple.css">
+<style>
+/* demo-only switcher: the four real apps are separate files with no shared navigation */
+.demo-switch{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom,0px));z-index:100;display:flex;gap:2px;padding:4px;border-radius:999px;background:rgba(29,29,31,.86);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:0 10px 30px -10px rgba(0,0,0,.5)}
+.demo-switch button{border:0;background:none;color:#D1D1D6;font:500 12.5px var(--font);padding:7px 12px;border-radius:999px;white-space:nowrap}
+.demo-switch button[aria-pressed="true"]{background:#fff;color:#1D1D1F}
+
+@media (max-width:760px){.demo-switch{bottom:auto;top:8px}.demo-switch button{padding:6px 9px;font-size:11.5px}}
+</style>
+
+<div id="root"></div>
+<noscript>PlateLoop needs JavaScript to run.</noscript>
+
+<script src="vendor/three.min.js"></script>
+<script src="vendor/GLTFLoader.js"></script>
+<script src="js/core.js"></script>
+<script src="js/game.js"></script>
+<script src="js/model.js"></script>
+<script src="js/scanner.js"></script>
+<script src="js/kitchen.js"></script>
+<script src="js/student.js"></script>
+<script>
+/* Demo router for the four apps (#model, #scanner, #kitchen, #student) with a floating switcher. */
+(() => {
+  const { $, apps } = PL;
+  const root = $('#root');
+  let current = null, name = null, t = 0;
+  function open(n) {
+    if (!apps[n]) n = 'model';
+    if (n === name) return;
+    if (current && current.unmount) current.unmount();
+    name = n; current = apps[n];
+    document.body.dataset.app = n;
+    document.title = `${current.title} · PlateLoop`;
+    root.innerHTML = '';
+    current.mount(root);
+    sw.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.go === n)));
+    scrollTo({ top: 0 });
+  }
+  const sw = document.createElement('nav');
+  sw.className = 'demo-switch'; sw.setAttribute('aria-label', 'Demo: switch app');
+  sw.innerHTML = [['model', 'Scanner'], ['scanner', 'Kiosk'], ['kitchen', 'Kitchen'], ['student', 'Loopi']].map(([id, l]) => `<button data-go="${id}">${l}</button>`).join('');
+  sw.onclick = e => { const b = e.target.closest('[data-go]'); if (b) PL.open(b.dataset.go); };
+  document.body.appendChild(sw);
+  PL.open = n => { if (location.hash !== '#' + n) { try { history.pushState(null, '', '#' + n); } catch (e) {} } open(n); };
+  addEventListener('hashchange', () => open(location.hash.slice(1)));
+  addEventListener('popstate', () => open(location.hash.slice(1)));
+  document.addEventListener('click', e => {
+    const a = e.target.closest('a[href^="#"]');
+    if (!a) return;
+    const n = a.getAttribute('href').slice(1);
+    if (apps[n]) { e.preventDefault(); PL.open(n); }
+  });
+  PL.store.subscribe((kind, fromSelf) => { if (current && current.update) current.update(kind, fromSelf); });
+  setInterval(() => { t++; if (current && current.tick) current.tick(t); }, 480);
+  if (/[?&]demo=lunch\b/.test(location.search) && PL.cls32Scanned() === 0) { PL.scanRestOfClass(); PL.store.save('scan'); }
+  open((location.hash || '#model').slice(1));
+})();
+</script>
