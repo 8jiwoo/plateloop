@@ -1,0 +1,7 @@
+# Keep text files with LF line endings in the repo on every OS
+* text=auto eol=lf
+
+# Binary files
+*.png binary
+*.glb binary
+*.blend binary
