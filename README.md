@@ -6,7 +6,7 @@
 
 Built for the EcoLoop sustainability hackathon, set in Singapore: local menus, HPB nutrition guidance (under 2,000 mg sodium a day) and the Singapore grid's emission factor.
 
-People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives seven separate apps:
+People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives seven separate apps, plus a 3D game that shows the whole experience:
 
 | App | File | For |
 |---|---|---|
@@ -17,6 +17,7 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
 | **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Preschools: an animated Loopi with sounds for children; separate Parents (one child's report) and Teachers (whole class, check-ins, allergies, notes) sections |
 | **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
+| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person, PS1-style 3D game of a school lunch with PlateLoop: tray, face sign-in, scan before, eat, scan after, compost, return. The scans are real and show up in the other apps |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
 
@@ -32,12 +33,12 @@ python -m http.server 8765
 
 Then open http://localhost:8765/dist/2-plateloop-kiosk.html and http://localhost:8765/dist/4-loopi-student-app.html.
 
-**Development version** (all seven apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
+**Development version** (all eight apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
 
 ## Project layout
 
 ```
-apps/                 source for the seven apps
+apps/                 source for the eight apps
   index.html          dev page with an app switcher
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync
@@ -52,9 +53,10 @@ apps/                 source for the seven apps
   js/care.js          Loopi Care (hospital patients)
   js/kids.js          Loopi Kids (kindergartens)
   js/work.js          Loopi Work (office workers: goals, targets, daily pick, weekly report)
+  js/game3d.js        Lunch Rush, the first-person 3D canteen game (three.js, PS1-style rendering)
   vendor/             three.js r128 + GLTFLoader (for offline 3D)
   build.py            builds the standalone files in dist/
-dist/                 the seven standalone apps (generated, committed for convenience)
+dist/                 the eight standalone apps (generated, committed for convenience)
 hardware/             Blender scanner: build script, .blend, .glb, renders
 docs/                 project overview and screenshots
 ```
