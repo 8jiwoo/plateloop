@@ -74,6 +74,11 @@ const KIDS = [
   { id: 'k2', name: 'Hakim', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Hakim was a bit tired after outdoor play but finished all the rice.' },
   { id: 'k3', name: 'Kavya', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Kavya asked for more dragon fruit and told the class the seeds look like tiny stars.' },
   { id: 'k4', name: 'Lucas', age: 4, allergy: null, baseline: .35, app: .66, like: { k_chicken: .5, k_corn: 1.2 }, note: 'Lucas liked the corn soup and practised using his spoon and fork.' },
+  // the rest of Sunflower class (for the teacher's view)
+  ...[['Isaac', 5, null], ['Zoe', 4, 'Peanut'], ['Aarav', 5, null], ['Mei Ling', 4, null], ['Rayyan', 5, null], ['Sophie', 4, 'Egg'], ['Kai', 5, null], ['Nadia', 4, null]].map(([name, age, allergy], i) => ({
+    id: 'k' + (i + 5), name, age, allergy, named: false, baseline: [.28, .4, .22, .33, .19, .36, .3, .45][i], app: [.8, .6, .88, .7, .92, .66, .78, .52][i],
+    like: [{ k_broccoli: .5 }, { k_tomato: .3, k_rice: 1.2 }, {}, { k_chicken: .6 }, { k_dragon: 1.2 }, { k_broccoli: .2 }, { k_corn: .6 }, { k_broccoli: .3, k_tomato: .4 }][i], note: '',
+  })),
 ];
 
 function served(menu, diet) {
@@ -114,17 +119,20 @@ function seedKid(K) {
   }).reverse();
   const lowWaste = log.filter(l => l.w < .15).length;
   return {
-    id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: true, baseline: K.baseline,
+    id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: K.named !== false, baseline: K.baseline,
     pet: { xp: K.id === 'k2' ? 24 : 120 + Math.round(r() * 150), c: { veg: 3 + Math.round(r() * 6), lowWaste: lowWaste + Math.round(r() * 4), balanced: 2 + Math.round(r() * 4), quests: 0 }, en: 60 + Math.round(r() * 25), nu: 60 + Math.round(r() * 25), jo: 60 + Math.round(r() * 30), streak: 0, quest: 0 },
     log,
   };
 }
 function seed() {
-  return { v: CARE_V, patients: PATIENTS.map(seedPatient), kids: KIDS.map(seedKid), me: { patient: 'p1', kid: 'k1' } };
+  const kids = KIDS.map(seedKid);
+  // about half of the rest of the class has already had lunch scanned today
+  kids.filter(k => !k.named).forEach((k, i) => { if (i % 2 === 0) scanKid(k, KIDS.find(x => x.id === k.id), .6 + (i % 3) * .15); });
+  return { v: CARE_V, patients: PATIENTS.map(seedPatient), kids, me: { patient: 'p1', kid: 'k1' } };
 }
 const KIDPREFS = Object.fromEntries(KIDS.map(k => [k.id, k]));
 const PATPREFS = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
-const CARE_V = 6; // bump when the demo data changes shape
+const CARE_V = 7; // bump when the demo data changes shape
 const ensure = () => { if (!PL.S.care || PL.S.care.v !== CARE_V) PL.S.care = seed(); };
 ensure();
 PL.store.subscribe(ensure);
@@ -143,8 +151,8 @@ H.scanPatientMeal = (P, preset) => {
   P.log.push(rec);
   return rec;
 };
-H.scanKidLunch = (K, preset) => {
-  const like = KIDPREFS[K.id].like, base = H.PRESETS[preset];
+function scanKid(K, prefs, base) {
+  const like = prefs.like;
   const frac = Object.fromEntries(H.KIDS_MENU.map(d => [d.id, base * Math.min(1.1, like[d.id] || 1) + (Math.random() - .5) * .15]));
   const rec = mealRecord(H.KIDS_MENU, served(H.KIDS_MENU), frac, { day: H.TODAY, portion: 'M', pts: 0 });
   K.log.unshift(rec); K.log = K.log.slice(0, 5);
@@ -152,7 +160,10 @@ H.scanKidLunch = (K, preset) => {
   if (rec.w < .15) { K.pet.c.lowWaste++; K.pet.streak++; } else K.pet.streak = 0;
   if (rec.eaten.k_broccoli + rec.eaten.k_tomato > 20) K.pet.c.veg++;
   return rec;
-};
+}
+H.scanKidLunch = (K, preset) => scanKid(K, KIDPREFS[K.id], H.PRESETS[preset]);
+/** Demo: scan everyone in the class who hasn't had lunch scanned yet. */
+H.scanRestOfKids = () => PL.S.care.kids.filter(k => !k.named && k.log[0].day !== H.TODAY).map(k => scanKid(k, KIDPREFS[k.id], KIDPREFS[k.id].app + (Math.random() - .5) * .2)).length;
 
 /* ---------------------------------------------------------------- report building blocks */
 /** limit-type nutrients (sodium) are good when under target; the rest are good near target. */
