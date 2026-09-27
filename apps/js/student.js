@@ -171,7 +171,7 @@ function lunchTab(st) {
       const sv = a.served[d.id], lf = Math.round(a.measured[d.id]), ate = sv ? 1 - lf / sv : 1;
       return `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${d.name}</span><span class="dbar"><i style="width:${Math.round(ate * 100)}%"></i></span><span class="g-v num">${lf < 3 ? 'all gone' : `${lf} g left`}</span></div>`;
     }).join('')}</section>
-    <p class="foot">${a.zero ? 'Nothing left. That tray grew a fruit on the school tree.' : a.w < st.baseline ? `Less left than your usual ${pct(st.baseline)}.` : `A bit more than your usual ${pct(st.baseline)}. A smaller portion is fine.`}</p>`;
+    <p class="foot">${a.zero ? 'Nothing left. That tray grew a fruit on the school tree.' : a.w < st.baseline ? `Less left than your usual ${pct(st.baseline)}.` : `A bit more than your usual ${pct(st.baseline)}. A smaller portion is fine.`}${a.co2 > 0 ? ` You kept about ${a.co2} g of CO₂ out of the air today.` : ''}</p>`;
   } else {
     out += `<h4 class="sec">Today's menu</h4><section class="group">${MENU.map(d => `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${d.name}${d.id === PL.CRAVING && st.pet.quest < 3 ? ' <em class="tag">Spinach week</em>' : ''}</span><span class="g-v num">${Math.round(d.g.M * d.kcal)} kcal</span></div>`).join('')}</section>`;
   }

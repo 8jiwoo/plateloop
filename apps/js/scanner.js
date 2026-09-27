@@ -105,7 +105,7 @@ function screen() {
       <div class="kio-kicker">PlateLoop</div>
       <div class="kio-title">Scan your tray.</div>
       <div class="kio-sub">Once before lunch and once after. Every clean tray grows a fruit on the school's Green Tree.</div>
-      <div class="kio-meta"><div><b class="num">${T.trays}</b>trays today</div><div><b class="num">${T.eating}</b>eating now</div><div><b class="num">${pct(PL.zeroRate())}</b>zero leftover</div></div></div>`;
+      <div class="kio-meta"><div><b class="num">${T.trays}</b>trays today</div><div><b class="num">${T.eating}</b>eating now</div><div><b class="num">${pct(PL.zeroRate())}</b>zero leftover</div><div><b class="num">${((T.co2 || 0) / 1000).toFixed(1)} kg</b>CO₂ saved today</div></div></div>`;
     ban = banner(k.bi);
   } else if (k.mode === 'already') {
     main = `${left()}<div class="kio-right"><div class="kio-kicker">All set</div><div class="kio-title">You're done for today, ${esc(st.name)}.</div><div class="kio-sub">You scanned before and after lunch. See you tomorrow!</div></div>`;
@@ -145,6 +145,7 @@ function screen() {
     const r = k.result, g = r.game;
     const chips = [`Points <em>+${r.xp}</em>`];
     if (g) { chips.push(`Loopi <em>+${g.hunger} food</em>`); if (g.heart) chips.push(`<em>+1 heart</em>`); }
+    if (r.co2 > 0) chips.push(`CO₂ saved <em>${r.co2} g</em>`);
     if (r.zero) chips.unshift(`<em>+1 fruit</em> on the Green Tree`);
     main = `${left()}<div class="kio-right">
       <div class="kio-bubble">“${esc(r.zero ? 'Zero leftovers! You grew a fruit on the school tree!' : r.line)}”</div>

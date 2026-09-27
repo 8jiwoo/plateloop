@@ -115,7 +115,7 @@ function freshState() {
     v: 7,
     students,
     classes: CLASS_SEED.map(c => ({ ...c })),
-    today: { trays: 140, zero: 17, dish, servedNow: Object.fromEntries(MENU.map(d => [d.id, dish[d.id].served])), eating: 0, feed: [], clock: 11 * 60 + 48, trayNo: 412 },
+    today: { trays: 140, zero: 17, co2: 11200, dish, servedNow: Object.fromEntries(MENU.map(d => [d.id, dish[d.id].served])), eating: 0, feed: [], clock: 11 * 60 + 48, trayNo: 412 },
     term: { kg: 1284, meals: 41210, zero: 6120 },
     zeroWeek: [.11, .14, .13, .16],
     order: { approved: null },
@@ -127,7 +127,14 @@ function freshState() {
 const KEY = 'plateloop-final-v7';
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('plateloop') : null;
 const subs = new Set();
-function readStored() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 7 ? s : null; } catch (e) { return null; } }
+function readStored() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (!s || s.v !== 7) return null;
+    if (s.today.co2 == null) s.today.co2 = 11200; // saves from before the live CO₂ counter
+    return s;
+  } catch (e) { return null; }
+}
 PL.S = readStored() || freshState();
 PL.store = {
   save(kind = 'update') {
@@ -241,8 +248,11 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
   st.scanned = true;
   r.intake = PL.nutrientsOf(Object.fromEntries(MENU.map(d => [d.id, served[d.id] - measured[d.id]])));
   r.zero = r.w < .05;
+  // CO₂e avoided on this tray compared with the student's usual leftovers, in grams (shown live to the student)
+  r.co2 = Math.round(Math.max(0, st.baseline * r.served - r.left) / 1000 * PL.CO2_PER_KG * 1000);
+  T.co2 = (T.co2 || 0) + r.co2;
   if (r.zero) { T.zero = (T.zero || 0) + 1; PL.S.term.zero = (PL.S.term.zero || 0) + 1; }
-  st.after = { t: (T.clock += .35, PL.clock()), left: r.left, w: r.w, intake: r.intake, zero: r.zero, served, measured };
+  st.after = { t: (T.clock += .35, PL.clock()), left: r.left, w: r.w, intake: r.intake, zero: r.zero, served, measured, co2: r.co2 };
   st.log.unshift({ day: 'Fri 25', portion, w: r.w, pts: r.xp, n: r.intake });
   st.log = st.log.slice(0, 6);
   r.servedBy = served; r.measured = measured;
