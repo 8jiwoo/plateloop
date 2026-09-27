@@ -924,12 +924,17 @@ async function brawl() {
     A.pose = 'run'; const p1 = A.root.position.clone(), p2 = new THREE.Vector3(B.root.position.x - 2.1, 0, p0.z);
     await tween(.75, e => A.root.position.lerpVectors(p1, p2, e));
     A.pose = 'kick'; A.head.getWorldPosition(hp); play('hiya', at(hp));
-    const y0 = A.root.rotation.y;
-    await tween(1.1, e => { A.root.position.set(p2.x + 1.35 * e, Math.sin(e * Math.PI) * 1.15, p2.z); A.root.rotation.y = y0 + e * Math.PI * 4; });
+    // five spins in the air with the legs kicking, landing three hits on Hafiz on the way in
+    const y0 = A.root.rotation.y, air = 2.1, b0 = B.root.position.clone();
+    [.45, .62, .8].forEach((k, i) => setTimeout(() => { if (!G) return; B.head.getWorldPosition(hp); play('punch', at(hp)); play('whoosh'); if (i < 2) B.pose = 'punch'; }, k * air * 1000));
+    await tween(air, e => {
+      A.root.position.set(p2.x + 1.35 * e, Math.sin(e * Math.PI) * 1.5, p2.z); A.root.rotation.y = y0 + e * Math.PI * 10;
+      if (e > .45) B.root.position.x = b0.x + (e - .45) * .5;
+    });
     A.root.rotation.y = y0; A.root.position.y = 0; A.pose = 'fight';
     B.head.getWorldPosition(hp); play('punch', at(hp));
-    B.pose = 'bump'; const b0 = B.root.position.clone();
-    await tween(.35, e => { B.root.position.x = b0.x + .7 * e; });
+    B.pose = 'bump'; const b2 = B.root.position.clone();
+    await tween(.35, e => { B.root.position.x = b2.x + .6 * e; });
     await sleep(1300);
     // dust off and square up again
     B.pose = 'fight';
