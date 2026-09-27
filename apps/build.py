@@ -28,7 +28,7 @@ PAGES = {
     'care':    ('5-loopi-care-hospital.html',  'Loopi Care',         ['js/health.js', 'js/care.js']),
     'kids':    ('6-loopi-kids-kindergarten.html', 'Loopi Kids',      ['js/health.js', 'js/kids.js']),
     'work':    ('7-loopi-work-office.html',    'Loopi Work',         ['js/health.js', 'js/work.js']),
-    'lunch':   ('8-plateloop-lunch-rush-3d.html', 'Lunch Rush',      ['vendor/three.min.js', 'vendor/GLTFLoader.js', 'js/lunch/kit.js', 'js/lunch/audio.js', 'js/lunch/people.js', 'js/lunch/world.js', 'js/lunch/screen.js', 'js/game3d.js']),
+    'lunch':   ('8-plateloop-lunch-rush-3d.html', 'Lunch Rush',      ['vendor/three.min.js', 'vendor/GLTFLoader.js', 'js/lunch/kit.js', 'js/lunch/sophie.js', 'js/lunch/audio.js', 'js/lunch/people.js', 'js/lunch/world.js', 'js/lunch/screen.js', 'js/game3d.js']),
 }
 FILES = {k: v[0] for k, v in PAGES.items()}
 

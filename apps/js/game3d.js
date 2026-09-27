@@ -275,6 +275,14 @@ function buildPeople() {
   G.solidPeople = [];
   [[-5.9, -6.95, Math.PI], [-5.3, -6.55, Math.PI + .3], [-10.6, -6.95, Math.PI]].forEach(([x, z, ry], i) => { const P = add(student(300 + i), x, z, ry); G.solidPeople.push(P); talkTarget(P); });
   const sink = add(student(311), -12.2, 2.1, -Math.PI / 2, 'wipe'); G.solidPeople.push(sink); talkTarget(sink);
+  // Sophie dances next to the Healthy Set Meal stall, to music from her phone
+  if (L.FACES && L.FACES.sophie) {
+    const so = G.sophie = add(L.person({ name: 'Sophie', kind: 'girl', face: 'sophie', hair: 'bun', hairCol: '#141214', capTilt: -.82, height: 1.6, watch: false, seed: 505 }), -3.8, -6.05, .5, 'dance');
+    so.homeYaw = .5; G.solidPeople.push(so); talkTarget(so);
+    const phone = new THREE.Mesh(new THREE.BoxGeometry(.075, .15, .01), L.lam({ color: '#1C1C1E' })); phone.position.set(-3.45, .47, -6.35); phone.rotation.set(-1.2, 0, .3); G.scene.add(phone);
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(.4, .45, .4), L.lam({ color: '#6E757C' })); bench.position.set(-3.45, .225, -6.35); G.scene.add(bench);
+    W.spots.music = G.SFX.spots.music = [-3.45, .6, -6.35];
+  }
   // Priya walks the whole PlateLoop routine in the background
   const priya = G.priya = add(L.person({ name: 'Priya', kind: 'girl', hair: 'long', skin: L.SKINS[4], height: 1.6, watch: true, seed: 77 }), 3.9, -6.9, Math.PI / 2, 'walk');
   priya.carrying = true;
@@ -479,7 +487,7 @@ async function convo(P, fn) {
   if (P) {
     P.lookAt = G.camera.position; if (G.mode !== 'focus') G.faceTarget = P;
     // people who are standing turn round to face you
-    if (!P.table && P !== G.auntie) { home = { yaw: P.root.rotation.y, pose: P.pose }; const d = G.camera.position; P.faceYaw = Math.atan2(d.x - P.root.position.x, d.z - P.root.position.z); if (P.pose === 'wipe' || P.pose === 'walk') P.pose = 'stand'; }
+    if (!P.table && P !== G.auntie) { home = { yaw: P.root.rotation.y, pose: P.pose }; const d = G.camera.position; P.faceYaw = Math.atan2(d.x - P.root.position.x, d.z - P.root.position.z); if (P.pose === 'wipe' || P.pose === 'walk') P.pose = 'stand'; if (P.pose === 'dance') home.yaw = P.homeYaw; }
   }
   try { await fn(); } finally {
     if (P && home) { P.faceYaw = home.yaw; P.pose = home.pose; setTimeout(() => { if (P.faceYaw === home.yaw) P.faceYaw = undefined; }, 1500); }
@@ -794,6 +802,7 @@ async function talk(P) {
     'Mr Ong': () => [G.scannedBefore ? 'Would you like an iced Milo? Have your lunch first.' : 'Drinks later. Scan your tray first, the teacher is watching.'],
     'Mrs Chua': () => ['Sorry, the noodles have sold out today. The healthy set is still available.'],
     'Mdm Rosnah': () => ['Nasi lemak tomorrow. Come early!'],
+    'Sophie': () => ph === 'done' ? ['You finished your tray? Nice. Now dance with me!'] : ['Sorry, I can’t stop. This song has been stuck in my head all day.', 'Lunch break is the only time I get to practise!'],
     'Priya': () => [ph === 'done' ? 'I ate 94% today. My Loopi is so happy.' : 'First time? Just look at the camera. It knows your face, so you don\'t need a card.'],
   };
   const lines = (script[P.name] && script[P.name]()) || [genericLine(P)];
