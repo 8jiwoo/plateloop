@@ -1064,6 +1064,74 @@ button.pan:disabled{opacity:.35;cursor:not-allowed}
 .barn-pet small{font-size:12px;color:var(--label2)}
 @media (max-width:760px){.sheet{position:fixed;z-index:60}.sheet header{padding-top:16px}}
 
+/* ================================================================ Loopi Kids v2: animated scene, sounds, parents + teachers */
+.mute{margin-left:auto;width:40px;height:40px;border-radius:50%;border:0;background:var(--fill);color:var(--tint-ink);display:grid;place-items:center}
+.mute svg{width:22px;height:22px}
+.kscene{position:relative;height:300px;border-radius:26px;overflow:hidden;flex:none;background:linear-gradient(180deg,#8FD3FF 0%,#C9ECFF 55%,#E8F7FF 100%);box-shadow:var(--shadow-s)}
+.k-sun{position:absolute;right:22px;top:18px;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle,#FFE36B 55%,#FFC93C 56%);box-shadow:0 0 0 10px rgba(255,217,90,.28),0 0 0 22px rgba(255,217,90,.14);animation:ksun 6s ease-in-out infinite}
+@keyframes ksun{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.k-cloud{position:absolute;width:72px;height:24px;border-radius:999px;background:#fff;opacity:.92;animation:kcloud linear infinite}
+.k-cloud::before,.k-cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.k-cloud::before{width:32px;height:32px;left:12px;top:-15px}
+.k-cloud::after{width:24px;height:24px;left:36px;top:-10px}
+.k-cloud.c1{top:34px;animation-duration:28s;animation-delay:-6s}
+.k-cloud.c2{top:88px;transform:scale(.7);animation-duration:36s;animation-delay:-20s}
+.k-cloud.c3{top:58px;transform:scale(.85);animation-duration:44s;animation-delay:-33s}
+@keyframes kcloud{from{left:-90px}to{left:110%}}
+.k-hill{position:absolute;bottom:-40px;border-radius:50%}
+.k-hill.h1{left:-20%;width:90%;height:120px;background:#7ED67A}
+.k-hill.h2{right:-25%;width:95%;height:140px;background:#5CC26A}
+.k-bubble{position:absolute;left:14px;right:14px;top:14px;background:#fff;border-radius:22px;padding:12px 12px 12px 16px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 6px 18px rgba(0,60,120,.12);animation:kpop .45s cubic-bezier(.2,1.4,.4,1)}
+.k-bubble::after{content:"";position:absolute;left:50%;bottom:-10px;width:20px;height:20px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:4px}
+.k-bubble p{margin:0;flex:1;font:600 17px/1.35 var(--font);color:#2B2118}
+.k-speak{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--tint);color:#fff;display:grid;place-items:center;box-shadow:0 3px 0 #2B8C43}
+.k-speak svg{width:20px;height:20px}
+.k-speak:active{transform:translateY(2px);box-shadow:0 1px 0 #2B8C43}
+.k-loopi{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.k-loopi.boing{animation:kboing .6s cubic-bezier(.3,1.6,.4,1)}
+@keyframes kboing{0%{transform:translateX(-50%) scale(1)}30%{transform:translateX(-50%) scale(1.15,.85)}60%{transform:translateX(-50%) scale(.92,1.1) translateY(-14px)}100%{transform:translateX(-50%) scale(1)}}
+@keyframes kpop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.kfoods{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kfood{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px 10px;border:0;border-radius:20px;background:#fff;box-shadow:0 4px 0 #EFE2CE,0 6px 14px rgba(120,80,30,.08);font:inherit;color:#2B2118;animation:kpop .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d)}
+.kfood b{font-size:13px;line-height:1.2}
+.kfood:active{transform:translateY(3px);box-shadow:0 1px 0 #EFE2CE}
+.kfood.try{box-shadow:0 0 0 3px var(--tint),0 4px 0 #2B8C43}
+.kfood em{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--tint);border-radius:999px;padding:2px 9px;white-space:nowrap;animation:ktry 1.4s ease-in-out infinite}
+@keyframes ktry{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
+.kf-pic{width:66px;height:66px;border-radius:50%;background:#FFF6EA;display:grid;place-items:center}
+.kfood.wiggle .kf-pic{animation:kwig .5s ease-in-out}
+@keyframes kwig{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.1)}50%{transform:rotate(10deg) scale(1.1)}75%{transform:rotate(-6deg)}}
+.kstars{font-size:17px;letter-spacing:1px;color:#FFB800;line-height:1}
+.kstars i{font-style:normal;color:#EADFCB}
+.rbcard{text-align:center}
+.rainbow2{width:100%;max-width:300px;display:block;margin:0 auto}
+.rainbow2 .arc{stroke:#EDE3D2;stroke-dasharray:3 7}
+.rainbow2 .arc.on{stroke:var(--c);stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:kdraw .6s ease-out forwards;animation-delay:calc(.35s + var(--i) * .42s)}
+.rainbow2:not(.done) .arc{opacity:.9}
+@keyframes kdraw{to{stroke-dashoffset:0}}
+.rb-cloud circle{fill:#fff;stroke:#E6DCC8;stroke-width:1.5}
+.confetti{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;z-index:5;animation:kfall linear forwards}
+@keyframes kfall{to{transform:translate(var(--dx),330px) rotate(var(--r));opacity:.9}}
+.role-seg{flex:none}
+.role-seg button{padding:9px 10px;font-size:14px}
+.roster{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rkid{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border:0;border-radius:16px;background:var(--fill);font:inherit;color:inherit}
+.rkid b{font-size:13px}
+.rkid.on{background:#fff;box-shadow:0 0 0 2.5px var(--tint)}
+.rkid.low{background:#FFF0EC}
+.rring{width:40px;height:40px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);display:grid;place-items:center;position:relative}
+.rring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}
+.rring i{position:relative;font-style:normal;font-size:10.5px;font-weight:700}
+.rwait{height:40px;display:grid;place-items:center;font-size:11px;color:var(--label3)}
+.rkid .alg,.rkid .nt{position:absolute;top:6px;font-style:normal;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 6px}
+.rkid .alg{right:6px;background:#FFE3DE;color:#C8321E}
+.rkid .nt{left:6px;background:var(--tint-soft);color:var(--tint-ink)}
+.vcard.focus{box-shadow:0 0 0 2px var(--tint),var(--shadow-s)}
+.vcard.focus h3{justify-content:flex-start}
+.vcard.focus h3 small{margin-left:auto}
+.note-edit{display:flex;flex-direction:column;gap:6px;margin:12px 0 10px;font-size:13px;font-weight:600;color:var(--label2)}
+.note-edit textarea{font:inherit;font-size:14px;font-weight:400;color:var(--label);border:0;border-radius:12px;background:var(--fill);padding:10px 12px;resize:vertical}
+
 </style>
 </head>
 <body>
@@ -2087,6 +2155,11 @@ const KIDS = [
   { id: 'k2', name: 'Hakim', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Hakim was a bit tired after outdoor play but finished all the rice.' },
   { id: 'k3', name: 'Kavya', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Kavya asked for more dragon fruit and told the class the seeds look like tiny stars.' },
   { id: 'k4', name: 'Lucas', age: 4, allergy: null, baseline: .35, app: .66, like: { k_chicken: .5, k_corn: 1.2 }, note: 'Lucas liked the corn soup and practised using his spoon and fork.' },
+  // the rest of Sunflower class (for the teacher's view)
+  ...[['Isaac', 5, null], ['Zoe', 4, 'Peanut'], ['Aarav', 5, null], ['Mei Ling', 4, null], ['Rayyan', 5, null], ['Sophie', 4, 'Egg'], ['Kai', 5, null], ['Nadia', 4, null]].map(([name, age, allergy], i) => ({
+    id: 'k' + (i + 5), name, age, allergy, named: false, baseline: [.28, .4, .22, .33, .19, .36, .3, .45][i], app: [.8, .6, .88, .7, .92, .66, .78, .52][i],
+    like: [{ k_broccoli: .5 }, { k_tomato: .3, k_rice: 1.2 }, {}, { k_chicken: .6 }, { k_dragon: 1.2 }, { k_broccoli: .2 }, { k_corn: .6 }, { k_broccoli: .3, k_tomato: .4 }][i], note: '',
+  })),
 ];
 
 function served(menu, diet) {
@@ -2127,17 +2200,20 @@ function seedKid(K) {
   }).reverse();
   const lowWaste = log.filter(l => l.w < .15).length;
   return {
-    id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: true, baseline: K.baseline,
+    id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: K.named !== false, baseline: K.baseline,
     pet: { xp: K.id === 'k2' ? 24 : 120 + Math.round(r() * 150), c: { veg: 3 + Math.round(r() * 6), lowWaste: lowWaste + Math.round(r() * 4), balanced: 2 + Math.round(r() * 4), quests: 0 }, en: 60 + Math.round(r() * 25), nu: 60 + Math.round(r() * 25), jo: 60 + Math.round(r() * 30), streak: 0, quest: 0 },
     log,
   };
 }
 function seed() {
-  return { v: CARE_V, patients: PATIENTS.map(seedPatient), kids: KIDS.map(seedKid), me: { patient: 'p1', kid: 'k1' } };
+  const kids = KIDS.map(seedKid);
+  // about half of the rest of the class has already had lunch scanned today
+  kids.filter(k => !k.named).forEach((k, i) => { if (i % 2 === 0) scanKid(k, KIDS.find(x => x.id === k.id), .6 + (i % 3) * .15); });
+  return { v: CARE_V, patients: PATIENTS.map(seedPatient), kids, me: { patient: 'p1', kid: 'k1' } };
 }
 const KIDPREFS = Object.fromEntries(KIDS.map(k => [k.id, k]));
 const PATPREFS = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
-const CARE_V = 6; // bump when the demo data changes shape
+const CARE_V = 7; // bump when the demo data changes shape
 const ensure = () => { if (!PL.S.care || PL.S.care.v !== CARE_V) PL.S.care = seed(); };
 ensure();
 PL.store.subscribe(ensure);
@@ -2156,8 +2232,8 @@ H.scanPatientMeal = (P, preset) => {
   P.log.push(rec);
   return rec;
 };
-H.scanKidLunch = (K, preset) => {
-  const like = KIDPREFS[K.id].like, base = H.PRESETS[preset];
+function scanKid(K, prefs, base) {
+  const like = prefs.like;
   const frac = Object.fromEntries(H.KIDS_MENU.map(d => [d.id, base * Math.min(1.1, like[d.id] || 1) + (Math.random() - .5) * .15]));
   const rec = mealRecord(H.KIDS_MENU, served(H.KIDS_MENU), frac, { day: H.TODAY, portion: 'M', pts: 0 });
   K.log.unshift(rec); K.log = K.log.slice(0, 5);
@@ -2165,7 +2241,10 @@ H.scanKidLunch = (K, preset) => {
   if (rec.w < .15) { K.pet.c.lowWaste++; K.pet.streak++; } else K.pet.streak = 0;
   if (rec.eaten.k_broccoli + rec.eaten.k_tomato > 20) K.pet.c.veg++;
   return rec;
-};
+}
+H.scanKidLunch = (K, preset) => scanKid(K, KIDPREFS[K.id], H.PRESETS[preset]);
+/** Demo: scan everyone in the class who hasn't had lunch scanned yet. */
+H.scanRestOfKids = () => PL.S.care.kids.filter(k => !k.named && k.log[0].day !== H.TODAY).map(k => scanKid(k, KIDPREFS[k.id], KIDPREFS[k.id].app + (Math.random() - .5) * .2)).length;
 
 /* ---------------------------------------------------------------- report building blocks */
 /** limit-type nutrients (sodium) are good when under target; the rest are good near target. */
@@ -2211,26 +2290,81 @@ H.wardMenu = wardMenu;
 </script>
 <script>
 /* ---- js/kids.js ---- */
-/* Loopi Kids: the preschool app. For children, Loopi is a guide, not a game: it shows today's food in
-   pictures, suggests one new thing to try, cheers the colours they ate, and reads everything aloud for
-   children who can't read yet. Behind a grown-up check, parents and teachers get the healthcare report:
-   what the child ate, nutrients for their age, allergy checks and eating habits. */
+/* Loopi Kids: the preschool app. Two separate parts.
+   For children: an animated, picture-first guide with sounds. Loopi bounces and giggles when tapped, food
+   cards pop in and say what each food does, and after lunch a food rainbow fills in colour by colour with
+   chimes and confetti. Everything can be read aloud, and sounds can be muted.
+   For grown-ups (behind a grown-up check): Parents see their child's lunch report; Teachers see the whole
+   class, who needs a check-in, allergy checks, the week, and can write notes that appear in the parent's report.
+   Sounds are made with the Web Audio API, so there are no audio files. */
 (() => {
 'use strict';
 const { $, $$, pct, esc } = PL;
 const H = PL.health, V = PL.V, MENU = H.KIDS_MENU;
 
-const ui = { tab: 'kid', adult: false, gate: null, preset: 'Ate well' };
-let root = null;
+const ui = { tab: 'kid', role: 'parent', adult: false, gate: null, preset: 'Ate well', focus: null, celebrate: false };
+let root = null, timers = [];
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+const clearTimers = () => { timers.forEach(clearTimeout); timers = []; };
+
+/* ---------------------------------------------------------------- sounds */
+const SFX = (() => {
+  let ctx = null, muted = false;
+  try { muted = localStorage.getItem('loopi-kids-mute') === '1'; } catch (e) {}
+  const ac = () => { if (!ctx) { const A = window.AudioContext || window.webkitAudioContext; if (!A) return null; ctx = new A(); } if (ctx.state === 'suspended') ctx.resume(); return ctx; };
+  const tone = (f, dur = .15, type = 'sine', vol = .18, to = null, at = 0) => {
+    if (muted) return; const c = ac(); if (!c) return;
+    const t = c.currentTime + at, o = c.createOscillator(), g = c.createGain();
+    o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
+    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + .015); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .05);
+  };
+  const NOTES = [523.25, 587.33, 659.25, 783.99, 880, 1046.5];
+  return {
+    get muted() { return muted; },
+    toggle() { muted = !muted; try { localStorage.setItem('loopi-kids-mute', muted ? '1' : '0'); } catch (e) {} if (muted && 'speechSynthesis' in window) speechSynthesis.cancel(); else this.pop(); },
+    pop() { tone(520, .09, 'sine', .2, 880); },
+    boop() { tone(440, .16, 'triangle', .2, 300); },
+    tap() { tone(720, .05, 'square', .05); },
+    chime(i) { const f = NOTES[i % NOTES.length]; tone(f, .5, 'sine', .16); tone(f * 2, .3, 'sine', .05); },
+    giggle() { [0, .1, .2].forEach((d, i) => tone(600 + i * 120, .08, 'triangle', .14, 900 + i * 120, d)); },
+    fanfare() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => tone(f, i === 3 ? .6 : .16, 'triangle', .16, null, i * .13)); },
+    soft() { tone(392, .25, 'sine', .1, 330); tone(330, .35, 'sine', .08, 294, .22); },
+  };
+})();
+const say = text => {
+  if (SFX.muted || !('speechSynthesis' in window)) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text); u.rate = .92; u.pitch = 1.2; speechSynthesis.speak(u);
+};
+
+/* ---------------------------------------------------------------- data helpers */
 const I = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const ICON = {
   kid: I('<path d="M12 3c4 0 7 4.5 7 9.5S16 21 12 21s-7-3.5-7-8.5S8 3 12 3Z"/><circle cx="9.5" cy="12" r=".8" fill="currentColor"/><circle cx="14.5" cy="12" r=".8" fill="currentColor"/>'),
   grown: I('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
   check: I('<path d="M5 12.5l4.5 4.5L19 7"/>'),
+  sound: I('<path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/>'),
+  mute: I('<path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M17 9l5 6M22 9l-5 6"/>'),
+  speak: I('<path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7"/>'),
 };
+const FACTS = {
+  k_rice: 'Rice gives you energy to run and play!', k_chicken: 'Chicken helps your muscles grow big and strong!',
+  k_broccoli: 'Broccoli looks like a tiny tree. It keeps you strong!', k_corn: 'Warm corn soup makes your tummy happy!',
+  k_tomato: 'Tomatoes are red and juicy. Pop!', k_dragon: 'Dragon fruit is pink with tiny black seeds. So pretty!',
+};
+const TAPS = ['Hehe, that tickles!', 'Yay! Let\'s eat lunch together!', 'I love colourful food!', 'High five!', 'Boing boing!'];
+const RAINBOW_ORDER = ['red', 'pink', 'yellow', 'green', 'brown', 'white'];
 const me = () => H.kid(PL.S.care.me.kid) || PL.S.care.kids[0];
+const kids = () => PL.S.care.kids;
 const scannedToday = K => K.log[0].day === H.TODAY;
 const dishName = (K, d) => K.allergy && d.allergen === K.allergy ? d.safe : d.name;
+const short = (K, d) => dishName(K, d).replace(' without egg', '');
+const ateFrac = (rec, d) => rec.eaten[d.id] / rec.served[d.id];
+const avgEaten = (K, id) => K.log.reduce((s, l) => s + l.eaten[id] / l.served[id], 0) / K.log.length;
+const pickyOf = K => [...MENU].sort((a, b) => avgEaten(K, a.id) - avgEaten(K, b.id))[0];
+const coloursEaten = (K, rec) => new Set(MENU.filter(d => ateFrac(rec, d) >= .5).map(d => d.rainbow));
+const stars = f => f >= .75 ? 3 : f >= .4 ? 2 : f >= .15 ? 1 : 0;
 
 /* ================================================================ frame */
 function mount(el) {
@@ -2245,6 +2379,7 @@ function mount(el) {
         <label for="kid-preset">Lunch at the scanner</label>
         <select id="kid-preset">${Object.keys(H.PRESETS).map(p => `<option>${p}</option>`).join('')}</select>
         <button class="btn primary" id="kid-lunch"></button>
+        <button class="btn small" id="kid-rest">Scan the rest of the class</button>
       </div>
       <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
     </aside>
@@ -2259,63 +2394,107 @@ function mount(el) {
     </div>
   </div>`;
   $$('.phone-tabs button', el).forEach(b => b.onclick = () => {
+    SFX.tap();
     if (b.dataset.tab === 'grown' && !ui.adult) { gate(); return; }
     ui.tab = b.dataset.tab; render(); $('#kid-body').scrollTop = 0;
   });
   $('#kid-preset', el).onchange = e => { ui.preset = e.target.value; };
   $('#kid-lunch', el).onclick = () => {
     const K = me(); if (scannedToday(K)) return;
-    const r = H.scanKidLunch(K, ui.preset); PL.store.save('kids');
+    const r = H.scanKidLunch(K, ui.preset);
+    ui.celebrate = true; ui.tab = ui.adult ? ui.tab : 'kid';
+    PL.store.save('kids');
     PL.toast(`${K.name}'s tray scanned: ${pct(1 - r.w)} eaten.`);
   };
+  $('#kid-rest', el).onclick = () => { const n = H.scanRestOfKids(); PL.store.save('kids'); PL.toast(n ? `${n} more trays scanned in Sunflower class.` : 'Everyone\'s lunch is already scanned.'); };
   render();
 }
 function render(keep) {
   if (!root) return;
+  clearTimers();
   const K = me(), body = $('#kid-body', root), y = body.scrollTop;
-  $('#kid-who', root).innerHTML = PL.S.care.kids.map(k => `<button class="chip plain" data-kid="${k.id}" aria-pressed="${k.id === K.id}">${esc(k.name)}</button>`).join('');
-  $$('#kid-who button', root).forEach(b => b.onclick = () => { PL.S.care.me.kid = b.dataset.kid; PL.store.save('me'); });
-  const lb = $('#kid-lunch', root); lb.textContent = scannedToday(K) ? 'Lunch is done' : 'Scan lunch tray'; lb.disabled = scannedToday(K);
+  $('#kid-who', root).innerHTML = kids().filter(k => k.named).map(k => `<button class="chip plain" data-kid="${k.id}" aria-pressed="${k.id === K.id}">${esc(k.name)}</button>`).join('');
+  $$('#kid-who button', root).forEach(b => b.onclick = () => { ui.focus = null; PL.S.care.me.kid = b.dataset.kid; PL.store.save('me'); });
+  const lb = $('#kid-lunch', root); lb.textContent = scannedToday(K) ? `${K.name}'s lunch is done` : `Scan ${K.name}'s lunch tray`; lb.disabled = scannedToday(K);
   $('#kid-preset', root).value = ui.preset;
-  $('#kid-top', root).innerHTML = `${PL.V.avatar(K, 36)}<div><b>${esc(K.name)}</b><span>Sunflower class · age ${K.age}</span></div>`;
+  $('#kid-rest', root).disabled = kids().filter(k => !k.named).every(scannedToday);
+  $('#kid-top', root).innerHTML = ui.tab === 'kid'
+    ? `${V.avatar(K, 36)}<div><b>${esc(K.name)}</b><span>Sunflower class · age ${K.age}</span></div><button class="mute" id="mute" aria-label="${SFX.muted ? 'Turn sound on' : 'Turn sound off'}">${SFX.muted ? ICON.mute : ICON.sound}</button>`
+    : `<span class="av-circle" style="--av:#8E8E93;width:36px;height:36px;font-size:13px">${ui.role === 'teacher' ? 'MF' : esc(K.name[0])}</span><div><b>${ui.role === 'teacher' ? 'Ms. Farah' : `${esc(K.name)}'s family`}</b><span>${ui.role === 'teacher' ? 'Teacher · Sunflower class' : 'Parent view'}</span></div>`;
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   body.innerHTML = ui.tab === 'kid' ? kid(K) : grown(K);
-  wire();
+  wire(K);
   if (keep) body.scrollTop = y;
   layer();
+  if (ui.tab === 'kid' && ui.celebrate && scannedToday(K)) { ui.celebrate = false; celebrate(K); }
 }
 
-/* ================================================================ for the child: Loopi guides */
-const avgEaten = (K, id) => K.log.reduce((s, l) => s + l.eaten[id] / l.served[id], 0) / K.log.length;
+/* ================================================================ for the child */
 function kid(K) {
-  const done = scannedToday(K), rec = K.log[0];
-  const picky = [...MENU].sort((a, b) => avgEaten(K, a.id) - avgEaten(K, b.id))[0];
-  const colours = [...new Set(MENU.map(d => d.rainbow))];
-  const ate = new Set(done ? MENU.filter(d => rec.eaten[d.id] >= rec.served[d.id] * .5).map(d => d.rainbow) : []);
-  const short = d => dishName(K, d).replace(' without egg', '').toLowerCase();
+  const done = scannedToday(K), rec = K.log[0], picky = pickyOf(K);
+  const ate = done ? coloursEaten(K, rec) : new Set();
   let expr, line;
-  if (!done) { expr = 'point'; line = `Hi ${K.name}! It's lunch time! Can you try one bite of ${short(picky)} today?`; }
-  else if (ate.size >= 5) { expr = 'cheer'; line = `Wow, ${K.name}! You ate ${ate.size} colours. A rainbow makes you strong!`; }
+  if (!done) { expr = 'wave'; line = `Hi ${K.name}! It's lunch time! Can you try one bite of ${short(K, picky).toLowerCase()} today?`; }
+  else if (ate.size >= 5) { expr = 'cheer'; line = `Wow, ${K.name}! You ate ${ate.size} colours. A whole rainbow!`; }
   else if (1 - rec.w >= .6) { expr = 'happy'; line = `Yummy lunch, ${K.name}! You ate ${ate.size} colours today.`; }
-  else { expr = 'calm'; line = `That's okay, ${K.name}. Tomorrow, let's try a little more.`; }
-  let out = V.guide(expr, esc(line), { big: true, speak: line });
-  if (!done) {
-    out += `<div class="vcard kidcard"><h3>Today's lunch</h3>${V.tray(MENU, null, { size: 50, hi: picky.id, tag: d => d.id === picky.id ? 'Try me!' : '', name: d => dishName(K, d).replace(' without egg', '') })}</div>
-    <div class="vcard kidcard"><h3>Eat a rainbow</h3><div class="rb-dots big">${colours.map(c => `<span class="rb" style="--c:${H.RAINBOW[c]}" aria-label="${c}"></span>`).join('')}</div>
-      <p class="kidline">Every colour helps your body in a different way.</p></div>`;
-    return out;
+  else { expr = 'calm'; line = `That's okay, ${K.name}. Tomorrow let's try a little more.`; }
+  const cards = MENU.map((d, i) => {
+    const f = done ? ateFrac(rec, d) : null, s = done ? stars(f) : 0;
+    return `<button class="kfood ${!done && d.id === picky.id ? 'try' : ''}" style="--d:${i * 90}ms" data-food="${d.id}">
+      ${!done && d.id === picky.id ? '<em>Try me!</em>' : ''}
+      <span class="kf-pic">${V.food(d, 58)}</span><b>${esc(short(K, d))}</b>
+      ${done ? `<span class="kstars" aria-label="${s} stars">${'★'.repeat(s)}<i>${'★'.repeat(3 - s)}</i></span>` : ''}
+    </button>`;
+  }).join('');
+  return `
+  <div class="kscene">
+    <i class="k-sun"></i><i class="k-cloud c1"></i><i class="k-cloud c2"></i><i class="k-cloud c3"></i><i class="k-hill h1"></i><i class="k-hill h2"></i>
+    <div class="k-bubble"><p id="k-line">${esc(line)}</p><button class="k-speak" data-say="${esc(line)}" aria-label="Read aloud">${ICON.speak}</button></div>
+    <button class="k-loopi" id="k-loopi" aria-label="Tap Loopi" data-expr="${expr}">${V.loopi(expr, 150)}</button>
+  </div>
+  <div class="vcard kidcard"><h3>${done ? 'My lunch' : 'Today\'s lunch'} <small>tap a food</small></h3><div class="kfoods">${cards}</div></div>
+  <div class="vcard kidcard rbcard"><h3>${done ? 'My food rainbow' : 'Eat a food rainbow'}</h3>${rainbow(ate, done)}
+    <p class="kidline">${done ? `${ate.size} of ${RAINBOW_ORDER.length} colours!` : 'Every colour helps your body in a different way.'}</p></div>`;
+}
+/** A rainbow made of the colours of today's food. Eaten colours draw in; the rest stay dotted. */
+function rainbow(ate, done) {
+  const cx = 130, cy = 128;
+  const arcs = RAINBOW_ORDER.map((c, i) => {
+    const r = 108 - i * 13, len = (Math.PI * r).toFixed(1), on = ate.has(c);
+    return `<path d="M${cx - r} ${cy}A${r} ${r} 0 0 1 ${cx + r} ${cy}" fill="none" stroke-width="11" stroke-linecap="round" class="${on ? 'arc on' : 'arc'}" style="--c:${H.RAINBOW[c]};--len:${len};--i:${ate.size ? [...RAINBOW_ORDER].filter(x => ate.has(x)).indexOf(c) : 0}"/>`;
+  }).join('');
+  return `<svg class="rainbow2 ${done ? 'done' : ''}" viewBox="0 0 260 140" role="img" aria-label="${ate.size} colours eaten">${arcs}
+    <g class="rb-cloud"><circle cx="22" cy="128" r="16"/><circle cx="40" cy="124" r="13"/><circle cx="8" cy="132" r="10"/></g>
+    <g class="rb-cloud"><circle cx="238" cy="128" r="16"/><circle cx="220" cy="124" r="13"/><circle cx="252" cy="132" r="10"/></g></svg>`;
+}
+/** After lunch: each eaten colour chimes in turn, then a fanfare and confetti for a big rainbow. */
+function celebrate(K) {
+  const n = coloursEaten(K, K.log[0]).size;
+  for (let i = 0; i < n; i++) later(() => SFX.chime(i), 350 + i * 420);
+  later(() => {
+    if (n >= 4) { SFX.fanfare(); confetti(); } else SFX.pop();
+    const line = $('#k-line', root); if (line) say(line.textContent);
+  }, 350 + n * 420 + 150);
+}
+function confetti() {
+  const box = $('.kscene', root); if (!box) return;
+  const cols = ['#FF6B5B', '#FFB23F', '#F4C542', '#3DB85A', '#4DA3FF', '#D6246E'];
+  for (let i = 0; i < 44; i++) {
+    const p = document.createElement('i');
+    p.className = 'confetti';
+    p.style.cssText = `left:${Math.random() * 100}%;background:${cols[i % cols.length]};--dx:${(Math.random() - .5) * 120}px;--r:${Math.random() * 720 - 360}deg;animation-delay:${Math.random() * .4}s;animation-duration:${1.6 + Math.random()}s`;
+    box.appendChild(p);
   }
-  const tried = rec.eaten[picky.id] >= rec.served[picky.id] * .3;
-  const tip = tried ? `You tried the ${short(picky)}! New foods get yummier each time.` : `Small bites are okay. Let's try the ${short(picky)} again next time.`;
-  out += `<div class="vcard kidcard"><h3>My lunch</h3>${V.tray(MENU, rec, { size: 50, name: d => dishName(K, d).replace(' without egg', '') })}</div>
-  <div class="vcard kidcard"><h3>My rainbow</h3><div class="rb-dots big">${colours.map(c => `<span class="rb ${ate.has(c) ? 'on' : ''}" style="--c:${H.RAINBOW[c]}" aria-label="${c}${ate.has(c) ? ', eaten' : ''}">${ate.has(c) ? ICON.check : ''}</span>`).join('')}</div>
-    <p class="kidline">${ate.size} of ${colours.length} colours</p></div>
-  ${V.guide(tried ? 'cheer' : 'think', esc(tip), { speak: tip })}`;
-  return out;
+  later(() => $$('.confetti', root).forEach(p => p.remove()), 3200);
 }
 
-/* ================================================================ for grown-ups: the healthcare report */
+/* ================================================================ for grown-ups */
 function grown(K) {
+  const seg = `<div class="seg role-seg" id="role-seg"><button data-role="parent" aria-pressed="${ui.role === 'parent'}">Parents</button><button data-role="teacher" aria-pressed="${ui.role === 'teacher'}">Teachers</button></div>`;
+  return seg + (ui.role === 'teacher' ? teacher() : parent(K));
+}
+/** Parents: one child's lunch report. */
+function parent(K) {
   const today = scannedToday(K), rec = K.log[0], T = H.KIDS_TARGET;
   const days = [...K.log].reverse();
   const ranked = MENU.map(d => ({ d, a: avgEaten(K, d.id) })).sort((a, b) => b.a - a.a);
@@ -2334,9 +2513,49 @@ function grown(K) {
     ${V.tip('leaf', picky.d.group === 'veg' ? 'warn' : 'info', `Least eaten: ${picky.d.name.toLowerCase()} (${pct(picky.a)})`, picky.d.group === 'veg' ? 'Small pieces and offering it again at home both help. It can take many tries to like a new vegetable.' : 'Worth a gentle try at home too.')}
     ${V.tip('plate', 'info', `Vegetables on ${vegDays} of ${K.log.length} days`, 'Days when at least half the vegetables were eaten.')}
   </div>
-  <div class="vcard note2"><p>“${esc(K.note)}”</p><span>Ms. Farah, Sunflower class</span></div>
-  <div class="two-btn"><button class="btn" id="kid-lock">Back to Loopi</button><button class="btn" id="kid-print">Print report</button></div>
+  <div class="vcard note2"><p>${K.note ? `“${esc(K.note)}”` : 'No note from the teacher yet today.'}</p><span>Ms. Farah, Sunflower class</span></div>
+  <div class="two-btn"><button class="btn" data-lock>Back to Loopi</button><button class="btn" data-print>Print report</button></div>
   <p class="foot">Measured by the preschool scanner before and after lunch. The teacher helps each child look at the camera. Targets are illustrative.</p>`;
+}
+/** Teachers: the whole class today, who needs a check-in, allergies, the week, and notes for parents. */
+function teacher() {
+  const all = kids(), done = all.filter(scannedToday), recs = done.map(k => k.log[0]);
+  const avgEat = recs.length ? recs.reduce((s, r) => s + (1 - r.w), 0) / recs.length : 0;
+  const veg = MENU.filter(d => d.group === 'veg');
+  const vegEat = recs.length ? recs.reduce((s, r) => s + veg.reduce((a, d) => a + ateFrac(r, d), 0) / veg.length, 0) / recs.length : 0;
+  const check = done.filter(k => 1 - k.log[0].w < .5);
+  const allergic = all.filter(k => k.allergy);
+  const foodAvg = MENU.map(d => ({ d, a: recs.length ? recs.reduce((s, r) => s + ateFrac(r, d), 0) / recs.length : 0 })).sort((a, b) => a.a - b.a);
+  const weekDays = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24', H.TODAY];
+  const weekVals = weekDays.map(day => { const rs = all.map(k => k.log.find(l => l.day === day)).filter(Boolean); return rs.length ? rs.reduce((s, r) => s + (1 - r.w), 0) / rs.length : 0; });
+  const F = ui.focus && H.kid(ui.focus);
+  return `
+  ${V.guide('calm', `Sunflower class: ${done.length} of ${all.length} lunches scanned today.${check.length ? ` ${check.length} ${check.length === 1 ? 'child ate' : 'children ate'} less than half.` : ' Everyone scanned so far ate well.'}`)}
+  <div class="vcard"><h3>Class today</h3><div class="vrings">${V.pctRing(done.length / all.length, 'Scanned', .99)}${V.pctRing(avgEat, 'Lunch eaten')}${V.pctRing(vegEat, 'Veg eaten', .6)}</div></div>
+  ${F ? childPanel(F) : ''}
+  <div class="vcard"><h3>Children <small>tap one for details and a note</small></h3><div class="roster">${all.map(k => {
+    const r = scannedToday(k) ? k.log[0] : null, f = r ? 1 - r.w : 0;
+    return `<button class="rkid ${ui.focus === k.id ? 'on' : ''} ${r && f < .5 ? 'low' : ''}" data-focus="${k.id}">
+      ${V.avatar(k, 38)}<b>${esc(k.name)}</b>
+      ${r ? `<span class="rring" style="--p:${Math.round(f * 100)};--c:${f >= .75 ? 'var(--tint)' : f >= .5 ? '#FFB23F' : '#FF6B5B'}"><i class="num">${pct(f)}</i></span>` : '<span class="rwait">not yet</span>'}
+      ${k.allergy ? `<em class="alg">${esc(k.allergy)}</em>` : ''}${k.note ? '<em class="nt">note</em>' : ''}
+    </button>`;
+  }).join('')}</div></div>
+  <div class="vtips">
+    ${check.length ? V.tip('warn', 'warn', `Check in with ${check.map(k => k.name).join(', ')}`, 'They ate less than half of lunch today.') : V.tip('check', 'good', 'No one needs a check-in', 'Every scanned child ate at least half of lunch.')}
+    ${V.tip('check', 'good', `${allergic.length} children with allergies, all trays safe`, allergic.map(k => `${k.name} (${k.allergy.toLowerCase()})`).join(', ') + '. Egg-free corn soup was served where needed.')}
+    ${recs.length ? V.tip('leaf', 'info', `Least eaten today: ${foodAvg[0].d.name.toLowerCase()} (${pct(foodAvg[0].a)})`, `Most eaten: ${foodAvg[foodAvg.length - 1].d.name.toLowerCase()} (${pct(foodAvg[foodAvg.length - 1].a)}).`) : ''}
+  </div>
+  <div class="vcard"><h3>Class this week <small>share of lunch eaten</small></h3>${V.week(weekDays, weekVals, { today: 4 })}</div>
+  <div class="two-btn"><button class="btn primary" id="send-parents">Send today's reports to parents</button><button class="btn" data-print>Print class sheet</button></div>
+  <p class="foot">Only Sunflower class staff see this page. Parents only see their own child.</p>`;
+}
+function childPanel(K) {
+  const r = scannedToday(K) ? K.log[0] : null;
+  return `<div class="vcard focus"><h3>${V.avatar(K, 30)} ${esc(K.name)} <small>${r ? `${pct(1 - r.w)} eaten today` : 'lunch not scanned yet'}</small></h3>
+    ${r ? V.tray(MENU, r, { name: d => dishName(K, d), size: 32 }) : ''}
+    <label class="note-edit"><span>Note for ${esc(K.name)}'s family</span><textarea id="note-text" rows="3" placeholder="What did ${esc(K.name)} try or enjoy today?">${esc(K.note || '')}</textarea></label>
+    <div class="two-btn"><button class="btn primary" id="save-note">Save note</button><button class="btn" data-open-parent="${K.id}">Open parent report</button></div></div>`;
 }
 
 /* ================================================================ grown-up check */
@@ -2349,21 +2568,42 @@ function layer() {
   if (!ui.gate) { el.innerHTML = ''; return; }
   const { a, b, opts } = ui.gate;
   el.innerHTML = `<div class="pmodal" role="dialog" aria-label="Grown-ups only"><div class="pmodal-card"><h3>Grown-ups only</h3><p class="center hint">What is ${a} + ${b}?</p><div class="gate-opts">${opts.map(o => `<button class="btn" data-ans="${o}">${o}</button>`).join('')}</div><button class="btn ghost" data-cancel>Cancel</button></div></div>`;
-  $$('[data-ans]', el).forEach(bt => bt.onclick = () => { if (+bt.dataset.ans === ui.gate.ans) { ui.adult = true; ui.tab = 'grown'; } else PL.toast('Not quite. Ask a grown-up!'); ui.gate = null; render(); });
+  $$('[data-ans]', el).forEach(bt => bt.onclick = () => { if (+bt.dataset.ans === ui.gate.ans) { ui.adult = true; ui.tab = 'grown'; } else { SFX.soft(); PL.toast('Not quite. Ask a grown-up!'); } ui.gate = null; render(); });
   $('[data-cancel]', el).onclick = () => { ui.gate = null; layer(); };
 }
-function wire() {
+
+/* ================================================================ wiring */
+function wire(K) {
   const body = $('#kid-body', root);
-  V.wireSpeak(body);
-  const lock = $('#kid-lock', body); if (lock) lock.onclick = () => { ui.adult = false; ui.tab = 'kid'; render(); };
-  const pr = $('#kid-print', body); if (pr) pr.onclick = () => print();
+  const mute = $('#mute', root); if (mute) mute.onclick = () => { SFX.toggle(); render(true); };
+  $$('[data-say]', body).forEach(b => b.onclick = () => { SFX.pop(); say(b.dataset.say); });
+  const lp = $('#k-loopi', body);
+  if (lp) lp.onclick = () => {
+    const line = TAPS[Math.floor(Math.random() * TAPS.length)];
+    lp.innerHTML = V.loopi('cheer', 150); lp.classList.remove('boing'); void lp.offsetWidth; lp.classList.add('boing');
+    SFX.giggle(); $('#k-line', body).textContent = line; $('.k-speak', body).dataset.say = line; say(line);
+    later(() => { if (lp.isConnected) lp.innerHTML = V.loopi(lp.dataset.expr, 150); }, 1400);
+  };
+  $$('[data-food]', body).forEach(b => b.onclick = () => {
+    const d = MENU.find(x => x.id === b.dataset.food), fact = `${short(K, d)}! ${FACTS[d.id]}`;
+    b.classList.remove('wiggle'); void b.offsetWidth; b.classList.add('wiggle');
+    SFX.boop(); $('#k-line', body).textContent = fact; $('.k-speak', body).dataset.say = fact; say(fact);
+  });
+  $$('#role-seg button', body).forEach(b => b.onclick = () => { SFX.tap(); ui.role = b.dataset.role; render(); $('#kid-body').scrollTop = 0; });
+  $$('[data-focus]', body).forEach(b => b.onclick = () => { SFX.tap(); ui.focus = ui.focus === b.dataset.focus ? null : b.dataset.focus; render(true); });
+  const sn = $('#save-note', body);
+  if (sn) sn.onclick = () => { const k = H.kid(ui.focus); k.note = $('#note-text', body).value.trim(); PL.store.save('kids'); PL.toast(`Note saved. ${k.name}'s family will see it in their report.`); };
+  $$('[data-open-parent]', body).forEach(b => b.onclick = () => { PL.S.care.me.kid = b.dataset.openParent; ui.role = 'parent'; ui.focus = null; PL.store.save('me'); $('#kid-body').scrollTop = 0; });
+  const sp = $('#send-parents', body); if (sp) sp.onclick = () => PL.toast(`Reports sent to ${kids().filter(scannedToday).length} families (demo, nothing was sent).`);
+  $$('[data-lock]', body).forEach(b => b.onclick = () => { ui.adult = false; ui.tab = 'kid'; render(); });
+  $$('[data-print]', body).forEach(b => b.onclick = () => print());
 }
 
 PL.apps.kids = {
   title: 'Loopi Kids',
   mount,
-  unmount() { ui.adult = false; ui.tab = 'kid'; ui.gate = null; root = null; if ('speechSynthesis' in window) speechSynthesis.cancel(); },
-  update(kind) { render(kind !== 'me'); },
+  unmount() { clearTimers(); ui.adult = false; ui.tab = 'kid'; ui.gate = null; ui.focus = null; root = null; if ('speechSynthesis' in window) speechSynthesis.cancel(); },
+  update(kind) { const f = document.activeElement; if (f && f.id === 'note-text') return; render(kind !== 'me'); },
 };
 })();
 

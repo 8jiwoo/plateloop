@@ -1064,6 +1064,74 @@ button.pan:disabled{opacity:.35;cursor:not-allowed}
 .barn-pet small{font-size:12px;color:var(--label2)}
 @media (max-width:760px){.sheet{position:fixed;z-index:60}.sheet header{padding-top:16px}}
 
+/* ================================================================ Loopi Kids v2: animated scene, sounds, parents + teachers */
+.mute{margin-left:auto;width:40px;height:40px;border-radius:50%;border:0;background:var(--fill);color:var(--tint-ink);display:grid;place-items:center}
+.mute svg{width:22px;height:22px}
+.kscene{position:relative;height:300px;border-radius:26px;overflow:hidden;flex:none;background:linear-gradient(180deg,#8FD3FF 0%,#C9ECFF 55%,#E8F7FF 100%);box-shadow:var(--shadow-s)}
+.k-sun{position:absolute;right:22px;top:18px;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle,#FFE36B 55%,#FFC93C 56%);box-shadow:0 0 0 10px rgba(255,217,90,.28),0 0 0 22px rgba(255,217,90,.14);animation:ksun 6s ease-in-out infinite}
+@keyframes ksun{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+.k-cloud{position:absolute;width:72px;height:24px;border-radius:999px;background:#fff;opacity:.92;animation:kcloud linear infinite}
+.k-cloud::before,.k-cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.k-cloud::before{width:32px;height:32px;left:12px;top:-15px}
+.k-cloud::after{width:24px;height:24px;left:36px;top:-10px}
+.k-cloud.c1{top:34px;animation-duration:28s;animation-delay:-6s}
+.k-cloud.c2{top:88px;transform:scale(.7);animation-duration:36s;animation-delay:-20s}
+.k-cloud.c3{top:58px;transform:scale(.85);animation-duration:44s;animation-delay:-33s}
+@keyframes kcloud{from{left:-90px}to{left:110%}}
+.k-hill{position:absolute;bottom:-40px;border-radius:50%}
+.k-hill.h1{left:-20%;width:90%;height:120px;background:#7ED67A}
+.k-hill.h2{right:-25%;width:95%;height:140px;background:#5CC26A}
+.k-bubble{position:absolute;left:14px;right:14px;top:14px;background:#fff;border-radius:22px;padding:12px 12px 12px 16px;display:flex;gap:10px;align-items:flex-start;box-shadow:0 6px 18px rgba(0,60,120,.12);animation:kpop .45s cubic-bezier(.2,1.4,.4,1)}
+.k-bubble::after{content:"";position:absolute;left:50%;bottom:-10px;width:20px;height:20px;background:#fff;transform:translateX(-50%) rotate(45deg);border-radius:4px}
+.k-bubble p{margin:0;flex:1;font:600 17px/1.35 var(--font);color:#2B2118}
+.k-speak{flex:none;width:40px;height:40px;border-radius:50%;border:0;background:var(--tint);color:#fff;display:grid;place-items:center;box-shadow:0 3px 0 #2B8C43}
+.k-speak svg{width:20px;height:20px}
+.k-speak:active{transform:translateY(2px);box-shadow:0 1px 0 #2B8C43}
+.k-loopi{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);border:0;background:none;padding:0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.k-loopi.boing{animation:kboing .6s cubic-bezier(.3,1.6,.4,1)}
+@keyframes kboing{0%{transform:translateX(-50%) scale(1)}30%{transform:translateX(-50%) scale(1.15,.85)}60%{transform:translateX(-50%) scale(.92,1.1) translateY(-14px)}100%{transform:translateX(-50%) scale(1)}}
+@keyframes kpop{from{transform:scale(.85);opacity:0}to{transform:none;opacity:1}}
+.kfoods{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.kfood{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px 10px;border:0;border-radius:20px;background:#fff;box-shadow:0 4px 0 #EFE2CE,0 6px 14px rgba(120,80,30,.08);font:inherit;color:#2B2118;animation:kpop .5s cubic-bezier(.2,1.4,.4,1) both;animation-delay:var(--d)}
+.kfood b{font-size:13px;line-height:1.2}
+.kfood:active{transform:translateY(3px);box-shadow:0 1px 0 #EFE2CE}
+.kfood.try{box-shadow:0 0 0 3px var(--tint),0 4px 0 #2B8C43}
+.kfood em{position:absolute;top:-9px;left:50%;transform:translateX(-50%);font-style:normal;font-size:11px;font-weight:800;color:#fff;background:var(--tint);border-radius:999px;padding:2px 9px;white-space:nowrap;animation:ktry 1.4s ease-in-out infinite}
+@keyframes ktry{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-3px)}}
+.kf-pic{width:66px;height:66px;border-radius:50%;background:#FFF6EA;display:grid;place-items:center}
+.kfood.wiggle .kf-pic{animation:kwig .5s ease-in-out}
+@keyframes kwig{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.1)}50%{transform:rotate(10deg) scale(1.1)}75%{transform:rotate(-6deg)}}
+.kstars{font-size:17px;letter-spacing:1px;color:#FFB800;line-height:1}
+.kstars i{font-style:normal;color:#EADFCB}
+.rbcard{text-align:center}
+.rainbow2{width:100%;max-width:300px;display:block;margin:0 auto}
+.rainbow2 .arc{stroke:#EDE3D2;stroke-dasharray:3 7}
+.rainbow2 .arc.on{stroke:var(--c);stroke-dasharray:var(--len);stroke-dashoffset:var(--len);animation:kdraw .6s ease-out forwards;animation-delay:calc(.35s + var(--i) * .42s)}
+.rainbow2:not(.done) .arc{opacity:.9}
+@keyframes kdraw{to{stroke-dashoffset:0}}
+.rb-cloud circle{fill:#fff;stroke:#E6DCC8;stroke-width:1.5}
+.confetti{position:absolute;top:-12px;width:9px;height:14px;border-radius:2px;z-index:5;animation:kfall linear forwards}
+@keyframes kfall{to{transform:translate(var(--dx),330px) rotate(var(--r));opacity:.9}}
+.role-seg{flex:none}
+.role-seg button{padding:9px 10px;font-size:14px}
+.roster{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.rkid{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:10px 4px;border:0;border-radius:16px;background:var(--fill);font:inherit;color:inherit}
+.rkid b{font-size:13px}
+.rkid.on{background:#fff;box-shadow:0 0 0 2.5px var(--tint)}
+.rkid.low{background:#FFF0EC}
+.rring{width:40px;height:40px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);display:grid;place-items:center;position:relative}
+.rring::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}
+.rring i{position:relative;font-style:normal;font-size:10.5px;font-weight:700}
+.rwait{height:40px;display:grid;place-items:center;font-size:11px;color:var(--label3)}
+.rkid .alg,.rkid .nt{position:absolute;top:6px;font-style:normal;font-size:9.5px;font-weight:700;border-radius:999px;padding:1px 6px}
+.rkid .alg{right:6px;background:#FFE3DE;color:#C8321E}
+.rkid .nt{left:6px;background:var(--tint-soft);color:var(--tint-ink)}
+.vcard.focus{box-shadow:0 0 0 2px var(--tint),var(--shadow-s)}
+.vcard.focus h3{justify-content:flex-start}
+.vcard.focus h3 small{margin-left:auto}
+.note-edit{display:flex;flex-direction:column;gap:6px;margin:12px 0 10px;font-size:13px;font-weight:600;color:var(--label2)}
+.note-edit textarea{font:inherit;font-size:14px;font-weight:400;color:var(--label);border:0;border-radius:12px;background:var(--fill);padding:10px 12px;resize:vertical}
+
 </style>
 </head>
 <body>
@@ -2087,6 +2155,11 @@ const KIDS = [
   { id: 'k2', name: 'Hakim', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Hakim was a bit tired after outdoor play but finished all the rice.' },
   { id: 'k3', name: 'Kavya', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Kavya asked for more dragon fruit and told the class the seeds look like tiny stars.' },
   { id: 'k4', name: 'Lucas', age: 4, allergy: null, baseline: .35, app: .66, like: { k_chicken: .5, k_corn: 1.2 }, note: 'Lucas liked the corn soup and practised using his spoon and fork.' },
+  // the rest of Sunflower class (for the teacher's view)
+  ...[['Isaac', 5, null], ['Zoe', 4, 'Peanut'], ['Aarav', 5, null], ['Mei Ling', 4, null], ['Rayyan', 5, null], ['Sophie', 4, 'Egg'], ['Kai', 5, null], ['Nadia', 4, null]].map(([name, age, allergy], i) => ({
+    id: 'k' + (i + 5), name, age, allergy, named: false, baseline: [.28, .4, .22, .33, .19, .36, .3, .45][i], app: [.8, .6, .88, .7, .92, .66, .78, .52][i],
+    like: [{ k_broccoli: .5 }, { k_tomato: .3, k_rice: 1.2 }, {}, { k_chicken: .6 }, { k_dragon: 1.2 }, { k_broccoli: .2 }, { k_corn: .6 }, { k_broccoli: .3, k_tomato: .4 }][i], note: '',
+  })),
 ];
 
 function served(menu, diet) {
@@ -2127,17 +2200,20 @@ function seedKid(K) {
   }).reverse();
   const lowWaste = log.filter(l => l.w < .15).length;
   return {
-    id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: true, baseline: K.baseline,
+    id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: K.named !== false, baseline: K.baseline,
     pet: { xp: K.id === 'k2' ? 24 : 120 + Math.round(r() * 150), c: { veg: 3 + Math.round(r() * 6), lowWaste: lowWaste + Math.round(r() * 4), balanced: 2 + Math.round(r() * 4), quests: 0 }, en: 60 + Math.round(r() * 25), nu: 60 + Math.round(r() * 25), jo: 60 + Math.round(r() * 30), streak: 0, quest: 0 },
     log,
   };
 }
 function seed() {
-  return { v: CARE_V, patients: PATIENTS.map(seedPatient), kids: KIDS.map(seedKid), me: { patient: 'p1', kid: 'k1' } };
+  const kids = KIDS.map(seedKid);
+  // about half of the rest of the class has already had lunch scanned today
+  kids.filter(k => !k.named).forEach((k, i) => { if (i % 2 === 0) scanKid(k, KIDS.find(x => x.id === k.id), .6 + (i % 3) * .15); });
+  return { v: CARE_V, patients: PATIENTS.map(seedPatient), kids, me: { patient: 'p1', kid: 'k1' } };
 }
 const KIDPREFS = Object.fromEntries(KIDS.map(k => [k.id, k]));
 const PATPREFS = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
-const CARE_V = 6; // bump when the demo data changes shape
+const CARE_V = 7; // bump when the demo data changes shape
 const ensure = () => { if (!PL.S.care || PL.S.care.v !== CARE_V) PL.S.care = seed(); };
 ensure();
 PL.store.subscribe(ensure);
@@ -2156,8 +2232,8 @@ H.scanPatientMeal = (P, preset) => {
   P.log.push(rec);
   return rec;
 };
-H.scanKidLunch = (K, preset) => {
-  const like = KIDPREFS[K.id].like, base = H.PRESETS[preset];
+function scanKid(K, prefs, base) {
+  const like = prefs.like;
   const frac = Object.fromEntries(H.KIDS_MENU.map(d => [d.id, base * Math.min(1.1, like[d.id] || 1) + (Math.random() - .5) * .15]));
   const rec = mealRecord(H.KIDS_MENU, served(H.KIDS_MENU), frac, { day: H.TODAY, portion: 'M', pts: 0 });
   K.log.unshift(rec); K.log = K.log.slice(0, 5);
@@ -2165,7 +2241,10 @@ H.scanKidLunch = (K, preset) => {
   if (rec.w < .15) { K.pet.c.lowWaste++; K.pet.streak++; } else K.pet.streak = 0;
   if (rec.eaten.k_broccoli + rec.eaten.k_tomato > 20) K.pet.c.veg++;
   return rec;
-};
+}
+H.scanKidLunch = (K, preset) => scanKid(K, KIDPREFS[K.id], H.PRESETS[preset]);
+/** Demo: scan everyone in the class who hasn't had lunch scanned yet. */
+H.scanRestOfKids = () => PL.S.care.kids.filter(k => !k.named && k.log[0].day !== H.TODAY).map(k => scanKid(k, KIDPREFS[k.id], KIDPREFS[k.id].app + (Math.random() - .5) * .2)).length;
 
 /* ---------------------------------------------------------------- report building blocks */
 /** limit-type nutrients (sodium) are good when under target; the rest are good near target. */
