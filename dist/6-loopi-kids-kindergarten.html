@@ -763,6 +763,198 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .f-row input{font:inherit;width:100%;padding:8px 10px;border-radius:10px;border:0;background:var(--fill);color:var(--label);text-align:right}
 .finding b{font-weight:600}
 
+/* ================================================================ Visual toolkit (js/visual.js) */
+.loopi{display:block;overflow:visible;flex:none}
+.loopi .lp-body{animation:lpbob 3.2s ease-in-out infinite;transform-origin:60px 120px}
+.loopi .lp-eye{animation:lpblink 5.5s infinite;transform-box:fill-box;transform-origin:center}
+.loopi .lp-wave{animation:lpwave 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+.loopi .lp-leaf{animation:lpleaf 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+.lp-cheer .lp-body{animation:lpjump 1.4s ease-in-out infinite}
+@keyframes lpbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lpjump{0%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}55%{transform:translateY(0)}}
+@keyframes lpblink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes lpwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+@keyframes lpleaf{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
+.guide{display:flex;align-items:flex-end;gap:10px;flex:none}
+.guide .bubble{position:relative;flex:1;min-width:0;background:var(--bg2);border-radius:20px 20px 20px 6px;padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px;display:flex;gap:10px;align-items:flex-start}
+.guide .bubble p{margin:0;font-size:15px;line-height:1.4;font-weight:500;flex:1}
+.guide.big .bubble p{font-size:17px}
+.guide .speak{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:var(--tint);color:#fff;display:grid;place-items:center}
+.guide .speak svg{width:18px;height:18px}
+/* food + tray */
+.food{display:block}
+.vtray{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:8px;padding:10px;border-radius:22px;background:linear-gradient(145deg,#EEF1F3,#DDE2E6);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(0,0,0,.06)}
+.vcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:16px;background:rgba(255,255,255,.72);box-shadow:inset 0 1px 3px rgba(0,0,0,.06);text-align:center;color:#1D1D1F}
+.vcell.hi{background:#fff;box-shadow:0 0 0 2.5px var(--tint),0 6px 16px -6px rgba(52,199,89,.5)}
+.vcell span{font-size:11.5px;font-weight:600;line-height:1.2}
+.vcell b{font-size:13px;color:#3A3A3C}
+.vcell em{font-style:normal;font-size:10.5px;font-weight:700;color:#fff;background:var(--tint);border-radius:999px;padding:1px 7px}
+.vfood{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#fff;position:relative}
+.vfood.scored{background:conic-gradient(var(--c) calc(var(--p) * 1%),#E5E5EA 0)}
+.vfood.scored::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}
+.vfood .food{position:relative}
+/* My Healthy Plate */
+.hplate{display:grid;grid-template-columns:auto auto 1fr;gap:4px 14px;align-items:center}
+.hplate figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.hplate figcaption{font-size:11.5px;font-weight:600;color:var(--label2)}
+.hplate .ideal{opacity:.85}
+.hlegend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.hlegend li{display:grid;grid-template-columns:10px 1fr auto;column-gap:6px;align-items:center}
+.hlegend i{width:10px;height:10px;border-radius:3px}
+.hlegend b{font-size:13px}
+.hlegend small{grid-column:2 / 4;color:var(--label3);font-size:11px;margin-top:-3px}
+.hverdict{grid-column:1 / -1;margin:6px 0 0;font-size:13.5px;font-weight:500;background:var(--fill);border-radius:12px;padding:8px 11px}
+@media (max-width:420px){.hplate{grid-template-columns:auto 1fr}.hplate .ideal{display:none}}
+/* rings */
+.vrings{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:10px}
+.vring{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.vr{width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);display:grid;place-items:center;position:relative}
+.vr::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg2)}
+.vr > div{position:relative;display:flex;flex-direction:column;align-items:center;line-height:1.05}
+.vr b{font:700 18px var(--font-d);letter-spacing:-.02em}
+.vr small{font-size:10.5px;color:var(--label3)}
+.vring > span{font-size:12.5px;font-weight:600;color:var(--label2)}
+/* week of plates */
+.vweek{display:flex;justify-content:space-between;gap:6px}
+.vweek > div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.vweek i{width:100%;max-width:46px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);position:relative;box-shadow:0 0 0 3px var(--bg2),0 0 0 4px var(--sep)}
+.vweek i::after{content:"";position:absolute;inset:30%;border-radius:50%;background:var(--bg2)}
+.vweek b{font-size:12px}
+.vweek span{font-size:11px;color:var(--label3);font-weight:600}
+.vweek .today span{color:var(--tint-ink)}
+/* tips */
+.vicon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--ic) 14%,transparent);color:var(--ic)}
+.vicon svg{width:22px;height:22px}
+.vtip{display:flex;gap:12px;align-items:flex-start;padding:12px 14px}
+.vtip b{display:block;font-size:14.5px;line-height:1.3}
+.vtip span{display:block;font-size:13px;color:var(--label2);line-height:1.4;margin-top:2px}
+.vcard{background:var(--bg2);border-radius:20px;padding:16px;box-shadow:var(--shadow-s);flex:none}
+.vcard > h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.vcard > h3 small{font:500 12px var(--font);color:var(--label3)}
+.vtips{background:var(--bg2);border-radius:20px;box-shadow:var(--shadow-s);overflow:hidden;flex:none}
+.vtips > * + *{border-top:.5px solid var(--sep)}
+
+/* ================================================================ warm, always-light theme for the children's apps */
+.warm{--bg:#FFF6EA;--bg2:#FFFFFF;--fill:#FFF1DE;--fill2:#F3E6D2;--fill3:#E4D3BA;--label:#2B2118;--label2:#7A6A58;--label3:#A8977F;--sep:rgba(120,90,50,.14);--tint:#3DB85A;--tint-ink:#2B8C43;--tint-soft:#E3F6E5;--bar2:rgba(255,250,242,.9);--shadow-s:0 2px 10px rgba(120,80,30,.07);color-scheme:light;color:var(--label)}
+.warm .phone{background:var(--bg)}
+.warm .phone-top{background:rgba(255,250,242,.92)}
+.warm .phone-tabs{background:rgba(255,250,242,.94)}
+.warm .phone-tabs button[aria-selected="true"]{color:var(--tint-ink)}
+.warm .seg{background:var(--fill2)}
+.warm .seg button[aria-pressed="true"]{background:#fff}
+.warm .btn{background:var(--fill);color:var(--label)}
+.warm .btn.primary{background:var(--tint);color:#fff}
+.warm .vr::before{background:#fff}
+.warm .vweek i::after{background:#fff}
+/* ================================================================ Loopi (students) */
+.av-circle{border-radius:50%;background:var(--av);color:#fff;display:inline-grid;place-items:center;font-weight:700;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.loopi-icon svg{display:block}
+.journey{list-style:none;margin:0;padding:12px 8px;display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-radius:20px;box-shadow:var(--shadow-s);position:relative;flex:none}
+.journey li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative}
+.journey li + li::before{content:"";position:absolute;top:19px;right:calc(50% + 22px);width:calc(100% - 44px);height:3px;border-radius:3px;background:var(--fill2)}
+.journey li.done + li::before,.journey li.done + li.done::before{background:var(--tint)}
+.journey span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--fill);color:var(--label3)}
+.journey span svg{width:20px;height:20px}
+.journey li.now span{background:#fff;color:var(--tint-ink);box-shadow:0 0 0 3px var(--tint);animation:pulse 1.8s ease-in-out infinite}
+.journey li.done span{background:var(--tint);color:#fff}
+.journey small{font-size:11px;font-weight:600;color:var(--label2);line-height:1.2}
+.journey li.now small{color:var(--label)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--tint)}50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--tint) 25%,transparent)}}
+.tries{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tries div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:16px;background:var(--fill);font-size:12px;font-weight:600;color:var(--label3)}
+.tries div .food{filter:grayscale(1);opacity:.35}
+.tries div.on{background:var(--tint-soft);color:var(--tint-ink)}
+.tries div.on .food{filter:none;opacity:1}
+.goalbar{height:14px;border-radius:999px;background:var(--fill2);overflow:hidden;position:relative}
+.goalbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#FFB23F,var(--tint))}
+.goalbar.done i{background:var(--tint)}
+.podium2{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:8px;flex:none}
+.pod{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.pod b{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod small{font-size:11.5px;color:var(--label2)}
+.pod .step{width:100%;border-radius:14px 14px 0 0;display:grid;place-items:center;font:700 20px var(--font-d);color:#fff;margin-top:4px}
+.pod.p1 .step{height:70px;background:linear-gradient(180deg,#F7C948,#E0A800)}
+.pod.p2 .step{height:48px;background:linear-gradient(180deg,#C9CED4,#9EA4AB)}
+.pod.p3 .step{height:36px;background:linear-gradient(180deg,#E6A673,#C27C3E)}
+.warm .lb{background:var(--bg2);box-shadow:var(--shadow-s)}
+.warm .lb-row.me{background:var(--tint-soft)}
+.lb-row .av-circle{justify-self:center}
+.schools{padding:6px 14px}
+.sch-row{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:.5px solid var(--sep)}
+.sch-row:last-child{border-bottom:0}
+.sch-row > span{color:var(--label3);font-weight:700;text-align:center}
+.sch-row b{font-size:14px}
+.sch-row.us b:first-child{color:var(--tint-ink)}
+.sbar{height:8px;border-radius:999px;background:var(--fill2);margin-top:5px;overflow:hidden}
+.sbar i{display:block;height:100%;border-radius:999px;background:var(--tint)}
+.profile2{display:flex;align-items:center;gap:14px}
+.profile2 b{display:block;font:700 22px var(--font-d);letter-spacing:-.02em}
+.profile2 span{font-size:13px;color:var(--label2)}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:none}
+.statgrid div{background:var(--bg2);border-radius:18px;padding:12px;box-shadow:var(--shadow-s);display:flex;flex-direction:column;gap:6px}
+.statgrid b{font:700 24px var(--font-d);letter-spacing:-.02em;line-height:1}
+.statgrid span{font-size:12px;color:var(--label2);line-height:1.25}
+.hist2{display:flex;flex-direction:column}
+.hist2 div{display:grid;grid-template-columns:30px 1fr auto 40px;gap:10px;align-items:center;padding:8px 0;border-bottom:.5px solid var(--sep);font-size:14px}
+.hist2 div:last-child{border-bottom:0}
+.hist2 i{width:28px;height:28px;border-radius:50%;background:conic-gradient(var(--tint) calc(var(--p) * 1%),var(--fill2) 0);position:relative}
+.hist2 i::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--bg2)}
+.hist2 b{font-size:13px;color:var(--label2);font-weight:500}
+.hist2 em{font-style:normal;font-weight:700;color:var(--tint-ink);font-size:13px;text-align:right}
+.phone-top .av-circle{box-shadow:none}
+/* ================================================================ Loopi Kids */
+.kidcard h3{font-size:18px}
+.kids .vcell span{font-size:12.5px}
+.rb-dots.big{gap:10px}
+.rb-dots.big .rb{width:46px;height:46px}
+.kidline{text-align:center;margin:10px 0 0;font-size:15px;font-weight:600;color:var(--label2)}
+.note2{background:#FFF9E8;border:1px dashed #E8CF8A}
+.note2 p{margin:0;font-size:15px;line-height:1.45;font-style:italic}
+.note2 span{display:block;margin-top:6px;font-size:12.5px;color:var(--label2)}
+.kio-left .loopi{width:24cqw;height:auto}
+/* ================================================================ Loopi Care visuals */
+.meals3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mealc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px 12px;border-radius:16px;background:var(--fill);text-align:center}
+.mealc.next{background:var(--bg2);box-shadow:inset 0 0 0 2px var(--blue)}
+.mealc-top{display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.mealc-top b{font-size:13.5px}
+.mealc-top small{font-size:11px;color:var(--label3)}
+.mealc-food{display:flex;flex-wrap:wrap;justify-content:center;gap:0;max-width:64px}
+.mealc-ring{width:52px;height:52px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);display:grid;place-items:center;position:relative}
+.mealc-ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--bg2)}
+.mealc-ring b{position:relative;font-size:13px}
+.mealc-wait{width:52px;height:52px;border-radius:50%;border:2px dashed var(--fill3);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--label3)}
+.mealc.next .mealc-wait{border-color:var(--blue);color:var(--blue)}
+.mealc > span{font-size:11px;color:var(--label2);line-height:1.25}
+.vtips.alert{background:var(--orange-soft)}
+.leftlist{display:flex;flex-direction:column}
+.leftlist div{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:6px 0;border-bottom:.5px solid var(--sep);font-size:14px}
+.leftlist div:last-child{border-bottom:0}
+.leftlist b{font-size:13px;color:#E4674B}
+/* the tray in dark mode (the children's apps stay light) */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) :not(.warm) > .vcard .vtray,:root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vtray{background:linear-gradient(145deg,#2C2C2E,#232325);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vcell{background:rgba(255,255,255,.06);color:var(--label);box-shadow:none}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vcell b{color:var(--label2)}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vfood.scored::before{background:#2C2C2E}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vfood{background:#3A3A3C}
+  :root:not([data-theme="light"]) .hverdict{background:var(--fill)}
+}
+/* ================================================================ Loopi Work visuals */
+.pick2 .vtray{margin-bottom:10px}
+.pick2 .tweaks{padding:0 2px 12px}
+.lines2{display:flex;flex-direction:column}
+.lines2 > div{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:.5px solid var(--sep)}
+.lines2 > div:last-child{border-bottom:0}
+.lines2 b{display:block;font-size:14px}
+.lines2 small{font-size:12px;color:var(--label2)}
+.lthumbs{display:flex;background:var(--fill);border-radius:12px;padding:3px 4px}
+.lthumbs .food{margin:0 -3px}
+.goal-opt .vicon{margin-bottom:4px}
+.phone-body > *{flex-shrink:0}
+.warm .seg button[aria-pressed="true"]{background:#fff!important;color:var(--label);box-shadow:0 1px 3px rgba(120,80,30,.15)}
+.warm .seg button{color:var(--label2)}
+
 </style>
 </head>
 <body>
@@ -1029,7 +1221,6 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
   st.log.unshift({ day: 'Fri 25', portion, w: r.w, pts: r.xp, n: r.intake });
   st.log = st.log.slice(0, 6);
   r.servedBy = served; r.measured = measured;
-  r.game = PL.game ? PL.game.feedLunch(st, r) : null; // hunger, hearts, and the plate waiting in Loopi's bowl
   // completed trays feed the kitchen's waste numbers and the class league
   MENU.forEach(d => { T.dish[d.id].served += served[d.id]; T.dish[d.id].ret += measured[d.id]; });
   T.trays++;
@@ -1241,325 +1432,170 @@ PL.backLink = (label = 'All apps') => `<a class="backlink" href="#home">${PL.ico
 
 </script>
 <script>
-/* ---- js/game.js ---- */
-/* Loopi's rules. Loopi only eats real school lunches: when a tray is scanned back, the food the student
-   ate waits in Loopi's bowl. A tray with less left than the student's own usual earns a heart, and full
-   hearts grow Loopi from egg to adult. Whatever was left on the tray turns up as crumbs on Loopi's floor
-   until it's swept into the compost. No currency, no shop; Loopi never gets sick and never dies.
-   State lives on each student as st.game. */
+/* ---- js/visual.js ---- */
+/* Shared visuals for every app: Loopi (the guide character), food illustrations, the tray picture,
+   Singapore's My Healthy Plate, ring gauges and a week of plates. Everything returns an HTML or SVG
+   string so the apps can drop it into their markup. */
 (() => {
 'use strict';
-const { MENU } = PL;
-const G = PL.game = {};
-const V = 2;
+const V = PL.V = {};
+const esc = PL.esc;
 
-G.HUNGER_MAX = [4, 6, 8, 10];
-G.HEARTS_REQ = [3, 5, 7, 9];
-G.PLAYS_PER_DAY = 5;
-G.PETS_PER_DAY = 5;
-
-const today = () => new Date().toISOString().slice(0, 10);
-const hash = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
-const daily = g => { if (!g.day || g.day.d !== today()) g.day = { d: today(), balls: 0, pets: 0 }; return g.day; };
-
-/** Leftovers become crumbs: one per 20 g left of a dish, at most 3 per dish. */
-const crumbsFrom = (left, menu = MENU) => menu.flatMap(d => Array(Math.min(3, Math.floor((left[d.id] || 0) / 20))).fill(d.id));
-
-/** The tray is "good" when less is left than 15 %, or a quarter less than the student's usual. */
-G.heartLine = st => Math.max(.15, st.baseline * .75);
-
-/* ---------------------------------------------------------------- setup */
-G.init = st => {
-  const r = PL.rng(hash(st.id)), stage = PL.STAGES.indexOf(PL.stageOf(st.pet.xp)), req = G.HEARTS_REQ[stage];
-  // whatever was left at the last lunch is still lying around
-  const n = Math.min(4, Math.round(st.log[0].w * 12));
-  return {
-    v: V, name: 'Loopi', stage,
-    hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
-    hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
-    plate: null, mess: (st.messSeed || ['kailan', 'cabbage', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
-    eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
-  };
+/* ---------------------------------------------------------------- Loopi, the guide
+   expr: happy | wave | point | cheer | think | wow | calm */
+V.loopi = (expr = 'happy', size = 96, label = 'Loopi') => {
+  const look = { point: [2.2, .5], think: [-1.8, -2.2], wow: [0, 0] }[expr] || [0, .6];
+  const eye = x => expr === 'cheer'
+    ? `<path d="M${x - 7} 67q7-8 14 0" fill="none" stroke="#1F2A1D" stroke-width="3.4" stroke-linecap="round"/>`
+    : `<g class="lp-eye"><ellipse cx="${x}" cy="66" rx="${expr === 'wow' ? 8 : 7}" ry="${expr === 'wow' ? 9.5 : 8.5}" fill="#fff"/><circle cx="${x + look[0]}" cy="${67 + look[1]}" r="${expr === 'wow' ? 4.6 : 4}" fill="#1F2A1D"/><circle cx="${x + look[0] + 1.6}" cy="${65 + look[1]}" r="1.4" fill="#fff"/></g>`;
+  const mouth = {
+    cheer: '<path d="M49 80q11 16 22 0Z" fill="#1F2A1D"/><path d="M54 86q6 5 12 0" fill="#FF8FA0"/>',
+    wow: '<ellipse cx="60" cy="84" rx="4.5" ry="5.5" fill="#1F2A1D"/>',
+    think: '<path d="M56 84q5-2 9 1" fill="none" stroke="#1F2A1D" stroke-width="3" stroke-linecap="round"/>',
+    calm: '<path d="M52 82q8 5 16 0" fill="none" stroke="#1F2A1D" stroke-width="3" stroke-linecap="round"/>',
+  }[expr] || '<path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/>';
+  const arm = (d, cls = '') => `<path class="${cls}" d="${d}" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/>`;
+  const arms = {
+    cheer: arm('M26 76q-12-8-13-22') + arm('M94 76q12-8 13-22'),
+    wave: arm('M26 82q-9 7-10 16') + arm('M94 76q13-6 14-22', 'lp-wave'),
+    point: arm('M26 82q-9 7-10 16') + arm('M95 80q13-1 21-7'),
+    think: arm('M26 82q-9 7-10 16') + arm('M92 88q-8 6-22 0'),
+  }[expr] || arm('M26 82q-9 7-10 16') + arm('M94 82q9 7 10 16');
+  return `<svg class="loopi lp-${expr}" width="${size}" height="${size * 1.08}" viewBox="0 0 120 130" role="img" aria-label="${esc(label)}">
+    <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/>
+    <g class="lp-body">
+      <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/>
+      ${arms}
+      <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/>
+      <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/>
+      <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/>
+      <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/>
+      <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/>
+      <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/>
+      ${eye(47)}${eye(73)}${mouth}
+    </g></svg>`;
 };
-G.ensure = st => { if (!st.game || st.game.v !== V) st.game = G.init(st); return st.game; };
-const ensureAll = () => PL.S.students.forEach(G.ensure);
-ensureAll();
-PL.store.subscribe(ensureAll);
+/** Loopi with a speech bubble. */
+V.guide = (expr, text, opts = {}) => `<div class="guide ${opts.big ? 'big' : ''}">${V.loopi(expr, opts.size || (opts.big ? 120 : 76))}<div class="bubble"><p>${text}</p>${opts.speak ? `<button class="speak" data-speak="${esc(opts.speak)}" aria-label="Read aloud"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9v6h4l5 4V5L8 9Z"/><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg></button>` : ''}</div></div>`;
+/** Read Loopi's words aloud (for children who can't read yet). */
+V.wireSpeak = root => PL.$$('[data-speak]', root).forEach(b => b.onclick = () => {
+  if (!('speechSynthesis' in window)) return PL.toast('Reading aloud isn\'t available here.');
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(b.dataset.speak); u.rate = .92; u.pitch = 1.15; speechSynthesis.speak(u);
+});
 
-G.hungerMax = g => G.HUNGER_MAX[g.stage];
-G.heartsReq = g => G.HEARTS_REQ[g.stage];
-G.plantOf = st => Math.min(4, Math.floor(st.pet.c.lowWaste / 5));
-
-/* ---------------------------------------------------------------- lunch */
-/** Called after the second scan (school, or kindergarten with its own menu). Hunger and hearts change
-    right away; the food waits in the bowl. */
-G.feedLunch = (st, r, menu = MENU) => {
-  const g = G.ensure(st), max = G.hungerMax(g), req = G.heartsReq(g);
-  if (g.plate && !g.plate.eaten) g.mess.push(...g.plate.crumbs); // yesterday's uneaten plate still counts
-  const gain = 1 + (r.w < .3 ? 1 : 0) + (r.w < .12 ? 1 : 0);
-  g.hunger = Math.min(max, g.hunger + gain);
-  let heart = false;
-  if (r.w < G.heartLine(st) && g.hearts < req) {
-    g.hearts++; heart = true;
-    if (g.hearts === req && g.stage < 3) g.ready = true;
-  }
-  g.plate = {
-    eaten: false, heart, gain,
-    food: menu.filter(d => r.servedBy[d.id] - r.measured[d.id] > 10).map(d => d.id),
-    crumbs: crumbsFrom(r.measured, menu),
-  };
-  return { hunger: gain, heart, ready: g.ready, crumbs: g.plate.crumbs.length };
+/* ---------------------------------------------------------------- food illustrations (48 × 48) */
+const BOWL = '<path d="M5 25h38a19 15 0 0 1-38 0Z" fill="#fff" stroke="#D9D2C3" stroke-width="2"/><path d="M8 25h32" stroke="#D9D2C3" stroke-width="2"/>';
+const SHAPES = {
+  rice: (c, e) => `${BOWL}<path d="M9 25c2-9 9-13 15-13s13 4 15 13Z" fill="${c}" stroke="${e}" stroke-width="1.5"/>${[[18, 19], [24, 16], [29, 20], [22, 22], [15, 23]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="1.6" ry=".9" fill="${e}" opacity=".7"/>`).join('')}`,
+  soup: (c, e) => `${BOWL}<ellipse cx="24" cy="25" rx="17" ry="4.5" fill="${c}" stroke="${e}" stroke-width="1.2"/><circle cx="19" cy="25" r="2" fill="${e}" opacity=".6"/><circle cx="28" cy="24.5" r="1.6" fill="#E0703A" opacity=".8"/><path d="M18 8c-2 3 2 5 0 8M25 6c-2 3 2 5 0 8M32 8c-2 3 2 5 0 8" fill="none" stroke="#C9C2B4" stroke-width="1.8" stroke-linecap="round"/>`,
+  noodles: (c, e) => `${BOWL}<ellipse cx="24" cy="25" rx="17" ry="4.5" fill="${c}"/><path d="M11 24c3-3 5 3 8 0s5 3 8 0 5 3 8 0 3 2 3 2" fill="none" stroke="#F7E3A8" stroke-width="2.2"/><circle cx="30" cy="23" r="2.4" fill="#F6C1A0"/><path d="M34 5 22 23M38 6 26 23" stroke="#A67A2E" stroke-width="2" stroke-linecap="round"/>`,
+  chicken: (c, e) => `<path d="M31 8c7 0 11 6 10 12-1 8-9 11-15 9l-7 7a3.2 3.2 0 1 1-4.5-4.5 3.2 3.2 0 1 1-4.5-4.5l7-7c-2-7 3-12 9-12Z" fill="${c}" stroke="${e}" stroke-width="1.8" stroke-linejoin="round"/><path d="M28 13c4-1 7 1 8 4" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" opacity=".5"/><circle cx="12.5" cy="35.5" r="3.2" fill="#FFF8EC" stroke="#D9CBB0" stroke-width="1.3"/><circle cx="8" cy="31" r="3.2" fill="#FFF8EC" stroke="#D9CBB0" stroke-width="1.3"/>`,
+  fish: (c, e) => `<path d="M6 24c6-9 16-11 26-6l9-6v24l-9-6c-10 5-20 3-26-6Z" fill="${c}" stroke="${e}" stroke-width="1.8" stroke-linejoin="round"/><circle cx="13" cy="22" r="1.8" fill="#1F2A1D"/><path d="M20 19c2 3 2 7 0 10" fill="none" stroke="${e}" stroke-width="1.5"/><path d="M10 34h14" stroke="#9CCB6B" stroke-width="2.5" stroke-linecap="round"/>`,
+  tofu: (c, e) => `<path d="M10 20 24 13l14 7v14l-14 7-14-7Z" fill="${c}" stroke="${e}" stroke-width="1.8" stroke-linejoin="round"/><path d="M10 20l14 7 14-7M24 27v14" fill="none" stroke="${e}" stroke-width="1.5"/>`,
+  egg: (c, e) => `<ellipse cx="17" cy="26" rx="10" ry="13" fill="#fff" stroke="#D9CBB0" stroke-width="1.6"/><circle cx="17" cy="28" r="5.5" fill="#F7B733"/><ellipse cx="32" cy="24" rx="10" ry="13" fill="#fff" stroke="#D9CBB0" stroke-width="1.6"/><circle cx="32" cy="26" r="5.5" fill="#F7B733"/>`,
+  greens: (c, e) => `<path d="M24 42C12 36 8 22 14 10c9 6 12 18 10 32Z" fill="${c}" stroke="${e}" stroke-width="1.6"/><path d="M24 42c12-6 16-20 10-32-9 6-12 18-10 32Z" fill="${c}" stroke="${e}" stroke-width="1.6" opacity=".92"/><path d="M24 42c-1-10 0-20 1-30" fill="none" stroke="${e}" stroke-width="1.6"/><path d="M14 10c3 8 6 18 10 32M34 10c-3 8-6 18-10 32" fill="none" stroke="#fff" stroke-width="1" opacity=".35"/>`,
+  broccoli: (c, e) => `<path d="M21 30h6l2 12h-10Z" fill="#9CCB6B" stroke="#6A9440" stroke-width="1.5"/><circle cx="16" cy="22" r="8" fill="${c}"/><circle cx="32" cy="22" r="8" fill="${c}"/><circle cx="24" cy="15" r="9" fill="${c}"/><circle cx="24" cy="24" r="7" fill="${c}"/><circle cx="20" cy="14" r="2" fill="#fff" opacity=".25"/>`,
+  tomato: (c, e) => `<circle cx="17" cy="28" r="10" fill="${c}"/><circle cx="31" cy="25" r="10" fill="${c}"/><path d="M17 18l-3-3M17 18l3-3M17 18v-4M31 15l-3-3M31 15l3-3M31 15v-4" stroke="#3F7D32" stroke-width="2" stroke-linecap="round"/><circle cx="14" cy="25" r="2" fill="#fff" opacity=".4"/><circle cx="28" cy="22" r="2" fill="#fff" opacity=".4"/>`,
+  cucumber: (c, e) => [[14, 20], [30, 18], [22, 32]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="9" fill="${e}"/><circle cx="${x}" cy="${y}" r="7" fill="#DDF0C0"/><circle cx="${x}" cy="${y}" r="2.5" fill="${c}" opacity=".6"/>`).join(''),
+  beans: (c, e) => [0, 1, 2].map(i => `<path d="M${9 + i * 4} ${36 - i * 3}c8-14 18-22 30-24" fill="none" stroke="${c}" stroke-width="4.5" stroke-linecap="round"/>`).join(''),
+  melon: (c, e) => `<path d="M6 16h36a18 18 0 0 1-36 0Z" fill="#5BA84A"/><path d="M9 16h30a15 15 0 0 1-30 0Z" fill="${c}"/>${[[17, 22], [24, 26], [31, 22], [21, 19], [28, 19]].map(([x, y]) => `<ellipse cx="${x}" cy="${y}" rx="1.2" ry="1.9" fill="#1F2A1D"/>`).join('')}`,
+  papaya: (c, e) => `<path d="M24 6c10 0 16 10 16 20s-7 16-16 16S8 36 8 26 14 6 24 6Z" fill="${c}" stroke="${e}" stroke-width="1.8"/><ellipse cx="24" cy="28" rx="6" ry="9" fill="#FCE3B8"/>${[[22, 24], [26, 26], [23, 30], [26, 32]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1.4" fill="#1F2A1D"/>`).join('')}`,
+  banana: (c, e) => `<path d="M8 16c4 16 18 24 34 18-12 0-22-8-26-20Z" fill="${c}" stroke="${e}" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 16l-2-4" stroke="#7A5A20" stroke-width="2.5" stroke-linecap="round"/>`,
+  dragon: (c, e) => `<circle cx="24" cy="26" r="15" fill="${c}"/><circle cx="24" cy="26" r="11" fill="#fff" opacity=".9"/>${[[20, 22], [27, 21], [24, 27], [19, 29], [29, 29], [23, 32]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="1" fill="#1F2A1D"/>`).join('')}<path d="M12 18l-4-3M36 18l4-3M24 11V6" stroke="#5BA84A" stroke-width="2.5" stroke-linecap="round"/>`,
+  berry: (c, e) => [[16, 28], [30, 28], [23, 18]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="8" fill="${c}"/><path d="M${x - 2} ${y - 6}l2 2 2-2" stroke="#1F2A1D" stroke-width="1.2" fill="none"/>`).join(''),
+  cup: (c, e) => `<path d="M13 12h22l-3 28H16Z" fill="${c}" stroke="${e}" stroke-width="1.8" stroke-linejoin="round"/><path d="M14 20h20" stroke="${e}" stroke-width="1.5"/>`,
+  potato: (c, e) => `<path d="M8 28c0-9 8-16 18-16s14 6 14 12-8 14-18 14-14-4-14-10Z" fill="${c}" stroke="${e}" stroke-width="1.8"/><circle cx="19" cy="24" r="1.3" fill="${e}"/><circle cx="29" cy="28" r="1.3" fill="${e}"/>`,
+  dumpling: (c, e) => [[16, 28], [32, 24]].map(([x, y]) => `<path d="M${x - 11} ${y + 3}c0-8 5-13 11-13s11 5 11 13Z" fill="${c}" stroke="${e}" stroke-width="1.6"/><path d="M${x - 5} ${y - 7}l1 4M${x} ${y - 9}v4M${x + 5} ${y - 7}l-1 4" stroke="${e}" stroke-width="1.3"/>`).join(''),
+  sauce: (c, e) => `<ellipse cx="24" cy="30" rx="16" ry="7" fill="#fff" stroke="#D9D2C3" stroke-width="2"/><ellipse cx="24" cy="29" rx="11" ry="4" fill="${c}"/>`,
+  plate: (c, e) => `<circle cx="24" cy="24" r="16" fill="${c}" stroke="${e}" stroke-width="2"/>`,
 };
-/** Loopi eats what's in the bowl; the tray's leftovers land on the floor. */
-G.serveLunch = st => {
-  const g = G.ensure(st), p = g.plate;
-  if (!p || p.eaten) return null;
-  p.eaten = true;
-  g.mess.push(...p.crumbs);
-  return p;
-};
-G.sweep = (st, dish) => {
-  const g = G.ensure(st), i = g.mess.indexOf(dish);
-  if (i >= 0) { g.mess.splice(i, 1); g.composted++; }
-  return g.mess.length;
-};
-G.evolve = st => {
-  const g = G.ensure(st);
-  if (!g.ready) return null;
-  g.ready = false; g.hearts = 0; g.stage = Math.min(3, g.stage + 1);
-  return PL.STAGES[g.stage];
-};
-
-/* ---------------------------------------------------------------- play */
-G.playBall = st => {
-  const g = G.ensure(st), d = daily(g);
-  if (d.balls >= G.PLAYS_PER_DAY) return false;
-  d.balls++; st.pet.jo = Math.min(100, st.pet.jo + 3); return true;
-};
-G.petLoopi = st => {
-  const g = G.ensure(st), d = daily(g);
-  if (d.pets >= G.PETS_PER_DAY) return false;
-  d.pets++; st.pet.jo = Math.min(100, st.pet.jo + 1); return true;
-};
-
-/* ---------------------------------------------------------------- badges: each unlocks something Loopi can wear */
-G.BADGES = [
-  { id: 'first', name: 'First scan', item: 'cap', how: 'Scan a lunch tray', test: st => st.log.length > 0 },
-  { id: 'small', name: 'Small and clean', item: 'bow', how: 'Finish a small portion', test: st => st.log.some(l => l.portion === 'S' && l.w < .12) },
-  { id: 'streak', name: 'Three in a row', item: 'scarf', how: '3 clean trays in a row', test: st => st.pet.streak >= 3 },
-  { id: 'veg', name: 'Veggie explorer', item: 'flower', how: 'Try the veggies 10 times', test: st => st.pet.c.veg >= 10 },
-  { id: 'kailan', name: 'Kailan week', item: 'glasses', how: 'Taste the kailan 3 times', test: st => st.pet.quest >= 3 },
-  { id: 'balanced', name: 'Balanced plate', item: 'halo', how: 'Eat from every food group 5 times', test: st => st.pet.c.balanced >= 5 },
-  { id: 'class', name: 'Team goal', item: 'wings', how: 'Your class goes under 20% waste', test: st => { const c = PL.S.classes.find(c => c.id === st.cls); return c.ret / c.served < .2; } },
-  { id: 'top3', name: 'Podium', item: 'headphones', how: 'Be top 3 in your class', test: st => PL.studentRows().findIndex(s => s.id === st.id) < 3 },
-  { id: 'adult', name: 'All grown up', item: 'crown', how: 'Grow Loopi into an adult', test: st => G.ensure(st).stage === 3 },
+const KIND = [
+  [/laksa|noodle|udon/i, 'noodles'], [/congee|porridge|rice/i, 'rice'], [/soup|broth/i, 'soup'],
+  [/chicken/i, 'chicken'], [/fish/i, 'fish'], [/tofu/i, 'tofu'], [/egg/i, 'egg'], [/broccoli/i, 'broccoli'],
+  [/tomato/i, 'tomato'], [/cucumber/i, 'cucumber'], [/long bean|sprout/i, 'beans'], [/kailan|spinach|cabbage|greens|salad/i, 'greens'],
+  [/watermelon|melon/i, 'melon'], [/papaya/i, 'papaya'], [/banana/i, 'banana'], [/dragon/i, 'dragon'], [/berr/i, 'berry'],
+  [/milk|yogurt/i, 'cup'], [/potato/i, 'potato'], [/wonton|dumpling/i, 'dumpling'], [/chilli|sambal|sauce/i, 'sauce'],
 ];
-G.earned = st => G.BADGES.filter(b => b.test(st));
-G.wear = (st, item) => {
-  const g = G.ensure(st);
-  if (!G.earned(st).some(b => b.item === item)) return;
-  g.eq = g.eq === item ? null : item;
+V.kindOf = d => (KIND.find(([re]) => re.test(d.name)) || [, 'plate'])[1];
+V.food = (d, size = 44) => `<svg class="food" width="${size}" height="${size}" viewBox="0 0 48 48" aria-hidden="true">${SHAPES[V.kindOf(d)](d.color, d.edge)}</svg>`;
+
+/* ---------------------------------------------------------------- the tray: each dish, and how much was eaten */
+/** rec: optional scanned meal { served, measured }. Without it the tray shows what's on the menu. */
+V.tray = (menu, rec, opts = {}) => `<div class="vtray" style="--cols:${Math.min(3, Math.ceil(menu.length / 2))}">${menu.map(d => {
+  const ate = rec ? Math.round((1 - rec.measured[d.id] / rec.served[d.id]) * 100) : null;
+  const name = opts.name ? opts.name(d) : d.name;
+  return `<div class="vcell ${opts.hi === d.id ? 'hi' : ''}">
+    <div class="vfood ${rec ? 'scored' : ''}" style="--p:${ate ?? 0};--c:${ate === null ? 'var(--tint)' : ate >= 75 ? 'var(--tint)' : ate >= 40 ? '#FFB23F' : '#FF6B5B'}">${V.food(d, opts.size || 40)}</div>
+    <span>${esc(name)}</span>${ate === null ? (opts.tag && opts.tag(d) ? `<em>${opts.tag(d)}</em>` : '') : `<b class="num">${ate}%</b>`}</div>`;
+}).join('')}</div>`;
+
+/* ---------------------------------------------------------------- My Healthy Plate (Health Promotion Board, Singapore)
+   half fruit and vegetables, a quarter wholegrains, a quarter protein */
+const GROUP = { veg: 'fv', fruit: 'fv', grain: 'g', protein: 'p' };
+V.plateShares = (menu, grams) => {
+  const t = { fv: 0, g: 0, p: 0 };
+  menu.forEach(d => { const k = GROUP[d.group]; if (k) t[k] += grams[d.id] || 0; });
+  const sum = t.fv + t.g + t.p || 1;
+  return { fv: t.fv / sum, g: t.g / sum, p: t.p / sum };
 };
-})();
-
-</script>
-<script>
-/* ---- js/room.js ---- */
-/* Loopi's room: a full-colour pixel room. Loopi wanders around, eats the lunch waiting in its bowl, plays
-   fetch, gets petted and sleeps when the lights go off. Crumbs on the floor are the student's real
-   leftovers; tapping one (or Sweep) flicks it into the compost bin. The plant grows with clean trays.
-   This file only animates and handles taps; game-state changes go back to the app through `hooks`. */
-(() => {
-'use strict';
-const W = 160, H = 110, FLOOR = 98, BOWL_X = 22, BIN_X = 140, SCALE = 4;
-const BODY = { leafy: ['#D7F2CB', '#A9D99A'], crystal: ['#D6ECFA', '#A9CFEA'], guardian: ['#F8E6C8', '#E2C290'], explorer: ['#FBDCCF', '#EDB39C'], egg: ['#FFF4DC', '#EAD9B0'] };
-const rand = (a, b) => a + Math.random() * (b - a);
-const dish = id => PL.DISH[id] || { color: '#E8B27A', edge: '#A77A45' };
-
-const Room = PL.Room = {
-  pet: { x: 80, y: 0, face: 1, mode: 'idle', until: 0, target: 80, next: 1.5, jumpT: 0, jumpDur: .5, jumpH: 8, onArrive: null },
-  ball: null, crumbs: [], hearts: [], night: false, food: null, speech: null, time: 0, tick: 0,
-  cv: null, sayEl: null, hooks: {}, raf: 0, last: 0, lastTap: 0, petCv: null,
-
-  /** Bind (or re-bind after a re-render) to a canvas and its speech-bubble element. */
-  attach(cv, sayEl, hooks) {
-    this.cv = cv; this.sayEl = sayEl; this.hooks = hooks;
-    cv.width = W * SCALE; cv.height = H * SCALE;
-    if (!this.petCv) { this.petCv = document.createElement('canvas'); this.petCv.width = 64; this.petCv.height = 60; }
-    cv.onpointerdown = e => this.tap(e);
-    this.setMess(hooks.mess());
-    this.draw();
-    if (!this.raf) { this.last = performance.now(); this.raf = requestAnimationFrame(t => this.loop(t)); }
-  },
-  loop(now) {
-    if (!this.cv || !this.cv.isConnected) { this.raf = 0; return; }
-    const dt = Math.min(.05, (now - this.last) / 1000); this.last = now;
-    this.step(dt); this.draw();
-    this.raf = requestAnimationFrame(t => this.loop(t));
-  },
-  toLogical(e) { const r = this.cv.getBoundingClientRect(); return { x: (e.clientX - r.left) / r.width * W, y: (e.clientY - r.top) / r.height * H }; },
-
-  /** Match the crumbs on the floor to the saved leftovers, keeping the ones already lying there. */
-  setMess(list) {
-    const pool = this.crumbs.filter(c => !c.done), out = [];
-    list.forEach(type => {
-      const j = pool.findIndex(c => c.type === type);
-      out.push(j >= 0 ? pool.splice(j, 1)[0] : { type, x: rand(30, 126), y: rand(88, 104) });
-    });
-    this.crumbs = out;
-  },
-
-  /* ---------------------------------------------------------------- actions */
-  say(text, dur = 3.2) { this.speech = { text, until: this.time + dur }; },
-  jump(h = 8, dur = .5) { const p = this.pet; p.jumpT = dur; p.jumpDur = dur; p.jumpH = h; },
-  walkTo(x, then, speed) { const p = this.pet; p.target = Math.max(14, Math.min(W - 14, x)); p.mode = 'walk'; p.onArrive = then || null; p.speed = speed || 30; },
-  feed() {
-    const p = this.pet;
-    if (this.night) { this.say('Zzz… turn the lights on first.'); return; }
-    if (p.mode === 'eat') return;
-    const plate = this.hooks.info().plate;
-    if (!plate) { this.say('My food comes from your lunch tray. See you at lunch!', 3.6); return; }
-    this.walkTo(BOWL_X + 12, () => { this.food = plate; p.face = -1; p.mode = 'eat'; p.until = this.time + 2.4; p.eatStart = this.time; }, 44);
-  },
-  throwBall() {
-    if (this.night) { this.say('It\'s bedtime. No ball now.'); return; }
-    this.ball = { x: 10, y: 70, vx: rand(70, 105), vy: -rand(50, 80) };
-    this.pet.mode = 'chase';
-  },
-  sweepAll() { this.crumbs.filter(c => !c.fly).forEach((c, i) => setTimeout(() => this.sweep(c), i * 120)); },
-  sweep(c) { if (c.fly) return; c.fly = true; c.t = 0; c.sx = c.x; c.sy = c.y; },
-  toggleNight() {
-    this.night = !this.night;
-    if (this.night) { this.walkTo(80, () => { this.pet.mode = 'sleep'; }); this.say('Night night.', 2); }
-    else { this.pet.mode = 'happy'; this.pet.until = this.time + .9; this.jump(6); this.say('Morning!', 2); }
-  },
-  petLoopi() {
-    const p = this.pet;
-    if (p.mode === 'sleep') { this.heart(); return; }
-    for (let i = 0; i < 3; i++) setTimeout(() => this.heart(), i * 140);
-    p.mode = 'happy'; p.until = this.time + 1; this.jump(7);
-    const doubleTap = this.time - this.lastTap < .35; this.lastTap = this.time;
-    if (doubleTap) { this.jump(14, .7); this.say('Wheee!', 1.2); }
-    this.hooks.pet();
-  },
-  heart() { const p = this.pet; this.hearts.push({ x: p.x + rand(-8, 8), y: FLOOR - 40 - p.y, life: 1.2 }); },
-
-  /** Taps: crumbs get swept, Loopi gets petted, the floor sets where Loopi walks. */
-  tap(e) {
-    e.preventDefault();
-    const L = this.toLogical(e), p = this.pet;
-    const c = this.crumbs.find(c => !c.fly && Math.abs(c.x - L.x) < 6 && Math.abs(c.y - L.y) < 6);
-    if (c) { this.sweep(c); return; }
-    if (Math.abs(L.x - p.x) < 15 && L.y > FLOOR - 44 - p.y && L.y < FLOOR + 3) { this.petLoopi(); return; }
-    if (L.x > BOWL_X - 10 && L.x < BOWL_X + 10 && L.y > 86 && this.hooks.info().plate) { this.feed(); return; }
-    if (L.y > 74 && p.mode !== 'eat' && p.mode !== 'sleep') this.walkTo(L.x);
-  },
-
-  /* ---------------------------------------------------------------- simulation */
-  step(dt) {
-    const p = this.pet;
-    this.time += dt; this.tick = Math.floor(this.time / .42);
-    if (p.jumpT > 0) { p.jumpT = Math.max(0, p.jumpT - dt); p.y = Math.sin((1 - p.jumpT / p.jumpDur) * Math.PI) * p.jumpH; } else p.y = 0;
-    const moveTo = (tx, speed) => { const dx = tx - p.x; if (Math.abs(dx) < 1.2) { p.x = tx; return true; } p.face = Math.sign(dx); p.x += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt); return false; };
-    if (p.mode === 'walk') { if (moveTo(p.target, p.speed || 30)) { p.mode = 'idle'; p.next = this.time + rand(2, 5); const cb = p.onArrive; p.onArrive = null; if (cb) cb(); } }
-    else if (p.mode === 'eat') {
-      if (this.time > p.until) {
-        this.food = null; p.mode = 'happy'; p.until = this.time + .9; this.jump(6);
-        const res = this.hooks.eat();
-        if (res) this.say(res.heart ? 'That was a good lunch. +1 heart!' : res.crumbs ? 'Thanks! Some of it ended up on the floor…' : 'Thanks for lunch!', 3);
-      }
-    }
-    else if (p.mode === 'happy') { if (this.time > p.until) { p.mode = 'idle'; p.next = this.time + rand(1.5, 4); } }
-    else if (p.mode === 'chase') {
-      if (!this.ball) p.mode = 'idle';
-      else if (moveTo(this.ball.x, 48) || (Math.abs(this.ball.x - p.x) < 7 && this.ball.y > FLOOR - 14)) {
-        if (this.ball.y > FLOOR - 14) { this.ball = null; p.mode = 'happy'; p.until = this.time + 1; this.jump(10, .6); this.hooks.fetched(); }
-      }
-    } else if (p.mode === 'idle' && !this.night && this.time > p.next) { this.walkTo(rand(34, 126)); }
-    if (this.ball) {
-      const b = this.ball; b.vy += 230 * dt; b.x += b.vx * dt; b.y += b.vy * dt;
-      if (b.y > FLOOR - 3) { b.y = FLOOR - 3; b.vy *= -.55; b.vx *= .82; if (Math.abs(b.vy) < 14) b.vy = 0; }
-      if (b.x < 6 || b.x > W - 6) { b.vx *= -.8; b.x = Math.max(6, Math.min(W - 6, b.x)); }
-    }
-    this.hearts.forEach(h => { h.y -= 16 * dt; h.life -= dt; });
-    this.hearts = this.hearts.filter(h => h.life > 0);
-    this.crumbs.forEach(c => { if (c.fly && !c.done) { c.t += dt * 1.6; const k = Math.min(1, c.t); c.x = c.sx + (BIN_X - c.sx) * k; c.y = c.sy + (80 - c.sy) * k - Math.sin(k * Math.PI) * 26; if (k >= 1) { c.done = true; this.hooks.swept(c.type); } } });
-    this.crumbs = this.crumbs.filter(c => !c.done);
-    if (this.speech && this.time > this.speech.until) this.speech = null;
-    if (!this.speech && !this.night && p.mode === 'idle' && this.time > (this.nextChat || 3)) {
-      const line = this.hooks.chatter && this.hooks.chatter();
-      if (line) this.say(line, 3.6);
-      this.nextChat = this.time + rand(14, 22);
-    }
-  },
-
-  /* ---------------------------------------------------------------- drawing */
-  draw() {
-    const cv = this.cv, ctx = cv.getContext('2d'), n = this.night, p = this.pet, info = this.hooks.info();
-    ctx.setTransform(SCALE, 0, 0, SCALE, 0, 0); ctx.imageSmoothingEnabled = false;
-    const R = (c, x, y, w, h) => { ctx.fillStyle = c; ctx.fillRect(Math.round(x), Math.round(y), w, h); };
-    // wall + window
-    R(n ? '#363B5E' : '#FBF3E4', 0, 0, W, 72);
-    for (let y = 6; y < 68; y += 12) for (let x = (y / 12) % 2 ? 4 : 10; x < W; x += 12) R(n ? '#40466C' : '#F2E3C8', x, y, 2, 2);
-    R('#FFFFFF', 14, 10, 42, 32); R(n ? '#171C3E' : '#A8DDF7', 16, 12, 38, 28);
-    if (n) { R('#F5F1D0', 22, 16, 6, 6); R('#171C3E', 25, 15, 4, 4); [[36, 18], [46, 26], [30, 32], [50, 15]].forEach(([x, y]) => R('#FFFFFF', x, y, 1, 1)); }
-    else { R('#FFD60A', 44, 15, 6, 6); const cx = 18 + (this.time * 3) % 40; R('#FFFFFF', cx, 26, 10, 3); R('#FFFFFF', cx + 3, 24, 5, 2); }
-    R('#FFFFFF', 34, 12, 2, 28); R('#FFFFFF', 16, 25, 38, 2);
-    // picture frame with the school Green Tree
-    R(n ? '#8A7B66' : '#C9A77C', 104, 16, 26, 20); R(n ? '#26324A' : '#EAF6EC', 106, 18, 22, 16);
-    R('#2E9447', 113, 27, 8, 3); R('#34A853', 114, 24, 6, 3); R('#2E9447', 115, 21, 4, 3); R('#8B5E3C', 116, 30, 2, 3); R('#FF3B30', 114, 25, 1, 1); R('#FF3B30', 118, 28, 1, 1);
-    // floor, rug
-    R(n ? '#4E4038' : '#E8CFA6', 0, 72, W, H - 72);
-    R(n ? '#2E3252' : '#E3C08E', 0, 70, W, 3);
-    for (let y = 78; y < H; y += 8) R(n ? '#463A33' : '#DDBF92', 0, y, W, 1);
-    ctx.fillStyle = n ? '#5E4466' : '#F5C2B2'; ctx.beginPath(); ctx.ellipse(84, 97, 50, 8, 0, 0, Math.PI * 2); ctx.fill();
-    ctx.fillStyle = n ? '#6E5277' : '#F8D3C7'; ctx.beginPath(); ctx.ellipse(84, 97, 40, 5, 0, 0, Math.PI * 2); ctx.fill();
-    // plant: grows a stage for every five clean trays
-    const lv = info.plant || 0, G1 = '#34C759', G2 = '#2E9447';
-    R('#D9724F', 146, 58, 10, 12); R('#C45E3E', 145, 57, 12, 2);
-    const stem = 6 + lv * 5;
-    R(G2, 150, 57 - stem, 2, stem);
-    for (let k = 0; k <= lv; k++) { const y = 54 - k * 5; R(G1, 146 - (k % 2), y, 4, 2); R(G1, 152, y - 2, 4 + (k % 2), 2); }
-    if (lv >= 3) { R('#FF9F0A', 149, 55 - stem, 4, 3); R('#FFD60A', 150, 54 - stem, 2, 1); }
-    if (lv >= 4) { R('#FF3B30', 146, 44 - lv, 2, 2); R('#FF3B30', 154, 41 - lv, 2, 2); }
-    // compost bin
-    R('#248A3D', 131, 79, 20, 3); R('#34C759', 132, 82, 18, 17); R('#2EAA52', 132, 94, 18, 5);
-    R('#FFFFFF', 139, 86, 4, 1); R('#FFFFFF', 138, 87, 2, 3); R('#FFFFFF', 141, 88, 3, 2);
-    // bowl: today's lunch waits here until Loopi eats it
-    const food = this.food || info.plate;
-    if (food) {
-      const left = this.food ? Math.max(0, 1 - (this.time - p.eatStart) / 2.2) : 1;
-      const bits = Math.ceil(food.length * 2 * left);
-      for (let i = 0; i < bits; i++) { const d = dish(food[i % food.length]); R(d.edge, BOWL_X - 6 + (i * 3) % 12, 91 - (i % 3), 3, 2); R(d.color, BOWL_X - 6 + (i * 3) % 12, 90 - (i % 3), 3, 1); }
-      if (!this.food && Math.floor(this.time * 2) % 2) { R('#FFFFFF', BOWL_X - 3, 83, 1, 3); R('#FFFFFF', BOWL_X + 2, 82, 1, 3); }
-    }
-    R('#FFFFFF', BOWL_X - 8, 92, 16, 3); R('#E5E5EA', BOWL_X - 6, 95, 12, 2);
-    // shadow + crumbs + ball
-    ctx.fillStyle = 'rgba(0,0,0,.14)'; ctx.beginPath(); ctx.ellipse(p.x, FLOOR + 1, 12 - p.y * .4, 2, 0, 0, Math.PI * 2); ctx.fill();
-    this.crumbs.forEach(c => { const d = dish(c.type); R('rgba(0,0,0,.14)', c.x - 2, c.y + 1, 5, 1); R(d.edge, c.x - 2, c.y - 1, 4, 2); R(d.color, c.x - 1, c.y - 2, 3, 2); });
-    if (this.ball) { const b = this.ball; R('#FF3B30', b.x - 3, b.y - 3, 6, 6); R('#FFFFFF', b.x - 3, b.y - 1, 6, 2); R('#FF6961', b.x - 2, b.y - 4, 4, 1); }
-    // Loopi
-    const [fill, mid] = BODY[info.stage === 'egg' ? 'egg' : info.form] || BODY.leafy;
-    let mood = info.mood;
-    if (p.mode === 'eat') mood = this.tick % 2 ? 'joy' : 'meh';
-    else if (p.mode === 'happy' || p.mode === 'chase') mood = 'joy';
-    else if (p.mode === 'sleep' || this.night) mood = 'sleepy';
-    PL.drawPet(this.petCv, { rows: 30, bg: 'none', noGround: true, t: p.mode === 'walk' || p.mode === 'chase' ? Math.floor(this.time / .16) : this.tick, stage: info.stage, form: info.form, mood, acc: info.acc, progress: info.progress, fill, mid, ink: '#2B2B2E' });
-    ctx.save();
-    const px = Math.round(p.x), py = Math.round(FLOOR - 52 - p.y);
-    if (p.face < 0) { ctx.translate(px, 0); ctx.scale(-1, 1); ctx.drawImage(this.petCv, -32, py); }
-    else ctx.drawImage(this.petCv, px - 32, py);
-    ctx.restore();
-    // hearts
-    this.hearts.forEach(h => { const x = Math.round(h.x), y = Math.round(h.y); ctx.globalAlpha = Math.min(1, h.life * 1.5); [[1, 0], [3, 0], [0, 1], [1, 1], [2, 1], [3, 1], [4, 1], [1, 2], [2, 2], [3, 2], [2, 3]].forEach(([a, b]) => R('#FF2D55', x + a - 2, y + b, 1, 1)); ctx.globalAlpha = 1; });
-    if (n) { ctx.fillStyle = 'rgba(8,10,35,.28)'; ctx.fillRect(0, 0, W, H); }
-    // speech bubble (HTML over the canvas, kept inside the room)
-    if (this.sayEl) {
-      if (this.speech) { this.sayEl.hidden = false; if (this.sayEl.textContent !== this.speech.text) this.sayEl.textContent = this.speech.text; const rw = this.cv.clientWidth, half = this.sayEl.offsetWidth / 2 + 8; this.sayEl.style.left = `${Math.max(half, Math.min(rw - half, p.x / W * rw))}px`; this.sayEl.style.bottom = `${(H - (FLOOR - 46 - p.y)) / H * 100}%`; }
-      else this.sayEl.hidden = true;
-    }
-  },
+const PLATE_COL = { fv: '#4CAF50', g: '#F2B33D', p: '#E4674B' };
+const arc = (cx, cy, r, a0, a1) => { const p = a => [cx + r * Math.sin(a * 2 * Math.PI), cy - r * Math.cos(a * 2 * Math.PI)]; const [x0, y0] = p(a0), [x1, y1] = p(a1); return `M${cx} ${cy}L${x0.toFixed(2)} ${y0.toFixed(2)}A${r} ${r} 0 ${a1 - a0 > .5 ? 1 : 0} 1 ${x1.toFixed(2)} ${y1.toFixed(2)}Z`; };
+const pie = (s, size, label) => {
+  let a = 0;
+  const parts = ['fv', 'g', 'p'].map(k => { const w = Math.max(0, Math.min(.9999, s[k])); const d = w > 0 ? arc(50, 50, 38, a, a + w) : ''; a += w; return d ? `<path d="${d}" fill="${PLATE_COL[k]}"/>` : ''; }).join('');
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100" role="img" aria-label="${label}"><circle cx="50" cy="50" r="48" fill="#fff" stroke="#E6E1D6" stroke-width="2"/><circle cx="50" cy="50" r="41" fill="none" stroke="#F1EDE4" stroke-width="2"/>${parts}<circle cx="50" cy="50" r="38" fill="none" stroke="#fff" stroke-width="1.5"/></svg>`;
 };
+V.healthyPlate = (s, opts = {}) => {
+  const ideal = { fv: .5, g: .25, p: .25 };
+  const tips = [];
+  if (s.fv < .38) tips.push('more fruit and vegetables');
+  if (s.g > .38) tips.push('a smaller rice or noodle portion');
+  if (s.p < .15) tips.push('a little more protein');
+  const verdict = tips.length ? `Next time: ${tips.join(', ')}.` : 'Close to My Healthy Plate. Well balanced!';
+  return `<div class="hplate">
+    <figure>${pie(s, opts.size || 104, 'What you ate')}<figcaption>${opts.you || 'Your plate'}</figcaption></figure>
+    <figure class="ideal">${pie(ideal, (opts.size || 104) * .78, 'My Healthy Plate')}<figcaption>My Healthy Plate</figcaption></figure>
+    <ul class="hlegend">${[['fv', 'Fruit and veg', '½'], ['g', 'Wholegrains', '¼'], ['p', 'Protein', '¼']].map(([k, n, i]) => `<li><i style="background:${PLATE_COL[k]}"></i><span>${n}</span><b class="num">${Math.round(s[k] * 100)}%</b><small>aim ${i}</small></li>`).join('')}</ul>
+    ${opts.noVerdict ? '' : `<p class="hverdict">${verdict}</p>`}</div>`;
+};
+
+/* ---------------------------------------------------------------- ring gauge: value against target */
+/** kind: 'aim' (reach it), 'limit' (stay under it), 'range' (near it). */
+V.ring = (value, target, label, unit, kind = 'range') => {
+  const r = value / target, p = Math.min(100, Math.round(r * 100));
+  const good = kind === 'limit' ? r <= 1.05 : kind === 'aim' ? r >= .85 : r >= .8 && r <= 1.25;
+  const col = good ? 'var(--tint)' : kind === 'limit' || r > 1.25 ? '#FF6B5B' : '#FFB23F';
+  return `<div class="vring"><div class="vr" style="--p:${p};--c:${col}"><div><b class="num">${Math.round(value).toLocaleString('en-US')}</b><small>/ ${Math.round(target).toLocaleString('en-US')}${unit === 'kcal' ? '' : ' ' + unit}</small></div></div><span>${label}</span></div>`;
+};
+
+/** A share (0..1) as a ring, e.g. how much of a meal was eaten. */
+V.pctRing = (frac, label, good = .75) => { const p = Math.round(frac * 100); return `<div class="vring"><div class="vr" style="--p:${p};--c:${frac >= good ? 'var(--tint)' : frac >= .5 ? '#FFB23F' : '#FF6B5B'}"><div><b class="num">${p}%</b></div></div><span>${label}</span></div>`; };
+
+/* ---------------------------------------------------------------- a week of plates: how much was eaten each day */
+V.week = (days, fracs, opts = {}) => `<div class="vweek">${days.map((d, i) => `<div class="${opts.today === i ? 'today' : ''}"><i style="--p:${Math.round(fracs[i] * 100)};--c:${fracs[i] >= (opts.good || .75) ? 'var(--tint)' : fracs[i] >= .5 ? '#FFB23F' : '#FF6B5B'}"></i><b class="num">${Math.round(fracs[i] * 100)}%</b><span>${d.slice(0, 3)}</span></div>`).join('')}</div>`;
+
+/* ---------------------------------------------------------------- avatar: initials on a colour picked from the name */
+const AV = ['#FF9F0A', '#34C759', '#0A84FF', '#AF52DE', '#FF375F', '#30B0C7', '#5E5CE6', '#E8A317'];
+V.avatar = (s, size = 36) => { const h = [...s.name].reduce((a, c) => a + c.charCodeAt(0), 0); return `<span class="av-circle" style="--av:${AV[h % AV.length]};width:${size}px;height:${size}px;font-size:${Math.round(size * .38)}px" aria-hidden="true">${esc(s.name.split(' ').map(w => w[0]).join('').slice(0, 2))}</span>`; };
+
+/* ---------------------------------------------------------------- small illustrated tip card */
+const TIPICON = {
+  leaf: '<path d="M6 30C6 14 16 6 32 6c0 16-8 26-26 24Zm0 0 14-14" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+  drop: '<path d="M18 4s10 11 10 18a10 10 0 0 1-20 0C8 15 18 4 18 4Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>',
+  bolt: '<path d="M20 3 7 20h10l-2 13 13-17H18Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>',
+  scale: '<path d="M6 10h24M18 6v24M10 30h16M6 10l-4 9h8ZM30 10l-4 9h8Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  muscle: '<path d="M6 26c2-10 8-16 14-16 4 0 5 3 3 5-2 1-5 1-6 3 6-1 11 2 12 7 1 6-5 8-11 8-6 0-11-2-12-7Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/>',
+  plate: '<circle cx="18" cy="18" r="13" fill="none" stroke="currentColor" stroke-width="3"/><path d="M18 5v26M18 18h13" stroke="currentColor" stroke-width="2.6"/>',
+  warn: '<path d="M18 4 3 31h30Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M18 14v8M18 26v.5" stroke="currentColor" stroke-width="3" stroke-linecap="round"/>',
+  check: '<circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" stroke-width="3"/><path d="M11 18.5l5 5 9-10" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>',
+  salt: '<path d="M12 12h12l3 20H9Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M13 12c0-5 10-5 10 0M15 7h.1M18 6h.1M21 7h.1" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
+  recycle: '<path d="M13 8l5-4 5 4M18 4v12M8 28l-3-6 6-2M5 22l9 5M28 28l3-6-6-2M31 22l-9 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  cloud: '<path d="M10 28a7 7 0 0 1-1-14 9 9 0 0 1 17-2 7 7 0 0 1 1 16Z" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/>',
+};
+V.icon = (name, color) => `<span class="vicon" style="--ic:${color}"><svg viewBox="0 0 36 36" aria-hidden="true">${TIPICON[name] || TIPICON.leaf}</svg></span>`;
+/** tone: good | warn | info */
+V.tip = (icon, tone, title, text) => `<div class="vtip ${tone}">${V.icon(icon, { good: 'var(--tint)', warn: '#F28C28', info: 'var(--blue)', bad: '#FF6B5B' }[tone])}<div><b>${title}</b>${text ? `<span>${text}</span>` : ''}</div></div>`;
 })();
 
 </script>
@@ -1617,8 +1653,8 @@ H.KIDS_MENU = [
   dish('k_dragon', 'Dragon fruit', 40, { kcal: .5, c: .11, p: .012, f: .004 }, '#D6246E', '#9C1450', 'fruit', { rainbow: 'pink' }),
 ];
 H.KIDS_TARGET = { kcal: 360, c: 55, p: 12, f: 10 }; // one kindergarten lunch, ages 3 to 5 (illustrative)
-H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', pink: '#D6246E', white: '#F3EDDA', brown: '#9C5A2E' };
-// room crumbs and colours look dishes up by id
+H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', pink: '#D6246E', white: '#E6DCC3', brown: '#9C5A2E' };
+// dish colours and drawings are looked up by id
 [...Object.values(H.WARD_MENU).flat(), ...H.KIDS_MENU].forEach(d => { PL.DISH[d.id] = d; });
 
 H.nutrients = (grams, menu) => {
@@ -1683,7 +1719,7 @@ function seedKid(K) {
   return {
     id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: true, baseline: K.baseline,
     pet: { xp: K.id === 'k2' ? 24 : 120 + Math.round(r() * 150), c: { veg: 3 + Math.round(r() * 6), lowWaste: lowWaste + Math.round(r() * 4), balanced: 2 + Math.round(r() * 4), quests: 0 }, en: 60 + Math.round(r() * 25), nu: 60 + Math.round(r() * 25), jo: 60 + Math.round(r() * 30), streak: 0, quest: 0 },
-    log, messSeed: ['k_broccoli', 'k_rice'],
+    log,
   };
 }
 function seed() {
@@ -1718,9 +1754,7 @@ H.scanKidLunch = (K, preset) => {
   K.scanned = true;
   if (rec.w < .15) { K.pet.c.lowWaste++; K.pet.streak++; } else K.pet.streak = 0;
   if (rec.eaten.k_broccoli + rec.eaten.k_tomato > 20) K.pet.c.veg++;
-  K.pet.xp += 20;
-  const game = PL.game.feedLunch(K, { w: rec.w, servedBy: rec.served, measured: rec.measured }, H.KIDS_MENU);
-  return { ...rec, game };
+  return rec;
 };
 
 /* ---------------------------------------------------------------- report building blocks */
@@ -1767,30 +1801,24 @@ H.wardMenu = wardMenu;
 </script>
 <script>
 /* ---- js/kids.js ---- */
-/* Loopi Kids: the kindergarten app. Children see pictures, not numbers: their Loopi eats the lunch they
-   ate, leftovers turn into crumbs to clean up, every colour of food they eat fills their rainbow, and
-   new foods become stickers. Behind a grown-up check, parents and teachers get the healthcare report:
-   what the child ate, nutrients against a lunch for their age, allergy checks and eating habits. */
+/* Loopi Kids: the preschool app. For children, Loopi is a guide, not a game: it shows today's food in
+   pictures, suggests one new thing to try, cheers the colours they ate, and reads everything aloud for
+   children who can't read yet. Behind a grown-up check, parents and teachers get the healthcare report:
+   what the child ate, nutrients for their age, allergy checks and eating habits. */
 (() => {
 'use strict';
 const { $, $$, pct, esc } = PL;
-const H = PL.health, G = PL.game, MENU = H.KIDS_MENU;
+const H = PL.health, V = PL.V, MENU = H.KIDS_MENU;
 
-const ui = { tab: 'play', adult: false, gate: null, preset: 'Ate well' };
+const ui = { tab: 'kid', adult: false, gate: null, preset: 'Ate well' };
 let root = null;
 const I = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const ICON = {
-  play: I('<path d="M12 3c4 0 7 4.5 7 9.5S16 21 12 21s-7-3.5-7-8.5S8 3 12 3Z"/><circle cx="9.5" cy="12" r=".8" fill="currentColor"/><circle cx="14.5" cy="12" r=".8" fill="currentColor"/>'),
+  kid: I('<path d="M12 3c4 0 7 4.5 7 9.5S16 21 12 21s-7-3.5-7-8.5S8 3 12 3Z"/><circle cx="9.5" cy="12" r=".8" fill="currentColor"/><circle cx="14.5" cy="12" r=".8" fill="currentColor"/>'),
   grown: I('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>'),
-  feed: I('<path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 7c0-1.5 1-2 1-3.5M14 7c0-1.5 1-2 1-3.5"/>'),
-  ball: I('<circle cx="12" cy="12" r="8"/><path d="M4.5 9.5c4 1 11 1 15 0M4.5 14.5c4-1 11-1 15 0"/>'),
-  sweep: I('<path d="M14 3l-4 9M6 21l2-9h8l2 9Z"/><path d="M10 16v5M14 16v5"/>'),
-  night: I('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>'),
-  day: I('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
   check: I('<path d="M5 12.5l4.5 4.5L19 7"/>'),
 };
 const me = () => H.kid(PL.S.care.me.kid) || PL.S.care.kids[0];
-const act = fn => { const out = fn(); PL.store.save('kids'); return out; };
 const scannedToday = K => K.log[0].day === H.TODAY;
 const dishName = (K, d) => K.allergy && d.allergen === K.allergy ? d.safe : d.name;
 
@@ -1800,7 +1828,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="stu kids">
     <aside class="stu-side">
-      <div class="loopi-brand"><span class="loopi-icon kids-icon" aria-hidden="true"><canvas width="44" height="37" data-form="explorer" data-stage="baby"></canvas></span><div><b>Loopi Kids</b><span>by PlateLoop · for kindergartens</span></div></div>
+      <div class="loopi-brand"><span class="loopi-icon kids-icon" aria-hidden="true">${V.loopi('happy', 46)}</span><div><b>Loopi Kids</b><span>by PlateLoop · for preschools</span></div></div>
       <p class="stu-note">Demo: pick a child</p>
       <div class="chips" id="kid-who"></div>
       <div class="demo-box">
@@ -1810,11 +1838,11 @@ function mount(el) {
       </div>
       <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
     </aside>
-    <div class="phone">
+    <div class="phone warm">
       <header class="phone-top" id="kid-top"></header>
       <div class="phone-body" id="kid-body"></div>
       <nav class="phone-tabs two" role="tablist" aria-label="Loopi Kids">
-        <button role="tab" data-tab="play">${ICON.play}Loopi</button>
+        <button role="tab" data-tab="kid">${ICON.kid}Loopi</button>
         <button role="tab" data-tab="grown">${ICON.grown}Grown-ups</button>
       </nav>
       <div id="kid-layer"></div>
@@ -1827,113 +1855,84 @@ function mount(el) {
   $('#kid-preset', el).onchange = e => { ui.preset = e.target.value; };
   $('#kid-lunch', el).onclick = () => {
     const K = me(); if (scannedToday(K)) return;
-    const r = act(() => H.scanKidLunch(K, ui.preset));
-    PL.toast(`${K.name}'s tray scanned: ${pct(1 - r.w)} eaten. Lunch is in Loopi's bowl.`);
+    const r = H.scanKidLunch(K, ui.preset); PL.store.save('kids');
+    PL.toast(`${K.name}'s tray scanned: ${pct(1 - r.w)} eaten.`);
   };
   render();
 }
 function render(keep) {
   if (!root) return;
-  const K = me(), g = G.ensure(K), body = $('#kid-body', root), y = body.scrollTop;
+  const K = me(), body = $('#kid-body', root), y = body.scrollTop;
   $('#kid-who', root).innerHTML = PL.S.care.kids.map(k => `<button class="chip plain" data-kid="${k.id}" aria-pressed="${k.id === K.id}">${esc(k.name)}</button>`).join('');
   $$('#kid-who button', root).forEach(b => b.onclick = () => { PL.S.care.me.kid = b.dataset.kid; PL.store.save('me'); });
   const lb = $('#kid-lunch', root); lb.textContent = scannedToday(K) ? 'Lunch is done' : 'Scan lunch tray'; lb.disabled = scannedToday(K);
   $('#kid-preset', root).value = ui.preset;
-  $('#kid-top', root).innerHTML = `<canvas width="40" height="34" data-kid-pet></canvas><div><b>${esc(K.name)}'s Loopi</b><span>Sunflower class · age ${K.age}</span></div>`;
+  $('#kid-top', root).innerHTML = `${PL.V.avatar(K, 36)}<div><b>${esc(K.name)}</b><span>Sunflower class · age ${K.age}</span></div>`;
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
-  body.innerHTML = ui.tab === 'play' ? play(K, g) : grown(K);
-  wire(K, g);
-  paint(0);
+  body.innerHTML = ui.tab === 'kid' ? kid(K) : grown(K);
+  wire();
   if (keep) body.scrollTop = y;
   layer();
 }
-function paint(t) {
-  const K = me();
-  $$('canvas[data-kid-pet]', root).forEach(cv => PL.drawPet(cv, { rows: 30, t, ...PL.petOf(K) }));
-  PL.paintPets(root, t);
-}
 
-/* ================================================================ Play: the room, the rainbow, stickers */
-function play(K, g) {
-  const lunch = g.plate && !g.plate.eaten, mess = g.mess.length, rec = K.log[0];
+/* ================================================================ for the child: Loopi guides */
+const avgEaten = (K, id) => K.log.reduce((s, l) => s + l.eaten[id] / l.served[id], 0) / K.log.length;
+function kid(K) {
+  const done = scannedToday(K), rec = K.log[0];
+  const picky = [...MENU].sort((a, b) => avgEaten(K, a.id) - avgEaten(K, b.id))[0];
   const colours = [...new Set(MENU.map(d => d.rainbow))];
-  const eatenColours = new Set(scannedToday(K) ? MENU.filter(d => rec.eaten[d.id] >= rec.served[d.id] * .5).map(d => d.rainbow) : []);
-  const tried = MENU.map(d => ({ d, n: K.log.filter(l => l.eaten[d.id] >= l.served[d.id] * .2).length }));
-  return `
-  ${g.ready ? `<button class="btn primary big grow-btn" id="kid-grow">Loopi is ready to grow! Tap!</button>` : ''}
-  <div class="room kid-room">
-    <canvas class="room-cv" id="room-cv" aria-label="Loopi's room. Tap Loopi to give a hug, tap crumbs to clean them up."></canvas>
-    <div class="room-say" id="room-say" hidden></div>
-  </div>
-  <div class="room-actions kid-actions">
-    <button data-k="feed" class="${lunch ? 'hot' : ''}" aria-label="Feed">${ICON.feed}<span>Feed</span></button>
-    <button data-k="ball" aria-label="Play ball">${ICON.ball}<span>Play</span></button>
-    <button data-k="sweep" aria-label="Clean up">${ICON.sweep}<span>Clean${mess ? ` ${mess}` : ''}</span></button>
-    <button data-k="lights" aria-label="${PL.Room.night ? 'Wake up' : 'Sleep'}">${ICON[PL.Room.night ? 'day' : 'night']}<span>${PL.Room.night ? 'Wake' : 'Sleep'}</span></button>
-  </div>
-  <section class="group rainbow">
-    <b>My rainbow lunch</b>
-    <div class="rb-dots">${colours.map(c => `<span class="rb ${eatenColours.has(c) ? 'on' : ''}" style="--c:${H.RAINBOW[c]}" aria-label="${c}${eatenColours.has(c) ? ', eaten' : ''}">${eatenColours.has(c) ? ICON.check : ''}</span>`).join('')}</div>
-    <span>${scannedToday(K) ? (eatenColours.size >= 5 ? `${eatenColours.size} colours! Super rainbow!` : `${eatenColours.size} colours today!`) : 'Eat lots of colours at lunch!'}</span>
-  </section>
-  <section class="group stickers">
-    <b>My food stickers</b>
-    <div class="st-grid">${tried.map(({ d, n }) => `<div class="sticker ${n ? '' : 'empty'}"><span class="st-food" style="--c:${d.color};--e:${d.edge}"><i></i><i></i><em></em></span><small>${esc(d.name.split(' ').slice(-1)[0])}</small><span class="stars">${'★'.repeat(Math.min(5, n))}</span></div>`).join('')}</div>
-  </section>`;
+  const ate = new Set(done ? MENU.filter(d => rec.eaten[d.id] >= rec.served[d.id] * .5).map(d => d.rainbow) : []);
+  const short = d => dishName(K, d).replace(' without egg', '').toLowerCase();
+  let expr, line;
+  if (!done) { expr = 'point'; line = `Hi ${K.name}! It's lunch time! Can you try one bite of ${short(picky)} today?`; }
+  else if (ate.size >= 5) { expr = 'cheer'; line = `Wow, ${K.name}! You ate ${ate.size} colours. A rainbow makes you strong!`; }
+  else if (1 - rec.w >= .6) { expr = 'happy'; line = `Yummy lunch, ${K.name}! You ate ${ate.size} colours today.`; }
+  else { expr = 'calm'; line = `That's okay, ${K.name}. Tomorrow, let's try a little more.`; }
+  let out = V.guide(expr, esc(line), { big: true, speak: line });
+  if (!done) {
+    out += `<div class="vcard kidcard"><h3>Today's lunch</h3>${V.tray(MENU, null, { size: 50, hi: picky.id, tag: d => d.id === picky.id ? 'Try me!' : '', name: d => dishName(K, d).replace(' without egg', '') })}</div>
+    <div class="vcard kidcard"><h3>Eat a rainbow</h3><div class="rb-dots big">${colours.map(c => `<span class="rb" style="--c:${H.RAINBOW[c]}" aria-label="${c}"></span>`).join('')}</div>
+      <p class="kidline">Every colour helps your body in a different way.</p></div>`;
+    return out;
+  }
+  const tried = rec.eaten[picky.id] >= rec.served[picky.id] * .3;
+  const tip = tried ? `You tried the ${short(picky)}! New foods get yummier each time.` : `Small bites are okay. Let's try the ${short(picky)} again next time.`;
+  out += `<div class="vcard kidcard"><h3>My lunch</h3>${V.tray(MENU, rec, { size: 50, name: d => dishName(K, d).replace(' without egg', '') })}</div>
+  <div class="vcard kidcard"><h3>My rainbow</h3><div class="rb-dots big">${colours.map(c => `<span class="rb ${ate.has(c) ? 'on' : ''}" style="--c:${H.RAINBOW[c]}" aria-label="${c}${ate.has(c) ? ', eaten' : ''}">${ate.has(c) ? ICON.check : ''}</span>`).join('')}</div>
+    <p class="kidline">${ate.size} of ${colours.length} colours</p></div>
+  ${V.guide(tried ? 'cheer' : 'think', esc(tip), { speak: tip })}`;
+  return out;
 }
-const roomHooks = {
-  info: () => { const K = me(), g = G.ensure(K); return { ...PL.petOf(K), plate: g.plate && !g.plate.eaten ? g.plate.food : null, plant: G.plantOf(K) }; },
-  mess: () => G.ensure(me()).mess,
-  eat: () => { const p = act(() => G.serveLunch(me())); return p && { heart: p.heart, crumbs: p.crumbs.length }; },
-  pet: () => act(() => G.petLoopi(me())),
-  fetched: () => act(() => G.playBall(me())),
-  swept: type => { act(() => G.sweep(me(), type)); if (!G.ensure(me()).mess.length) PL.Room.say('So clean! Thank you!', 2.4); },
-  chatter: () => {
-    const g = G.ensure(me());
-    if (g.plate && !g.plate.eaten) return 'Yummy smell! Tap Feed!';
-    if (g.mess.length) return 'Oops, crumbs! Can you clean up?';
-    if (g.ready) return 'I\'m growing! Ask a grown-up!';
-    return ['Let\'s play ball!', 'I love dragon fruit!', 'Broccoli makes me strong!', 'Hug me!', null, null][Math.floor(Math.random() * 6)];
-  },
-};
 
-/* ================================================================ Grown-ups: the healthcare report */
+/* ================================================================ for grown-ups: the healthcare report */
 function grown(K) {
   const today = scannedToday(K), rec = K.log[0], T = H.KIDS_TARGET;
   const days = [...K.log].reverse();
-  const avgEat = id => K.log.reduce((s, l) => s + l.eaten[id] / l.served[id], 0) / K.log.length;
-  const ranked = MENU.map(d => ({ d, a: avgEat(d.id) })).sort((a, b) => b.a - a.a);
+  const ranked = MENU.map(d => ({ d, a: avgEaten(K, d.id) })).sort((a, b) => b.a - a.a);
   const fav = ranked.slice(0, 2), picky = ranked[ranked.length - 1];
   const vegDays = K.log.filter(l => MENU.some(d => d.group === 'veg' && l.eaten[d.id] >= l.served[d.id] * .5)).length;
   const allergen = MENU.find(d => d.allergen && d.allergen === K.allergy);
-  const g = G.ensure(K);
   return `
-  <section class="group rep-head"><div><b>${esc(K.name)}'s lunch report</b><span>${today ? 'Today, Fri 25' : `Last scanned lunch, ${rec.day}`} · Sunflower class</span></div><span class="pill">Age ${K.age}</span></section>
-  ${K.allergy ? `<div class="care-alert ok">${ICON.check}<span><b>${esc(K.allergy)} allergy:</b> ${allergen ? `${esc(K.name)} was served ${esc(allergen.safe.toLowerCase())}.` : ''} No ${esc(K.allergy.toLowerCase())} on the tray this week.</span></div>` : ''}
-  <h4 class="sec">What ${esc(K.name)} ate</h4>
-  <section class="group">${MENU.map(d => { const ate = 1 - rec.measured[d.id] / rec.served[d.id]; return `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${esc(dishName(K, d))}</span><span class="dbar"><i style="width:${Math.round(ate * 100)}%"></i></span><span class="g-v num">${pct(ate)}</span></div>`; }).join('')}</section>
-  <h4 class="sec">Nutrition, compared with a lunch for age ${K.age}</h4>
-  <section class="group health-top">${H.ring(rec.n.kcal, T.kcal, `of ${T.kcal} kcal`)}<div style="flex:1;min-width:0">${H.nutrientRows(rec.n, T, ['p', 'c', 'f'])}</div></section>
-  <h4 class="sec">This week, share of lunch eaten</h4>
-  <section class="group chart">${H.dayBars(days.map(l => l.day), days.map(l => 1 - l.w), 'Share of lunch eaten each day', .75, 1)}</section>
-  <h4 class="sec">Eating habits</h4>
-  <section class="group">
-    <div class="finding"><i style="background:var(--tint)"></i><span>Favourites: ${fav.map(x => `${esc(x.d.name.toLowerCase())} (${pct(x.a)})`).join(' and ')}.</span></div>
-    <div class="finding"><i style="background:var(--orange)"></i><span>Least eaten: ${esc(picky.d.name.toLowerCase())}, ${pct(picky.a)} on average.${picky.d.group === 'veg' ? ' Small pieces and trying it again at home both help. It can take many tries to like a new vegetable.' : ''}</span></div>
-    <div class="finding"><i style="background:var(--blue)"></i><span>Ate at least half the vegetables on ${vegDays} of ${K.log.length} days.</span></div>
-    <div class="finding"><i style="background:var(--purple)"></i><span>Loopi is a ${PL.stuStage(K).name.toLowerCase()} with ${g.hearts} of ${G.heartsReq(g)} hearts${g.ready ? ', ready to grow up' : ''}. Hearts come from finishing more than usual.</span></div>
-  </section>
-  <h4 class="sec">From the teacher</h4>
-  <section class="group note"><p>${esc(K.note)}</p><span>Ms. Farah, Sunflower class</span></section>
+  ${V.guide('calm', `${today ? 'Today' : `On ${rec.day}`}, ${esc(K.name)} ate ${pct(1 - rec.w)} of lunch.${K.allergy ? ` Every tray this week was checked for ${esc(K.allergy.toLowerCase())}.` : ''}`)}
+  ${K.allergy ? `<div class="vtips">${V.tip('check', 'good', `${esc(K.allergy)} allergy: safe tray`, `${allergen ? `${esc(K.name)} was served ${esc(allergen.safe.toLowerCase())}. ` : ''}No ${esc(K.allergy.toLowerCase())} on the tray this week.`)}</div>` : ''}
+  <div class="vcard"><h3>What ${esc(K.name)} ate <small>${today ? 'today' : rec.day}</small></h3>${V.tray(MENU, rec, { name: d => dishName(K, d) })}</div>
+  <div class="vcard"><h3>Nutrition <small>lunch for age ${K.age}</small></h3><div class="vrings">${V.ring(rec.n.kcal, T.kcal, 'Energy', 'kcal')}${V.ring(rec.n.p, T.p, 'Protein', 'g', 'aim')}${V.ring(rec.n.c, T.c, 'Carbs', 'g')}</div></div>
+  <div class="vcard"><h3>Plate balance</h3>${V.healthyPlate(V.plateShares(MENU, rec.eaten), { you: `${esc(K.name)}'s plate` })}</div>
+  <div class="vcard"><h3>This week <small>share of lunch eaten</small></h3>${V.week(days.map(l => l.day), days.map(l => 1 - l.w), { today: today ? days.length - 1 : -1 })}</div>
+  <div class="vtips">
+    ${V.tip('check', 'good', `Favourites: ${fav.map(x => x.d.name.toLowerCase()).join(' and ')}`, `Usually ${fav.map(x => pct(x.a)).join(' and ')} eaten.`)}
+    ${V.tip('leaf', picky.d.group === 'veg' ? 'warn' : 'info', `Least eaten: ${picky.d.name.toLowerCase()} (${pct(picky.a)})`, picky.d.group === 'veg' ? 'Small pieces and offering it again at home both help. It can take many tries to like a new vegetable.' : 'Worth a gentle try at home too.')}
+    ${V.tip('plate', 'info', `Vegetables on ${vegDays} of ${K.log.length} days`, 'Days when at least half the vegetables were eaten.')}
+  </div>
+  <div class="vcard note2"><p>“${esc(K.note)}”</p><span>Ms. Farah, Sunflower class</span></div>
   <div class="two-btn"><button class="btn" id="kid-lock">Back to Loopi</button><button class="btn" id="kid-print">Print report</button></div>
-  <p class="foot">Measured by the kindergarten scanner before and after lunch. The teacher helps each child look at the camera. Targets are illustrative.</p>`;
+  <p class="foot">Measured by the preschool scanner before and after lunch. The teacher helps each child look at the camera. Targets are illustrative.</p>`;
 }
 
 /* ================================================================ grown-up check */
 function gate() {
   const a = 2 + Math.floor(Math.random() * 6), b = 2 + Math.floor(Math.random() * 6), ans = a + b;
-  const opts = [ans, ans + 2, ans - 1].sort(() => Math.random() - .5);
-  ui.gate = { a, b, ans, opts }; layer();
+  ui.gate = { a, b, ans, opts: [ans, ans + 2, ans - 1].sort(() => Math.random() - .5) }; layer();
 }
 function layer() {
   const el = $('#kid-layer', root); if (!el) return;
@@ -1943,30 +1942,18 @@ function layer() {
   $$('[data-ans]', el).forEach(bt => bt.onclick = () => { if (+bt.dataset.ans === ui.gate.ans) { ui.adult = true; ui.tab = 'grown'; } else PL.toast('Not quite. Ask a grown-up!'); ui.gate = null; render(); });
   $('[data-cancel]', el).onclick = () => { ui.gate = null; layer(); };
 }
-
-/* ================================================================ wiring */
-function wire(K) {
+function wire() {
   const body = $('#kid-body', root);
-  $$('[data-k]', body).forEach(b => b.onclick = () => {
-    const a = b.dataset.k;
-    if (a === 'feed') PL.Room.feed();
-    else if (a === 'ball') PL.Room.throwBall();
-    else if (a === 'sweep') { if (PL.Room.crumbs.length) PL.Room.sweepAll(); else PL.Room.say('All clean!', 2); }
-    else if (a === 'lights') { PL.Room.toggleNight(); render(true); }
-  });
-  const grow = $('#kid-grow', body);
-  if (grow) grow.onclick = () => { const s = act(() => G.evolve(me())); if (s) { PL.Room.jump(16, .8); PL.Room.say(`I'm a ${s.name.toLowerCase()} now!`, 3); } };
-  const cv = $('#room-cv', body); if (cv) PL.Room.attach(cv, $('#room-say', body), roomHooks);
-  const lock = $('#kid-lock', body); if (lock) lock.onclick = () => { ui.adult = false; ui.tab = 'play'; render(); };
+  V.wireSpeak(body);
+  const lock = $('#kid-lock', body); if (lock) lock.onclick = () => { ui.adult = false; ui.tab = 'kid'; render(); };
   const pr = $('#kid-print', body); if (pr) pr.onclick = () => print();
 }
 
 PL.apps.kids = {
   title: 'Loopi Kids',
   mount,
-  unmount() { ui.adult = false; ui.tab = 'play'; ui.gate = null; root = null; },
+  unmount() { ui.adult = false; ui.tab = 'kid'; ui.gate = null; root = null; if ('speechSynthesis' in window) speechSynthesis.cancel(); },
   update(kind) { render(kind !== 'me'); },
-  tick(t) { if (root) PL.drawPet && $$('canvas[data-kid-pet]', root).forEach(cv => PL.drawPet(cv, { rows: 30, t, ...PL.petOf(me()) })); },
 };
 })();
 
