@@ -115,9 +115,9 @@ L.buildWorld = scene => {
   M.glass = new THREE.MeshBasicMaterial({ color: '#CFE8F2', transparent: true, opacity: .22, depthWrite: false });
 
   /* ------------------------------------------------------------ light */
-  scene.add(new THREE.HemisphereLight('#FFF3DC', '#6A6050', .62));
-  scene.add(new THREE.AmbientLight('#FFFFFF', .28));
-  const sun = new THREE.DirectionalLight('#FFE9C4', .55); sun.position.set(-10, 14, 18); scene.add(sun);
+  scene.add(new THREE.HemisphereLight('#DDE3E2', '#4A463E', .56));
+  scene.add(new THREE.AmbientLight('#F4EDE2', .16));
+  const sun = new THREE.DirectionalLight('#DDE3E8', .3); sun.position.set(-10, 14, 18); scene.add(sun);
   [[-10.4, -8.4, '#FFE2B0'], [-5.6, -8.4, '#FFD9A8'], [.3, -8.4, '#FFF2D8'], [5.8, -8.4, '#FFE2B0'], [10.4, -7.6, '#DFF5E6']].forEach(([x, z, col]) => { const p = new THREE.PointLight(col, .55, 7, 1.6); p.position.set(x, 2.5, z); scene.add(p); });
 
   /* ------------------------------------------------------------ shell */
@@ -135,10 +135,10 @@ L.buildWorld = scene => {
   const walk = plane(X1 - X0, 2.5, M.concrete, 0, .005, Z1 + 1.25); walk.rotation.x = -Math.PI / 2;
   // outside: field, trees, a school block, the sky
   const grass = plane(160, 90, M.grass, 0, -.04, Z1 + 47); grass.rotation.x = -Math.PI / 2;
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(95, 16, 10), new THREE.MeshBasicMaterial({ fog: false, side: THREE.BackSide, map: L.tex(8, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#6FA9DD'); g.addColorStop(.46, '#BFDDF2'); g.addColorStop(.5, '#EAF2EE'); g.addColorStop(1, '#9AA48C'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) }));
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(95, 16, 10), new THREE.MeshBasicMaterial({ fog: false, side: THREE.BackSide, map: L.tex(8, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#9BA3A6'); g.addColorStop(.45, '#C9CBC5'); g.addColorStop(.5, '#D4D3CA'); g.addColorStop(1, '#8C8E80'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) }));
   sky.position.set(0, 0, 10); scene.add(sky);
   const tree = L.basic({ transparent: true, alphaTest: .5, side: THREE.DoubleSide, map: L.tex(64, 96, (c, w, h) => {
-    const r = L.rng(21); c.fillStyle = '#5A4130'; c.fillRect(29, 50, 7, 46); c.fillRect(22, 58, 20, 3);
+    const r = L.rng(21); c.fillStyle = '#4E3A2C'; c.fillRect(29, 50, 7, 46);
     for (let i = 0; i < 70; i++) L.blob(c, 32 + (r() - .5) * 56, 30 + (r() - .5) * 38, 8 + r() * 8, 6 + r() * 6, r() < .5 ? '#3E6E2A' : r() < .7 ? '#5C8E3A' : '#2A4E1E', .9);
   }) });
   const r0 = L.rng(33);
@@ -371,7 +371,7 @@ L.buildWorld = scene => {
   solid(X1 - .9, X1, 3.1, 4.1);
 
   /* ------------------------------------------------------------ atmosphere: sun shafts, dust, steam */
-  const shaft = new THREE.MeshBasicMaterial({ color: '#FFF1CF', transparent: true, opacity: .05, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, map: L.tex(16, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) });
+  const shaft = new THREE.MeshBasicMaterial({ color: '#EDEFEA', transparent: true, opacity: .035, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, map: L.tex(16, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) });
   [-10.8, -6.4, -2.1, 2.1, 6.4, 10.8].forEach(x => { const s = plane(3.4, 6.5, shaft, x, 2.2, 6.2, 0); s.rotation.set(-.95, 0, 0); });
   const dustN = 380, dp = new Float32Array(dustN * 3);
   for (let i = 0; i < dustN; i++) { dp[i * 3] = (Math.random() - .5) * 25; dp[i * 3 + 1] = Math.random() * 3.8; dp[i * 3 + 2] = -6 + Math.random() * 15; }
@@ -381,7 +381,16 @@ L.buildWorld = scene => {
   const steams = [];
   Wd.anim.filter(a => a.steam).forEach(a => { for (let i = 0; i < 5; i++) { const s = new THREE.Mesh(new THREE.PlaneGeometry(.35, .35), puff); s.position.set(...a.steam); s.userData = { base: a.steam, ph: i / 5 }; scene.add(s); steams.push(s); } });
 
+  // rain beyond the open side
+  const rainN = 900, rp = new Float32Array(rainN * 6);
+  for (let i = 0; i < rainN; i++) { const x = (Math.random() - .5) * 44, y = Math.random() * 9, z = 9.6 + Math.random() * 24; rp.set([x, y, z, x - .02, y - .35, z], i * 6); }
+  const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3));
+  const rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: '#D8DCDC', transparent: true, opacity: .32, depthWrite: false })); scene.add(rain);
+  // wet ground just outside the canteen
+  const wet = plane(X1 - X0, 2.4, new THREE.MeshBasicMaterial({ color: '#9A9C98', transparent: true, opacity: .22, depthWrite: false }), 0, .012, Z1 + 1.3); wet.rotation.x = -Math.PI / 2;
   Wd.update = (dt, t, cam) => {
+    for (let i = 0; i < rainN; i++) { let y = rp[i * 6 + 1] - dt * 11; if (y < 0) y += 9; rp[i * 6 + 1] = y; rp[i * 6 + 4] = y - .35; }
+    rg.attributes.position.needsUpdate = true;
     Wd.fans.forEach(f => { f.blades.rotation.y += dt * f.speed; });
     for (let i = 0; i < dustN; i++) { dp[i * 3 + 1] += Math.sin(t * .3 + i) * .0015; dp[i * 3] += Math.cos(t * .2 + i * 1.7) * .001; }
     dg.attributes.position.needsUpdate = true;
