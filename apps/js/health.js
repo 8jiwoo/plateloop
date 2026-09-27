@@ -55,7 +55,7 @@ H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', purple: '#5B4
 [...Object.values(H.WARD_MENU).flat(), ...H.KIDS_MENU].forEach(d => { PL.DISH[d.id] = d; });
 
 H.nutrients = (grams, menu) => {
-  const o = { kcal: 0, c: 0, p: 0, f: 0, na: 0 };
+  const o = { kcal: 0, c: 0, p: 0, f: 0, fb: 0, na: 0 };
   menu.forEach(d => { const g = grams[d.id] || 0; Object.keys(o).forEach(k => { o[k] += g * (d.n[k] || 0); }); });
   return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
 };
@@ -158,21 +158,25 @@ H.scanKidLunch = (K, preset) => {
 
 /* ---------------------------------------------------------------- report building blocks */
 /** limit-type nutrients (sodium) are good when under target; the rest are good near target. */
-H.status = (k, v, target) => {
+H.status = (k, v, target, mins = []) => {
   const r = v / target;
+  if (mins.includes(k)) return r < .75 ? 'low' : 'ok'; // a minimum: more is fine
   if (k === 'na') return r > 1.1 ? 'high' : 'ok';
+  if (k === 'fb') return r < .75 ? 'low' : 'ok'; // more fibre is fine
   return r < .75 ? 'low' : r > 1.3 ? 'high' : 'ok';
 };
-H.NAMES = { kcal: ['Energy', 'kcal'], p: ['Protein', 'g'], c: ['Carbs', 'g'], f: ['Fat', 'g'], na: ['Sodium', 'mg'] };
+H.NAMES = { kcal: ['Energy', 'kcal'], p: ['Protein', 'g'], c: ['Carbs', 'g'], f: ['Fat', 'g'], fb: ['Fibre', 'g'], na: ['Sodium', 'mg'] };
 H.ring = (v, target, sub) => {
   const r = 42, C = 2 * Math.PI * r, p = Math.min(1, v / target);
   return `<div class="ring-wrap"><svg viewBox="0 0 110 110" class="ring" aria-hidden="true"><circle cx="55" cy="55" r="${r}" fill="none" stroke="var(--fill2)" stroke-width="11"/><circle cx="55" cy="55" r="${r}" fill="none" stroke="${p < .75 ? 'var(--orange)' : 'var(--tint)'}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 55 55)"/></svg><div class="ring-in"><b class="num">${v}</b><span>${sub}</span></div></div>`;
 };
 /** One row per nutrient: a zone bar (low / good / a lot, or under / over the limit for sodium). */
-H.nutrientRows = (n, target, keys) => keys.map(k => {
-  const t = target[k], max = t * 1.6, pos = x => Math.min(100, x / max * 100), st = H.status(k, n[k], t);
+H.nutrientRows = (n, target, keys, mins = []) => keys.map(k => {
+  const t = target[k], max = t * 1.6, pos = x => Math.min(100, x / max * 100), st = H.status(k, n[k], t, mins);
   const zones = k === 'na'
     ? `<span class="z z2" style="left:0;width:${pos(t)}%"></span>`
+    : k === 'fb' || mins.includes(k)
+    ? `<span class="z z1" style="width:${pos(t * .75)}%"></span><span class="z z2" style="left:${pos(t * .75)}%;width:${100 - pos(t * .75)}%"></span>`
     : `<span class="z z1" style="width:${pos(t * .75)}%"></span><span class="z z2" style="left:${pos(t * .75)}%;width:${pos(t * 1.3) - pos(t * .75)}%"></span>`;
   return `<div class="hrow wide"><span>${H.NAMES[k][0]}</span><div class="zbar">${zones}<i class="${st}" style="width:${pos(n[k])}%"></i></div><b class="num ${st}">${n[k].toLocaleString('en-US')}<small> / ${t.toLocaleString('en-US')} ${H.NAMES[k][1]}</small></b></div>`;
 }).join('');
