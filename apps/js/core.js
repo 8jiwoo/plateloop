@@ -257,7 +257,6 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
   st.log.unshift({ day: 'Fri 25', portion, w: r.w, pts: r.xp, n: r.intake });
   st.log = st.log.slice(0, 6);
   r.servedBy = served; r.measured = measured;
-  r.game = PL.game ? PL.game.feedLunch(st, r) : null; // hunger, hearts, and the plate waiting in Loopi's bowl
   // completed trays feed the kitchen's waste numbers and the class league
   MENU.forEach(d => { T.dish[d.id].served += served[d.id]; T.dish[d.id].ret += measured[d.id]; });
   T.trays++;

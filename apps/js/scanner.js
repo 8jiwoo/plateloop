@@ -97,7 +97,11 @@ function screen() {
   const s = root && $('#kio-screen', root); if (!s) return;
   const st = PL.student(k.sid);
   const status = `<div class="kio-status"><span class="num">${PL.clock()}</span><span><i></i>Connected to Kitchen</span></div>`;
-  const left = cap => `<div class="kio-left"><canvas id="kio-pet" width="160" height="132"></canvas>${cap ? `<div class="cap">${cap}</div>` : ''}</div>`;
+  // idle: the school's Green Tree; with a student: Loopi reacts to what's happening
+  const expr = { hello: 'wave', scan: 'think', fed: 'point', already: 'happy' }[k.mode] || (k.result ? (k.result.zero ? 'cheer' : k.result.w < st.baseline ? 'happy' : 'calm') : 'happy');
+  const left = cap => k.mode === 'idle'
+    ? `<div class="kio-left"><canvas id="kio-pet" width="160" height="132"></canvas>${cap ? `<div class="cap">${cap}</div>` : ''}</div>`
+    : `<div class="kio-left">${PL.V.loopi(expr, 200)}</div>`;
   let main = '', ban = '', extra = '';
   if (k.mode === 'idle') {
     const T = PL.S.today;
@@ -142,9 +146,8 @@ function screen() {
     ban = banner(null, ['lunch', 'Come back after lunch', 'Scan your tray again before you put it away']);
     extra = `<div class="kio-progress" style="animation-duration:9s"></div><button class="kio-done" id="kio-done">Done</button>`;
   } else {
-    const r = k.result, g = r.game;
+    const r = k.result;
     const chips = [`Points <em>+${r.xp}</em>`];
-    if (g) { chips.push(`Loopi <em>+${g.hunger} food</em>`); if (g.heart) chips.push(`<em>+1 heart</em>`); }
     if (r.co2 > 0) chips.push(`CO₂ saved <em>${r.co2} g</em>`);
     if (r.zero) chips.unshift(`<em>+1 fruit</em> on the Green Tree`);
     main = `${left()}<div class="kio-right">
@@ -154,7 +157,7 @@ function screen() {
         <div><div class="kio-nut-h">You ate ${r.intake.kcal} kcal</div>${nbars(r.intake)}</div>
       </div>
       <div class="kio-chips">${chips.map(c => `<span>${c}</span>`).join('')}</div>
-      <div class="kio-rank"><div>You're <b>#${r.meRank}</b> in your class${r.meRank < r.meRankBefore ? ` <b>▲ ${r.meRankBefore - r.meRank}</b>` : ''}${g && g.ready ? ' · Loopi is ready to evolve!' : ''}</div></div></div>`;
+      <div class="kio-rank"><div>You're <b>#${r.meRank}</b> in your class${r.meRank < r.meRankBefore ? ` <b>▲ ${r.meRankBefore - r.meRank}</b>` : ''}</div></div></div>`;
     ban = banner(null, ['compost', 'Scraps go in the compost bin', 'Then you\'re all done. See you tomorrow!']);
     extra = `<div class="kio-progress" style="animation-duration:12s"></div><button class="kio-done" id="kio-done">Done</button>`;
   }
@@ -182,11 +185,8 @@ function drawTree(cv, t) {
   }
 }
 function draw(t) {
-  const cv = root && $('#kio-pet', root); if (!cv) return;
-  if (k.mode === 'idle') { drawTree(cv, t); return; }
-  const st = PL.student(k.sid);
-  const mood = k.mode === 'result' ? (k.result.zero ? 'joy' : k.result.mood) : k.mode === 'scan' ? 'happy' : 'joy';
-  PL.drawPet(cv, { rows: 30, t, ...PL.petOf(st), mood });
+  const cv = root && $('#kio-pet', root);
+  if (cv && k.mode === 'idle') drawTree(cv, t);
 }
 
 PL.apps.scanner = {
