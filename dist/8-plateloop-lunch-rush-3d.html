@@ -7617,7 +7617,7 @@ function buildPeople() {
     const cone = L.lam({ map: L.tex(64, 64, c => { c.fillStyle = '#1A1B1D'; c.fillRect(0, 0, 64, 64); [30, 22, 14].forEach((r, i) => { c.strokeStyle = i % 2 ? '#3A3D42' : '#55595F'; c.lineWidth = 3; c.beginPath(); c.arc(32, 32, r, 0, Math.PI * 2); c.stroke(); }); c.fillStyle = '#6A6E74'; c.beginPath(); c.arc(32, 32, 7, 0, Math.PI * 2); c.fill(); }) });
     const speakers = [-1, 1].map(s => { const m = new THREE.Mesh(new THREE.CircleGeometry(.075, 16), cone); m.position.set(s * .15, .11, .072); box.add(m); return m; });
     G.boombox = { speakers };
-    // the disco: a mirror ball, sweeping beams, coloured lights and dots of light on the floor (off until she sings)
+    // the disco: a mirror ball, sweeping beams, coloured lights and dots of light on the floor, always on
     const d = new THREE.Group(); d.position.set(so.root.position.x, 0, so.root.position.z); d.visible = false; G.scene.add(d);
     const cord = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .9, 4), L.lam({ color: '#222' })); cord.position.y = 3.75; d.add(cord);
     const ball = new THREE.Mesh(new THREE.SphereGeometry(.2, 12, 8), new THREE.MeshBasicMaterial({ map: L.tex(64, 32, c => { for (let y = 0; y < 32; y += 4) for (let x = 0; x < 64; x += 4) { const v = 150 + Math.random() * 105; c.fillStyle = `rgb(${v},${v},${v + 10})`; c.fillRect(x, y, 3, 3); } }) }));
@@ -7627,7 +7627,7 @@ function buildPeople() {
     const beams = COLS.map(col => { const m = new THREE.Mesh(new THREE.ConeGeometry(.35, 3.2, 10, 1, true), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); m.geometry.translate(0, -1.6, 0); m.rotation.order = 'YXZ'; m.position.y = 3.25; d.add(m); return m; });
     const dots = Array.from({ length: 14 }, (_, i) => { const m = new THREE.Mesh(new THREE.CircleGeometry(.22, 14), new THREE.MeshBasicMaterial({ color: COLS[i % COLS.length], map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.y = .012; d.add(m); return m; });
     const lights = ['#FF2D95', '#2DE1FF', '#FFD62D'].map(col => { const l = new THREE.PointLight(col, 0, 5, 1.4); l.position.set(d.position.x, 2, d.position.z); G.scene.add(l); return l; });
-    G.disco = { group: d, ball, beams, dots, lights, level: 0, on: false };
+    G.disco = { group: d, ball, beams, dots, lights, level: 0, on: true };
     W.spots.music = G.SFX.spots.music = [-3.1, .6, -5.9];
   }
   // Disha floats cross-legged above a table in a beam of light, and tells fortunes
@@ -8204,14 +8204,14 @@ async function sophieSings() {
   const S = G.sophie;
   await convo(S, async () => {
     await say(S, G.phase === 'done' ? 'You finished your tray? Then you get the encore!' : 'Oh, hi! Do you want to hear the song I wrote about lunch?');
-    S.singing = true; G.disco.on = true; await sleep(700);
+    S.singing = true; await sleep(700);
     const hp = new THREE.Vector3(); S.head.getWorldPosition(hp);
     G.SFX.sing(at(hp), SONG.flatMap(l => l[1]));
     for (const [words, notes] of SONG) {
       showSub(S.name, `♪ ${words} ♪`, true); S.talking = true;
       await sleep(notes.reduce((a, n) => a + n[2], 0) * 500);
     }
-    S.talking = false; S.singing = false; G.disco.on = false;
+    S.talking = false; S.singing = false;
     await say(S, 'Thanks for listening! Back to practice.');
   });
 }
