@@ -263,6 +263,7 @@ L.person = o => {
   o.brow = o.brow || (o.adult ? 3 : 2.2 + r() * .8);
   o.tudungCol = o.tudungCol || '#EEECE6';
   const f = { ...OUTFITS[o.kind || 'boy'] }; if (o.kind === 'pe') f.col = o.house || L.HOUSE[Math.floor(r() * 4)];
+  if (o.bottom) f.bottom = o.bottom;
   const bw = o.build;
   // smooth: more segments and soft shading instead of flat facets
   const facetMesh = (geo, mat) => new THREE.Mesh(o.smooth ? (geo.computeVertexNormals(), geo) : L.facet(geo), mat), sg = n => o.smooth ? n * 2 : n;
