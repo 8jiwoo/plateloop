@@ -782,7 +782,7 @@ PL.$$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = PL.clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 PL.pct = v => Math.round(v * 100) + '%';
 PL.fmt1 = v => (Math.round(v * 10) / 10).toFixed(1);
-PL.money = v => '$' + Math.round(v).toLocaleString('en-US');
+PL.money = v => 'S$' + Math.round(v).toLocaleString('en-US');
 PL.esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 PL.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rng = PL.rng = seed => { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
@@ -793,15 +793,15 @@ PL.toast = msg => {
 
 /* ------------------------------------------------------------ constants */
 const MENU = PL.MENU = [
-  { id: 'spinach', n: { c: .04, p: .03, f: .035 }, name: 'Spinach namul', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .55, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
-  { id: 'kimchi', n: { c: .04, p: .015, f: .005 }, name: 'Kimchi', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .3, price: .0045, color: '#D5502F', edge: '#A23A20', slot: [1, 0] },
-  { id: 'apple', n: { c: .14, p: .003, f: .002 }, name: 'Apple slices', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .52, price: .005, color: '#F1DDA4', edge: '#C9A95E', slot: [2, 0] },
-  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Multigrain rice', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
-  { id: 'bulgogi', n: { c: .08, p: .18, f: .12 }, name: 'Beef bulgogi', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 2.1, price: .019, color: '#7A4424', edge: '#4F2A15', slot: [1, 1] },
-  { id: 'soup', n: { c: .04, p: .03, f: .015 }, name: 'Soybean paste soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .4, price: .0021, color: '#C0843F', edge: '#8E5E28', slot: [2, 1] },
+  { id: 'kailan', n: { c: .04, p: .03, f: .04 }, name: 'Stir-fried kailan', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .6, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
+  { id: 'cabbage', n: { c: .05, p: .012, f: .02 }, name: 'Braised cabbage', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .4, price: .004, color: '#D8E6A8', edge: '#9DB36A', slot: [1, 0] },
+  { id: 'melon', n: { c: .08, p: .006, f: .002 }, name: 'Watermelon', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .3, price: .004, color: '#F2545B', edge: '#B8323A', slot: [2, 0] },
+  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Brown rice mix', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
+  { id: 'chicken', n: { c: .03, p: .22, f: .08 }, name: 'Soy sauce chicken', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 1.75, price: .012, color: '#9C5A2E', edge: '#6B3A1A', slot: [1, 1] },
+  { id: 'soup', n: { c: .04, p: .02, f: .01 }, name: 'ABC soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .3, price: .0021, color: '#E8A25C', edge: '#B8722F', slot: [2, 1] },
 ];
 const DISH = PL.DISH = Object.fromEntries(MENU.map(d => [d.id, d]));
-/* nutrition: per-lunch targets for a grade 3 student (illustrative, about a third of the daily need) */
+/* nutrition: per-lunch targets for a Primary 3 student (illustrative, about a third of the daily need) */
 PL.TARGET = { kcal: 580, c: 85, p: 25, f: 16 };
 PL.NUTRIENTS = [['kcal', 'Calories', 'kcal'], ['c', 'Carbs', 'g'], ['p', 'Protein', 'g'], ['f', 'Fat', 'g']];
 PL.nutrientsOf = grams => {
@@ -813,8 +813,8 @@ PL.nutrientsOf = grams => {
 PL.nStatus = (k, v) => { const r = v / PL.TARGET[k]; return r < .8 ? 'low' : r > 1.3 ? 'high' : 'ok'; };
 /* environment equivalents (illustrative factors: 2.5 kg CO2e per kg food, a pine tree absorbs ~6.6 kg CO2 a year, a car emits ~0.17 kg CO2 per km) */
 PL.env = kg => { const co2 = kg * 2.5; return { kg, co2, trees: co2 / 6.6, km: co2 / .17 }; };
-PL.CRAVING = 'spinach';
-const TYPICAL_LEFT = PL.TYPICAL_LEFT = { spinach: .50, kimchi: .44, apple: .10, rice: .13, bulgogi: .05, soup: .38 };
+PL.CRAVING = 'kailan';
+const TYPICAL_LEFT = PL.TYPICAL_LEFT = { kailan: .50, cabbage: .44, melon: .10, rice: .13, chicken: .05, soup: .38 };
 PL.FORMS = {
   leafy: { name: 'Leafy', why: 'veggies tried', key: 'veg' },
   crystal: { name: 'Crystal', why: 'low-waste lunches', key: 'lowWaste' },
@@ -825,36 +825,37 @@ const STAGES = PL.STAGES = [{ id: 'egg', name: 'Egg', at: 0 }, { id: 'baby', nam
 PL.SCHOOL_BASELINE = 0.29;
 PL.CO2_PER_KG = 2.5; // illustrative kgCO2e per kg of food not wasted; swap for an EPA WARM / WRAP factor
 PL.PRESETS = {
-  'Picky eater': { rice: 70, bulgogi: 100, soup: 30, spinach: 0, kimchi: 10, apple: 100 },
-  'Just right': { rice: 100, bulgogi: 100, soup: 85, spinach: 90, kimchi: 80, apple: 100 },
-  'Tried everything': { rice: 95, bulgogi: 100, soup: 70, spinach: 60, kimchi: 55, apple: 100 },
-  'Not hungry': { rice: 40, bulgogi: 60, soup: 20, spinach: 10, kimchi: 0, apple: 80 },
+  'Picky eater': { rice: 70, chicken: 100, soup: 30, kailan: 0, cabbage: 10, melon: 100 },
+  'Just right': { rice: 100, chicken: 100, soup: 85, kailan: 90, cabbage: 80, melon: 100 },
+  'Tried everything': { rice: 95, chicken: 100, soup: 70, kailan: 60, cabbage: 55, melon: 100 },
+  'Not hungry': { rice: 40, chicken: 60, soup: 20, kailan: 10, cabbage: 0, melon: 80 },
 };
 
 /* ------------------------------------------------------------ seed data */
 const NAMED = [
-  { id: 's1', name: 'Minji', baseline: .24, xp: 262, c: { veg: 14, lowWaste: 9, balanced: 11, quests: 3 }, en: 72, nu: 80, jo: 66, streak: 3, book: ['crystal'], week: 168 },
-  { id: 's2', name: 'Joon', baseline: .38, xp: 96, c: { veg: 2, lowWaste: 5, balanced: 4, quests: 1 }, en: 48, nu: 42, jo: 55, streak: 1, book: [], week: 121 },
-  { id: 's3', name: 'Aria', baseline: .19, xp: 455, c: { veg: 8, lowWaste: 22, balanced: 12, quests: 4 }, en: 88, nu: 70, jo: 81, streak: 9, book: ['leafy', 'guardian'], week: 204 },
-  { id: 's4', name: 'Leo', baseline: .41, xp: 24, c: { veg: 1, lowWaste: 1, balanced: 1, quests: 0 }, en: 35, nu: 40, jo: 50, streak: 0, book: [], week: 88 },
-  { id: 's5', name: 'Sora', baseline: .27, xp: 318, c: { veg: 6, lowWaste: 8, balanced: 9, quests: 7 }, en: 64, nu: 61, jo: 77, streak: 2, book: ['explorer'], week: 176 },
+  { id: 's1', name: 'Wei Ling', baseline: .24, xp: 262, c: { veg: 14, lowWaste: 9, balanced: 11, quests: 3 }, en: 72, nu: 80, jo: 66, streak: 3, book: ['crystal'], week: 168 },
+  { id: 's2', name: 'Arjun', baseline: .38, xp: 96, c: { veg: 2, lowWaste: 5, balanced: 4, quests: 1 }, en: 48, nu: 42, jo: 55, streak: 1, book: [], week: 121 },
+  { id: 's3', name: 'Aisyah', baseline: .19, xp: 455, c: { veg: 8, lowWaste: 22, balanced: 12, quests: 4 }, en: 88, nu: 70, jo: 81, streak: 9, book: ['leafy', 'guardian'], week: 204 },
+  { id: 's4', name: 'Ethan', baseline: .41, xp: 24, c: { veg: 1, lowWaste: 1, balanced: 1, quests: 0 }, en: 35, nu: 40, jo: 50, streak: 0, book: [], week: 88 },
+  { id: 's5', name: 'Mei Xin', baseline: .27, xp: 318, c: { veg: 6, lowWaste: 8, balanced: 9, quests: 7 }, en: 64, nu: 61, jo: 77, streak: 2, book: ['explorer'], week: 176 },
   { id: 's6', name: 'Daniel', baseline: .22, xp: 540, c: { veg: 9, lowWaste: 12, balanced: 21, quests: 3 }, en: 90, nu: 88, jo: 73, streak: 5, book: ['crystal', 'leafy'], week: 159 },
 ];
-const EXTRA = ['Hana', 'Yuna', 'Seojun', 'Jiho', 'Eunwoo', 'Doyun', 'Haeun', 'Siwoo', 'Jimin', 'Yejun', 'Chaewon', 'Minseo', 'Juwon', 'Gaeun', 'Taeyang', 'Somin', 'Hyunwoo', 'Dahye', 'Ian', 'Mia', 'Noah', 'Ella'];
+const EXTRA = ['Jun Hao', 'Nur Iman', 'Priya', 'Ryan', 'Zi Xuan', 'Hafiz', 'Kai Xin', 'Siti', 'Rohan', 'Chloe', 'Jia Hui', 'Irfan', 'Ananya', 'Marcus', 'Xin Yi', 'Farhan', 'Divya', 'Isaac', 'Hui Min', 'Adam', 'Sarah', 'Kavin'];
 const CLASS_SEED = [
-  { id: '3-1', base: .30, served: 61.6, ret: 12.9, form: 'leafy', xp: 380, streak: 4 },
-  { id: '3-2', base: .31, served: 46.2, ret: 8.9, form: 'explorer', xp: 350, streak: 3 },
-  { id: '3-3', base: .27, served: 62.0, ret: 14.6, form: 'guardian', xp: 240, streak: 1 },
-  { id: '3-4', base: .33, served: 60.8, ret: 13.4, form: 'crystal', xp: 410, streak: 2 },
-  { id: '3-5', base: .29, served: 63.1, ret: 11.7, form: 'crystal', xp: 460, streak: 5 },
-  { id: '3-6', base: .26, served: 59.9, ret: 16.2, form: 'leafy', xp: 120, streak: 0 },
+  { id: '3A', base: .30, served: 61.6, ret: 12.9, form: 'leafy', xp: 380, streak: 4 },
+  { id: '3B', base: .31, served: 46.2, ret: 8.9, form: 'explorer', xp: 350, streak: 3 },
+  { id: '3C', base: .27, served: 62.0, ret: 14.6, form: 'guardian', xp: 240, streak: 1 },
+  { id: '3D', base: .33, served: 60.8, ret: 13.4, form: 'crystal', xp: 410, streak: 2 },
+  { id: '3E', base: .29, served: 63.1, ret: 11.7, form: 'crystal', xp: 460, streak: 5 },
+  { id: '3F', base: .26, served: 59.9, ret: 16.2, form: 'leafy', xp: 120, streak: 0 },
 ];
 const SCHOOLS = [
-  { id: 'bora', name: 'Bora Elementary', red: .34, acc: .93, kg: 1510 },
-  { id: 'saebit', name: 'Saebit Elementary', red: .27, acc: .91, kg: 1122 },
-  { id: 'dasom', name: 'Dasom Elementary', red: .22, acc: .89, kg: 864 },
-  { id: 'nuri', name: 'Nuri Middle School', red: .19, acc: .90, kg: 1390 },
-  { id: 'hangang', name: 'Hangang Elementary', red: .12, acc: .86, kg: 402 },
+  // fictional schools for the demo
+  { id: 'maple', name: 'Maple Bay Primary', red: .34, acc: .93, kg: 1510 },
+  { id: 'orchid', name: 'Orchid Grove Primary', red: .27, acc: .91, kg: 1122 },
+  { id: 'sunbird', name: 'Sunbird Primary', red: .22, acc: .89, kg: 864 },
+  { id: 'kingfisher', name: 'Kingfisher Secondary', red: .19, acc: .90, kg: 1390 },
+  { id: 'tembusu', name: 'Tembusu Hill Primary', red: .12, acc: .86, kg: 402 },
 ];
 const DAYS = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 
@@ -872,19 +873,19 @@ function freshState() {
   const dish = {};
   MENU.forEach(d => { const served = 140 * d.g.M * (0.92 + r() * .1); dish[d.id] = { served, ret: served * TYPICAL_LEFT[d.id] * (0.85 + r() * .25) }; });
   const students = NAMED.map(s => ({
-    id: s.id, name: s.name, cls: '3-2', baseline: s.baseline, week: s.week, scanned: false, named: true,
+    id: s.id, name: s.name, cls: '3B', baseline: s.baseline, week: s.week, scanned: false, named: true,
     pet: { xp: s.xp, c: { ...s.c }, en: s.en, nu: s.nu, jo: s.jo, streak: s.streak, book: [...s.book], quest: 1 }, log: seedLog(s.baseline, r),
   }));
   EXTRA.forEach((name, i) => {
     const baseline = .18 + r() * .24, xp = Math.round(20 + r() * 520);
     students.push({
-      id: 'x' + i, name, cls: '3-2', baseline, week: Math.round(70 + r() * 130), scanned: false, named: false,
+      id: 'x' + i, name, cls: '3B', baseline, week: Math.round(70 + r() * 130), scanned: false, named: false,
       pet: { xp, c: { veg: Math.round(r() * 14), lowWaste: Math.round(r() * 16), balanced: Math.round(r() * 16), quests: Math.round(r() * 6) }, en: 40 + Math.round(r() * 50), nu: 40 + Math.round(r() * 50), jo: 40 + Math.round(r() * 50), streak: Math.floor(r() * 7), book: [], quest: Math.floor(r() * 3) },
       log: seedLog(baseline, r),
     });
   });
   return {
-    v: 7,
+    v: 8,
     students,
     classes: CLASS_SEED.map(c => ({ ...c })),
     today: { trays: 140, zero: 17, co2: 11200, dish, servedNow: Object.fromEntries(MENU.map(d => [d.id, dish[d.id].served])), eating: 0, feed: [], clock: 11 * 60 + 48, trayNo: 412 },
@@ -896,13 +897,13 @@ function freshState() {
 }
 
 /* ------------------------------------------------------------ store (localStorage + cross-tab sync) */
-const KEY = 'plateloop-final-v7';
+const KEY = 'plateloop-sg-v8';
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('plateloop') : null;
 const subs = new Set();
 function readStored() {
   try {
     const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (!s || s.v !== 7) return null;
+    if (!s || s.v !== 8) return null;
     if (s.today.co2 == null) s.today.co2 = 11200; // saves from before the live CO₂ counter
     return s;
   } catch (e) { return null; }
@@ -933,10 +934,10 @@ PL.classStats = c => { const w = c.ret / c.served; return { w, red: (c.base - w)
 PL.classRows = () => PL.S.classes.map(c => ({ c, ...PL.classStats(c) })).sort((a, b) => b.red - a.red);
 PL.studentRows = () => [...PL.S.students].sort((a, b) => b.week - a.week || a.name.localeCompare(b.name));
 PL.streakRows = () => [...PL.S.students].sort((a, b) => b.pet.streak - a.pet.streak || b.week - a.week);
-PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3-2' && s.scanned).length;
+PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3B' && s.scanned).length;
 PL.schoolRows = () => {
   const cr = PL.S.classes.map(PL.classStats);
-  const us = { id: 'haneul', name: 'Haneul Elementary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
+  const us = { id: 'harbourlight', name: 'Harbourlight Primary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
   return [us, ...SCHOOLS].sort((a, b) => b.red - a.red);
 };
 PL.todayTotals = () => { let sv = 0, lf = 0, val = 0; MENU.forEach(d => { const x = PL.S.today.dish[d.id]; sv += x.served; lf += x.ret; val += x.ret * d.price; }); return { sv, lf, val, w: lf / sv }; };
@@ -1045,10 +1046,10 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
 /** Both scans in one go (used to simulate the rest of the class). */
 PL.scanTray = (sid, portion, eatPct) => { if (!PL.student(sid).before) PL.scanBefore(sid, portion); return PL.scanAfter(sid, eatPct); };
 PL.zeroRate = () => { const t = PL.S.today; return t.trays ? t.zero / t.trays : 0; };
-/** Simulate everyone in class 3-2 who hasn't finished both scans yet. */
+/** Simulate everyone in class 3B who hasn't finished both scans yet. */
 PL.scanRestOfClass = () => {
   let n = 0;
-  PL.S.students.filter(s => s.cls === '3-2' && !s.scanned).forEach(s => {
+  PL.S.students.filter(s => s.cls === '3B' && !s.scanned).forEach(s => {
     const p = Math.random() < .3 ? 'S' : Math.random() < .8 ? 'M' : 'L';
     const f = (s.baseline / .3) * (.5 + Math.random() * .6);
     PL.scanTray(s.id, p, Object.fromEntries(MENU.map(d => [d.id, Math.round(clamp(1 - TYPICAL_LEFT[d.id] * f, 0, 1) * 100)])));
@@ -1216,8 +1217,8 @@ PL.traySVG = ({ portion = 'M', left = null, scanning = false, labels = null, emp
       const rx = CELL.w * .36 * k, ry = CELL.h[ri] * .33 * k;
       s += `<path d="${blobPath(cx, cy, Math.min(rx, CELL.w * .45), Math.min(ry, CELL.h[ri] * .44), i * 1.7)}" fill="${d.color}" stroke="${d.edge}" stroke-width="1.5"/>`;
       if (d.id === 'rice') for (let j = 0; j < 14; j++) { const a = j * 2.4, rr = (j % 5) / 5 * .8; s += `<ellipse cx="${(cx + Math.cos(a) * rx * rr).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * rr).toFixed(1)}" rx="2.2" ry="1.3" fill="#8C6B4A" opacity=".5"/>`; }
-      if (d.id === 'kimchi' || d.id === 'bulgogi' || d.id === 'spinach') for (let j = 0; j < 5; j++) { const a = j * 1.9 + i; s += `<ellipse cx="${(cx + Math.cos(a) * rx * .45).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * .45).toFixed(1)}" rx="${(6 * k).toFixed(1)}" ry="${(3 * k).toFixed(1)}" fill="${d.edge}" opacity=".55" transform="rotate(${j * 40} ${cx} ${cy})"/>`; }
-      if (d.id === 'apple') for (let j = 0; j < 3; j++) s += `<path d="M${cx - 18 + j * 14} ${cy - 6 * k} q7 ${-10 * k} 14 0" stroke="#B5352A" stroke-width="3" fill="none" opacity=".7"/>`;
+      if (d.id === 'cabbage' || d.id === 'chicken' || d.id === 'kailan') for (let j = 0; j < 5; j++) { const a = j * 1.9 + i; s += `<ellipse cx="${(cx + Math.cos(a) * rx * .45).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * .45).toFixed(1)}" rx="${(6 * k).toFixed(1)}" ry="${(3 * k).toFixed(1)}" fill="${d.edge}" opacity=".55" transform="rotate(${j * 40} ${cx} ${cy})"/>`; }
+      if (d.id === 'melon') for (let j = 0; j < 6; j++) s += `<ellipse cx="${(cx - 20 + (j % 3) * 20).toFixed(1)}" cy="${(cy - 8 * k + Math.floor(j / 3) * 16 * k).toFixed(1)}" rx="2" ry="3" fill="#2B2B2E" opacity=".8"/>`;
     }
   });
   if (labels) MENU.forEach(d => {
@@ -1276,7 +1277,7 @@ G.init = st => {
     v: V, name: 'Loopi', stage,
     hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
     hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
-    plate: null, mess: (st.messSeed || ['spinach', 'kimchi', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
+    plate: null, mess: (st.messSeed || ['kailan', 'cabbage', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
     eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
   };
 };
@@ -1347,7 +1348,7 @@ G.BADGES = [
   { id: 'small', name: 'Small and clean', item: 'bow', how: 'Finish a small portion', test: st => st.log.some(l => l.portion === 'S' && l.w < .12) },
   { id: 'streak', name: 'Three in a row', item: 'scarf', how: '3 clean trays in a row', test: st => st.pet.streak >= 3 },
   { id: 'veg', name: 'Veggie explorer', item: 'flower', how: 'Try the veggies 10 times', test: st => st.pet.c.veg >= 10 },
-  { id: 'spinach', name: 'Spinach week', item: 'glasses', how: 'Taste the spinach 3 times', test: st => st.pet.quest >= 3 },
+  { id: 'kailan', name: 'Kailan week', item: 'glasses', how: 'Taste the kailan 3 times', test: st => st.pet.quest >= 3 },
   { id: 'balanced', name: 'Balanced plate', item: 'halo', how: 'Eat from every food group 5 times', test: st => st.pet.c.balanced >= 5 },
   { id: 'class', name: 'Team goal', item: 'wings', how: 'Your class goes under 20% waste', test: st => { const c = PL.S.classes.find(c => c.id === st.cls); return c.ret / c.served < .2; } },
   { id: 'top3', name: 'Podium', item: 'headphones', how: 'Be top 3 in your class', test: st => PL.studentRows().findIndex(s => s.id === st.id) < 3 },
@@ -1701,7 +1702,7 @@ const roomHooks = {
     const lines = ['Can we play ball?', null, null];
     if (!st.before) lines.push('Scan your tray before you eat!');
     else if (!st.after) lines.push('Scan your tray again after lunch.');
-    if (st.pet.quest < 3) lines.push('What does spinach taste like?');
+    if (st.pet.quest < 3) lines.push('What does kailan taste like?');
     if (g.hunger <= 1) lines.push('My tummy is rumbling.');
     return lines[Math.floor(Math.random() * lines.length)];
   },
@@ -1739,7 +1740,7 @@ function lunchTab(st) {
     }).join('')}</section>
     <p class="foot">${a.zero ? 'Nothing left. That tray grew a fruit on the school tree.' : a.w < st.baseline ? `Less left than your usual ${pct(st.baseline)}.` : `A bit more than your usual ${pct(st.baseline)}. A smaller portion is fine.`}${a.co2 > 0 ? ` You kept about ${a.co2} g of CO₂ out of the air today.` : ''}</p>`;
   } else {
-    out += `<h4 class="sec">Today's menu</h4><section class="group">${MENU.map(d => `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${d.name}${d.id === PL.CRAVING && st.pet.quest < 3 ? ' <em class="tag">Spinach week</em>' : ''}</span><span class="g-v num">${Math.round(d.g.M * d.kcal)} kcal</span></div>`).join('')}</section>`;
+    out += `<h4 class="sec">Today's menu</h4><section class="group">${MENU.map(d => `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${d.name}${d.id === PL.CRAVING && st.pet.quest < 3 ? ' <em class="tag">Kailan week</em>' : ''}</span><span class="g-v num">${Math.round(d.g.M * d.kcal)} kcal</span></div>`).join('')}</section>`;
   }
 
   const n = a ? a.intake : st.log[0].n, when = a ? 'today' : st.log[0].day.split(' ')[0];
@@ -1757,11 +1758,11 @@ function lunchTab(st) {
   const Hh = 110, bw = 16;
   let svg = `<svg viewBox="0 0 300 ${Hh + 18}" role="img" aria-label="How much you ate each day, next to your class">`;
   days.forEach((l, i) => { const x = 22 + i * 56, you = (1 - l.w) * Hh, avg = clsAvg(i) * Hh; svg += `<rect x="${x}" y="${Hh - avg}" width="${bw}" height="${avg}" rx="5" fill="var(--fill3)"/><rect x="${x + bw + 3}" y="${Hh - you}" width="${bw}" height="${you}" rx="5" fill="var(--tint)"/><text class="axis" x="${x + bw}" y="${Hh + 14}" text-anchor="middle">${l.day.slice(0, 3)}</text>`; });
-  out += `<h4 class="sec">This week</h4><section class="group chart">${svg}</svg><div class="mix-key"><span style="--c:var(--tint)">You</span><span style="--c:var(--fill3)">Class 3-2</span><span>share of lunch eaten</span></div></section>`;
+  out += `<h4 class="sec">This week</h4><section class="group chart">${svg}</svg><div class="mix-key"><span style="--c:var(--tint)">You</span><span style="--c:var(--fill3)">Class 3B</span><span>share of lunch eaten</span></div></section>`;
 
   const c = PL.S.classes.find(c => c.id === st.cls), cw = c.ret / c.served;
   out += `<h4 class="sec">Goals</h4><section class="group">
-    <div class="goal"><div><b>Spinach week</b><span>Taste the spinach namul 3 times. A bite counts.</span></div>${pips(Math.min(3, st.pet.quest), 3, 'q')}</div>
+    <div class="goal"><div><b>Kailan week</b><span>Taste the stir-fried kailan 3 times. A bite counts.</span></div>${pips(Math.min(3, st.pet.quest), 3, 'q')}</div>
     <div class="goal"><div><b>Class ${st.cls} under 20% waste</b><span>The class is at ${pct(cw)} this week.</span></div>${cw < .2 ? `<span class="ok-mark">${ICON.check}</span>` : `<span class="g-v num">${pct(cw)}</span>`}</div>
   </section>`;
   return out;
@@ -1795,7 +1796,7 @@ function meTab(st, g) {
   return `
   <section class="group profile">
     <canvas width="120" height="100" data-pet="${st.id}"></canvas>
-    <div><b>${esc(st.name)}</b><span>Class ${st.cls} · Haneul Elementary</span></div>
+    <div><b>${esc(st.name)}</b><span>Class ${st.cls} · Harbourlight Primary</span></div>
   </section>
   <div class="me-stats">
     <div><b class="num">${st.pet.c.lowWaste}</b><span>clean trays</span></div>

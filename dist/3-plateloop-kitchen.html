@@ -782,7 +782,7 @@ PL.$$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = PL.clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 PL.pct = v => Math.round(v * 100) + '%';
 PL.fmt1 = v => (Math.round(v * 10) / 10).toFixed(1);
-PL.money = v => '$' + Math.round(v).toLocaleString('en-US');
+PL.money = v => 'S$' + Math.round(v).toLocaleString('en-US');
 PL.esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 PL.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rng = PL.rng = seed => { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
@@ -793,15 +793,15 @@ PL.toast = msg => {
 
 /* ------------------------------------------------------------ constants */
 const MENU = PL.MENU = [
-  { id: 'spinach', n: { c: .04, p: .03, f: .035 }, name: 'Spinach namul', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .55, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
-  { id: 'kimchi', n: { c: .04, p: .015, f: .005 }, name: 'Kimchi', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .3, price: .0045, color: '#D5502F', edge: '#A23A20', slot: [1, 0] },
-  { id: 'apple', n: { c: .14, p: .003, f: .002 }, name: 'Apple slices', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .52, price: .005, color: '#F1DDA4', edge: '#C9A95E', slot: [2, 0] },
-  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Multigrain rice', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
-  { id: 'bulgogi', n: { c: .08, p: .18, f: .12 }, name: 'Beef bulgogi', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 2.1, price: .019, color: '#7A4424', edge: '#4F2A15', slot: [1, 1] },
-  { id: 'soup', n: { c: .04, p: .03, f: .015 }, name: 'Soybean paste soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .4, price: .0021, color: '#C0843F', edge: '#8E5E28', slot: [2, 1] },
+  { id: 'kailan', n: { c: .04, p: .03, f: .04 }, name: 'Stir-fried kailan', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .6, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
+  { id: 'cabbage', n: { c: .05, p: .012, f: .02 }, name: 'Braised cabbage', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .4, price: .004, color: '#D8E6A8', edge: '#9DB36A', slot: [1, 0] },
+  { id: 'melon', n: { c: .08, p: .006, f: .002 }, name: 'Watermelon', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .3, price: .004, color: '#F2545B', edge: '#B8323A', slot: [2, 0] },
+  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Brown rice mix', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
+  { id: 'chicken', n: { c: .03, p: .22, f: .08 }, name: 'Soy sauce chicken', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 1.75, price: .012, color: '#9C5A2E', edge: '#6B3A1A', slot: [1, 1] },
+  { id: 'soup', n: { c: .04, p: .02, f: .01 }, name: 'ABC soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .3, price: .0021, color: '#E8A25C', edge: '#B8722F', slot: [2, 1] },
 ];
 const DISH = PL.DISH = Object.fromEntries(MENU.map(d => [d.id, d]));
-/* nutrition: per-lunch targets for a grade 3 student (illustrative, about a third of the daily need) */
+/* nutrition: per-lunch targets for a Primary 3 student (illustrative, about a third of the daily need) */
 PL.TARGET = { kcal: 580, c: 85, p: 25, f: 16 };
 PL.NUTRIENTS = [['kcal', 'Calories', 'kcal'], ['c', 'Carbs', 'g'], ['p', 'Protein', 'g'], ['f', 'Fat', 'g']];
 PL.nutrientsOf = grams => {
@@ -813,8 +813,8 @@ PL.nutrientsOf = grams => {
 PL.nStatus = (k, v) => { const r = v / PL.TARGET[k]; return r < .8 ? 'low' : r > 1.3 ? 'high' : 'ok'; };
 /* environment equivalents (illustrative factors: 2.5 kg CO2e per kg food, a pine tree absorbs ~6.6 kg CO2 a year, a car emits ~0.17 kg CO2 per km) */
 PL.env = kg => { const co2 = kg * 2.5; return { kg, co2, trees: co2 / 6.6, km: co2 / .17 }; };
-PL.CRAVING = 'spinach';
-const TYPICAL_LEFT = PL.TYPICAL_LEFT = { spinach: .50, kimchi: .44, apple: .10, rice: .13, bulgogi: .05, soup: .38 };
+PL.CRAVING = 'kailan';
+const TYPICAL_LEFT = PL.TYPICAL_LEFT = { kailan: .50, cabbage: .44, melon: .10, rice: .13, chicken: .05, soup: .38 };
 PL.FORMS = {
   leafy: { name: 'Leafy', why: 'veggies tried', key: 'veg' },
   crystal: { name: 'Crystal', why: 'low-waste lunches', key: 'lowWaste' },
@@ -825,36 +825,37 @@ const STAGES = PL.STAGES = [{ id: 'egg', name: 'Egg', at: 0 }, { id: 'baby', nam
 PL.SCHOOL_BASELINE = 0.29;
 PL.CO2_PER_KG = 2.5; // illustrative kgCO2e per kg of food not wasted; swap for an EPA WARM / WRAP factor
 PL.PRESETS = {
-  'Picky eater': { rice: 70, bulgogi: 100, soup: 30, spinach: 0, kimchi: 10, apple: 100 },
-  'Just right': { rice: 100, bulgogi: 100, soup: 85, spinach: 90, kimchi: 80, apple: 100 },
-  'Tried everything': { rice: 95, bulgogi: 100, soup: 70, spinach: 60, kimchi: 55, apple: 100 },
-  'Not hungry': { rice: 40, bulgogi: 60, soup: 20, spinach: 10, kimchi: 0, apple: 80 },
+  'Picky eater': { rice: 70, chicken: 100, soup: 30, kailan: 0, cabbage: 10, melon: 100 },
+  'Just right': { rice: 100, chicken: 100, soup: 85, kailan: 90, cabbage: 80, melon: 100 },
+  'Tried everything': { rice: 95, chicken: 100, soup: 70, kailan: 60, cabbage: 55, melon: 100 },
+  'Not hungry': { rice: 40, chicken: 60, soup: 20, kailan: 10, cabbage: 0, melon: 80 },
 };
 
 /* ------------------------------------------------------------ seed data */
 const NAMED = [
-  { id: 's1', name: 'Minji', baseline: .24, xp: 262, c: { veg: 14, lowWaste: 9, balanced: 11, quests: 3 }, en: 72, nu: 80, jo: 66, streak: 3, book: ['crystal'], week: 168 },
-  { id: 's2', name: 'Joon', baseline: .38, xp: 96, c: { veg: 2, lowWaste: 5, balanced: 4, quests: 1 }, en: 48, nu: 42, jo: 55, streak: 1, book: [], week: 121 },
-  { id: 's3', name: 'Aria', baseline: .19, xp: 455, c: { veg: 8, lowWaste: 22, balanced: 12, quests: 4 }, en: 88, nu: 70, jo: 81, streak: 9, book: ['leafy', 'guardian'], week: 204 },
-  { id: 's4', name: 'Leo', baseline: .41, xp: 24, c: { veg: 1, lowWaste: 1, balanced: 1, quests: 0 }, en: 35, nu: 40, jo: 50, streak: 0, book: [], week: 88 },
-  { id: 's5', name: 'Sora', baseline: .27, xp: 318, c: { veg: 6, lowWaste: 8, balanced: 9, quests: 7 }, en: 64, nu: 61, jo: 77, streak: 2, book: ['explorer'], week: 176 },
+  { id: 's1', name: 'Wei Ling', baseline: .24, xp: 262, c: { veg: 14, lowWaste: 9, balanced: 11, quests: 3 }, en: 72, nu: 80, jo: 66, streak: 3, book: ['crystal'], week: 168 },
+  { id: 's2', name: 'Arjun', baseline: .38, xp: 96, c: { veg: 2, lowWaste: 5, balanced: 4, quests: 1 }, en: 48, nu: 42, jo: 55, streak: 1, book: [], week: 121 },
+  { id: 's3', name: 'Aisyah', baseline: .19, xp: 455, c: { veg: 8, lowWaste: 22, balanced: 12, quests: 4 }, en: 88, nu: 70, jo: 81, streak: 9, book: ['leafy', 'guardian'], week: 204 },
+  { id: 's4', name: 'Ethan', baseline: .41, xp: 24, c: { veg: 1, lowWaste: 1, balanced: 1, quests: 0 }, en: 35, nu: 40, jo: 50, streak: 0, book: [], week: 88 },
+  { id: 's5', name: 'Mei Xin', baseline: .27, xp: 318, c: { veg: 6, lowWaste: 8, balanced: 9, quests: 7 }, en: 64, nu: 61, jo: 77, streak: 2, book: ['explorer'], week: 176 },
   { id: 's6', name: 'Daniel', baseline: .22, xp: 540, c: { veg: 9, lowWaste: 12, balanced: 21, quests: 3 }, en: 90, nu: 88, jo: 73, streak: 5, book: ['crystal', 'leafy'], week: 159 },
 ];
-const EXTRA = ['Hana', 'Yuna', 'Seojun', 'Jiho', 'Eunwoo', 'Doyun', 'Haeun', 'Siwoo', 'Jimin', 'Yejun', 'Chaewon', 'Minseo', 'Juwon', 'Gaeun', 'Taeyang', 'Somin', 'Hyunwoo', 'Dahye', 'Ian', 'Mia', 'Noah', 'Ella'];
+const EXTRA = ['Jun Hao', 'Nur Iman', 'Priya', 'Ryan', 'Zi Xuan', 'Hafiz', 'Kai Xin', 'Siti', 'Rohan', 'Chloe', 'Jia Hui', 'Irfan', 'Ananya', 'Marcus', 'Xin Yi', 'Farhan', 'Divya', 'Isaac', 'Hui Min', 'Adam', 'Sarah', 'Kavin'];
 const CLASS_SEED = [
-  { id: '3-1', base: .30, served: 61.6, ret: 12.9, form: 'leafy', xp: 380, streak: 4 },
-  { id: '3-2', base: .31, served: 46.2, ret: 8.9, form: 'explorer', xp: 350, streak: 3 },
-  { id: '3-3', base: .27, served: 62.0, ret: 14.6, form: 'guardian', xp: 240, streak: 1 },
-  { id: '3-4', base: .33, served: 60.8, ret: 13.4, form: 'crystal', xp: 410, streak: 2 },
-  { id: '3-5', base: .29, served: 63.1, ret: 11.7, form: 'crystal', xp: 460, streak: 5 },
-  { id: '3-6', base: .26, served: 59.9, ret: 16.2, form: 'leafy', xp: 120, streak: 0 },
+  { id: '3A', base: .30, served: 61.6, ret: 12.9, form: 'leafy', xp: 380, streak: 4 },
+  { id: '3B', base: .31, served: 46.2, ret: 8.9, form: 'explorer', xp: 350, streak: 3 },
+  { id: '3C', base: .27, served: 62.0, ret: 14.6, form: 'guardian', xp: 240, streak: 1 },
+  { id: '3D', base: .33, served: 60.8, ret: 13.4, form: 'crystal', xp: 410, streak: 2 },
+  { id: '3E', base: .29, served: 63.1, ret: 11.7, form: 'crystal', xp: 460, streak: 5 },
+  { id: '3F', base: .26, served: 59.9, ret: 16.2, form: 'leafy', xp: 120, streak: 0 },
 ];
 const SCHOOLS = [
-  { id: 'bora', name: 'Bora Elementary', red: .34, acc: .93, kg: 1510 },
-  { id: 'saebit', name: 'Saebit Elementary', red: .27, acc: .91, kg: 1122 },
-  { id: 'dasom', name: 'Dasom Elementary', red: .22, acc: .89, kg: 864 },
-  { id: 'nuri', name: 'Nuri Middle School', red: .19, acc: .90, kg: 1390 },
-  { id: 'hangang', name: 'Hangang Elementary', red: .12, acc: .86, kg: 402 },
+  // fictional schools for the demo
+  { id: 'maple', name: 'Maple Bay Primary', red: .34, acc: .93, kg: 1510 },
+  { id: 'orchid', name: 'Orchid Grove Primary', red: .27, acc: .91, kg: 1122 },
+  { id: 'sunbird', name: 'Sunbird Primary', red: .22, acc: .89, kg: 864 },
+  { id: 'kingfisher', name: 'Kingfisher Secondary', red: .19, acc: .90, kg: 1390 },
+  { id: 'tembusu', name: 'Tembusu Hill Primary', red: .12, acc: .86, kg: 402 },
 ];
 const DAYS = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 
@@ -872,19 +873,19 @@ function freshState() {
   const dish = {};
   MENU.forEach(d => { const served = 140 * d.g.M * (0.92 + r() * .1); dish[d.id] = { served, ret: served * TYPICAL_LEFT[d.id] * (0.85 + r() * .25) }; });
   const students = NAMED.map(s => ({
-    id: s.id, name: s.name, cls: '3-2', baseline: s.baseline, week: s.week, scanned: false, named: true,
+    id: s.id, name: s.name, cls: '3B', baseline: s.baseline, week: s.week, scanned: false, named: true,
     pet: { xp: s.xp, c: { ...s.c }, en: s.en, nu: s.nu, jo: s.jo, streak: s.streak, book: [...s.book], quest: 1 }, log: seedLog(s.baseline, r),
   }));
   EXTRA.forEach((name, i) => {
     const baseline = .18 + r() * .24, xp = Math.round(20 + r() * 520);
     students.push({
-      id: 'x' + i, name, cls: '3-2', baseline, week: Math.round(70 + r() * 130), scanned: false, named: false,
+      id: 'x' + i, name, cls: '3B', baseline, week: Math.round(70 + r() * 130), scanned: false, named: false,
       pet: { xp, c: { veg: Math.round(r() * 14), lowWaste: Math.round(r() * 16), balanced: Math.round(r() * 16), quests: Math.round(r() * 6) }, en: 40 + Math.round(r() * 50), nu: 40 + Math.round(r() * 50), jo: 40 + Math.round(r() * 50), streak: Math.floor(r() * 7), book: [], quest: Math.floor(r() * 3) },
       log: seedLog(baseline, r),
     });
   });
   return {
-    v: 7,
+    v: 8,
     students,
     classes: CLASS_SEED.map(c => ({ ...c })),
     today: { trays: 140, zero: 17, co2: 11200, dish, servedNow: Object.fromEntries(MENU.map(d => [d.id, dish[d.id].served])), eating: 0, feed: [], clock: 11 * 60 + 48, trayNo: 412 },
@@ -896,13 +897,13 @@ function freshState() {
 }
 
 /* ------------------------------------------------------------ store (localStorage + cross-tab sync) */
-const KEY = 'plateloop-final-v7';
+const KEY = 'plateloop-sg-v8';
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('plateloop') : null;
 const subs = new Set();
 function readStored() {
   try {
     const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (!s || s.v !== 7) return null;
+    if (!s || s.v !== 8) return null;
     if (s.today.co2 == null) s.today.co2 = 11200; // saves from before the live CO₂ counter
     return s;
   } catch (e) { return null; }
@@ -933,10 +934,10 @@ PL.classStats = c => { const w = c.ret / c.served; return { w, red: (c.base - w)
 PL.classRows = () => PL.S.classes.map(c => ({ c, ...PL.classStats(c) })).sort((a, b) => b.red - a.red);
 PL.studentRows = () => [...PL.S.students].sort((a, b) => b.week - a.week || a.name.localeCompare(b.name));
 PL.streakRows = () => [...PL.S.students].sort((a, b) => b.pet.streak - a.pet.streak || b.week - a.week);
-PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3-2' && s.scanned).length;
+PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3B' && s.scanned).length;
 PL.schoolRows = () => {
   const cr = PL.S.classes.map(PL.classStats);
-  const us = { id: 'haneul', name: 'Haneul Elementary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
+  const us = { id: 'harbourlight', name: 'Harbourlight Primary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
   return [us, ...SCHOOLS].sort((a, b) => b.red - a.red);
 };
 PL.todayTotals = () => { let sv = 0, lf = 0, val = 0; MENU.forEach(d => { const x = PL.S.today.dish[d.id]; sv += x.served; lf += x.ret; val += x.ret * d.price; }); return { sv, lf, val, w: lf / sv }; };
@@ -1045,10 +1046,10 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
 /** Both scans in one go (used to simulate the rest of the class). */
 PL.scanTray = (sid, portion, eatPct) => { if (!PL.student(sid).before) PL.scanBefore(sid, portion); return PL.scanAfter(sid, eatPct); };
 PL.zeroRate = () => { const t = PL.S.today; return t.trays ? t.zero / t.trays : 0; };
-/** Simulate everyone in class 3-2 who hasn't finished both scans yet. */
+/** Simulate everyone in class 3B who hasn't finished both scans yet. */
 PL.scanRestOfClass = () => {
   let n = 0;
-  PL.S.students.filter(s => s.cls === '3-2' && !s.scanned).forEach(s => {
+  PL.S.students.filter(s => s.cls === '3B' && !s.scanned).forEach(s => {
     const p = Math.random() < .3 ? 'S' : Math.random() < .8 ? 'M' : 'L';
     const f = (s.baseline / .3) * (.5 + Math.random() * .6);
     PL.scanTray(s.id, p, Object.fromEntries(MENU.map(d => [d.id, Math.round(clamp(1 - TYPICAL_LEFT[d.id] * f, 0, 1) * 100)])));
@@ -1216,8 +1217,8 @@ PL.traySVG = ({ portion = 'M', left = null, scanning = false, labels = null, emp
       const rx = CELL.w * .36 * k, ry = CELL.h[ri] * .33 * k;
       s += `<path d="${blobPath(cx, cy, Math.min(rx, CELL.w * .45), Math.min(ry, CELL.h[ri] * .44), i * 1.7)}" fill="${d.color}" stroke="${d.edge}" stroke-width="1.5"/>`;
       if (d.id === 'rice') for (let j = 0; j < 14; j++) { const a = j * 2.4, rr = (j % 5) / 5 * .8; s += `<ellipse cx="${(cx + Math.cos(a) * rx * rr).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * rr).toFixed(1)}" rx="2.2" ry="1.3" fill="#8C6B4A" opacity=".5"/>`; }
-      if (d.id === 'kimchi' || d.id === 'bulgogi' || d.id === 'spinach') for (let j = 0; j < 5; j++) { const a = j * 1.9 + i; s += `<ellipse cx="${(cx + Math.cos(a) * rx * .45).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * .45).toFixed(1)}" rx="${(6 * k).toFixed(1)}" ry="${(3 * k).toFixed(1)}" fill="${d.edge}" opacity=".55" transform="rotate(${j * 40} ${cx} ${cy})"/>`; }
-      if (d.id === 'apple') for (let j = 0; j < 3; j++) s += `<path d="M${cx - 18 + j * 14} ${cy - 6 * k} q7 ${-10 * k} 14 0" stroke="#B5352A" stroke-width="3" fill="none" opacity=".7"/>`;
+      if (d.id === 'cabbage' || d.id === 'chicken' || d.id === 'kailan') for (let j = 0; j < 5; j++) { const a = j * 1.9 + i; s += `<ellipse cx="${(cx + Math.cos(a) * rx * .45).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * .45).toFixed(1)}" rx="${(6 * k).toFixed(1)}" ry="${(3 * k).toFixed(1)}" fill="${d.edge}" opacity=".55" transform="rotate(${j * 40} ${cx} ${cy})"/>`; }
+      if (d.id === 'melon') for (let j = 0; j < 6; j++) s += `<ellipse cx="${(cx - 20 + (j % 3) * 20).toFixed(1)}" cy="${(cy - 8 * k + Math.floor(j / 3) * 16 * k).toFixed(1)}" rx="2" ry="3" fill="#2B2B2E" opacity=".8"/>`;
     }
   });
   if (labels) MENU.forEach(d => {
@@ -1276,7 +1277,7 @@ G.init = st => {
     v: V, name: 'Loopi', stage,
     hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
     hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
-    plate: null, mess: (st.messSeed || ['spinach', 'kimchi', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
+    plate: null, mess: (st.messSeed || ['kailan', 'cabbage', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
     eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
   };
 };
@@ -1347,7 +1348,7 @@ G.BADGES = [
   { id: 'small', name: 'Small and clean', item: 'bow', how: 'Finish a small portion', test: st => st.log.some(l => l.portion === 'S' && l.w < .12) },
   { id: 'streak', name: 'Three in a row', item: 'scarf', how: '3 clean trays in a row', test: st => st.pet.streak >= 3 },
   { id: 'veg', name: 'Veggie explorer', item: 'flower', how: 'Try the veggies 10 times', test: st => st.pet.c.veg >= 10 },
-  { id: 'spinach', name: 'Spinach week', item: 'glasses', how: 'Taste the spinach 3 times', test: st => st.pet.quest >= 3 },
+  { id: 'kailan', name: 'Kailan week', item: 'glasses', how: 'Taste the kailan 3 times', test: st => st.pet.quest >= 3 },
   { id: 'balanced', name: 'Balanced plate', item: 'halo', how: 'Eat from every food group 5 times', test: st => st.pet.c.balanced >= 5 },
   { id: 'class', name: 'Team goal', item: 'wings', how: 'Your class goes under 20% waste', test: st => { const c = PL.S.classes.find(c => c.id === st.cls); return c.ret / c.served < .2; } },
   { id: 'top3', name: 'Podium', item: 'headphones', how: 'Be top 3 in your class', test: st => PL.studentRows().findIndex(s => s.id === st.id) < 3 },
@@ -1371,17 +1372,17 @@ G.wear = (st, item) => {
 const { $, $$, pct, fmt1, money, esc, MENU, rng, clamp } = PL;
 
 const HISTORY = (() => { const r = rng(11); return Array.from({ length: 30 }, (_, i) => i < 10 ? .29 + (r() - .5) * .04 : clamp(.29 - (i - 9) * .0065 + (r() - .5) * .03, .12, .35)); })();
-const TREND = { spinach: [.46, +17, 'Spinach Week quest is working: 46% → 63% eaten on quest days.'], kimchi: [.55, +1, 'Serve 25 g by default and let students take more.'], apple: [.88, +1, 'Popular. Keep it.'], rice: [.82, +4, 'More students choose Small since portion sizes started.'], bulgogi: [.94, +2, 'Most popular dish. Keep the portion.'], soup: [.58, -2, 'Cut the default ladle from 200 to 150 ml.'] };
+const TREND = { kailan: [.46, +17, 'Kailan Week quest is working: 46% → 63% eaten on quest days.'], cabbage: [.55, +1, 'Serve 25 g by default and let students take more.'], melon: [.88, +1, 'Popular. Keep it.'], rice: [.82, +4, 'More students choose Small since portion sizes started.'], chicken: [.94, +2, 'Most popular dish. Keep the portion.'], soup: [.58, -2, 'Cut the default ladle from 200 to 150 ml.'] };
 const TOMORROW = [
   { id: 'rice', name: 'Rice', std: 180, learned: 148, err: .05, tags: ['grain'], bom: [['Rice (raw)', .42, 2.2]] },
-  { id: 'curry', name: 'Pork & vegetable curry', std: 150, learned: 131, err: .06, tags: ['protein'], bom: [['Pork shoulder', .20, 9.0], ['Potato', .22, 1.6], ['Carrot', .10, 1.8], ['Onion', .14, 1.4], ['Curry roux', .07, 7.0]] },
-  { id: 'soup', name: 'Seaweed soup', std: 200, learned: 122, err: .09, tags: ['soup'], bom: [['Dried seaweed', .012, 30], ['Beef brisket', .03, 18], ['Soy sauce', .02, 3.0]] },
+  { id: 'curry', name: 'Chicken curry', std: 150, learned: 131, err: .06, tags: ['protein'], bom: [['Chicken thigh', .22, 7.5], ['Potato', .22, 1.6], ['Carrot', .10, 1.8], ['Onion', .12, 1.4], ['Curry paste', .06, 8.0]] },
+  { id: 'soup', name: 'Fishball soup', std: 200, learned: 122, err: .09, tags: ['soup'], bom: [['Fishballs', .08, 9.0], ['Chinese cabbage', .10, 2.0], ['Soy sauce', .02, 3.0]] },
   { id: 'tofu', name: 'Fried tofu', std: 70, learned: 55, err: .08, tags: ['protein'], bom: [['Firm tofu', .9, 3.2], ['Cooking oil', .05, 2.5]] },
   { id: 'sprout', name: 'Bean sprout side', std: 50, learned: 29, err: .11, tags: ['veg'], bom: [['Bean sprouts', .95, 2.4], ['Sesame oil', .02, 12]] },
-  { id: 'kimchi', name: 'Kimchi', std: 40, learned: 22, err: .10, tags: ['veg'], bom: [['Kimchi', 1.0, 4.5]] },
-  { id: 'yogurt', name: 'Yogurt', std: 85, learned: 81, err: .03, tags: ['fruit'], bom: [['Yogurt', 1.0, 3.5]] },
+  { id: 'cucumber', name: 'Cucumber salad', std: 40, learned: 22, err: .10, tags: ['veg'], bom: [['Cucumber', 1.0, 2.2]] },
+  { id: 'fruit', name: 'Papaya', std: 85, learned: 81, err: .03, tags: ['fruit'], bom: [['Papaya', 1.0, 2.0]] },
 ];
-const INVENTORY = { 'Rice (raw)': 60, 'Kimchi': 12, 'Onion': 8, 'Soy sauce': 10, 'Cooking oil': 15, 'Sesame oil': 2 };
+const INVENTORY = { 'Rice (raw)': 60, 'Onion': 8, 'Soy sauce': 10, 'Cooking oil': 15, 'Sesame oil': 2, 'Curry paste': 3 };
 const ENROLLED = 840;
 const MAPE = TOMORROW.reduce((a, d) => a + d.err, 0) / TOMORROW.length;
 const SEED_MIX = { S: 35, M: 84, L: 21 }; // portion sizes of the 140 trays scanned before the demo starts
@@ -1405,7 +1406,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="kit">
     <aside class="kit-side">
-      <div class="who"><span class="kit-logo" aria-hidden="true"></span><div><b>PlateLoop Kitchen</b><span>Haneul Elementary</span></div></div>
+      <div class="who"><span class="kit-logo" aria-hidden="true"></span><div><b>PlateLoop Kitchen</b><span>Harbourlight Primary</span></div></div>
       ${NAV.map(([id, label, ic]) => `<button data-view="${id}">${ic}${label}</button>`).join('')}
       <div class="kit-foot"><div id="kit-live"></div><button class="linkish" data-reset style="font-size:13px">Reset demo</button></div>
     </aside>
@@ -1452,7 +1453,7 @@ function overview() {
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Live scans</h3><span class="hint">Tray numbers, not names</span></div>
       <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}</span></div>`).join('')
-        : `<p class="hint" style="padding:22px 2px">Class 3-2 is about to eat. Scans from the PlateLoop scanner appear here the moment they happen.</p>`}</div></div>
+        : `<p class="hint" style="padding:22px 2px">Class 3B is about to eat. Scans from the PlateLoop scanner appear here the moment they happen.</p>`}</div></div>
     <div class="card chart"><h3>Eaten by dish</h3><p class="hint">Share of each dish eaten on finished trays</p>${chartDish()}</div>
   </div>
   <div class="card chart"><h3>Plate waste, last 30 school days</h3><p class="hint">Food left ÷ food served, whole school</p>${chartTrend()}</div>`;
@@ -1527,17 +1528,17 @@ function nutrition() {
   const status = { low: ['Low', 'low'], ok: ['Adequate', 'ok'], high: ['Too much', 'mid'] };
   return `
   <div class="page-head"><div><h1>Nutrition</h1><p>What students actually ate at lunch, from the difference between the before and after scans, against the school-lunch target.</p></div></div>
-  <div class="card"><div class="row spread"><h3>Average intake per student</h3><span class="hint">Class 3-2 · ${n} students · latest lunch</span></div>
+  <div class="card"><div class="row spread"><h3>Average intake per student</h3><span class="hint">Class 3B · ${n} students · latest lunch</span></div>
     <div class="nut-legend"><span class="l1">Low</span><span class="l2">Adequate</span><span class="l3">Too much</span></div>
     <div class="nut-rows">${PL.NUTRIENTS.map(([k, label, unit]) => { const [t, c] = status[PL.nStatus(k, avg[k])]; return `<div class="nut-row"><b>${label}</b>${zoneBar(k, avg[k])}<span class="num">${avg[k]} ${unit} <small>/ ${PL.TARGET[k]}</small></span><span class="flag ${c}">${t}</span></div>`; }).join('')}</div>
-    <p class="hint" style="margin-top:12px">Targets are per lunch for a grade 3 student (about a third of the daily need). Replace them with your national school-meal standard.</p></div>
+    <p class="hint" style="margin-top:12px">Targets are per lunch for a Primary 3 student (about a third of the daily need). Replace them with the Health Promotion Board's school meal guidelines.</p></div>
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Students to check on</h3><span class="pill orange">${low.length} flagged</span></div><p class="hint">Ate less than 60% of the calorie target at their last lunch. Visible to the school dietitian and homeroom teacher only.</p>
       <div class="lowlist">${low.length ? low.slice(0, 8).map(x => `<div><span class="av">${esc(x.s.name[0])}</span><div><b>${esc(x.s.name)} · Class ${x.s.cls}</b><span>${x.n.kcal} kcal · protein ${x.n.p} g</span></div><span class="flag low">${pct(x.r)}</span></div>`).join('') : '<p class="hint" style="padding:12px 0">Nobody below 60% right now.</p>'}</div></div>
     <div class="card"><h3>Where nutrients are lost</h3><p class="hint">Nutrients served but left on trays today, all finished trays</p>
       ${(() => { const left = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].ret])); const served = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].served])); const L = PL.nutrientsOf(left), S = PL.nutrientsOf(served);
         return `<div class="nut-rows" style="margin-top:12px">${PL.NUTRIENTS.map(([k, label, unit]) => `<div class="nut-row lost"><b>${label}</b><div class="zbar"><i class="high" style="width:${L[k] / S[k] * 100}%"></i></div><span class="num">${pct(L[k] / S[k])}</span><span class="hint">${Math.round(L[k] / 1000 * (unit === 'g' ? 1 : 1)).toLocaleString('en-US')}${unit === 'g' ? ' kg' : 'k kcal'}</span></div>`).join('')}</div>`; })()}
-      <p class="hint" style="margin-top:12px">Vegetables carry most of the lost fibre and vitamins. The Spinach Week quest targets this.</p></div>
+      <p class="hint" style="margin-top:12px">Vegetables carry most of the lost fibre and vitamins. The Kailan Week quest targets this.</p></div>
   </div>`;
 }
 
@@ -1551,7 +1552,7 @@ function environment() {
   const gy = t + ih - goal / max * ih;
   chart += `<line x1="${l}" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/><text class="axis" x="${W - 8}" y="${gy - 6}" text-anchor="end" style="fill:var(--orange)">Goal 20%</text></svg>`;
   return `
-  <div class="page-head"><div><h1>Environment</h1><p>The school's impact, shown on the cafeteria screen and in every student's Loopi app.</p></div></div>
+  <div class="page-head"><div><h1>Environment</h1><p>The school's impact, shown on the canteen screen and in every student's Loopi app.</p></div></div>
   <div class="env-hero">
     <div class="env-tree"><canvas id="env-tree" width="200" height="170" aria-label="School Green Tree"></canvas><div><b class="num">${PL.S.today.zero}</b> fruits today · one for every zero-leftover tray</div></div>
     <div class="env-big"><div class="k">CO₂ avoided this term</div><div class="v num">${(e.co2 / 1000).toFixed(2)} t</div><div class="s">from ${Math.round(e.kg).toLocaleString('en-US')} kg of food not wasted</div>
@@ -1562,15 +1563,15 @@ function environment() {
     <div class="card"><h3>Waste by class this week</h3><p class="hint">Compared with each class's starting level</p>
       <div class="lb" style="margin-top:12px;box-shadow:none;background:var(--fill)">${PL.classRows().map((r, i) => `<div class="lb-row ${i < 3 ? 'top' + (i + 1) : ''}"><span class="lb-rank">${i + 1}</span><canvas width="40" height="34" data-cls="${r.c.id}"></canvas><div><div class="lb-name">Class ${r.c.id}</div><div class="lb-sub">waste ${pct(r.w)} · started at ${pct(r.c.base)}</div></div><div class="lb-val">${r.red > 0 ? '−' + pct(r.red) : '0%'}</div></div>`).join('')}</div></div>
   </div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: 2.5 kg CO₂e per kg of food, 6.6 kg CO₂ absorbed per pine tree per year, 0.17 kg CO₂ per car-km. Swap in published factors (e.g. EPA WARM) before quoting.</p>`;
+  <p class="hint" style="margin-top:14px">Illustrative factors: 2.5 kg CO₂e per kg of food, 6.6 kg CO₂ absorbed per pine tree per year, 0.17 kg CO₂ per car-km. Swap in published factors (e.g. from NEA or EPA WARM) before quoting.</p>`;
 }
 
-/* ---------------------------------------------------------------- Carbon: the whole cafeteria's footprint, toward carbon-neutral operation
+/* ---------------------------------------------------------------- Carbon: the whole canteen's footprint, toward carbon-neutral operation
    Illustrative factors (kg CO₂e): per kg of food produced, per kg of food thrown away, and per unit of
    energy, water and transport. Swap in published factors (e.g. EPA WARM, national grid) before quoting. */
-const EF_FOOD = { rice: 2.7, bulgogi: 27, spinach: 1.2, kimchi: 1.0, apple: .4, soup: 1.4 };
+const EF_FOOD = { rice: 2.7, chicken: 6.1, kailan: 1.2, cabbage: .6, melon: .5, soup: 1.8 };
 const EF_DISPOSAL = .58;
-const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .46], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
+const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .41], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
 const DAYS_PER_MONTH = 20, BEFORE = 1.18, GOAL = .12;
 const CARBON_TREND = [1.16, 1.12, 1.07, 1.05, 1.02, 1];
 function carbonData() {
@@ -1588,10 +1589,10 @@ function carbonData() {
 function carbon() {
   const c = carbonData(), cut = 1 - c.total / c.before;
   const parts = [['Ingredients', c.foodT, 'var(--orange)'], ['Food waste', c.disposalT, 'var(--red)'], ['Energy, water and transport', c.opsT, 'var(--blue)']];
-  const beef = c.food.find(x => x.d.id === 'bulgogi');
+  const meat = c.food.find(x => x.d.id === 'chicken');
   const actions = [
     ['Cut plate waste from ' + pct(c.w) + ' to 20%', Math.max(0, (c.w - .2) / c.w) * (c.disposalT + c.hidden) * 10, 'Using the dish-by-dish waste data'],
-    ['Swap beef for chicken or tofu once a week', beef.t * .2 * (1 - 6 / 27) * 10, 'Beef is ' + pct(beef.t / c.foodT) + ' of ingredient emissions'],
+    ['Go meat-free with tofu one day a week', meat.t * .2 * (1 - 3 / 6.1) * 10, 'Chicken is ' + pct(meat.t / c.foodT) + ' of ingredient emissions'],
     ['Cook to the forecast, not to enrolment', c.foodT * .06 * 10, 'Plan & order already cooks about 6% less'],
     ['Run dishwashers full and off-peak', c.ops[0].t * .08 * 10, 'About 8% less electricity'],
   ].sort((a, b) => b[1] - a[1]);
@@ -1601,7 +1602,7 @@ function carbon() {
   const gy = Hh - (BEFORE * (1 - GOAL)) / max * Hh;
   trend += `<line x1="30" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/></svg>`;
   return `
-  <div class="page-head"><div><h1>Carbon</h1><p>Every source of the cafeteria's emissions in one place: ingredients, food waste, and the kitchen's energy, water and deliveries.</p></div><button class="btn" id="copy-carbon">Copy monthly report</button></div>
+  <div class="page-head"><div><h1>Carbon</h1><p>Every source of the canteen's emissions in one place: ingredients, food waste, and the kitchen's energy, water and deliveries.</p></div><button class="btn" id="copy-carbon">Copy monthly report</button></div>
   <div class="kpis">
     <div class="kpi"><div class="k">This month</div><div class="v">${c.total.toFixed(1)} t</div><div class="s">CO₂e, all sources</div></div>
     <div class="kpi"><div class="k">Per meal</div><div class="v">${c.perMeal.toFixed(2)} kg</div><div class="s">${Math.round(c.meals).toLocaleString('en-US')} meals this month</div></div>
@@ -1621,11 +1622,11 @@ function carbon() {
   </div>
   <h2 class="section-title">Biggest cuts toward carbon-neutral</h2>
   <div class="insights">${actions.map(([t, v, s], i) => `<div class="insight"><span class="ic" style="background:${['var(--tint)', 'var(--blue)', 'var(--orange)', 'var(--purple)'][i]}">${SV('<path d="M4 17l6-6 4 4 6-8"/>')}</span><div><b>${t}: −${v.toFixed(1)} t a school year</b><span>${s}</span></div></div>`).join('')}</div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.46 per kWh; gas 2.2 per m³. Replace with published factors before reporting.</p>`;
+  <p class="hint" style="margin-top:14px">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.41 per kWh (Singapore grid); gas 2.2 per m³. Replace with published factors before reporting.</p>`;
 }
 function carbonReport() {
   const c = carbonData();
-  return `Carbon report, September. The cafeteria produced ${c.total.toFixed(1)} t CO₂e this month (${c.perMeal.toFixed(2)} kg per meal): ${c.foodT.toFixed(1)} t from ingredients, ${c.disposalT.toFixed(1)} t from food waste disposal, and ${c.opsT.toFixed(1)} t from energy, water and deliveries. That is ${pct(1 - c.total / c.before)} below the level before PlateLoop, against a goal of ${pct(GOAL)} this year. Plate waste is ${pct(c.w)}; food thrown away also carried ${c.hidden.toFixed(1)} t of ingredient emissions.`;
+  return `Carbon report, September. The canteen produced ${c.total.toFixed(1)} t CO₂e this month (${c.perMeal.toFixed(2)} kg per meal): ${c.foodT.toFixed(1)} t from ingredients, ${c.disposalT.toFixed(1)} t from food waste disposal, and ${c.opsT.toFixed(1)} t from energy, water and deliveries. That is ${pct(1 - c.total / c.before)} below the level before PlateLoop, against a goal of ${pct(GOAL)} this year. Plate waste is ${pct(c.w)}; food thrown away also carried ${c.hidden.toFixed(1)} t of ingredient emissions.`;
 }
 
 /* ---------------------------------------------------------------- Plan & order */
@@ -1634,8 +1635,8 @@ function forecast() {
   const rows = TOMORROW.map(d => {
     let k = 1;
     if (p.weather === 'rainy' && d.id === 'soup') k *= 1.10;
-    if (p.weather === 'cold' && d.id === 'soup') k *= 1.15;
-    if (p.weather === 'cold' && d.id === 'yogurt') k *= .92;
+    if (p.weather === 'hot' && d.id === 'soup') k *= .9;
+    if (p.weather === 'hot' && d.id === 'fruit') k *= 1.08;
     if (p.event === 'sports' && (d.tags.includes('grain') || d.tags.includes('protein'))) k *= 1.10;
     return { d, stdKg: ENROLLED * d.std / 1000, newKg: att * d.learned * k * (1 + Math.max(.04, d.err + .01)) / 1000 };
   });
@@ -1654,16 +1655,16 @@ function plan() {
   <div class="card">
     <div class="controls">
       <div><label for="att">Attendance · <span class="num" id="att-v">${p.att} of ${ENROLLED}</span></label><input type="range" id="att" min="600" max="840" step="1" value="${p.att}"></div>
-      <div><label>Weather</label><div class="seg" id="weather">${['sunny', 'rainy', 'cold'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
-      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'Grade 6 field trip (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div><label>Weather</label><div class="seg" id="weather">${['sunny', 'rainy', 'hot'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
+      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'P6 learning journey (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     </div>
     <div id="plan-out">${planOut()}</div>
   </div>
   <div class="card"><h3>Cook: recipe tweaks students will eat more of</h3><p class="hint">From 4 weeks of before/after scans</p>
     <div class="insights" style="margin-top:10px">${[
-      ['var(--tint)', 'Spinach namul with sesame dressing', 'Eaten 64% vs. 52% plain in the class A/B test. Make it the default.'],
+      ['var(--tint)', 'Kailan with oyster sauce', 'Eaten 64% vs. 52% plain in the class A/B test. Make it the default.'],
       ['var(--blue)', 'Soup: 150 ml ladle, refills allowed', 'Cuts soup waste from 42% to 24% with no drop in satisfaction.'],
-      ['var(--orange)', 'Kimchi: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
+      ['var(--orange)', 'Cabbage: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
     ].map(([c, t, d]) => `<div class="insight"><span class="ic" style="background:${c}">${SV('<path d="M5 12l5 5 9-10"/>')}</span><div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div></div>`;
 }
 function planOut() {
@@ -1693,7 +1694,7 @@ function reportData() {
   const text = [
     `Today ${t.trays.toLocaleString('en-US')} trays were scanned before and after lunch, and ${t.eating} students are still eating. Plate waste is ${pct(tot.w)}, ${diff >= 0 ? `${diff.toFixed(0)} points below` : `${(-diff).toFixed(0)} points above`} the ${pct(PL.SCHOOL_BASELINE)} baseline, leaving ${fmt1(tot.lf / 1000)} kg of food (about ${money(tot.val)} of ingredients).`,
     `${best.d.name} was the most eaten dish (${pct(best.e)}). ${worst.d.name} came back the most, with only ${pct(worst.e)} eaten. ${TREND[worst.d.id][2]}`,
-    `Class ${cls.c.id} leads Grade 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
+    `Class ${cls.c.id} leads Primary 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
     `The average student ate ${intakeStats().avg.kcal} kcal and ${intakeStats().avg.p} g of protein at lunch (targets ${PL.TARGET.kcal} kcal and ${PL.TARGET.p} g). ${intakeStats().low.length} students ate less than 60% of their calorie target and are flagged for the dietitian.`,
     `For Monday, the plan cooks ${fmt1(f.tNew)} kg instead of ${fmt1(f.tStd)} kg, saving about ${money(f.costStd - f.cost)} in ingredients. The supplier order totals ${money(f.orderTotal)}.`,
   ];
@@ -1705,7 +1706,7 @@ function report() {
   const insights = [
     ['var(--orange)', '<path d="M12 3v12M6 9l6 6 6-6M4 21h16"/>', `Serve less ${worst.d.name.toLowerCase()}`, TREND[worst.d.id][2]],
     ['var(--blue)', '<path d="M5 12h14M12 5v14"/>', 'Soup: taken, not eaten', `${fmt1(soup.left / 1000)} kg of soup came back today. A 150 ml ladle would cut most of it.`],
-    ['var(--tint)', '<path d="M4 17l6-6 4 4 6-8"/>', 'Spinach Week is working', 'Students tasting spinach for the quest raised the share eaten by 17 points.'],
+    ['var(--tint)', '<path d="M4 17l6-6 4 4 6-8"/>', 'Kailan Week is working', 'Students tasting kailan for the quest raised the share eaten by 17 points.'],
     ['var(--purple)', '<path d="M6 3h9l4 4v14H6z"/>', `Order ${money(f.orderTotal)} for Monday`, `${fmt1(f.tStd - f.tNew)} kg less food cooked than the standard plan.`],
   ];
   return `

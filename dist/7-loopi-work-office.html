@@ -782,7 +782,7 @@ PL.$$ = (s, r = document) => [...r.querySelectorAll(s)];
 const clamp = PL.clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 PL.pct = v => Math.round(v * 100) + '%';
 PL.fmt1 = v => (Math.round(v * 10) / 10).toFixed(1);
-PL.money = v => '$' + Math.round(v).toLocaleString('en-US');
+PL.money = v => 'S$' + Math.round(v).toLocaleString('en-US');
 PL.esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 PL.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rng = PL.rng = seed => { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
@@ -793,15 +793,15 @@ PL.toast = msg => {
 
 /* ------------------------------------------------------------ constants */
 const MENU = PL.MENU = [
-  { id: 'spinach', n: { c: .04, p: .03, f: .035 }, name: 'Spinach namul', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .55, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
-  { id: 'kimchi', n: { c: .04, p: .015, f: .005 }, name: 'Kimchi', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .3, price: .0045, color: '#D5502F', edge: '#A23A20', slot: [1, 0] },
-  { id: 'apple', n: { c: .14, p: .003, f: .002 }, name: 'Apple slices', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .52, price: .005, color: '#F1DDA4', edge: '#C9A95E', slot: [2, 0] },
-  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Multigrain rice', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
-  { id: 'bulgogi', n: { c: .08, p: .18, f: .12 }, name: 'Beef bulgogi', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 2.1, price: .019, color: '#7A4424', edge: '#4F2A15', slot: [1, 1] },
-  { id: 'soup', n: { c: .04, p: .03, f: .015 }, name: 'Soybean paste soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .4, price: .0021, color: '#C0843F', edge: '#8E5E28', slot: [2, 1] },
+  { id: 'kailan', n: { c: .04, p: .03, f: .04 }, name: 'Stir-fried kailan', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .6, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
+  { id: 'cabbage', n: { c: .05, p: .012, f: .02 }, name: 'Braised cabbage', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .4, price: .004, color: '#D8E6A8', edge: '#9DB36A', slot: [1, 0] },
+  { id: 'melon', n: { c: .08, p: .006, f: .002 }, name: 'Watermelon', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .3, price: .004, color: '#F2545B', edge: '#B8323A', slot: [2, 0] },
+  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Brown rice mix', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
+  { id: 'chicken', n: { c: .03, p: .22, f: .08 }, name: 'Soy sauce chicken', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 1.75, price: .012, color: '#9C5A2E', edge: '#6B3A1A', slot: [1, 1] },
+  { id: 'soup', n: { c: .04, p: .02, f: .01 }, name: 'ABC soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .3, price: .0021, color: '#E8A25C', edge: '#B8722F', slot: [2, 1] },
 ];
 const DISH = PL.DISH = Object.fromEntries(MENU.map(d => [d.id, d]));
-/* nutrition: per-lunch targets for a grade 3 student (illustrative, about a third of the daily need) */
+/* nutrition: per-lunch targets for a Primary 3 student (illustrative, about a third of the daily need) */
 PL.TARGET = { kcal: 580, c: 85, p: 25, f: 16 };
 PL.NUTRIENTS = [['kcal', 'Calories', 'kcal'], ['c', 'Carbs', 'g'], ['p', 'Protein', 'g'], ['f', 'Fat', 'g']];
 PL.nutrientsOf = grams => {
@@ -813,8 +813,8 @@ PL.nutrientsOf = grams => {
 PL.nStatus = (k, v) => { const r = v / PL.TARGET[k]; return r < .8 ? 'low' : r > 1.3 ? 'high' : 'ok'; };
 /* environment equivalents (illustrative factors: 2.5 kg CO2e per kg food, a pine tree absorbs ~6.6 kg CO2 a year, a car emits ~0.17 kg CO2 per km) */
 PL.env = kg => { const co2 = kg * 2.5; return { kg, co2, trees: co2 / 6.6, km: co2 / .17 }; };
-PL.CRAVING = 'spinach';
-const TYPICAL_LEFT = PL.TYPICAL_LEFT = { spinach: .50, kimchi: .44, apple: .10, rice: .13, bulgogi: .05, soup: .38 };
+PL.CRAVING = 'kailan';
+const TYPICAL_LEFT = PL.TYPICAL_LEFT = { kailan: .50, cabbage: .44, melon: .10, rice: .13, chicken: .05, soup: .38 };
 PL.FORMS = {
   leafy: { name: 'Leafy', why: 'veggies tried', key: 'veg' },
   crystal: { name: 'Crystal', why: 'low-waste lunches', key: 'lowWaste' },
@@ -825,36 +825,37 @@ const STAGES = PL.STAGES = [{ id: 'egg', name: 'Egg', at: 0 }, { id: 'baby', nam
 PL.SCHOOL_BASELINE = 0.29;
 PL.CO2_PER_KG = 2.5; // illustrative kgCO2e per kg of food not wasted; swap for an EPA WARM / WRAP factor
 PL.PRESETS = {
-  'Picky eater': { rice: 70, bulgogi: 100, soup: 30, spinach: 0, kimchi: 10, apple: 100 },
-  'Just right': { rice: 100, bulgogi: 100, soup: 85, spinach: 90, kimchi: 80, apple: 100 },
-  'Tried everything': { rice: 95, bulgogi: 100, soup: 70, spinach: 60, kimchi: 55, apple: 100 },
-  'Not hungry': { rice: 40, bulgogi: 60, soup: 20, spinach: 10, kimchi: 0, apple: 80 },
+  'Picky eater': { rice: 70, chicken: 100, soup: 30, kailan: 0, cabbage: 10, melon: 100 },
+  'Just right': { rice: 100, chicken: 100, soup: 85, kailan: 90, cabbage: 80, melon: 100 },
+  'Tried everything': { rice: 95, chicken: 100, soup: 70, kailan: 60, cabbage: 55, melon: 100 },
+  'Not hungry': { rice: 40, chicken: 60, soup: 20, kailan: 10, cabbage: 0, melon: 80 },
 };
 
 /* ------------------------------------------------------------ seed data */
 const NAMED = [
-  { id: 's1', name: 'Minji', baseline: .24, xp: 262, c: { veg: 14, lowWaste: 9, balanced: 11, quests: 3 }, en: 72, nu: 80, jo: 66, streak: 3, book: ['crystal'], week: 168 },
-  { id: 's2', name: 'Joon', baseline: .38, xp: 96, c: { veg: 2, lowWaste: 5, balanced: 4, quests: 1 }, en: 48, nu: 42, jo: 55, streak: 1, book: [], week: 121 },
-  { id: 's3', name: 'Aria', baseline: .19, xp: 455, c: { veg: 8, lowWaste: 22, balanced: 12, quests: 4 }, en: 88, nu: 70, jo: 81, streak: 9, book: ['leafy', 'guardian'], week: 204 },
-  { id: 's4', name: 'Leo', baseline: .41, xp: 24, c: { veg: 1, lowWaste: 1, balanced: 1, quests: 0 }, en: 35, nu: 40, jo: 50, streak: 0, book: [], week: 88 },
-  { id: 's5', name: 'Sora', baseline: .27, xp: 318, c: { veg: 6, lowWaste: 8, balanced: 9, quests: 7 }, en: 64, nu: 61, jo: 77, streak: 2, book: ['explorer'], week: 176 },
+  { id: 's1', name: 'Wei Ling', baseline: .24, xp: 262, c: { veg: 14, lowWaste: 9, balanced: 11, quests: 3 }, en: 72, nu: 80, jo: 66, streak: 3, book: ['crystal'], week: 168 },
+  { id: 's2', name: 'Arjun', baseline: .38, xp: 96, c: { veg: 2, lowWaste: 5, balanced: 4, quests: 1 }, en: 48, nu: 42, jo: 55, streak: 1, book: [], week: 121 },
+  { id: 's3', name: 'Aisyah', baseline: .19, xp: 455, c: { veg: 8, lowWaste: 22, balanced: 12, quests: 4 }, en: 88, nu: 70, jo: 81, streak: 9, book: ['leafy', 'guardian'], week: 204 },
+  { id: 's4', name: 'Ethan', baseline: .41, xp: 24, c: { veg: 1, lowWaste: 1, balanced: 1, quests: 0 }, en: 35, nu: 40, jo: 50, streak: 0, book: [], week: 88 },
+  { id: 's5', name: 'Mei Xin', baseline: .27, xp: 318, c: { veg: 6, lowWaste: 8, balanced: 9, quests: 7 }, en: 64, nu: 61, jo: 77, streak: 2, book: ['explorer'], week: 176 },
   { id: 's6', name: 'Daniel', baseline: .22, xp: 540, c: { veg: 9, lowWaste: 12, balanced: 21, quests: 3 }, en: 90, nu: 88, jo: 73, streak: 5, book: ['crystal', 'leafy'], week: 159 },
 ];
-const EXTRA = ['Hana', 'Yuna', 'Seojun', 'Jiho', 'Eunwoo', 'Doyun', 'Haeun', 'Siwoo', 'Jimin', 'Yejun', 'Chaewon', 'Minseo', 'Juwon', 'Gaeun', 'Taeyang', 'Somin', 'Hyunwoo', 'Dahye', 'Ian', 'Mia', 'Noah', 'Ella'];
+const EXTRA = ['Jun Hao', 'Nur Iman', 'Priya', 'Ryan', 'Zi Xuan', 'Hafiz', 'Kai Xin', 'Siti', 'Rohan', 'Chloe', 'Jia Hui', 'Irfan', 'Ananya', 'Marcus', 'Xin Yi', 'Farhan', 'Divya', 'Isaac', 'Hui Min', 'Adam', 'Sarah', 'Kavin'];
 const CLASS_SEED = [
-  { id: '3-1', base: .30, served: 61.6, ret: 12.9, form: 'leafy', xp: 380, streak: 4 },
-  { id: '3-2', base: .31, served: 46.2, ret: 8.9, form: 'explorer', xp: 350, streak: 3 },
-  { id: '3-3', base: .27, served: 62.0, ret: 14.6, form: 'guardian', xp: 240, streak: 1 },
-  { id: '3-4', base: .33, served: 60.8, ret: 13.4, form: 'crystal', xp: 410, streak: 2 },
-  { id: '3-5', base: .29, served: 63.1, ret: 11.7, form: 'crystal', xp: 460, streak: 5 },
-  { id: '3-6', base: .26, served: 59.9, ret: 16.2, form: 'leafy', xp: 120, streak: 0 },
+  { id: '3A', base: .30, served: 61.6, ret: 12.9, form: 'leafy', xp: 380, streak: 4 },
+  { id: '3B', base: .31, served: 46.2, ret: 8.9, form: 'explorer', xp: 350, streak: 3 },
+  { id: '3C', base: .27, served: 62.0, ret: 14.6, form: 'guardian', xp: 240, streak: 1 },
+  { id: '3D', base: .33, served: 60.8, ret: 13.4, form: 'crystal', xp: 410, streak: 2 },
+  { id: '3E', base: .29, served: 63.1, ret: 11.7, form: 'crystal', xp: 460, streak: 5 },
+  { id: '3F', base: .26, served: 59.9, ret: 16.2, form: 'leafy', xp: 120, streak: 0 },
 ];
 const SCHOOLS = [
-  { id: 'bora', name: 'Bora Elementary', red: .34, acc: .93, kg: 1510 },
-  { id: 'saebit', name: 'Saebit Elementary', red: .27, acc: .91, kg: 1122 },
-  { id: 'dasom', name: 'Dasom Elementary', red: .22, acc: .89, kg: 864 },
-  { id: 'nuri', name: 'Nuri Middle School', red: .19, acc: .90, kg: 1390 },
-  { id: 'hangang', name: 'Hangang Elementary', red: .12, acc: .86, kg: 402 },
+  // fictional schools for the demo
+  { id: 'maple', name: 'Maple Bay Primary', red: .34, acc: .93, kg: 1510 },
+  { id: 'orchid', name: 'Orchid Grove Primary', red: .27, acc: .91, kg: 1122 },
+  { id: 'sunbird', name: 'Sunbird Primary', red: .22, acc: .89, kg: 864 },
+  { id: 'kingfisher', name: 'Kingfisher Secondary', red: .19, acc: .90, kg: 1390 },
+  { id: 'tembusu', name: 'Tembusu Hill Primary', red: .12, acc: .86, kg: 402 },
 ];
 const DAYS = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 
@@ -872,19 +873,19 @@ function freshState() {
   const dish = {};
   MENU.forEach(d => { const served = 140 * d.g.M * (0.92 + r() * .1); dish[d.id] = { served, ret: served * TYPICAL_LEFT[d.id] * (0.85 + r() * .25) }; });
   const students = NAMED.map(s => ({
-    id: s.id, name: s.name, cls: '3-2', baseline: s.baseline, week: s.week, scanned: false, named: true,
+    id: s.id, name: s.name, cls: '3B', baseline: s.baseline, week: s.week, scanned: false, named: true,
     pet: { xp: s.xp, c: { ...s.c }, en: s.en, nu: s.nu, jo: s.jo, streak: s.streak, book: [...s.book], quest: 1 }, log: seedLog(s.baseline, r),
   }));
   EXTRA.forEach((name, i) => {
     const baseline = .18 + r() * .24, xp = Math.round(20 + r() * 520);
     students.push({
-      id: 'x' + i, name, cls: '3-2', baseline, week: Math.round(70 + r() * 130), scanned: false, named: false,
+      id: 'x' + i, name, cls: '3B', baseline, week: Math.round(70 + r() * 130), scanned: false, named: false,
       pet: { xp, c: { veg: Math.round(r() * 14), lowWaste: Math.round(r() * 16), balanced: Math.round(r() * 16), quests: Math.round(r() * 6) }, en: 40 + Math.round(r() * 50), nu: 40 + Math.round(r() * 50), jo: 40 + Math.round(r() * 50), streak: Math.floor(r() * 7), book: [], quest: Math.floor(r() * 3) },
       log: seedLog(baseline, r),
     });
   });
   return {
-    v: 7,
+    v: 8,
     students,
     classes: CLASS_SEED.map(c => ({ ...c })),
     today: { trays: 140, zero: 17, co2: 11200, dish, servedNow: Object.fromEntries(MENU.map(d => [d.id, dish[d.id].served])), eating: 0, feed: [], clock: 11 * 60 + 48, trayNo: 412 },
@@ -896,13 +897,13 @@ function freshState() {
 }
 
 /* ------------------------------------------------------------ store (localStorage + cross-tab sync) */
-const KEY = 'plateloop-final-v7';
+const KEY = 'plateloop-sg-v8';
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('plateloop') : null;
 const subs = new Set();
 function readStored() {
   try {
     const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (!s || s.v !== 7) return null;
+    if (!s || s.v !== 8) return null;
     if (s.today.co2 == null) s.today.co2 = 11200; // saves from before the live CO₂ counter
     return s;
   } catch (e) { return null; }
@@ -933,10 +934,10 @@ PL.classStats = c => { const w = c.ret / c.served; return { w, red: (c.base - w)
 PL.classRows = () => PL.S.classes.map(c => ({ c, ...PL.classStats(c) })).sort((a, b) => b.red - a.red);
 PL.studentRows = () => [...PL.S.students].sort((a, b) => b.week - a.week || a.name.localeCompare(b.name));
 PL.streakRows = () => [...PL.S.students].sort((a, b) => b.pet.streak - a.pet.streak || b.week - a.week);
-PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3-2' && s.scanned).length;
+PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3B' && s.scanned).length;
 PL.schoolRows = () => {
   const cr = PL.S.classes.map(PL.classStats);
-  const us = { id: 'haneul', name: 'Haneul Elementary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
+  const us = { id: 'harbourlight', name: 'Harbourlight Primary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
   return [us, ...SCHOOLS].sort((a, b) => b.red - a.red);
 };
 PL.todayTotals = () => { let sv = 0, lf = 0, val = 0; MENU.forEach(d => { const x = PL.S.today.dish[d.id]; sv += x.served; lf += x.ret; val += x.ret * d.price; }); return { sv, lf, val, w: lf / sv }; };
@@ -1045,10 +1046,10 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
 /** Both scans in one go (used to simulate the rest of the class). */
 PL.scanTray = (sid, portion, eatPct) => { if (!PL.student(sid).before) PL.scanBefore(sid, portion); return PL.scanAfter(sid, eatPct); };
 PL.zeroRate = () => { const t = PL.S.today; return t.trays ? t.zero / t.trays : 0; };
-/** Simulate everyone in class 3-2 who hasn't finished both scans yet. */
+/** Simulate everyone in class 3B who hasn't finished both scans yet. */
 PL.scanRestOfClass = () => {
   let n = 0;
-  PL.S.students.filter(s => s.cls === '3-2' && !s.scanned).forEach(s => {
+  PL.S.students.filter(s => s.cls === '3B' && !s.scanned).forEach(s => {
     const p = Math.random() < .3 ? 'S' : Math.random() < .8 ? 'M' : 'L';
     const f = (s.baseline / .3) * (.5 + Math.random() * .6);
     PL.scanTray(s.id, p, Object.fromEntries(MENU.map(d => [d.id, Math.round(clamp(1 - TYPICAL_LEFT[d.id] * f, 0, 1) * 100)])));
@@ -1216,8 +1217,8 @@ PL.traySVG = ({ portion = 'M', left = null, scanning = false, labels = null, emp
       const rx = CELL.w * .36 * k, ry = CELL.h[ri] * .33 * k;
       s += `<path d="${blobPath(cx, cy, Math.min(rx, CELL.w * .45), Math.min(ry, CELL.h[ri] * .44), i * 1.7)}" fill="${d.color}" stroke="${d.edge}" stroke-width="1.5"/>`;
       if (d.id === 'rice') for (let j = 0; j < 14; j++) { const a = j * 2.4, rr = (j % 5) / 5 * .8; s += `<ellipse cx="${(cx + Math.cos(a) * rx * rr).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * rr).toFixed(1)}" rx="2.2" ry="1.3" fill="#8C6B4A" opacity=".5"/>`; }
-      if (d.id === 'kimchi' || d.id === 'bulgogi' || d.id === 'spinach') for (let j = 0; j < 5; j++) { const a = j * 1.9 + i; s += `<ellipse cx="${(cx + Math.cos(a) * rx * .45).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * .45).toFixed(1)}" rx="${(6 * k).toFixed(1)}" ry="${(3 * k).toFixed(1)}" fill="${d.edge}" opacity=".55" transform="rotate(${j * 40} ${cx} ${cy})"/>`; }
-      if (d.id === 'apple') for (let j = 0; j < 3; j++) s += `<path d="M${cx - 18 + j * 14} ${cy - 6 * k} q7 ${-10 * k} 14 0" stroke="#B5352A" stroke-width="3" fill="none" opacity=".7"/>`;
+      if (d.id === 'cabbage' || d.id === 'chicken' || d.id === 'kailan') for (let j = 0; j < 5; j++) { const a = j * 1.9 + i; s += `<ellipse cx="${(cx + Math.cos(a) * rx * .45).toFixed(1)}" cy="${(cy + Math.sin(a) * ry * .45).toFixed(1)}" rx="${(6 * k).toFixed(1)}" ry="${(3 * k).toFixed(1)}" fill="${d.edge}" opacity=".55" transform="rotate(${j * 40} ${cx} ${cy})"/>`; }
+      if (d.id === 'melon') for (let j = 0; j < 6; j++) s += `<ellipse cx="${(cx - 20 + (j % 3) * 20).toFixed(1)}" cy="${(cy - 8 * k + Math.floor(j / 3) * 16 * k).toFixed(1)}" rx="2" ry="3" fill="#2B2B2E" opacity=".8"/>`;
     }
   });
   if (labels) MENU.forEach(d => {
@@ -1276,7 +1277,7 @@ G.init = st => {
     v: V, name: 'Loopi', stage,
     hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
     hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
-    plate: null, mess: (st.messSeed || ['spinach', 'kimchi', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
+    plate: null, mess: (st.messSeed || ['kailan', 'cabbage', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
     eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
   };
 };
@@ -1347,7 +1348,7 @@ G.BADGES = [
   { id: 'small', name: 'Small and clean', item: 'bow', how: 'Finish a small portion', test: st => st.log.some(l => l.portion === 'S' && l.w < .12) },
   { id: 'streak', name: 'Three in a row', item: 'scarf', how: '3 clean trays in a row', test: st => st.pet.streak >= 3 },
   { id: 'veg', name: 'Veggie explorer', item: 'flower', how: 'Try the veggies 10 times', test: st => st.pet.c.veg >= 10 },
-  { id: 'spinach', name: 'Spinach week', item: 'glasses', how: 'Taste the spinach 3 times', test: st => st.pet.quest >= 3 },
+  { id: 'kailan', name: 'Kailan week', item: 'glasses', how: 'Taste the kailan 3 times', test: st => st.pet.quest >= 3 },
   { id: 'balanced', name: 'Balanced plate', item: 'halo', how: 'Eat from every food group 5 times', test: st => st.pet.c.balanced >= 5 },
   { id: 'class', name: 'Team goal', item: 'wings', how: 'Your class goes under 20% waste', test: st => { const c = PL.S.classes.find(c => c.id === st.cls); return c.ret / c.served < .2; } },
   { id: 'top3', name: 'Podium', item: 'headphones', how: 'Be top 3 in your class', test: st => PL.studentRows().findIndex(s => s.id === st.id) < 3 },
@@ -1378,45 +1379,45 @@ const H = PL.health = {};
 const dish = (id, name, g, n, color, edge, group, extra) => ({ id, name, g, n, color, edge, group, ...extra });
 H.WARD_MENU = {
   breakfast: [
-    dish('h_juk', 'Rice porridge', 300, { kcal: .46, c: .10, p: .012, f: .002, na: 1.1 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_congee', 'Chicken congee', 300, { kcal: .46, c: .10, p: .012, f: .002, na: 1.1 }, '#F3EDDA', '#BFB28E', 'grain'),
     dish('h_egg', 'Steamed egg', 70, { kcal: 1.3, c: .01, p: .11, f: .09, na: 2.4 }, '#F6D365', '#C9A13B', 'protein'),
-    dish('h_spinach', 'Spinach namul', 40, { kcal: .55, c: .04, p: .03, f: .035, na: 3.5 }, '#3F7D32', '#2A5A22', 'veg'),
+    dish('h_spinach', 'Stir-fried spinach', 40, { kcal: .55, c: .04, p: .03, f: .035, na: 3.5 }, '#3F7D32', '#2A5A22', 'veg'),
     dish('h_milk', 'Milk', 200, { kcal: .64, c: .05, p: .033, f: .035, na: .4 }, '#FFFFFF', '#C7C7CC', 'dairy'),
     dish('h_banana', 'Banana', 100, { kcal: .89, c: .23, p: .011, f: .003, na: 0 }, '#F7DC6F', '#C9A13B', 'fruit'),
   ],
   lunch: [
-    dish('h_rice', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
-    dish('h_fish', 'Grilled mackerel', 100, { kcal: 2.0, c: 0, p: .19, f: .13, na: 1.2 }, '#C98F58', '#8E5E28', 'protein'),
-    dish('h_sprout', 'Bean sprout soup', 200, { kcal: .15, c: .01, p: .012, f: .005, na: 3.0 }, '#EFE6C4', '#BFB28E', 'soup'),
-    dish('h_greens', 'Seasoned greens', 50, { kcal: 1.0, c: .05, p: .03, f: .03, na: 3.2 }, '#5E9E3A', '#3B6E22', 'veg'),
-    dish('h_pear', 'Pear slices', 80, { kcal: .45, c: .11, p: .003, f: .001, na: 0 }, '#F1E6B0', '#C9B45E', 'fruit'),
+    dish('h_rice', 'Brown rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_fish', 'Steamed fish with ginger', 100, { kcal: 1.4, c: .01, p: .2, f: .065, na: 1.5 }, '#EDE3D1', '#B8A88A', 'protein'),
+    dish('h_vegsoup', 'Clear vegetable soup', 200, { kcal: .15, c: .01, p: .012, f: .005, na: 3.0 }, '#EFE6C4', '#BFB28E', 'soup'),
+    dish('h_kailan', 'Stir-fried kailan', 50, { kcal: 1.0, c: .05, p: .03, f: .03, na: 3.2 }, '#5E9E3A', '#3B6E22', 'veg'),
+    dish('h_papaya', 'Papaya', 80, { kcal: .43, c: .11, p: .005, f: .003, na: 0 }, '#F6A24B', '#C4731F', 'fruit'),
   ],
   dinner: [
-    dish('h_rice2', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_rice2', 'Brown rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
     dish('h_chicken', 'Braised chicken and potato', 150, { kcal: 1.5, c: .08, p: .20, f: .06, na: 3.2 }, '#B5652D', '#7A3F17', 'protein'),
     dish('h_tofu', 'Pan-fried tofu', 80, { kcal: 1.9, c: .03, p: .09, f: .13, na: .2 }, '#F4E7C8', '#C9B48A', 'protein'),
-    dish('h_doenjang', 'Soybean paste soup', 200, { kcal: .4, c: .04, p: .03, f: .015, na: 3.8 }, '#C0843F', '#8E5E28', 'soup'),
-    dish('h_zucchini', 'Stir-fried zucchini', 50, { kcal: .8, c: .04, p: .015, f: .03, na: 2.6 }, '#9CC56B', '#6A9440', 'veg'),
+    dish('h_lotus', 'Lotus root soup', 200, { kcal: .35, c: .05, p: .02, f: .01, na: 3.2 }, '#D9B98C', '#A0845A', 'soup'),
+    dish('h_longbean', 'Stir-fried long beans', 50, { kcal: .8, c: .04, p: .015, f: .03, na: 2.6 }, '#9CC56B', '#6A9440', 'veg'),
   ],
 };
 H.MEALS = [['breakfast', 'Breakfast', '07:50'], ['lunch', 'Lunch', '12:10'], ['dinner', 'Dinner', '17:40']];
 /* each diet sets daily targets and changes what's served (portion multipliers, low-salt cooking) */
 H.DIETS = {
-  regular: { name: 'Regular', target: { kcal: 1900, p: 70, c: 240, f: 55, na: 2300 }, mult: {}, na: 1, note: 'No restrictions.' },
-  diabetic: { name: 'Diabetic', target: { kcal: 1600, p: 70, c: 180, f: 50, na: 2300 }, mult: { h_juk: .8, h_rice: .8, h_rice2: .8, h_pear: .7, h_banana: .6 }, na: 1, note: 'Smaller rice and fruit portions to keep carbs steady.' },
+  regular: { name: 'Regular', target: { kcal: 1900, p: 70, c: 240, f: 55, na: 2000 }, mult: {}, na: 1, note: 'No restrictions.' },
+  diabetic: { name: 'Diabetic', target: { kcal: 1600, p: 70, c: 180, f: 50, na: 2000 }, mult: { h_congee: .8, h_rice: .8, h_rice2: .8, h_papaya: .7, h_banana: .6 }, na: 1, note: 'Smaller rice and fruit portions to keep carbs steady.' },
   lowna: { name: 'Low sodium', target: { kcal: 1800, p: 70, c: 230, f: 55, na: 1500 }, mult: {}, na: .55, note: 'Soups and side dishes are cooked with about half the salt.' },
-  protein: { name: 'High protein', target: { kcal: 2100, p: 110, c: 240, f: 65, na: 2300 }, mult: { h_egg: 1.5, h_fish: 1.4, h_chicken: 1.4, h_tofu: 1.5, h_milk: 1.25 }, na: 1, note: 'Extra egg, fish, chicken, tofu and milk to help healing.' },
+  protein: { name: 'High protein', target: { kcal: 2100, p: 110, c: 240, f: 65, na: 2000 }, mult: { h_egg: 1.5, h_fish: 1.4, h_chicken: 1.4, h_tofu: 1.5, h_milk: 1.25 }, na: 1, note: 'Extra egg, fish, chicken, tofu and milk to help healing.' },
 };
 H.KIDS_MENU = [
   dish('k_rice', 'Rice', 120, { kcal: 1.45, c: .32, p: .03, f: .003 }, '#F3EDDA', '#BFB28E', 'grain', { rainbow: 'white' }),
-  dish('k_bulgogi', 'Beef bulgogi', 50, { kcal: 2.1, c: .08, p: .18, f: .12 }, '#7A4424', '#4F2A15', 'protein', { rainbow: 'brown' }),
+  dish('k_chicken', 'Soy sauce chicken', 50, { kcal: 1.75, c: .03, p: .22, f: .08 }, '#9C5A2E', '#6B3A1A', 'protein', { rainbow: 'brown' }),
   dish('k_broccoli', 'Broccoli', 30, { kcal: .34, c: .07, p: .028, f: .004 }, '#4C9A2A', '#2F6B18', 'veg', { rainbow: 'green' }),
   dish('k_corn', 'Corn and egg soup', 150, { kcal: .5, c: .07, p: .025, f: .015 }, '#F4C542', '#C99A1B', 'soup', { rainbow: 'yellow', allergen: 'Egg', safe: 'Corn soup without egg' }),
   dish('k_tomato', 'Cherry tomatoes', 40, { kcal: .18, c: .04, p: .009, f: .002 }, '#E0453A', '#A52A20', 'veg', { rainbow: 'red' }),
-  dish('k_berry', 'Blueberries', 30, { kcal: .57, c: .14, p: .007, f: .003 }, '#5B4FC4', '#3A3190', 'fruit', { rainbow: 'purple' }),
+  dish('k_dragon', 'Dragon fruit', 40, { kcal: .5, c: .11, p: .012, f: .004 }, '#D6246E', '#9C1450', 'fruit', { rainbow: 'pink' }),
 ];
 H.KIDS_TARGET = { kcal: 360, c: 55, p: 12, f: 10 }; // one kindergarten lunch, ages 3 to 5 (illustrative)
-H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', purple: '#5B4FC4', white: '#F3EDDA', brown: '#7A4424' };
+H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', pink: '#D6246E', white: '#F3EDDA', brown: '#9C5A2E' };
 // room crumbs and colours look dishes up by id
 [...Object.values(H.WARD_MENU).flat(), ...H.KIDS_MENU].forEach(d => { PL.DISH[d.id] = d; });
 
@@ -1430,16 +1431,16 @@ H.nutrients = (grams, menu) => {
 const DAYS = ['Sat 19', 'Sun 20', 'Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 H.TODAY = 'Fri 25';
 const PATIENTS = [
-  { id: 'p1', name: 'Kim Minsu', age: 68, room: '7B-12', diet: 'protein', why: 'Recovering from hip surgery', doctor: 'Dr. Yoon (orthopaedics)', app: d => .42 + d * .07, meal: { breakfast: -.15 }, like: { h_spinach: .6, h_greens: .6, h_zucchini: .7 } },
-  { id: 'p2', name: 'Lee Sunhee', age: 74, room: '7B-08', diet: 'diabetic', why: 'Type 2 diabetes', doctor: 'Dr. Kang (endocrinology)', app: () => .82, meal: {}, like: { h_juk: .8, h_rice: .85, h_rice2: .85, h_pear: 1.1 } },
-  { id: 'p3', name: 'Choi Jaeho', age: 57, room: '7B-03', diet: 'lowna', why: 'Heart failure', doctor: 'Dr. Seo (cardiology)', app: () => .84, meal: { dinner: -.08 }, like: { h_sprout: .35, h_doenjang: .3 } },
-  { id: 'p4', name: 'Han Jiyoon', age: 35, room: '7B-15', diet: 'regular', why: 'After appendix surgery', doctor: 'Dr. Lim (general surgery)', app: d => .5 + d * .08, meal: {}, like: { h_milk: .5 } },
+  { id: 'p1', name: 'Tan Boon Huat', age: 68, room: '7B-12', diet: 'protein', why: 'Recovering from hip surgery', doctor: 'Dr. Lee (orthopaedics)', app: d => .42 + d * .07, meal: { breakfast: -.15 }, like: { h_spinach: .6, h_kailan: .6, h_longbean: .7 } },
+  { id: 'p2', name: 'Siti Rahmah', age: 74, room: '7B-08', diet: 'diabetic', why: 'Type 2 diabetes', doctor: 'Dr. Ng (endocrinology)', app: () => .82, meal: {}, like: { h_congee: .8, h_rice: .85, h_rice2: .85, h_papaya: 1.1 } },
+  { id: 'p3', name: 'Rajesh Kumar', age: 57, room: '7B-03', diet: 'lowna', why: 'Heart failure', doctor: 'Dr. Menon (cardiology)', app: () => .84, meal: { dinner: -.08 }, like: { h_vegsoup: .35, h_lotus: .3 } },
+  { id: 'p4', name: 'Chloe Lim', age: 35, room: '7B-15', diet: 'regular', why: 'After appendix surgery', doctor: 'Dr. Wong (general surgery)', app: d => .5 + d * .08, meal: {}, like: { h_milk: .5 } },
 ];
 const KIDS = [
-  { id: 'k1', name: 'Yuna', age: 5, allergy: null, baseline: .3, app: .78, like: { k_broccoli: .3, k_berry: 1.2, k_tomato: 1.1 }, note: 'Yuna helped hand out spoons today and tried a whole broccoli floret!' },
-  { id: 'k2', name: 'Doha', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Doha was a bit tired after outdoor play but finished all the rice.' },
-  { id: 'k3', name: 'Seoah', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Seoah asked for more blueberries and told the class they are "tiny planets".' },
-  { id: 'k4', name: 'Ian', age: 4, allergy: null, baseline: .35, app: .66, like: { k_bulgogi: .5, k_corn: 1.2 }, note: 'Ian liked the corn soup and practised using chopsticks.' },
+  { id: 'k1', name: 'Ava', age: 5, allergy: null, baseline: .3, app: .78, like: { k_broccoli: .3, k_dragon: 1.2, k_tomato: 1.1 }, note: 'Ava helped hand out spoons today and tried a whole broccoli floret!' },
+  { id: 'k2', name: 'Hakim', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Hakim was a bit tired after outdoor play but finished all the rice.' },
+  { id: 'k3', name: 'Kavya', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Kavya asked for more dragon fruit and told the class the seeds look like tiny stars.' },
+  { id: 'k4', name: 'Lucas', age: 4, allergy: null, baseline: .35, app: .66, like: { k_chicken: .5, k_corn: 1.2 }, note: 'Lucas liked the corn soup and practised using his spoon and fork.' },
 ];
 
 function served(menu, diet) {
@@ -1490,7 +1491,7 @@ function seed() {
 }
 const KIDPREFS = Object.fromEntries(KIDS.map(k => [k.id, k]));
 const PATPREFS = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
-const CARE_V = 5; // bump when the demo data changes shape
+const CARE_V = 6; // bump when the demo data changes shape
 const ensure = () => { if (!PL.S.care || PL.S.care.v !== CARE_V) PL.S.care = seed(); };
 ensure();
 PL.store.subscribe(ensure);
@@ -1566,7 +1567,7 @@ H.wardMenu = wardMenu;
 </script>
 <script>
 /* ---- js/work.js ---- */
-/* Loopi Work: the office cafeteria app. Each worker sets a goal (build muscle, lose weight, steady energy,
+/* Loopi Work: the office canteen app. Each worker sets a goal (build muscle, lose weight, steady energy,
    eat balanced) and a few body details; PlateLoop turns that into personal lunch targets. Every day it
    recommends the canteen line and the small tweaks that fit the goal, and after the tray is scanned it
    says what was missing ("not enough protein") and builds a weekly healthcare report. */
@@ -1578,12 +1579,12 @@ const H = PL.health;
 /* ---------------------------------------------------------------- the canteen: three lines a day (nutrients per gram) */
 const d = (id, name, g, n, color, edge, x) => ({ id, name, g, n, color, edge, ...x });
 const LINES = {
-  A: { name: 'Korean set', lc: 'Korean set', dishes: [
-    d('w_rice', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, fb: .01, na: 0 }, '#F3EDDA', '#BFB28E', { base: true }),
-    d('w_pork', 'Spicy stir-fried pork', 120, { kcal: 2.2, c: .08, p: .17, f: .13, fb: .005, na: 5 }, '#C4452A', '#8A2D1A'),
-    d('w_stew', 'Soft tofu stew', 250, { kcal: .5, c: .02, p: .04, f: .03, fb: .003, na: 3.6 }, '#E4572E', '#A23A20', { broth: true }),
-    d('w_kimchi', 'Kimchi', 40, { kcal: .3, c: .04, p: .015, f: .005, fb: .02, na: 6 }, '#D5502F', '#A23A20', { side: true }),
-    d('w_sprout', 'Bean sprouts', 50, { kcal: .5, c: .04, p: .03, f: .025, fb: .02, na: 3 }, '#EFE6C4', '#BFB28E'),
+  A: { name: 'Chicken rice', lc: 'chicken rice stall', dishes: [
+    d('w_rice', 'Chicken rice', 250, { kcal: 1.7, c: .3, p: .03, f: .04, fb: .004, na: 1.5 }, '#F3E6B8', '#C9B272', { base: true }),
+    d('w_roast', 'Roast chicken', 120, { kcal: 2.0, c: 0, p: .25, f: .11, fb: 0, na: 3.5 }, '#C98A4B', '#8E5E28'),
+    d('w_soup', 'Chicken broth', 200, { kcal: .15, c: .01, p: .01, f: .006, fb: 0, na: 3.5 }, '#EAD9A6', '#B8A36A', { broth: true }),
+    d('w_chilli', 'Chilli sauce', 25, { kcal: .8, c: .1, p: .01, f: .04, fb: .01, na: 10 }, '#E2462F', '#A52A1A', { side: true }),
+    d('w_cucumber', 'Cucumber slices', 40, { kcal: .15, c: .03, p: .007, f: .001, fb: .005, na: .02 }, '#9CCB6B', '#6A9440'),
   ] },
   B: { name: 'Grill and salad', lc: 'grill and salad', dishes: [
     d('w_chicken', 'Grilled chicken breast', 130, { kcal: 1.65, c: 0, p: .31, f: .036, fb: 0, na: .7 }, '#D9A066', '#9C6A35'),
@@ -1592,10 +1593,10 @@ const LINES = {
     d('w_potato', 'Roast sweet potato', 100, { kcal: .9, c: .21, p: .016, f: .001, fb: .03, na: .4 }, '#E08A3C', '#A85A1C', { side: true }),
     d('w_yogurt', 'Greek yogurt', 100, { kcal: .97, c: .04, p: .09, f: .05, fb: 0, na: .4 }, '#FFFFFF', '#C7C7CC'),
   ] },
-  C: { name: 'Noodle bar', lc: 'noodle bar', dishes: [
-    d('w_udon', 'Tempura udon', 450, { kcal: 1.1, c: .19, p: .035, f: .025, fb: .01, na: 3.8 }, '#F1D9A7', '#B8955A', { base: true, broth: true }),
-    d('w_dumpling', 'Fried dumplings', 90, { kcal: 2.5, c: .25, p: .08, f: .13, fb: .015, na: 5 }, '#E6B566', '#A67A2E', { side: true }),
-    d('w_radish', 'Pickled radish', 40, { kcal: .25, c: .06, p: .005, f: 0, fb: .01, na: 5 }, '#F7E36B', '#C9B23B', { side: true }),
+  C: { name: 'Noodle stall', lc: 'noodle stall', dishes: [
+    d('w_laksa', 'Laksa', 450, { kcal: 1.3, c: .12, p: .045, f: .07, fb: .01, na: 3.6 }, '#F0A04B', '#B86E1E', { base: true, broth: true }),
+    d('w_wonton', 'Fried wontons', 90, { kcal: 2.8, c: .25, p: .09, f: .16, fb: .01, na: 4.5 }, '#E6B566', '#A67A2E', { side: true }),
+    d('w_sambal', 'Sambal on the side', 20, { kcal: 1.5, c: .1, p: .02, f: .1, fb: .02, na: 9 }, '#C8321E', '#8A1F12', { side: true }),
   ] },
 };
 const EGGS = d('w_eggs', 'Two boiled eggs', 100, { kcal: 1.55, c: .01, p: .13, f: .11, fb: 0, na: 1.2 }, '#FFF6E0', '#D9C08A');
@@ -1643,7 +1644,7 @@ const fitWord = dist => dist < .12 ? ['Great fit', 'good'] : dist < .25 ? ['Good
 const TWEAKS = [
   { id: 'eggs', say: 'Add the two boiled eggs from the salad bar', ok: () => true, apply: m => { m.eggs = true; } },
   { id: 'half', say: line => `Ask for half ${LINES[line].dishes.find(x => x.base).name.toLowerCase()}`, ok: () => true, apply: (m, line) => { m.frac[LINES[line].dishes.find(x => x.base).id] = .5; } },
-  { id: 'broth', say: 'Leave most of the broth', ok: line => LINES[line].dishes.some(x => x.broth), apply: (m, line) => { m.broth = LINES[line].dishes.find(x => x.broth).id; } },
+  { id: 'broth', say: 'Leave most of the broth or gravy', ok: line => LINES[line].dishes.some(x => x.broth), apply: (m, line) => { m.broth = LINES[line].dishes.find(x => x.broth).id; } },
   { id: 'side', say: line => `Skip the ${LINES[line].dishes.find(x => x.side).name.toLowerCase()}`, ok: line => LINES[line].dishes.some(x => x.side), apply: (m, line) => { m.frac[LINES[line].dishes.find(x => x.side).id] = 0; } },
 ];
 function plateNutrients(line, m) {
@@ -1676,10 +1677,10 @@ function recommend(w) {
 const WEEK = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 const DAYNAME = { Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday' };
 const WORKERS = [
-  { id: 'w1', name: 'Park Seojun', dept: 'Design team', sex: 'm', age: 32, cm: 176, kg: 74, act: 'light', goal: 'muscle', days: ['A', 'A', 'B', 'A'], eat: .95, like: { w_stew: .45 } },
-  { id: 'w2', name: 'Kim Hana', dept: 'Finance', sex: 'f', age: 29, cm: 163, kg: 64, act: 'desk', goal: 'lose', days: ['C', 'B', 'C', 'A'], eat: .9, like: { w_salad: .7 } },
-  { id: 'w3', name: 'Lee Daehyun', dept: 'Sales', sex: 'm', age: 45, cm: 172, kg: 80, act: 'desk', goal: 'energy', days: ['C', 'A', 'C', 'A'], eat: .95, like: { w_radish: .4, w_sprout: .5 } },
-  { id: 'w4', name: 'Choi Yerin', dept: 'Engineering', sex: 'f', age: 38, cm: 160, kg: 54, act: 'active', goal: 'balanced', days: ['B', 'B', 'A', 'B'], eat: .85, like: { w_rice: .6 } },
+  { id: 'w1', name: 'Marcus Tan', dept: 'Design team', sex: 'm', age: 32, cm: 176, kg: 74, act: 'light', goal: 'muscle', days: ['A', 'A', 'B', 'A'], eat: .95, like: { w_soup: .45 } },
+  { id: 'w2', name: 'Nur Farhana', dept: 'Finance', sex: 'f', age: 29, cm: 163, kg: 64, act: 'desk', goal: 'lose', days: ['C', 'B', 'C', 'A'], eat: .9, like: { w_salad: .7 } },
+  { id: 'w3', name: 'Ravi Shankar', dept: 'Sales', sex: 'm', age: 45, cm: 172, kg: 80, act: 'desk', goal: 'energy', days: ['C', 'A', 'C', 'A'], eat: .95, like: { w_sambal: .4, w_cucumber: .5 } },
+  { id: 'w4', name: 'Rachel Goh', dept: 'Engineering', sex: 'f', age: 38, cm: 160, kg: 54, act: 'active', goal: 'balanced', days: ['B', 'B', 'A', 'B'], eat: .85, like: { w_rice: .6 } },
 ];
 function record(line, eggs, frac, day) {
   const menu = menuOf(line, eggs), served = {}, eaten = {}, measured = {};
@@ -1709,7 +1710,7 @@ function feedback(w, n) {
   if (G === 'lose' && r('kcal') > 1.12) out.push(['warn', `About ${n.kcal - T.kcal} kcal over your lunch target.`, 'Half rice or skipping the fried side closes most of the gap.']);
   else if (r('kcal') > 1.25) out.push(['info', `A big lunch: ${n.kcal} of ${T.kcal} kcal.`, 'Keep the afternoon snack light.']);
   if (r('kcal') < .7) out.push(['info', `A light lunch: ${n.kcal} of ${T.kcal} kcal.`, G === 'muscle' ? 'Eat a protein snack this afternoon so you still reach your day.' : 'A piece of fruit this afternoon keeps your energy up.']);
-  if (r('na') > 1.1) out.push(['warn', `Salty: ${n.na.toLocaleString('en-US')} mg sodium, over the 800 mg lunch limit.`, 'Leaving most of the broth cuts about half of it.']);
+  if (r('na') > 1.1) out.push(['warn', `Salty: ${n.na.toLocaleString('en-US')} mg sodium, over the 800 mg lunch limit.`, 'Leaving most of the broth or gravy cuts about half of it.']);
   if (r('fb') < .7 && (G === 'energy' || G === 'balanced' || G === 'lose')) out.push(['info', `Low fibre: ${n.fb} of ${T.fb} g.`, 'Salad, brown rice and sweet potato help you stay full and steady.']);
   if (!out.length) out.push(['good', `Right on target for ${GOALS[G].for}.`, 'Same again tomorrow would be great.']);
   return out;
@@ -1734,7 +1735,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="stu work">
     <aside class="stu-side">
-      <div class="loopi-brand"><span class="loopi-icon work-icon" aria-hidden="true"><canvas width="44" height="37" data-form="crystal" data-stage="adult"></canvas></span><div><b>Loopi Work</b><span>by PlateLoop · for office cafeterias</span></div></div>
+      <div class="loopi-brand"><span class="loopi-icon work-icon" aria-hidden="true"><canvas width="44" height="37" data-form="crystal" data-stage="adult"></canvas></span><div><b>Loopi Work</b><span>by PlateLoop · for office canteens</span></div></div>
       <p class="stu-note">Demo: pick a worker</p>
       <div class="chips" id="work-who"></div>
       <div class="demo-box">
@@ -1829,10 +1830,10 @@ function report(w) {
   else recs.push(['good', `Protein averaged ${avg.p} g against ${T.p} g.`, avg.p >= T.p ? 'Nicely done.' : 'Close to your target.']);
   if (w.goal === 'lose') {
     const heavy = Object.keys(LINES).map(k => { const rs = log.filter(r => r.line === k); return [k, rs.length, rs.reduce((s, r) => s + r.n.kcal, 0) / (rs.length || 1)]; }).filter(x => x[1]).sort((a, b) => b[2] - a[2])[0];
-    const fix = { A: 'half rice on Korean set days saves about 150 kcal', B: 'skipping the sweet potato saves about 90 kcal', C: 'skipping the fried dumplings at the noodle bar saves about 225 kcal' }[heavy[0]];
+    const fix = { A: 'asking for half rice at the chicken rice stall saves about 210 kcal', B: 'skipping the sweet potato saves about 90 kcal', C: 'skipping the fried wontons at the noodle stall saves about 250 kcal' }[heavy[0]];
     recs.push([avg.kcal > T.kcal * 1.1 ? 'warn' : 'good', `Lunch averaged ${avg.kcal} kcal against ${T.kcal}.`, avg.kcal > T.kcal * 1.1 ? `Your biggest lunches were at the ${LINES[heavy[0]].lc}: ${fix}.` : 'That keeps you on track to lose weight steadily.']);
   }
-  if (naDays.length >= 2) recs.push(['warn', `Sodium was over the lunch limit on ${naDays.length} of ${n} days, all on ${[...new Set(naDays.map(r => LINES[r.line].name))].join(' or ')} days.`, 'Leaving most of the broth is the easiest fix.']);
+  if (naDays.length >= 2) recs.push(['warn', `Sodium was over the lunch limit on ${naDays.length} of ${n} days, all on ${[...new Set(naDays.map(r => LINES[r.line].name))].join(' or ')} days.`, 'Leaving most of the broth or gravy is the easiest fix.']);
   if (w.goal === 'energy' || avg.fb < T.fb * .75) recs.push([avg.fb >= T.fb * .9 ? 'good' : 'info', `Fibre averaged ${avg.fb} g against ${T.fb} g.`, avg.fb >= T.fb * .9 ? 'Good for steady energy.' : 'Days with salad, brown rice or sweet potato keep you full and steady through the afternoon.']);
   if (worst && distance(worst.n, T, w.goal) > .3) recs.push(['info', `${DAYNAME[worst.day.split(' ')[0]]}'s ${LINES[worst.line].lc} was the furthest from your goal.`, `Next time, check the pick on the Today tab first.`]);
   const days = log.map(r => r.day);
