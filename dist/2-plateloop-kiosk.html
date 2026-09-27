@@ -667,6 +667,38 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .kit-side .linkish{color:var(--blue);padding:0}
 .kit-side .linkish:hover{background:none;text-decoration:underline}
 
+/* ================================================================ Loopi's room */
+.room{position:relative;flex:none;border-radius:22px;overflow:hidden;box-shadow:var(--shadow-s);background:#FBF3E4;aspect-ratio:160/110;touch-action:none}
+.room-cv{display:block;width:100%;height:100%;image-rendering:pixelated;cursor:pointer}
+.room-hud{position:absolute;left:10px;right:50px;top:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.room-hud span{background:rgba(255,255,255,.85);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#1D1D1F;font:600 11.5px var(--font);padding:3px 9px;border-radius:999px}
+.room-expand{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.88);color:#1D1D1F;display:grid;place-items:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.room-expand svg{width:17px;height:17px}
+.room-say{position:absolute;transform:translateX(-50%);background:#fff;color:#1D1D1F;font:600 12.5px var(--font);padding:6px 11px;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.15);white-space:nowrap;max-width:86%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;margin-bottom:6px}
+.room-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.room-actions button{border:0;background:var(--bg2);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 12px var(--font);color:var(--label);box-shadow:var(--shadow-s);transition:transform .12s}
+.room-actions button svg{width:24px;height:24px;color:var(--tint)}
+.room-actions button:active{transform:scale(.95)}
+.snack-strip{display:flex;flex-direction:column;gap:6px}
+.snack-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.snack-chip{flex:none;display:flex;align-items:center;gap:8px;border:0;background:var(--bg2);border-radius:14px;padding:7px 11px;box-shadow:var(--shadow-s);touch-action:none;cursor:grab;font:inherit;color:inherit}
+.snack-chip b{font-size:13px;font-weight:600}
+.snack-chip small{color:var(--tint-ink);font-weight:600}
+.snack-chip.golden{box-shadow:inset 0 0 0 1.5px var(--yellow)}
+.snack-chip.ghost{position:fixed;z-index:300;pointer-events:none;transform:translate(-50%,-50%) scale(1.08);box-shadow:0 14px 30px rgba(0,0,0,.28)}
+/* full screen: the room is no longer limited to the phone */
+.room-full{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.74);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px;animation:fade .2s}
+.room-full-in{width:min(1100px,100%,calc((100vh - 230px) * 160 / 110));display:flex;flex-direction:column;gap:12px}
+.room-full .room{border-radius:26px;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)}
+.room-full .room-hud span{font-size:14px;padding:5px 12px}
+.room-full .room-say{font-size:17px;padding:9px 15px;border-radius:16px}
+.room-full .room-actions button{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;font-size:13px}
+.room-full .room-actions button svg{color:#30D158}
+.room-full .snack-strip .hint{color:rgba(255,255,255,.72)}
+.room-full .snack-strip .linkish{color:#64D2FF}
+.room-full .snack-chip{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}
+.room-full .snack-chip small{color:#30D158}
+
 </style>
 </head>
 <body>
@@ -957,30 +989,32 @@ document.addEventListener('click', e => { if (e.target.closest('[data-reset]')) 
 const LCD = PL.LCD = { bg: '#DDE4D4', ink: '#1D1D1F', mid: '#9AA592' };
 const ACC_SLOT = { cap: 'head', crown: 'head', halo: 'head', headphones: 'head', bow: 'side', flower: 'side', glasses: 'face', scarf: 'neck', wings: 'back', aura: 'aura' };
 PL.drawPet = (cv, o) => {
+  // o.ink / o.mid recolour the outline and shading; o.fill paints the body (for the full-colour room)
+  const INK = o.ink || LCD.ink, MID = o.mid || LCD.mid, FILL = o.fill || null;
   const ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
   ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = o.bg || LCD.bg; ctx.fillRect(0, 0, W, H);
+  if (o.bg === 'none') ctx.clearRect(0, 0, W, H); else { ctx.fillStyle = o.bg || LCD.bg; ctx.fillRect(0, 0, W, H); }
   const rows = o.rows || 30;
   const u = Math.max(1, Math.floor(H / rows));
   const cols = Math.floor(W / u);
   const ox = Math.floor((W - cols * u) / 2), oy = Math.floor((H - rows * u) / 2);
-  const P = (x, y, c = LCD.ink) => { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= cols || y >= rows) return; ctx.fillStyle = c; ctx.fillRect(ox + x * u, oy + y * u, u, u); };
+  const P = (x, y, c = INK) => { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= cols || y >= rows) return; ctx.fillStyle = c; ctx.fillRect(ox + x * u, oy + y * u, u, u); };
   const t = o.t || 0, cx = cols / 2, ground = rows - 4;
-  if (!o.noGround) for (let x = 2; x < cols - 2; x += 2) P(x, ground + 1, LCD.mid);
+  if (!o.noGround) for (let x = 2; x < cols - 2; x += 2) P(x, ground + 1, MID);
   const ell = (ecx, ecy, rx, ry, dither = true) => {
     const inside = (x, y) => ((x + .5 - ecx) / rx) ** 2 + ((y + .5 - ecy) / ry) ** 2 <= 1;
     for (let y = Math.floor(ecy - ry - 1); y <= Math.ceil(ecy + ry + 1); y++)
       for (let x = Math.floor(ecx - rx - 1); x <= Math.ceil(ecx + rx + 1); x++) {
         if (!inside(x, y)) continue;
         const edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1);
-        if (edge) P(x, y); else if (dither && y > ecy + ry * .35 && (x + y) % 2 === 0) P(x, y, LCD.mid);
+        if (edge) P(x, y); else { if (FILL) P(x, y, FILL); if ((dither || FILL) && y > ecy + ry * .35 && (x + y) % 2 === 0) P(x, y, MID); }
       }
   };
   if (o.stage === 'egg') {
     const wob = t % 4 === 1 ? 1 : t % 4 === 3 ? -1 : 0, ex = cx + wob, ery = 8.5, ey = ground - ery;
     ell(ex, ey, 6.5, ery, false);
-    [[-2, -3], [2, -1], [-1, 2], [3, 3], [0, -6]].forEach(([dx, dy]) => { P(ex + dx - .5, ey + dy, LCD.mid); P(ex + dx + .5, ey + dy, LCD.mid); });
+    [[-2, -3], [2, -1], [-1, 2], [3, 3], [0, -6]].forEach(([dx, dy]) => { P(ex + dx - .5, ey + dy, MID); P(ex + dx + .5, ey + dy, MID); });
     if ((o.progress || 0) > .6) [[-3, -1], [-2, 0], [-1, -1], [0, 0], [1, -1], [2, 0]].forEach(([dx, dy]) => P(ex + dx, ey + dy - 1));
     return;
   }
@@ -1000,7 +1034,7 @@ PL.drawPet = (cv, o) => {
   };
   eye(Math.round(cx - ex - .5)); eye(Math.round(cx + ex - .5));
   const my = ey + 3, mx = Math.round(cx - .5);
-  if (o.mood === 'joy') { for (let i = -2; i <= 2; i++) P(mx + i, my); P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); P(Math.round(cx - ex - 2.5), my - 1, LCD.mid); P(Math.round(cx + ex + 1.5), my - 1, LCD.mid); }
+  if (o.mood === 'joy') { for (let i = -2; i <= 2; i++) P(mx + i, my); P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); P(Math.round(cx - ex - 2.5), my - 1, MID); P(Math.round(cx + ex + 1.5), my - 1, MID); }
   else if (o.mood === 'happy') { P(mx - 2, my); P(mx + 2, my); P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); }
   else if (o.mood === 'meh') { P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); }
   else P(mx, my + 1);
@@ -1008,7 +1042,7 @@ PL.drawPet = (cv, o) => {
   const top = Math.round(by - ry), f = o.form, full = o.stage === 'adult';
   const headAcc = ACC_SLOT[o.acc] === 'head';
   const drawAcc = () => {
-    const a = o.acc, xc = cx - .5, I = LCD.ink, M = LCD.mid;
+    const a = o.acc, xc = cx - .5, I = INK, M = MID;
     if (!a) return;
     if (a === 'cap') { for (let x = -3; x <= 3; x++) P(xc + x, top - 1); for (let x = -2; x <= 2; x++) P(xc + x, top - 2, Math.abs(x) === 2 ? I : M); for (let x = -1; x <= 1; x++) P(xc + x, top - 3); P(xc + 4, top - 1); P(xc + 5, top - 1); }
     else if (a === 'crown') { for (let x = -3; x <= 3; x++) { P(xc + x, top - 1); P(xc + x, top - 2, Math.abs(x) === 3 || x === 0 ? I : M); } [-3, 0, 3].forEach(x => P(xc + x, top - 3)); P(xc, top - 4); }
@@ -1026,23 +1060,23 @@ PL.drawPet = (cv, o) => {
   else if (f === 'leafy') {
     P(cx - .5, top - 1); P(cx - .5, top - 2);
     [[-1, -3], [-2, -3], [-3, -4], [-2, -4], [-4, -5], [-3, -5], [-2, -5]].forEach(([a, b]) => { P(cx - .5 + a, top + b); P(cx - .5 - a, top + b + (full ? 0 : 1)); });
-    if (full) [[-3, 2], [3, 3], [-1, 4]].forEach(([a, b]) => P(cx + a, by + b, LCD.mid));
+    if (full) [[-3, 2], [3, 3], [-1, 4]].forEach(([a, b]) => P(cx + a, by + b, MID));
   } else if (f === 'crystal') {
     const h = full ? 3 : 2;
-    for (let i = 0; i <= h; i++) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - (2 * h - i), Math.abs(j) === i ? LCD.ink : LCD.mid);
-    for (let i = h - 1; i >= 0; i--) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - i, Math.abs(j) === i ? LCD.ink : LCD.mid);
+    for (let i = 0; i <= h; i++) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - (2 * h - i), Math.abs(j) === i ? INK : MID);
+    for (let i = h - 1; i >= 0; i--) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - i, Math.abs(j) === i ? INK : MID);
     if (full && t % 2 === 0) [[-rx - 3, -ry], [rx + 2, -ry + 2]].forEach(([a, b]) => { P(cx + a, by + b); P(cx + a - 1, by + b); P(cx + a + 1, by + b); P(cx + a, by + b - 1); P(cx + a, by + b + 1); });
   } else if (f === 'guardian') {
     const yb = Math.round(by - ry * .62);
     for (let x = Math.round(cx - rx * .8); x <= Math.round(cx + rx * .8); x++) P(x, yb);
     P(cx - .5, yb - 1); P(cx - .5, yb - 2);
-    if (full) { const sx = Math.round(cx + rx + 1), sy = Math.round(by - 1); for (let y = 0; y < 5; y++) { P(sx, sy + y); P(sx + 3, sy + y); } for (let x = 0; x <= 3; x++) P(sx + x, sy); P(sx + 1, sy + 5); P(sx + 2, sy + 5); P(sx + 1, sy + 2, LCD.mid); P(sx + 2, sy + 2, LCD.mid); }
+    if (full) { const sx = Math.round(cx + rx + 1), sy = Math.round(by - 1); for (let y = 0; y < 5; y++) { P(sx, sy + y); P(sx + 3, sy + y); } for (let x = 0; x <= 3; x++) P(sx + x, sy); P(sx + 1, sy + 5); P(sx + 2, sy + 5); P(sx + 1, sy + 2, MID); P(sx + 2, sy + 2, MID); }
   } else if (f === 'explorer') {
     const w = Math.round(rx * (full ? .95 : .7));
     for (let x = -w; x <= w; x++) P(cx - .5 + x, top);
-    for (let x = -2; x <= 2; x++) { P(cx - .5 + x, top - 1); P(cx - .5 + x, top - 2, x === -2 || x === 2 ? LCD.ink : LCD.mid); }
+    for (let x = -2; x <= 2; x++) { P(cx - .5 + x, top - 1); P(cx - .5 + x, top - 2, x === -2 || x === 2 ? INK : MID); }
     for (let x = -2; x <= 2; x++) P(cx - .5 + x, top - 3);
-    if (full) { const bx = Math.round(cx - rx - 3), byy = Math.round(by - 2); for (let y = 0; y < 5; y++) { P(bx, byy + y); P(bx + 2, byy + y); } P(bx + 1, byy); P(bx + 1, byy + 4); P(bx + 1, byy + 2, LCD.mid); }
+    if (full) { const bx = Math.round(cx - rx - 3), byy = Math.round(by - 2); for (let y = 0; y < 5; y++) { P(bx, byy + y); P(bx + 2, byy + y); } P(bx + 1, byy); P(bx + 1, byy + 4); P(bx + 1, byy + 2, MID); }
   }
   drawAcc();
 };
@@ -1363,6 +1397,25 @@ G.openCrate = (st, tier) => {
   return { acc, dup, refund };
 };
 G.equip = (st, id) => { const g = G.ensure(st); if (id && !g.acc.includes(id)) return; g.eq = g.eq === id ? null : id; };
+
+/* ---------------------------------------------------------------- Loopi's room: ball play and crumbs */
+G.BALLS_PER_DAY = 5;
+/** Fetch with Loopi: +3 Joy, up to 5 times a day (after that it's just for fun). */
+G.playBall = st => {
+  const g = G.ensure(st);
+  if (!g.balls || g.balls.d !== today()) g.balls = { d: today(), n: 0 };
+  if (g.balls.n >= G.BALLS_PER_DAY) return false;
+  g.balls.n++;
+  st.pet.jo = Math.min(100, st.pet.jo + 3);
+  return true;
+};
+/** A swept crumb goes into the compost bin, where the worm farm can grow it back. */
+G.compostCrumb = (st, type) => {
+  const g = G.ensure(st);
+  g.bin.push(type);
+  g.swept = (g.swept || 0) + 1;
+  return g.swept;
+};
 
 /* ---------------------------------------------------------------- Healthy Catch */
 G.catchStart = st => { const g = G.ensure(st); if (G.playsLeft(g) <= 0) return false; g.plays.n++; return true; };
