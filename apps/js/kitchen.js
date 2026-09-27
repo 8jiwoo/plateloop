@@ -28,6 +28,7 @@ const NAV = [
   ['dishes', 'Dishes', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
   ['nutrition', 'Nutrition', SV('<path d="M12 21c-4.5-2.5-8-6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 11c0 4-3.5 7.5-8 10Z"/>')],
   ['environment', 'Environment', SV('<path d="M12 22V12M12 12C8 12 5 9 5 5c4 0 7 3 7 7ZM12 14c3 0 6-2.5 6-6-3 0-6 2.5-6 6Z"/>')],
+  ['carbon', 'Carbon', SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/><path d="M9.5 14.5h5"/>')],
   ['plan', 'Plan & order', SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>')],
   ['report', 'Daily report', SV('<path d="M4 5h16M4 10h16M4 15h10M4 20h7"/>')],
 ];
@@ -52,7 +53,7 @@ function render() {
   $$('.kit-side button', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   $('#kit-live', root).innerHTML = `<span class="live"><i></i>Live from the scanner · ${PL.clock()}</span>`;
   const main = $('#kit-main', root);
-  main.innerHTML = ({ overview, dishes, nutrition, environment, plan, report })[ui.view]();
+  main.innerHTML = ({ overview, dishes, nutrition, environment, carbon, plan, report })[ui.view]();
   wire(main);
 }
 
@@ -198,6 +199,69 @@ function environment() {
   <p class="hint" style="margin-top:14px">Illustrative factors: 2.5 kg CO₂e per kg of food, 6.6 kg CO₂ absorbed per pine tree per year, 0.17 kg CO₂ per car-km. Swap in published factors (e.g. EPA WARM) before quoting.</p>`;
 }
 
+/* ---------------------------------------------------------------- Carbon: the whole cafeteria's footprint, toward carbon-neutral operation
+   Illustrative factors (kg CO₂e): per kg of food produced, per kg of food thrown away, and per unit of
+   energy, water and transport. Swap in published factors (e.g. EPA WARM, national grid) before quoting. */
+const EF_FOOD = { rice: 2.7, bulgogi: 27, spinach: 1.2, kimchi: 1.0, apple: .4, soup: 1.4 };
+const EF_DISPOSAL = .58;
+const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .46], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
+const DAYS_PER_MONTH = 20, BEFORE = 1.18, GOAL = .12;
+const CARBON_TREND = [1.16, 1.12, 1.07, 1.05, 1.02, 1];
+function carbonData() {
+  const w = PL.todayTotals().w, meals = ENROLLED * .97 * DAYS_PER_MONTH;
+  const food = MENU.map(d => { const kg = d.g.M / 1000 * meals; return { d, kg, t: kg * EF_FOOD[d.id] / 1000 }; });
+  const foodT = food.reduce((a, x) => a + x.t, 0);
+  const wastedKg = food.reduce((a, x) => a + x.kg * (T().dish[x.d.id].ret / T().dish[x.d.id].served), 0);
+  const disposalT = wastedKg * EF_DISPOSAL / 1000;
+  const ops = OPS.map(([name, what, qty, unit, f]) => ({ name, what, qty, unit, t: qty * f / 1000 }));
+  const opsT = ops.reduce((a, x) => a + x.t, 0);
+  const total = foodT + disposalT + opsT;
+  const hidden = food.reduce((a, x) => a + x.t * (T().dish[x.d.id].ret / T().dish[x.d.id].served), 0);
+  return { w, meals, food, foodT, wastedKg, disposalT, ops, opsT, total, hidden, perMeal: total * 1000 / meals, before: total * BEFORE };
+}
+function carbon() {
+  const c = carbonData(), cut = 1 - c.total / c.before;
+  const parts = [['Ingredients', c.foodT, 'var(--orange)'], ['Food waste', c.disposalT, 'var(--red)'], ['Energy, water and transport', c.opsT, 'var(--blue)']];
+  const beef = c.food.find(x => x.d.id === 'bulgogi');
+  const actions = [
+    ['Cut plate waste from ' + pct(c.w) + ' to 20%', Math.max(0, (c.w - .2) / c.w) * (c.disposalT + c.hidden) * 10, 'Using the dish-by-dish waste data'],
+    ['Swap beef for chicken or tofu once a week', beef.t * .2 * (1 - 6 / 27) * 10, 'Beef is ' + pct(beef.t / c.foodT) + ' of ingredient emissions'],
+    ['Cook to the forecast, not to enrolment', c.foodT * .06 * 10, 'Plan & order already cooks about 6% less'],
+    ['Run dishwashers full and off-peak', c.ops[0].t * .08 * 10, 'About 8% less electricity'],
+  ].sort((a, b) => b[1] - a[1]);
+  const W = 520, Hh = 180, max = 1.25, months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
+  let trend = `<svg viewBox="0 0 ${W} ${Hh + 26}" role="img" aria-label="Monthly emissions, April to September">`;
+  CARBON_TREND.forEach((k, i) => { const v = c.total * k, h = k / max * Hh, x = 40 + i * 78; trend += `<rect x="${x}" y="${Hh - h}" width="46" height="${h}" rx="8" fill="var(--tint)" opacity="${i === 5 ? 1 : .6}"/><text x="${x + 23}" y="${Hh - h - 6}" text-anchor="middle" style="font:600 12px var(--font);fill:var(--label)">${v.toFixed(1)}</text><text class="axis" x="${x + 23}" y="${Hh + 18}" text-anchor="middle">${months[i]}</text>`; });
+  const gy = Hh - (BEFORE * (1 - GOAL)) / max * Hh;
+  trend += `<line x1="30" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/></svg>`;
+  return `
+  <div class="page-head"><div><h1>Carbon</h1><p>Every source of the cafeteria's emissions in one place: ingredients, food waste, and the kitchen's energy, water and deliveries.</p></div><button class="btn" id="copy-carbon">Copy monthly report</button></div>
+  <div class="kpis">
+    <div class="kpi"><div class="k">This month</div><div class="v">${c.total.toFixed(1)} t</div><div class="s">CO₂e, all sources</div></div>
+    <div class="kpi"><div class="k">Per meal</div><div class="v">${c.perMeal.toFixed(2)} kg</div><div class="s">${Math.round(c.meals).toLocaleString('en-US')} meals this month</div></div>
+    <div class="kpi good"><div class="k">Vs. before PlateLoop</div><div class="v">−${pct(cut)}</div><div class="s">goal −${pct(GOAL)} this year</div></div>
+    <div class="kpi good"><div class="k">Saved today, live</div><div class="v">${((T().co2 || 0) / 1000).toFixed(1)} kg</div><div class="s">from trays scanned so far</div></div>
+  </div>
+  <div class="kgrid">
+    <div class="card"><h3>Where the emissions come from</h3>
+      <div class="cstack">${parts.map(([n, v, col]) => `<i style="width:${v / c.total * 100}%;background:${col}" title="${n}"></i>`).join('')}</div>
+      <div class="clist">${parts.map(([n, v, col]) => `<div><span class="dot" style="color:${col}"></span><b>${n}</b><span class="num">${v.toFixed(1)} t · ${pct(v / c.total)}</span></div>`).join('')}</div>
+      <p class="hint" style="margin-top:10px">Food thrown away also wastes the ${c.hidden.toFixed(1)} t it took to grow it. That's counted under ingredients.</p></div>
+    <div class="card chart"><h3>Monthly emissions</h3><p class="hint">t CO₂e, all sources · <span style="color:var(--orange)">dashed line: this year's goal</span></p>${trend}</div>
+  </div>
+  <div class="kgrid">
+    <div class="card"><h3>Ingredients</h3><div class="table-wrap"><table><thead><tr><th>Dish</th><th class="r">kg a month</th><th class="r">t CO₂e</th></tr></thead><tbody>${[...c.food].sort((a, b) => b.t - a.t).map(x => `<tr><td>${x.d.name}</td><td class="r num">${Math.round(x.kg).toLocaleString('en-US')}</td><td class="r num">${x.t.toFixed(2)}</td></tr>`).join('')}</tbody></table></div></div>
+    <div class="card"><h3>Operations</h3><div class="table-wrap"><table><thead><tr><th>Source</th><th class="r">Use</th><th class="r">t CO₂e</th></tr></thead><tbody>${c.ops.map(o => `<tr><td>${o.name}<br><small class="muted">${o.what}</small></td><td class="r num">${o.qty.toLocaleString('en-US')} ${o.unit}</td><td class="r num">${o.t.toFixed(2)}</td></tr>`).join('')}<tr><td>Food waste disposal<br><small class="muted">${Math.round(c.wastedKg).toLocaleString('en-US')} kg to the bin</small></td><td class="r num">${EF_DISPOSAL} kg/kg</td><td class="r num">${c.disposalT.toFixed(2)}</td></tr></tbody></table></div></div>
+  </div>
+  <h2 class="section-title">Biggest cuts toward carbon-neutral</h2>
+  <div class="insights">${actions.map(([t, v, s], i) => `<div class="insight"><span class="ic" style="background:${['var(--tint)', 'var(--blue)', 'var(--orange)', 'var(--purple)'][i]}">${SV('<path d="M4 17l6-6 4 4 6-8"/>')}</span><div><b>${t}: −${v.toFixed(1)} t a school year</b><span>${s}</span></div></div>`).join('')}</div>
+  <p class="hint" style="margin-top:14px">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.46 per kWh; gas 2.2 per m³. Replace with published factors before reporting.</p>`;
+}
+function carbonReport() {
+  const c = carbonData();
+  return `Carbon report, September. The cafeteria produced ${c.total.toFixed(1)} t CO₂e this month (${c.perMeal.toFixed(2)} kg per meal): ${c.foodT.toFixed(1)} t from ingredients, ${c.disposalT.toFixed(1)} t from food waste disposal, and ${c.opsT.toFixed(1)} t from energy, water and deliveries. That is ${pct(1 - c.total / c.before)} below the level before PlateLoop, against a goal of ${pct(GOAL)} this year. Plate waste is ${pct(c.w)}; food thrown away also carried ${c.hidden.toFixed(1)} t of ingredient emissions.`;
+}
+
 /* ---------------------------------------------------------------- Plan & order */
 function forecast() {
   const p = ui.plan, att = p.att - (p.event === 'trip' ? 138 : 0);
@@ -301,6 +365,8 @@ function wire(main) {
   wireOrder(main);
   PL.paintPets(main);
   const tree = $('#env-tree', main); if (tree) drawTreeInto(tree, 0);
+  const cc = $('#copy-carbon', main);
+  if (cc) cc.onclick = () => (navigator.clipboard ? navigator.clipboard.writeText(carbonReport()) : Promise.reject()).then(() => PL.toast('Carbon report copied.'), () => PL.toast('Copy is not available here. Select the text instead.'));
   const cp = $('#copy-report', main);
   if (cp) cp.onclick = () => {
     const txt = reportData().text.join('\n\n');
