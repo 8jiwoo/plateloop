@@ -31,7 +31,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="kio-app">
     <header class="kio-head">
-      <div class="kio-brand"><span class="kio-logo" aria-hidden="true"></span><div><b>PlateLoop Kiosk</b><span>Scanner 1 · Haneul Elementary cafeteria</span></div></div>
+      <div class="kio-brand"><span class="kio-logo" aria-hidden="true"></span><div><b>PlateLoop Kiosk</b><span>Scanner 1 · Harbourlight Primary canteen</span></div></div>
       <div class="row"><span class="pill green"><i class="dot"></i>Sending to Kitchen</span><button class="btn small" id="kio-fs">Full screen</button></div>
     </header>
     <div class="kiosk"><div class="kio-screen" id="kio-screen" role="region" aria-label="Kiosk screen" aria-live="polite"></div></div>
@@ -51,7 +51,7 @@ function mount(el) {
   $('#kio-sid', el).onchange = e => { k.sid = e.target.value; controls(); };
   $('#kio-preset', el).onchange = e => { k.preset = e.target.value; };
   $('#kio-tap', el).onclick = tap;
-  $('#kio-rest', el).onclick = () => { const n = PL.scanRestOfClass(); PL.store.save('scan'); PL.toast(n ? `${n} students scanned before and after lunch.` : 'Everyone in class 3-2 is done.'); };
+  $('#kio-rest', el).onclick = () => { const n = PL.scanRestOfClass(); PL.store.save('scan'); PL.toast(n ? `${n} students scanned before and after lunch.` : 'Everyone in class 3B is done.'); };
   controls(); screen();
 }
 
@@ -59,14 +59,14 @@ function controls() {
   if (!root) return;
   const mark = s => ({ before: '', after: ' · eating', done: ' · done' })[phaseOf(s)];
   const opt = s => `<option value="${s.id}" ${s.id === k.sid ? 'selected' : ''}>${esc(s.name)}${mark(s)}</option>`;
-  $('#kio-sid', root).innerHTML = `<optgroup label="Demo students">${PL.S.students.filter(s => s.named).map(opt).join('')}</optgroup><optgroup label="Class 3-2">${PL.S.students.filter(s => !s.named).map(opt).join('')}</optgroup>`;
+  $('#kio-sid', root).innerHTML = `<optgroup label="Demo students">${PL.S.students.filter(s => s.named).map(opt).join('')}</optgroup><optgroup label="Class 3B">${PL.S.students.filter(s => !s.named).map(opt).join('')}</optgroup>`;
   $$('#kio-portion button', root).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === k.portion)));
   $('#kio-preset', root).value = k.preset;
   const ph = phaseOf(PL.student(k.sid));
   $('#kio-tap', root).textContent = { before: 'Walk up · before lunch', after: 'Walk up · after lunch', done: 'Walk up · already done' }[ph];
-  const cls = PL.S.students.filter(s => s.cls === '3-2');
+  const cls = PL.S.students.filter(s => s.cls === '3B');
   const eating = cls.filter(s => phaseOf(s) === 'after').length, done = cls.filter(s => s.scanned).length;
-  $('#kio-progress', root).textContent = `Class 3-2: ${eating} eating, ${done} of 28 done. PlateLoop Kitchen and Loopi update as you scan.`;
+  $('#kio-progress', root).textContent = `Class 3B: ${eating} eating, ${done} of 28 done. PlateLoop Kitchen and Loopi update as you scan.`;
   $('#kio-rest', root).disabled = done >= 28;
 }
 

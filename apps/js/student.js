@@ -135,7 +135,7 @@ const roomHooks = {
     const lines = ['Can we play ball?', null, null];
     if (!st.before) lines.push('Scan your tray before you eat!');
     else if (!st.after) lines.push('Scan your tray again after lunch.');
-    if (st.pet.quest < 3) lines.push('What does spinach taste like?');
+    if (st.pet.quest < 3) lines.push('What does kailan taste like?');
     if (g.hunger <= 1) lines.push('My tummy is rumbling.');
     return lines[Math.floor(Math.random() * lines.length)];
   },
@@ -173,7 +173,7 @@ function lunchTab(st) {
     }).join('')}</section>
     <p class="foot">${a.zero ? 'Nothing left. That tray grew a fruit on the school tree.' : a.w < st.baseline ? `Less left than your usual ${pct(st.baseline)}.` : `A bit more than your usual ${pct(st.baseline)}. A smaller portion is fine.`}${a.co2 > 0 ? ` You kept about ${a.co2} g of CO₂ out of the air today.` : ''}</p>`;
   } else {
-    out += `<h4 class="sec">Today's menu</h4><section class="group">${MENU.map(d => `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${d.name}${d.id === PL.CRAVING && st.pet.quest < 3 ? ' <em class="tag">Spinach week</em>' : ''}</span><span class="g-v num">${Math.round(d.g.M * d.kcal)} kcal</span></div>`).join('')}</section>`;
+    out += `<h4 class="sec">Today's menu</h4><section class="group">${MENU.map(d => `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${d.name}${d.id === PL.CRAVING && st.pet.quest < 3 ? ' <em class="tag">Kailan week</em>' : ''}</span><span class="g-v num">${Math.round(d.g.M * d.kcal)} kcal</span></div>`).join('')}</section>`;
   }
 
   const n = a ? a.intake : st.log[0].n, when = a ? 'today' : st.log[0].day.split(' ')[0];
@@ -191,11 +191,11 @@ function lunchTab(st) {
   const Hh = 110, bw = 16;
   let svg = `<svg viewBox="0 0 300 ${Hh + 18}" role="img" aria-label="How much you ate each day, next to your class">`;
   days.forEach((l, i) => { const x = 22 + i * 56, you = (1 - l.w) * Hh, avg = clsAvg(i) * Hh; svg += `<rect x="${x}" y="${Hh - avg}" width="${bw}" height="${avg}" rx="5" fill="var(--fill3)"/><rect x="${x + bw + 3}" y="${Hh - you}" width="${bw}" height="${you}" rx="5" fill="var(--tint)"/><text class="axis" x="${x + bw}" y="${Hh + 14}" text-anchor="middle">${l.day.slice(0, 3)}</text>`; });
-  out += `<h4 class="sec">This week</h4><section class="group chart">${svg}</svg><div class="mix-key"><span style="--c:var(--tint)">You</span><span style="--c:var(--fill3)">Class 3-2</span><span>share of lunch eaten</span></div></section>`;
+  out += `<h4 class="sec">This week</h4><section class="group chart">${svg}</svg><div class="mix-key"><span style="--c:var(--tint)">You</span><span style="--c:var(--fill3)">Class 3B</span><span>share of lunch eaten</span></div></section>`;
 
   const c = PL.S.classes.find(c => c.id === st.cls), cw = c.ret / c.served;
   out += `<h4 class="sec">Goals</h4><section class="group">
-    <div class="goal"><div><b>Spinach week</b><span>Taste the spinach namul 3 times. A bite counts.</span></div>${pips(Math.min(3, st.pet.quest), 3, 'q')}</div>
+    <div class="goal"><div><b>Kailan week</b><span>Taste the stir-fried kailan 3 times. A bite counts.</span></div>${pips(Math.min(3, st.pet.quest), 3, 'q')}</div>
     <div class="goal"><div><b>Class ${st.cls} under 20% waste</b><span>The class is at ${pct(cw)} this week.</span></div>${cw < .2 ? `<span class="ok-mark">${ICON.check}</span>` : `<span class="g-v num">${pct(cw)}</span>`}</div>
   </section>`;
   return out;
@@ -229,7 +229,7 @@ function meTab(st, g) {
   return `
   <section class="group profile">
     <canvas width="120" height="100" data-pet="${st.id}"></canvas>
-    <div><b>${esc(st.name)}</b><span>Class ${st.cls} · Haneul Elementary</span></div>
+    <div><b>${esc(st.name)}</b><span>Class ${st.cls} · Harbourlight Primary</span></div>
   </section>
   <div class="me-stats">
     <div><b class="num">${st.pet.c.lowWaste}</b><span>clean trays</span></div>
