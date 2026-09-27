@@ -39,7 +39,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="kit">
     <aside class="kit-side">
-      <div class="who"><span class="kit-logo" aria-hidden="true"></span><div><b>PlateLoop Kitchen</b><span>Harbourlight Primary</span></div></div>
+      <div class="who"><span class="kit-logo" aria-hidden="true"></span><div><b>PlateLoop Kitchen</b><span>${PL.SCHOOL}</span></div></div>
       ${NAV.map(([id, label, ic]) => `<button data-view="${id}">${ic}${label}</button>`).join('')}
       <div class="kit-foot"><div id="kit-live"></div><button class="linkish" data-reset style="font-size:13px">Reset demo</button></div>
     </aside>
@@ -164,7 +164,7 @@ function nutrition() {
   <div class="card"><div class="row spread"><h3>Average intake per student</h3><span class="hint">Class 3B · ${n} students · latest lunch</span></div>
     <div class="nut-legend"><span class="l1">Low</span><span class="l2">Adequate</span><span class="l3">Too much</span></div>
     <div class="nut-rows">${PL.NUTRIENTS.map(([k, label, unit]) => { const [t, c] = status[PL.nStatus(k, avg[k])]; return `<div class="nut-row"><b>${label}</b>${zoneBar(k, avg[k])}<span class="num">${avg[k]} ${unit} <small>/ ${PL.TARGET[k]}</small></span><span class="flag ${c}">${t}</span></div>`; }).join('')}</div>
-    <p class="hint" style="margin-top:12px">Targets are per lunch for a Primary 3 student (about a third of the daily need). Replace them with the Health Promotion Board's school meal guidelines.</p></div>
+    <p class="hint" style="margin-top:12px">Targets are per lunch for a Secondary 3 student (about a third of the daily need). Replace them with the Health Promotion Board's school meal guidelines.</p></div>
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Students to check on</h3><span class="pill orange">${low.length} flagged</span></div><p class="hint">Ate less than 60% of the calorie target at their last lunch. Visible to the school dietitian and homeroom teacher only.</p>
       <div class="lowlist">${low.length ? low.slice(0, 8).map(x => `<div><span class="av">${esc(x.s.name[0])}</span><div><b>${esc(x.s.name)} · Class ${x.s.cls}</b><span>${x.n.kcal} kcal · protein ${x.n.p} g</span></div><span class="flag low">${pct(x.r)}</span></div>`).join('') : '<p class="hint" style="padding:12px 0">Nobody below 60% right now.</p>'}</div></div>
@@ -289,7 +289,7 @@ function plan() {
     <div class="controls">
       <div><label for="att">Attendance · <span class="num" id="att-v">${p.att} of ${ENROLLED}</span></label><input type="range" id="att" min="600" max="840" step="1" value="${p.att}"></div>
       <div><label>Weather</label><div class="seg" id="weather">${['sunny', 'rainy', 'hot'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
-      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'P6 learning journey (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'Sec 4 learning journey (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     </div>
     <div id="plan-out">${planOut()}</div>
   </div>
@@ -327,7 +327,7 @@ function reportData() {
   const text = [
     `Today ${t.trays.toLocaleString('en-US')} trays were scanned before and after lunch, and ${t.eating} students are still eating. Plate waste is ${pct(tot.w)}, ${diff >= 0 ? `${diff.toFixed(0)} points below` : `${(-diff).toFixed(0)} points above`} the ${pct(PL.SCHOOL_BASELINE)} baseline, leaving ${fmt1(tot.lf / 1000)} kg of food (about ${money(tot.val)} of ingredients).`,
     `${best.d.name} was the most eaten dish (${pct(best.e)}). ${worst.d.name} came back the most, with only ${pct(worst.e)} eaten. ${TREND[worst.d.id][2]}`,
-    `Class ${cls.c.id} leads Primary 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
+    `Class ${cls.c.id} leads Secondary 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
     `The average student ate ${intakeStats().avg.kcal} kcal and ${intakeStats().avg.p} g of protein at lunch (targets ${PL.TARGET.kcal} kcal and ${PL.TARGET.p} g). ${intakeStats().low.length} students ate less than 60% of their calorie target and are flagged for the dietitian.`,
     `For Monday, the plan cooks ${fmt1(f.tNew)} kg instead of ${fmt1(f.tStd)} kg, saving about ${money(f.costStd - f.cost)} in ingredients. The supplier order totals ${money(f.orderTotal)}.`,
   ];

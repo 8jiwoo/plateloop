@@ -24,13 +24,13 @@ const MENU = PL.MENU = [
   { id: 'kailan', n: { c: .04, p: .03, f: .04 }, name: 'Stir-fried kailan', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .6, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
   { id: 'cabbage', n: { c: .05, p: .012, f: .02 }, name: 'Braised cabbage', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .4, price: .004, color: '#D8E6A8', edge: '#9DB36A', slot: [1, 0] },
   { id: 'melon', n: { c: .08, p: .006, f: .002 }, name: 'Watermelon', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .3, price: .004, color: '#F2545B', edge: '#B8323A', slot: [2, 0] },
-  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Brown rice mix', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
-  { id: 'chicken', n: { c: .03, p: .22, f: .08 }, name: 'Soy sauce chicken', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 1.75, price: .012, color: '#9C5A2E', edge: '#6B3A1A', slot: [1, 1] },
+  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Brown rice mix', group: 'grain', g: { S: 170, M: 230, L: 290 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
+  { id: 'chicken', n: { c: .03, p: .22, f: .08 }, name: 'Soy sauce chicken', group: 'protein', g: { S: 80, M: 115, L: 150 }, kcal: 1.75, price: .012, color: '#9C5A2E', edge: '#6B3A1A', slot: [1, 1] },
   { id: 'soup', n: { c: .04, p: .02, f: .01 }, name: 'ABC soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .3, price: .0021, color: '#E8A25C', edge: '#B8722F', slot: [2, 1] },
 ];
 const DISH = PL.DISH = Object.fromEntries(MENU.map(d => [d.id, d]));
-/* nutrition: per-lunch targets for a Primary 3 student (illustrative, about a third of the daily need) */
-PL.TARGET = { kcal: 580, c: 85, p: 25, f: 16 };
+/* nutrition: per-lunch targets for a Secondary 3 student (illustrative, about a third of the daily need) */
+PL.TARGET = { kcal: 700, c: 100, p: 30, f: 22 };
 PL.NUTRIENTS = [['kcal', 'Calories', 'kcal'], ['c', 'Carbs', 'g'], ['p', 'Protein', 'g'], ['f', 'Fat', 'g']];
 PL.nutrientsOf = grams => {
   const o = { kcal: 0, c: 0, p: 0, f: 0 };
@@ -42,6 +42,7 @@ PL.nStatus = (k, v) => { const r = v / PL.TARGET[k]; return r < .8 ? 'low' : r >
 /* environment equivalents (illustrative factors: 2.5 kg CO2e per kg food, a pine tree absorbs ~6.6 kg CO2 a year, a car emits ~0.17 kg CO2 per km) */
 PL.env = kg => { const co2 = kg * 2.5; return { kg, co2, trees: co2 / 6.6, km: co2 / .17 }; };
 PL.CRAVING = 'kailan';
+PL.SCHOOL = 'Harbourlight Secondary'; // fictional demo school
 const TYPICAL_LEFT = PL.TYPICAL_LEFT = { kailan: .50, cabbage: .44, melon: .10, rice: .13, chicken: .05, soup: .38 };
 PL.FORMS = {
   leafy: { name: 'Leafy', why: 'veggies tried', key: 'veg' },
@@ -79,11 +80,11 @@ const CLASS_SEED = [
 ];
 const SCHOOLS = [
   // fictional schools for the demo
-  { id: 'maple', name: 'Maple Bay Primary', red: .34, acc: .93, kg: 1510 },
-  { id: 'orchid', name: 'Orchid Grove Primary', red: .27, acc: .91, kg: 1122 },
-  { id: 'sunbird', name: 'Sunbird Primary', red: .22, acc: .89, kg: 864 },
+  { id: 'maple', name: 'Maple Bay Secondary', red: .34, acc: .93, kg: 1510 },
+  { id: 'orchid', name: 'Orchid Grove Secondary', red: .27, acc: .91, kg: 1122 },
+  { id: 'sunbird', name: 'Sunbird Secondary', red: .22, acc: .89, kg: 864 },
   { id: 'kingfisher', name: 'Kingfisher Secondary', red: .19, acc: .90, kg: 1390 },
-  { id: 'tembusu', name: 'Tembusu Hill Primary', red: .12, acc: .86, kg: 402 },
+  { id: 'tembusu', name: 'Tembusu Hill Secondary', red: .12, acc: .86, kg: 402 },
 ];
 const DAYS = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 
@@ -125,7 +126,7 @@ function freshState() {
 }
 
 /* ------------------------------------------------------------ store (localStorage + cross-tab sync) */
-const KEY = 'plateloop-sg-v8';
+const KEY = 'plateloop-sg-v9';
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('plateloop') : null;
 const subs = new Set();
 function readStored() {
@@ -165,7 +166,7 @@ PL.streakRows = () => [...PL.S.students].sort((a, b) => b.pet.streak - a.pet.str
 PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3B' && s.scanned).length;
 PL.schoolRows = () => {
   const cr = PL.S.classes.map(PL.classStats);
-  const us = { id: 'harbourlight', name: 'Harbourlight Primary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
+  const us = { id: 'harbourlight', name: PL.SCHOOL, us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
   return [us, ...SCHOOLS].sort((a, b) => b.red - a.red);
 };
 PL.todayTotals = () => { let sv = 0, lf = 0, val = 0; MENU.forEach(d => { const x = PL.S.today.dish[d.id]; sv += x.served; lf += x.ret; val += x.ret * d.price; }); return { sv, lf, val, w: lf / sv }; };
@@ -257,6 +258,7 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
   st.log.unshift({ day: 'Fri 25', portion, w: r.w, pts: r.xp, n: r.intake });
   st.log = st.log.slice(0, 6);
   r.servedBy = served; r.measured = measured;
+  r.game = PL.game ? PL.game.feedLunch(st, r) : null; // Loopi's hunger, hearts and the plate in its bowl
   // completed trays feed the kitchen's waste numbers and the class league
   MENU.forEach(d => { T.dish[d.id].served += served[d.id]; T.dish[d.id].ret += measured[d.id]; });
   T.trays++;
