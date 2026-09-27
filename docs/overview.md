@@ -11,6 +11,11 @@ School kitchens plan meals as **standard portion × headcount**, with no data on
 3. **PlateLoop Kitchen**: live scans, waste by dish, nutrition against targets (with students to check on), an environment dashboard (CO₂, tree equivalents, zero-leftover rate), a plan → order → cook → serve cycle with forecasts and supplier orders, and an automatic daily report.
 4. **Loopi**: the student app. A Tamagotchi pet that only eats real lunches: after the tray is scanned back, the food you ate waits in Loopi's bowl, and whatever you left turns up as crumbs on Loopi's floor until you sweep it into the compost. It also shows what you ate (nutrition against targets, you vs. your class), badges that unlock things Loopi can wear, and class and school leaderboards.
 
+5. **Loopi Care**: the hospital patient app. Each patient's intake is measured against the targets for their diet (high protein, diabetic, low sodium), with an alert when they leave most of two meals, and a weekly healthcare report for the doctor and dietitian. In hospitals the goal flips: food left on a tray usually means a patient isn't eating enough.
+6. **Loopi Kids**: the kindergarten app. Children see a picture-first Loopi, a rainbow of the food colours they ate and a sticker book of foods they've tried. Behind a grown-up check, parents get a lunch report with nutrients for the child's age, allergy checks and eating habits.
+
+The Kitchen app also includes **carbon management**: the cafeteria's whole footprint from ingredients, food waste, and energy, water and deliveries, tracked monthly toward carbon-neutral operation. Every tray also shows the CO₂ it saved, live.
+
 ## Why it works
 - **Reward right-sizing, not clean plates.** Loopi scores each student against their *own* usual leftovers, and a small portion fully eaten earns full energy.
 - **Leftovers are a small chore, not a punishment.** They show up as crumbs to sweep, so students see their waste without losing anything.

@@ -4,54 +4,98 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PlateLoop</title>
-<meta name="description" content="AI tray scanning that cuts school food waste. Four apps: the scanner, its screen, the kitchen dashboard and Loopi, the student pet app.">
+<meta name="description" content="An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions.">
 <style>
-:root{--bg:#F5F5F7;--card:#FFFFFF;--label:#1D1D1F;--label2:#6E6E73;--sep:rgba(60,60,67,.13);--tint:#34C759;--tint-ink:#248A3D;--blue:#0066CC;
+:root{--bg:#F5F5F7;--card:#FFFFFF;--label:#1D1D1F;--label2:#6E6E73;--sep:rgba(60,60,67,.13);--tint:#34C759;--tint-ink:#248A3D;--blue:#0066CC;--orange:#C45D00;
   --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1C1C1E;--label:#F5F5F7;--label2:#AEAEB2;--sep:rgba(84,84,88,.6);--tint:#30D158;--tint-ink:#30D158;--blue:#2997FF;color-scheme:dark}}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1C1C1E;--label:#F5F5F7;--label2:#AEAEB2;--sep:rgba(84,84,88,.6);--tint:#30D158;--tint-ink:#30D158;--blue:#2997FF;--orange:#FF9F0A;color-scheme:dark}}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--label);font:17px/1.47 var(--font);letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
 main{max-width:980px;margin:0 auto;padding:64px 16px 48px}
 h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.03em;margin:0}
-.lede{font-size:clamp(19px,2.4vw,24px);color:var(--label2);max-width:720px;margin:14px 0 0;line-height:1.35}
-.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:40px}
-.app{display:flex;flex-direction:column;gap:6px;background:var(--card);border-radius:20px;padding:22px;text-decoration:none;color:inherit;transition:transform .15s}
+.lede{font-size:clamp(19px,2.4vw,24px);color:var(--label2);max-width:760px;margin:14px 0 0;line-height:1.35}
+h2{font-size:clamp(26px,3.6vw,34px);letter-spacing:-.025em;margin:64px 0 8px;line-height:1.15}
+.sub{color:var(--label2);max-width:720px;margin:0 0 20px}
+.grid2,.grid3{display:grid;gap:14px}
+.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.card{background:var(--card);border-radius:20px;padding:22px}
+.card b{display:block;font-size:18px;letter-spacing:-.015em;margin-bottom:4px}
+.card p{margin:0;color:var(--label2);font-size:15px}
+.big{font-size:40px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:8px;color:var(--tint-ink)}
+.big.warn{color:var(--orange)}
+.app{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:inherit;transition:transform .15s}
 .app:hover{transform:translateY(-2px)}
-.n{font-size:13px;font-weight:600;color:var(--tint-ink)}
-.app h2{font-size:24px;letter-spacing:-.02em;margin:0}
-.app p{margin:0;color:var(--label2);font-size:15px}
+.tag{font-size:12.5px;font-weight:600;color:var(--tint-ink)}
+.app h3{font-size:22px;letter-spacing:-.02em;margin:0}
 .app span{margin-top:auto;padding-top:10px;color:var(--blue);font-size:15px;font-weight:500}
-h3{font-size:21px;letter-spacing:-.02em;margin:48px 0 10px}
+.soon{border:1.5px dashed var(--sep);background:transparent}
 ol{margin:0;padding-left:22px;color:var(--label2)}
 ol li{margin:6px 0}
 ol b{color:var(--label)}
 .all{display:inline-block;margin-top:18px;background:var(--tint);color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:999px}
-footer{margin-top:56px;padding-top:18px;border-top:.5px solid var(--sep);font-size:13px;color:var(--label2)}
-@media (max-width:640px){main{padding-top:40px}.apps{grid-template-columns:1fr}}
+footer{margin-top:64px;padding-top:18px;border-top:.5px solid var(--sep);font-size:13px;color:var(--label2)}
+@media (max-width:760px){main{padding-top:40px}.grid2,.grid3{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <main>
   <h1>PlateLoop</h1>
-  <p class="lede">AI tray scanning that cuts school food waste. Students scan their tray before and after lunch, the kitchen learns what actually gets eaten, and each student's pet, Loopi, is fed by their real lunch.</p>
+  <p class="lede">Our AI food scanner automatically analyses the type and amount of food served, eaten and left, so cafeteria managers know what people actually like, order the right amount of ingredients, and waste less food and money.</p>
 
-  <div class="apps">
-    <a class="app" href="dist/1-plateloop-scanner-3d.html"><div class="n">1</div><h2>Scanner</h2><p>The hardware in 3D: depth camera, scale, screen, face camera and compost bin. Drag to turn it around.</p><span>Open</span></a>
-    <a class="app" href="dist/2-plateloop-kiosk.html"><div class="n">2</div><h2>Kiosk</h2><p>The scanner's screen. Students sign in with their face, then scan the tray before and after lunch.</p><span>Open</span></a>
-    <a class="app" href="dist/3-plateloop-kitchen.html"><div class="n">3</div><h2>Kitchen</h2><p>For kitchen staff: live scans, waste by dish, nutrition, and how much to order tomorrow.</p><span>Open</span></a>
-    <a class="app" href="dist/4-loopi-student-app.html"><div class="n">4</div><h2>Loopi</h2><p>The student app. Lunch feeds Loopi, leftovers end up on its floor, and classes compete to waste less.</p><span>Open</span></a>
+  <h2>The problem</h2>
+  <div class="grid3">
+    <div class="card"><div class="big warn">~9%</div><b>of current emissions</b><p>Food waste is one of the main culprits of global warming.</p></div>
+    <div class="card"><div class="big warn">Rising</div><b>food and material costs</b><p>Food prices go up every year, and strong regulations push operators to cut waste and cost at the same time.</p></div>
+    <div class="card"><div class="big warn">Guesswork</div><b>kitchens run on experience</b><p>Without consumption data, managers overproduce, and without preference data, plates come back full.</p></div>
   </div>
 
-  <h3>Try it</h3>
-  <ol>
-    <li>Open the <b>Kiosk</b>, pick Minji, and scan her tray before lunch, then after.</li>
-    <li>Open <b>Loopi</b>: her lunch is waiting in the bowl, and whatever she left is on the floor.</li>
-    <li>Open <b>Kitchen</b>: the tray is in the live feed and the waste charts.</li>
-  </ol>
-  <p style="color:var(--label2);font-size:15px;margin:12px 0 0">The apps share one demo in your browser. "Reset demo" in any of them starts over.</p>
-  <a class="all" href="apps/">Open all four in one window</a>
+  <h2>What PlateLoop does</h2>
+  <p class="sub">Each person signs in with their face and scans their tray before and after the meal. The difference is exactly what they ate, dish by dish.</p>
+  <div class="grid3">
+    <div class="card"><div class="big">Up to 30%</div><b>lower food material cost</b><p>We predict future consumption, so the kitchen prepares and orders only what will be eaten.</p></div>
+    <div class="card"><div class="big">Up to 42%</div><b>less plate waste</b><p>Plate-waste data by dish shows what people leave, so managers can redesign the menu and adjust recipes.</p></div>
+    <div class="card"><div class="big">Live</div><b>greenhouse gas saved</b><p>Every tray shows how much CO₂ it saved, so people see their contribution and leave less.</p></div>
+  </div>
 
-  <footer>A hackathon prototype. Numbers in the demo are illustrative.</footer>
+  <h2>For the kitchen</h2>
+  <p class="sub">One scanner and one dashboard, including our integrated carbon management: emissions from food waste, ingredients and kitchen operations, reported toward carbon-neutral operation.</p>
+  <div class="grid3">
+    <a class="card app" href="dist/1-plateloop-scanner-3d.html"><div class="tag">Hardware</div><h3>Scanner</h3><p>Depth camera, scale, screen, face camera and compost bin, in 3D.</p><span>Open</span></a>
+    <a class="card app" href="dist/2-plateloop-kiosk.html"><div class="tag">On the scanner</div><h3>Kiosk</h3><p>Face sign-in, the before and after scans, nutrition and CO₂ saved for every tray.</p><span>Open</span></a>
+    <a class="card app" href="dist/3-plateloop-kitchen.html"><div class="tag">For managers</div><h3>Kitchen</h3><p>Live scans, waste by dish, forecasts and orders, and the carbon dashboard.</p><span>Open</span></a>
+  </div>
+
+  <h2>For the people who eat</h2>
+  <p class="sub">Once they're paired by face, everyone gets their personal intake and nutrition from every meal, in an app made for them.</p>
+  <div class="grid3">
+    <a class="card app" href="dist/4-loopi-student-app.html"><div class="tag">Schools</div><h3>Loopi</h3><p>A Tamagotchi pet fed by real lunches, a nutrition report, and class and school leaderboards.</p><span>Open</span></a>
+    <a class="card app" href="dist/5-loopi-care-hospital.html"><div class="tag">Hospitals</div><h3>Loopi Care</h3><p>Intake against each patient's diet, low-intake alerts, and a weekly healthcare report for the care team.</p><span>Open</span></a>
+    <a class="card app" href="dist/6-loopi-kids-kindergarten.html"><div class="tag">Kindergartens</div><h3>Loopi Kids</h3><p>A picture-first pet and rainbow plate for children, and a lunch report with allergy checks for parents.</p><span>Open</span></a>
+  </div>
+  <div class="card soon" style="margin-top:14px"><div class="tag">In development</div><b>Personal eating-habit app</b><p>For everyone (B2C): photograph a meal before and after eating to get full nutrient intake. Analysing eating habits is a long-unsolved problem in the healthcare business.</p></div>
+
+  <h2>Business model</h2>
+  <div class="grid3">
+    <div class="card"><b>Monthly subscription</b><p>The scanner and the Kitchen dashboard, billed monthly.</p></div>
+    <div class="card"><b>Program fees</b><p>For the programs on top: Loopi, Loopi Care, Loopi Kids and carbon management.</p></div>
+    <div class="card"><b>Pays for itself</b><p>Customers save on food production cost with our service.</p></div>
+  </div>
+  <div class="grid2" style="margin-top:14px">
+    <div class="card"><b>Partnerships</b><p>With local and global food service companies, so one partner brings many cafeterias.</p></div>
+    <div class="card"><b>Awareness</b><p>Growing awareness of the project through social media and pilot schools.</p></div>
+  </div>
+
+  <h2>Try the demo</h2>
+  <ol>
+    <li>Open the <b>Kiosk</b>, pick Minji, and let her walk up before lunch, then after.</li>
+    <li>Open <b>Loopi</b>: her lunch is waiting in the bowl, and whatever she left is on the floor.</li>
+    <li>Open <b>Kitchen</b>: the tray is in the live feed, and <b>Carbon</b> shows the whole cafeteria's footprint.</li>
+    <li>Open <b>Loopi Care</b> or <b>Loopi Kids</b> and scan a meal from the demo panel to see the healthcare report change.</li>
+  </ol>
+  <a class="all" href="apps/">Open all six in one window</a>
+
+  <footer>A hackathon prototype. Demo numbers are illustrative.</footer>
 </main>
 </body>
 </html>

@@ -2,18 +2,20 @@
 
 **Live demo:** https://8jiwoo.github.io/plateloop/
 
-**AI tray scanning that cuts school food waste. One scanner, two scans, and a Tamagotchi that rewards students for taking only what they'll eat.**
+**An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals or kindergartens.**
 
 Built for the EcoLoop sustainability hackathon.
 
-Students scan their lunch tray **before** lunch (what was served) and **after** lunch (what's left). The difference is exactly what each student ate, dish by dish. That data drives four separate apps:
+People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives six separate apps:
 
 | App | File | For |
 |---|---|---|
 | **PlateLoop Scanner** | `dist/1-plateloop-scanner-3d.html` | Product page with the annotated, rotatable 3D scanner |
 | **PlateLoop Kiosk** | `dist/2-plateloop-kiosk.html` | The scanner's screen: face sign-in, before and after scans, nutrition, the school Green Tree |
-| **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, plan & order, daily report |
-| **Loopi** | `dist/4-loopi-student-app.html` | Students: the Loopi pet, health report, games, student and school leaderboards |
+| **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
+| **Loopi** | `dist/4-loopi-student-app.html` | Students: the Loopi pet, nutrition report, student and school leaderboards |
+| **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
+| **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Kindergartens: a picture-first pet and rainbow plate for children, a lunch report with allergy checks for parents |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
 
@@ -29,23 +31,27 @@ python -m http.server 8765
 
 Then open http://localhost:8765/dist/2-plateloop-kiosk.html and http://localhost:8765/dist/4-loopi-student-app.html.
 
-**Development version** (all four apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
+**Development version** (all six apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
 
 ## Project layout
 
 ```
-apps/                 source for the four apps
+apps/                 source for the six apps
   index.html          dev page with an app switcher
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync, pixel pet
   js/game.js          Loopi's rules (lunch feeds Loopi, hearts, growing up, leftover crumbs, badges)
+  js/room.js          Loopi's animated pixel room
+  js/health.js        hospital and kindergarten menus, demo people, healthcare report parts
   js/model.js         PlateLoop Scanner 3D page
   js/scanner.js       PlateLoop Kiosk
   js/kitchen.js       PlateLoop Kitchen
   js/student.js       Loopi student app
+  js/care.js          Loopi Care (hospital patients)
+  js/kids.js          Loopi Kids (kindergartens)
   vendor/             three.js r128 + GLTFLoader (for offline 3D)
   build.py            builds the standalone files in dist/
-dist/                 the four standalone apps (generated, committed for convenience)
+dist/                 the six standalone apps (generated, committed for convenience)
 hardware/             Blender scanner: build script, .blend, .glb, renders
 docs/                 project overview and screenshots
 ```
