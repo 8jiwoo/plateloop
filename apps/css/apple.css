@@ -962,3 +962,94 @@ svg.food{display:block}
 .petguide canvas{width:84px;height:70px;image-rendering:pixelated;border-radius:18px;background:#DDE4D4;flex:none;margin-bottom:18px}
 .pfpet{width:84px;height:70px;image-rendering:pixelated;border-radius:16px;background:#DDE4D4;flex:none}
 .pod canvas{image-rendering:pixelated;border-radius:12px;background:#DDE4D4}
+
+/* ================================================================ Loopi game: kitchen, wardrobe, barn */
+.phone-tabs.five{grid-template-columns:repeat(5,1fr)}
+.phone-top .gems{display:inline-flex;align-items:center;gap:4px;background:var(--fill);border-radius:999px;padding:4px 10px 4px 7px;font-weight:600;font-size:14px;margin-left:8px}
+.gems{display:inline-flex;align-items:center;gap:4px;font-weight:600}
+.gem{width:15px;height:15px;flex:none;vertical-align:-2px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.two .btn{border-radius:14px;padding:10px;justify-content:flex-start}
+.two .btn .vicon{width:30px;height:30px;border-radius:9px}
+.two .btn .vicon svg{width:18px;height:18px}
+.snackrow{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.snk{flex:none;display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:0;background:var(--fill);border-radius:14px;padding:9px 11px;text-align:left;font:inherit;color:inherit;min-width:120px}
+.snk.golden{background:linear-gradient(145deg,#FFF3C4,#FFE08A);color:#5A4300;box-shadow:inset 0 0 0 1.5px #F2C94C}
+.snk-ic{display:flex;margin:-2px -3px 2px}
+.snk-ic svg.food{margin-right:-4px}
+.snk b{font-size:13.5px}
+.snk small{font-size:12px;color:var(--tint-ink);font-weight:600}
+.snk:active{transform:scale(.97)}
+.eggbtn{display:flex;gap:10px;align-items:center;justify-content:center;background:var(--bg2);box-shadow:var(--shadow-s)}
+.egg-ic,.egg-reveal{display:inline-block;width:22px;height:28px;border-radius:50% 50% 46% 46% / 58% 58% 42% 42%;background:radial-gradient(circle at 35% 30%,#fff,var(--egg) 70%);box-shadow:inset 0 -3px 5px rgba(0,0,0,.12)}
+.egg-reveal{display:block;width:84px;height:108px;margin:6px auto 4px;animation:pop .5s ease-out}
+.egg-ic.common,.egg-reveal.common{--egg:#E9E4D8}.egg-ic.rare,.egg-reveal.rare{--egg:#8CC4F5}.egg-ic.epic,.egg-reveal.epic{--egg:#C79AF0}.egg-ic.legendary,.egg-reveal.legendary{--egg:#F7C948}
+.rar{display:inline-block;font-size:11.5px;font-weight:600;padding:2px 9px;border-radius:999px;white-space:nowrap;background:var(--fill);color:var(--label2)}
+.rar-rare{background:rgba(0,122,255,.12);color:var(--blue)}
+.rar-epic{background:rgba(175,82,222,.14);color:var(--purple)}
+.rar-legendary{background:rgba(255,204,0,.2);color:#B38600}
+/* kitchen */
+.pantry{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.pan{display:flex;flex-direction:column;align-items:center;gap:1px;padding:9px 4px;border-radius:14px;background:var(--fill);border:0;font:inherit;color:inherit;text-align:center}
+.pan b{font:700 17px var(--font-d)}
+.pan small{font-size:11px;color:var(--label2);line-height:1.2}
+button.pan:hover{background:var(--fill2)}
+button.pan:active{transform:scale(.95)}
+button.pan:disabled{opacity:.35;cursor:not-allowed}
+.oven2{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;background:linear-gradient(180deg,#3A3A3C,#2C2C2E);border-radius:18px;padding:10px;box-shadow:inset 0 2px 8px rgba(0,0,0,.4)}
+.slot2{aspect-ratio:1;border-radius:12px;background:radial-gradient(circle at 50% 70%,#5A3A2A,#3A2A22);box-shadow:inset 0 2px 6px rgba(0,0,0,.5);display:grid;place-items:center;position:relative}
+.slot2 > span{color:rgba(255,255,255,.25);font:700 16px var(--font-d)}
+.slot2 em{position:absolute;bottom:3px;font:600 9px var(--font);font-style:normal;color:#8BE0A4}
+.oven-msg{min-height:20px;margin:10px 0;font-size:13.5px;color:var(--label2)}
+.recipes2{display:flex;flex-direction:column;gap:8px}
+.rcp{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--fill);border-radius:14px;padding:8px 10px}
+.rcp b{display:block;font-size:14px}
+.rcp small{font-size:12px;color:var(--label2)}
+.rcp.locked .seq2{filter:grayscale(1);opacity:.45}
+.seq2{display:flex;align-items:center}
+.seq2 i{font-style:normal;color:var(--label3);margin:0 1px;font-size:12px}
+.binbox{display:flex;flex-wrap:wrap;gap:2px;min-height:44px;padding:8px;border-radius:14px;background:linear-gradient(180deg,#6B4A2B,#4A3220)}
+.binbox .hint{color:#E8D6BE}
+.catch-wrap{position:relative;border-radius:16px;overflow:hidden;touch-action:none}
+.catch-wrap canvas{display:block;width:100%;height:auto;image-rendering:pixelated;aspect-ratio:5/6}
+.catch-hud{position:absolute;top:8px;left:10px;right:10px;font:600 13px var(--font);color:#1D1D1F}
+.catch-hud span{color:var(--red);letter-spacing:2px}
+.catch-cover{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:rgba(255,255,255,.6);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);color:#1D1D1F;text-align:center;padding:18px}
+.catch-cover .btn{width:auto;padding-inline:36px}
+.catch-cover small{font-size:12px;color:#3A3A3C;max-width:30ch}
+.catch-ctrl{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.catch-ctrl .btn{font-size:17px;user-select:none;touch-action:none;border-radius:14px}
+.got2{display:flex;flex-direction:column;gap:6px}
+.got2 > div{display:flex;align-items:center;gap:10px;background:var(--fill);border-radius:12px;padding:6px 10px;font-size:14px}
+.cardic{width:24px;height:30px;border-radius:5px;background:linear-gradient(145deg,#F7E3A1,#E8C25C);box-shadow:inset 0 0 0 2px #fff,0 1px 3px rgba(0,0,0,.2)}
+/* sheets */
+.sheet{position:absolute;inset:0;background:var(--bg);display:flex;flex-direction:column;animation:sheetin .32s cubic-bezier(.2,.8,.2,1)}
+@keyframes sheetin{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.sheet header{display:flex;align-items:center;gap:10px;padding:54px 16px 12px;background:var(--bar2);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);border-bottom:.5px solid var(--sep)}
+.sheet header h3{flex:1;font-size:20px;font-weight:700}
+.sheet-body{flex:1;overflow-y:auto;padding:14px 14px 24px;display:flex;flex-direction:column;gap:12px}
+.sheet-body > *{flex-shrink:0}
+.crates{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.crate{border-radius:16px;padding:12px 6px;display:flex;flex-direction:column;gap:4px;align-items:center;text-align:center;background:var(--bg2);box-shadow:var(--shadow-s)}
+.crate-box{width:40px;height:32px;border-radius:6px;background:linear-gradient(180deg,#C8904F 0 30%,#A8733A 30%);box-shadow:inset 0 0 0 2px rgba(0,0,0,.15);margin-bottom:4px;position:relative}
+.crate-box::after{content:"";position:absolute;left:50%;top:0;bottom:0;width:6px;margin-left:-3px;background:rgba(255,255,255,.25)}
+.crate-epic .crate-box{background:linear-gradient(180deg,#B57AE6 0 30%,#8E4FC7 30%)}
+.crate-legendary .crate-box{background:linear-gradient(180deg,#F7D35A 0 30%,#E0A800 30%)}
+.crate b{font-size:13px}
+.crate small{font-size:10.5px;color:var(--label2)}
+.acc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.acc{display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:var(--bg2);border-radius:16px;padding:9px 4px;font:inherit;color:inherit;box-shadow:var(--shadow-s)}
+.acc canvas{width:62px;height:52px;image-rendering:pixelated;border-radius:10px;background:#DDE4D4}
+.acc b{font-size:12.5px}
+.acc.locked{cursor:default}
+.acc.locked canvas{filter:grayscale(1) brightness(.75);opacity:.45}
+.acc.on{box-shadow:0 0 0 2px var(--tint)}
+.barn-total{display:flex;justify-content:space-between;align-items:center;background:var(--tint-soft);border-radius:14px;padding:12px 14px;font-weight:600}
+.barn-total b{font:700 22px var(--font-d)}
+.barn{display:flex;flex-direction:column;gap:6px}
+.barn-pet{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;background:var(--bg2);border-radius:14px;padding:7px 10px;box-shadow:var(--shadow-s)}
+.barn-pet.active{box-shadow:inset 0 0 0 1.5px var(--tint)}
+.barn-pet canvas{width:56px;height:47px;image-rendering:pixelated;border-radius:10px;background:#DDE4D4}
+.barn-pet b{display:block;font-size:14px}
+.barn-pet small{font-size:12px;color:var(--label2)}
+@media (max-width:760px){.sheet{position:fixed;z-index:60}.sheet header{padding-top:16px}}
