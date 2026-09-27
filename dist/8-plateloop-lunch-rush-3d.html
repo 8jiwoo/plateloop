@@ -6281,13 +6281,30 @@ L.Sound = () => {
   }
   /** Play a recorded clip (or the part from..to seconds), positioned in the room or straight to the listener.
    *  Returns a handle with the length and a stop() that fades it out quickly; null if the clip isn't loaded. */
-  function clip(name, pos, vol = 1, from = 0, to = null) {
+  function clip(name, pos, vol = 1, from = 0, to = null, when = 0) {
     const b = clips[name]; if (!ctx || muted || !b) return null;
-    const end = Math.min(to == null ? b.duration : to, b.duration), len = Math.max(.05, end - from), t = ctx.currentTime;
+    const end = Math.min(to == null ? b.duration : to, b.duration), len = Math.max(.05, end - from), t = Math.max(ctx.currentTime, when);
     const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.setValueAtTime(vol, t + len - .03); g.gain.linearRampToValueAtTime(0, t + len);
     s.connect(g).connect(pos ? panner(pos, 3, .25) : flatOut); s.start(t, from, len);
-    return { length: len, stop() { const n = ctx.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.linearRampToValueAtTime(0, n + .06); s.stop(n + .08); } };
+    return { length: len, end: t + len, stop() { const n = ctx.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.linearRampToValueAtTime(0, n + .06); s.stop(n + .08); } };
+  }
+
+  /** Split a clip into phrases at its natural pauses (quiet for at least 60 ms), so it can be played a
+   *  phrase at a time without ever cutting a word. Returns [[from, to], ...] in seconds. */
+  const phraseCache = {};
+  function phrases(name) {
+    const b = clips[name]; if (!b) return null;
+    if (phraseCache[name]) return phraseCache[name];
+    const d = b.getChannelData(0), sr = b.sampleRate, win = Math.round(sr * .02), env = [];
+    for (let i = 0; i + win <= d.length; i += win) { let s = 0; for (let j = i; j < i + win; j++) s += d[j] * d[j]; env.push(Math.sqrt(s / win)); }
+    let peak = 0; env.forEach(v => { if (v > peak) peak = v; });
+    const cuts = []; let st = -1;
+    env.forEach((v, i) => { const q = v < peak * .04; if (q && st < 0) st = i; if (!q && st >= 0) { if (i - st >= 3) cuts.push((st + i) / 2 * .02); st = -1; } });
+    const out = []; let from = 0;
+    cuts.forEach(c => { if (c - from > .15) { out.push([from, c]); from = c; } });
+    out.push([from, b.duration]);
+    return (phraseCache[name] = out);
   }
 
   /* ------------------------------------------------------------ per frame */
@@ -6314,7 +6331,7 @@ L.Sound = () => {
   return {
     get ctx() { return ctx; },
     get muted() { return muted; },
-    spots, start, listen, tick, sing, clip,
+    spots, start, listen, tick, sing, clip, phrases,
     hasClip: name => !!clips[name], clipLength: name => clips[name] ? clips[name].duration : 0,
     play(name, pos, ...a) { if (ctx && !muted && ctx.state === 'running' && FX[name]) FX[name](pos, ...a); },
     toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .85, ctx.currentTime, .05); return muted; },
@@ -8332,24 +8349,32 @@ async function sophieSings() {
 }
 /** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
-// where each line sits in the supplied "GG freaking EZ" clip (seconds)
-const GGEZ_CUTS = { gg: [0, 1.83], dont: [1.84, 2.74], really: [2.8, 5.06], easy: [5.06, 5.95], end: [6.22, 7.63] };
 async function brawl() {
   const A = G.brawlA, B = G.brawlB, hp = new THREE.Vector3();
-  let now = null;
-  const line = (P, key) => { if (now) now.stop(); P.head.getWorldPosition(hp); now = G.SFX.clip('ggez', at(hp), 1.1, ...GGEZ_CUTS[key]); return !!now; };
+  // the supplied "GG freaking EZ" clip plays one phrase per line: it pauses at the end of each phrase and
+  // carries on from there at the next line (queued after the current phrase, so nothing is ever cut)
+  const ph = G.SFX.phrases('ggez');
+  let pi = 0, endAt = 0;
+  const line = (P, rest) => {
+    if (!ph || pi >= ph.length) return !!ph;
+    const from = ph[pi][0], to = rest ? ph[ph.length - 1][1] : ph[pi][1];
+    pi = rest ? ph.length : pi + 1;
+    P.head.getWorldPosition(hp);
+    const h = G.SFX.clip('ggez', at(hp), 1.1, from, to, endAt); if (h) endAt = h.end;
+    return !!h;
+  };
   if (A.busy) return;
   A.busy = true;
   await convo(A, async () => {
     // each line plays its own part of the recorded clip (or the synthesised jingle if the clip isn't there)
-    if (!line(A, 'gg')) { A.head.getWorldPosition(hp); play('ggez', at(hp)); }
+    if (!line(A)) { A.head.getWorldPosition(hp); play('ggez', at(hp)); }
     await say(A, 'GG freaking EZ.');
-    G.faceTarget = B; line(B, 'dont'); await say(B, 'Don’t say that.');
-    G.faceTarget = A; line(A, 'really'); await say(A, 'Really?');
-    if (!line(A, 'easy')) { A.head.getWorldPosition(hp); play('ez', at(hp)); }
+    G.faceTarget = B; line(B); await say(B, 'Don’t say that.');
+    G.faceTarget = A; line(A); await say(A, 'Really?');
+    if (!line(A)) { A.head.getWorldPosition(hp); play('ez', at(hp)); }
     await say(A, 'Freaking easy.');
     hideSub();
-    line(B, 'end');
+    line(B, true);
     // the punch sends Ryan flying
     B.pose = 'punch'; play('whoosh'); await sleep(170);
     B.head.getWorldPosition(hp); play('punch', at(hp));
