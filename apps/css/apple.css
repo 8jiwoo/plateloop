@@ -772,7 +772,7 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .guide .speak{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:var(--tint);color:#fff;display:grid;place-items:center}
 .guide .speak svg{width:18px;height:18px}
 /* food + tray */
-.food{display:block}
+svg.food{display:block}
 .vtray{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:8px;padding:10px;border-radius:22px;background:linear-gradient(145deg,#EEF1F3,#DDE2E6);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(0,0,0,.06)}
 .vcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:16px;background:rgba(255,255,255,.72);box-shadow:inset 0 1px 3px rgba(0,0,0,.06);text-align:center;color:#1D1D1F}
 .vcell.hi{background:#fff;box-shadow:0 0 0 2.5px var(--tint),0 6px 16px -6px rgba(52,199,89,.5)}
@@ -944,3 +944,21 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .phone-body > *{flex-shrink:0}
 .warm .seg button[aria-pressed="true"]{background:#fff!important;color:var(--label);box-shadow:0 1px 3px rgba(120,80,30,.15)}
 .warm .seg button{color:var(--label2)}
+/* ================================================================ Loopi (teens and uni): Tamagotchi screens */
+.petstats{background:var(--bg2);border-radius:20px;box-shadow:var(--shadow-s);overflow:hidden;flex:none}
+.petstats > div{display:grid;grid-template-columns:38px 58px 1fr auto;gap:10px;align-items:center;padding:9px 14px}
+.petstats > div + div{border-top:.5px solid var(--sep)}
+.petstats span{font-size:14px;color:var(--label2)}
+.petstats b{font-size:13px;color:var(--label2)}
+.petstats .pips i{width:15px;height:15px;border-radius:5px}
+.growcard .stages{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.growcard .stages div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--label3)}
+.growcard .stages canvas{width:56px;height:47px;image-rendering:pixelated;border-radius:12px;background:#DDE4D4;opacity:.45;filter:grayscale(.6)}
+.growcard .stages .past canvas{opacity:.8;filter:none}
+.growcard .stages .now canvas{opacity:1;filter:none;box-shadow:0 0 0 3px var(--tint)}
+.growcard .stages .now{color:var(--tint-ink)}
+.growcard p{margin:0;font-size:13.5px;color:var(--label2);line-height:1.4}
+.growcard p b{color:var(--label)}
+.petguide canvas{width:84px;height:70px;image-rendering:pixelated;border-radius:18px;background:#DDE4D4;flex:none;margin-bottom:18px}
+.pfpet{width:84px;height:70px;image-rendering:pixelated;border-radius:16px;background:#DDE4D4;flex:none}
+.pod canvas{image-rendering:pixelated;border-radius:12px;background:#DDE4D4}

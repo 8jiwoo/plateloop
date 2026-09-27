@@ -23,7 +23,7 @@ PAGES = {
     'model':   ('1-plateloop-scanner-3d.html', 'PlateLoop Scanner',  ['vendor/three.min.js', 'vendor/GLTFLoader.js', 'js/model.js']),
     'scanner': ('2-plateloop-kiosk.html',      'PlateLoop Kiosk',    ['js/scanner.js']),
     'kitchen': ('3-plateloop-kitchen.html',    'PlateLoop Kitchen',  ['js/kitchen.js']),
-    'student': ('4-loopi-student-app.html',    'Loopi',              ['js/student.js']),
+    'student': ('4-loopi-student-app.html',    'Loopi',              ['js/room.js', 'js/student.js']),
     'care':    ('5-loopi-care-hospital.html',  'Loopi Care',         ['js/health.js', 'js/care.js']),
     'kids':    ('6-loopi-kids-kindergarten.html', 'Loopi Kids',      ['js/health.js', 'js/kids.js']),
     'work':    ('7-loopi-work-office.html',    'Loopi Work',         ['js/health.js', 'js/work.js']),
@@ -73,7 +73,7 @@ for app, (fname, title, scripts) in PAGES.items():
     if app == 'model':
         m = read('scanner.gltf.json'); assert '</script' not in m.lower()
         parts.append(f'<script type="application/json" id="model-scanner">{m}</script>')
-    for p in ['js/core.js', 'js/visual.js'] + scripts:
+    for p in ['js/core.js', 'js/visual.js', 'js/game.js'] + scripts:
         parts.append(f'<script>\n/* ---- {p} ---- */\n{inline(p)}\n</script>')
     parts.append(f'<script>{BOOT % {"app": app, "files": FILES}}</script>')
     parts += ['</body>', '</html>']
