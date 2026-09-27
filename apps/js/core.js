@@ -207,10 +207,11 @@ function scoreMeal(st, served, measured, portion) {
   return { w, served: total, left, improvement, energy, nutrition, joy, xp, groups, vegTried, questDone, lowWaste, streak, mood, line, rightSized };
 }
 
-/** BEFORE lunch. portion: what the kitchen served (S/M/L); the scanner measures the real grams. */
-PL.scanBefore = (sid, portion, method = 'face') => {
+/** BEFORE lunch. portion: what the kitchen served (S/M/L); the scanner measures the real grams.
+ *  pick (optional): dish id → serving multiplier, when the student asked for less or more of a dish. */
+PL.scanBefore = (sid, portion, method = 'face', pick = null) => {
   const st = PL.student(sid), T = PL.S.today;
-  const served = Object.fromEntries(MENU.map(d => [d.id, Math.round(d.g[portion] * (.94 + Math.random() * .12))]));
+  const served = Object.fromEntries(MENU.map(d => [d.id, Math.max(1, Math.round(d.g[portion] * (pick && pick[d.id] || 1) * (.94 + Math.random() * .12)))]));
   const tray = ++T.trayNo;
   T.clock += .2;
   st.before = { served, t: PL.clock(), tray, method };
