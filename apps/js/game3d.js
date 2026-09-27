@@ -898,19 +898,24 @@ async function sophieSings() {
 }
 /** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
+// where each line sits in the supplied "GG freaking EZ" clip (seconds)
+const GGEZ_CUTS = { gg: [0, 1.83], dont: [1.84, 2.74], really: [2.8, 5.06], easy: [5.06, 5.95], end: [6.22, 7.63] };
 async function brawl() {
   const A = G.brawlA, B = G.brawlB, hp = new THREE.Vector3();
+  let now = null;
+  const line = (P, key) => { if (now) now.stop(); P.head.getWorldPosition(hp); now = G.SFX.clip('ggez', at(hp), 1.1, ...GGEZ_CUTS[key]); return !!now; };
   if (A.busy) return;
   A.busy = true;
   await convo(A, async () => {
-    // his own voice line if we have it, otherwise the synthesised jingle
-    A.head.getWorldPosition(hp); if (!G.SFX.clip('ggez', at(hp), 1.1)) play('ggez', at(hp));
+    // each line plays its own part of the recorded clip (or the synthesised jingle if the clip isn't there)
+    if (!line(A, 'gg')) { A.head.getWorldPosition(hp); play('ggez', at(hp)); }
     await say(A, 'GG freaking EZ.');
-    G.faceTarget = B; await say(B, 'Don’t say that.');
-    G.faceTarget = A; await say(A, 'Really?');
-    A.head.getWorldPosition(hp); if (!G.SFX.hasClip('ggez')) play('ez', at(hp));
+    G.faceTarget = B; line(B, 'dont'); await say(B, 'Don’t say that.');
+    G.faceTarget = A; line(A, 'really'); await say(A, 'Really?');
+    if (!line(A, 'easy')) { A.head.getWorldPosition(hp); play('ez', at(hp)); }
     await say(A, 'Freaking easy.');
     hideSub();
+    line(B, 'end');
     // the punch sends Ryan flying
     B.pose = 'punch'; play('whoosh'); await sleep(170);
     B.head.getWorldPosition(hp); play('punch', at(hp));
