@@ -903,12 +903,13 @@ async function brawl() {
   if (A.busy) return;
   A.busy = true;
   await convo(A, async () => {
-    A.head.getWorldPosition(hp); play('ggez', at(hp));
-    await say(A, 'GG fricking EZ.');
+    // his own voice line if we have it, otherwise the synthesised jingle
+    A.head.getWorldPosition(hp); if (!G.SFX.clip('ggez', at(hp), 1.1)) play('ggez', at(hp));
+    await say(A, 'GG freaking EZ.');
     G.faceTarget = B; await say(B, 'Don’t say that.');
     G.faceTarget = A; await say(A, 'Really?');
-    A.head.getWorldPosition(hp); play('ez', at(hp));
-    await say(A, 'Fricking easy.');
+    A.head.getWorldPosition(hp); if (!G.SFX.hasClip('ggez')) play('ez', at(hp));
+    await say(A, 'Freaking easy.');
     hideSub();
     // the punch sends Ryan flying
     B.pose = 'punch'; play('whoosh'); await sleep(170);
@@ -923,10 +924,11 @@ async function brawl() {
     A.pose = 'fight'; await sleep(450);
     A.pose = 'run'; const p1 = A.root.position.clone(), p2 = new THREE.Vector3(B.root.position.x - 2.1, 0, p0.z);
     await tween(.75, e => A.root.position.lerpVectors(p1, p2, e));
-    A.pose = 'kick'; A.head.getWorldPosition(hp); play('hiya', at(hp));
+    A.pose = 'kick'; A.head.getWorldPosition(hp); if (!G.SFX.clip('fah', at(hp), 1.2)) play('hiya', at(hp));
     // five spins in the air with the legs kicking, landing three hits on Hafiz on the way in
     const y0 = A.root.rotation.y, air = 2.1, b0 = B.root.position.clone();
-    [.45, .62, .8].forEach((k, i) => setTimeout(() => { if (!G) return; B.head.getWorldPosition(hp); play('punch', at(hp)); play('whoosh'); if (i < 2) B.pose = 'punch'; }, k * air * 1000));
+    const fahLen = G.SFX.clipLength('fah');
+    [.45, .62, .8].forEach((k, i) => setTimeout(() => { if (!G) return; B.head.getWorldPosition(hp); play('punch', at(hp)); play('whoosh'); if (fahLen && fahLen < .9) G.SFX.clip('fah', at(hp), .9); if (i < 2) B.pose = 'punch'; }, k * air * 1000));
     await tween(air, e => {
       A.root.position.set(p2.x + 1.35 * e, Math.sin(e * Math.PI) * 1.5, p2.z); A.root.rotation.y = y0 + e * Math.PI * 10;
       if (e > .45) B.root.position.x = b0.x + (e - .45) * .5;
