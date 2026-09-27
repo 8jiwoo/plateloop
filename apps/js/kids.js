@@ -124,7 +124,7 @@ const roomHooks = {
     if (g.plate && !g.plate.eaten) return 'Yummy smell! Tap Feed!';
     if (g.mess.length) return 'Oops, crumbs! Can you clean up?';
     if (g.ready) return 'I\'m growing! Ask a grown-up!';
-    return ['Let\'s play ball!', 'I love blueberries!', 'Broccoli makes me strong!', 'Hug me!', null, null][Math.floor(Math.random() * 6)];
+    return ['Let\'s play ball!', 'I love dragon fruit!', 'Broccoli makes me strong!', 'Hug me!', null, null][Math.floor(Math.random() * 6)];
   },
 };
 
@@ -155,7 +155,7 @@ function grown(K) {
     <div class="finding"><i style="background:var(--purple)"></i><span>Loopi is a ${PL.stuStage(K).name.toLowerCase()} with ${g.hearts} of ${G.heartsReq(g)} hearts${g.ready ? ', ready to grow up' : ''}. Hearts come from finishing more than usual.</span></div>
   </section>
   <h4 class="sec">From the teacher</h4>
-  <section class="group note"><p>${esc(K.note)}</p><span>Ms. Jung, Sunflower class</span></section>
+  <section class="group note"><p>${esc(K.note)}</p><span>Ms. Farah, Sunflower class</span></section>
   <div class="two-btn"><button class="btn" id="kid-lock">Back to Loopi</button><button class="btn" id="kid-print">Print report</button></div>
   <p class="foot">Measured by the kindergarten scanner before and after lunch. The teacher helps each child look at the camera. Targets are illustrative.</p>`;
 }

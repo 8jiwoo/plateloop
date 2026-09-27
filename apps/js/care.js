@@ -179,7 +179,7 @@ function meTab(P) {
   <h4 class="sec">Care team</h4>
   <section class="group">
     <div class="g-row two-col"><span>Doctor</span><span class="g-v">${esc(P.doctor)}</span></div>
-    <div class="g-row two-col"><span>Dietitian</span><span class="g-v">Park Eunji, ward 7B</span></div>
+    <div class="g-row two-col"><span>Dietitian</span><span class="g-v">Nurul Huda, ward 7B</span></div>
     <div class="g-row two-col"><span>Nurse station</span><span class="g-v">7B, ext. 4172</span></div>
   </section>
   <h4 class="sec">Privacy</h4>

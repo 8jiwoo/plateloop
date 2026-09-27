@@ -12,45 +12,45 @@ const H = PL.health = {};
 const dish = (id, name, g, n, color, edge, group, extra) => ({ id, name, g, n, color, edge, group, ...extra });
 H.WARD_MENU = {
   breakfast: [
-    dish('h_juk', 'Rice porridge', 300, { kcal: .46, c: .10, p: .012, f: .002, na: 1.1 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_congee', 'Chicken congee', 300, { kcal: .46, c: .10, p: .012, f: .002, na: 1.1 }, '#F3EDDA', '#BFB28E', 'grain'),
     dish('h_egg', 'Steamed egg', 70, { kcal: 1.3, c: .01, p: .11, f: .09, na: 2.4 }, '#F6D365', '#C9A13B', 'protein'),
-    dish('h_spinach', 'Spinach namul', 40, { kcal: .55, c: .04, p: .03, f: .035, na: 3.5 }, '#3F7D32', '#2A5A22', 'veg'),
+    dish('h_spinach', 'Stir-fried spinach', 40, { kcal: .55, c: .04, p: .03, f: .035, na: 3.5 }, '#3F7D32', '#2A5A22', 'veg'),
     dish('h_milk', 'Milk', 200, { kcal: .64, c: .05, p: .033, f: .035, na: .4 }, '#FFFFFF', '#C7C7CC', 'dairy'),
     dish('h_banana', 'Banana', 100, { kcal: .89, c: .23, p: .011, f: .003, na: 0 }, '#F7DC6F', '#C9A13B', 'fruit'),
   ],
   lunch: [
-    dish('h_rice', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
-    dish('h_fish', 'Grilled mackerel', 100, { kcal: 2.0, c: 0, p: .19, f: .13, na: 1.2 }, '#C98F58', '#8E5E28', 'protein'),
-    dish('h_sprout', 'Bean sprout soup', 200, { kcal: .15, c: .01, p: .012, f: .005, na: 3.0 }, '#EFE6C4', '#BFB28E', 'soup'),
-    dish('h_greens', 'Seasoned greens', 50, { kcal: 1.0, c: .05, p: .03, f: .03, na: 3.2 }, '#5E9E3A', '#3B6E22', 'veg'),
-    dish('h_pear', 'Pear slices', 80, { kcal: .45, c: .11, p: .003, f: .001, na: 0 }, '#F1E6B0', '#C9B45E', 'fruit'),
+    dish('h_rice', 'Brown rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_fish', 'Steamed fish with ginger', 100, { kcal: 1.4, c: .01, p: .2, f: .065, na: 1.5 }, '#EDE3D1', '#B8A88A', 'protein'),
+    dish('h_vegsoup', 'Clear vegetable soup', 200, { kcal: .15, c: .01, p: .012, f: .005, na: 3.0 }, '#EFE6C4', '#BFB28E', 'soup'),
+    dish('h_kailan', 'Stir-fried kailan', 50, { kcal: 1.0, c: .05, p: .03, f: .03, na: 3.2 }, '#5E9E3A', '#3B6E22', 'veg'),
+    dish('h_papaya', 'Papaya', 80, { kcal: .43, c: .11, p: .005, f: .003, na: 0 }, '#F6A24B', '#C4731F', 'fruit'),
   ],
   dinner: [
-    dish('h_rice2', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_rice2', 'Brown rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
     dish('h_chicken', 'Braised chicken and potato', 150, { kcal: 1.5, c: .08, p: .20, f: .06, na: 3.2 }, '#B5652D', '#7A3F17', 'protein'),
     dish('h_tofu', 'Pan-fried tofu', 80, { kcal: 1.9, c: .03, p: .09, f: .13, na: .2 }, '#F4E7C8', '#C9B48A', 'protein'),
-    dish('h_doenjang', 'Soybean paste soup', 200, { kcal: .4, c: .04, p: .03, f: .015, na: 3.8 }, '#C0843F', '#8E5E28', 'soup'),
-    dish('h_zucchini', 'Stir-fried zucchini', 50, { kcal: .8, c: .04, p: .015, f: .03, na: 2.6 }, '#9CC56B', '#6A9440', 'veg'),
+    dish('h_lotus', 'Lotus root soup', 200, { kcal: .35, c: .05, p: .02, f: .01, na: 3.2 }, '#D9B98C', '#A0845A', 'soup'),
+    dish('h_longbean', 'Stir-fried long beans', 50, { kcal: .8, c: .04, p: .015, f: .03, na: 2.6 }, '#9CC56B', '#6A9440', 'veg'),
   ],
 };
 H.MEALS = [['breakfast', 'Breakfast', '07:50'], ['lunch', 'Lunch', '12:10'], ['dinner', 'Dinner', '17:40']];
 /* each diet sets daily targets and changes what's served (portion multipliers, low-salt cooking) */
 H.DIETS = {
-  regular: { name: 'Regular', target: { kcal: 1900, p: 70, c: 240, f: 55, na: 2300 }, mult: {}, na: 1, note: 'No restrictions.' },
-  diabetic: { name: 'Diabetic', target: { kcal: 1600, p: 70, c: 180, f: 50, na: 2300 }, mult: { h_juk: .8, h_rice: .8, h_rice2: .8, h_pear: .7, h_banana: .6 }, na: 1, note: 'Smaller rice and fruit portions to keep carbs steady.' },
+  regular: { name: 'Regular', target: { kcal: 1900, p: 70, c: 240, f: 55, na: 2000 }, mult: {}, na: 1, note: 'No restrictions.' },
+  diabetic: { name: 'Diabetic', target: { kcal: 1600, p: 70, c: 180, f: 50, na: 2000 }, mult: { h_congee: .8, h_rice: .8, h_rice2: .8, h_papaya: .7, h_banana: .6 }, na: 1, note: 'Smaller rice and fruit portions to keep carbs steady.' },
   lowna: { name: 'Low sodium', target: { kcal: 1800, p: 70, c: 230, f: 55, na: 1500 }, mult: {}, na: .55, note: 'Soups and side dishes are cooked with about half the salt.' },
-  protein: { name: 'High protein', target: { kcal: 2100, p: 110, c: 240, f: 65, na: 2300 }, mult: { h_egg: 1.5, h_fish: 1.4, h_chicken: 1.4, h_tofu: 1.5, h_milk: 1.25 }, na: 1, note: 'Extra egg, fish, chicken, tofu and milk to help healing.' },
+  protein: { name: 'High protein', target: { kcal: 2100, p: 110, c: 240, f: 65, na: 2000 }, mult: { h_egg: 1.5, h_fish: 1.4, h_chicken: 1.4, h_tofu: 1.5, h_milk: 1.25 }, na: 1, note: 'Extra egg, fish, chicken, tofu and milk to help healing.' },
 };
 H.KIDS_MENU = [
   dish('k_rice', 'Rice', 120, { kcal: 1.45, c: .32, p: .03, f: .003 }, '#F3EDDA', '#BFB28E', 'grain', { rainbow: 'white' }),
-  dish('k_bulgogi', 'Beef bulgogi', 50, { kcal: 2.1, c: .08, p: .18, f: .12 }, '#7A4424', '#4F2A15', 'protein', { rainbow: 'brown' }),
+  dish('k_chicken', 'Soy sauce chicken', 50, { kcal: 1.75, c: .03, p: .22, f: .08 }, '#9C5A2E', '#6B3A1A', 'protein', { rainbow: 'brown' }),
   dish('k_broccoli', 'Broccoli', 30, { kcal: .34, c: .07, p: .028, f: .004 }, '#4C9A2A', '#2F6B18', 'veg', { rainbow: 'green' }),
   dish('k_corn', 'Corn and egg soup', 150, { kcal: .5, c: .07, p: .025, f: .015 }, '#F4C542', '#C99A1B', 'soup', { rainbow: 'yellow', allergen: 'Egg', safe: 'Corn soup without egg' }),
   dish('k_tomato', 'Cherry tomatoes', 40, { kcal: .18, c: .04, p: .009, f: .002 }, '#E0453A', '#A52A20', 'veg', { rainbow: 'red' }),
-  dish('k_berry', 'Blueberries', 30, { kcal: .57, c: .14, p: .007, f: .003 }, '#5B4FC4', '#3A3190', 'fruit', { rainbow: 'purple' }),
+  dish('k_dragon', 'Dragon fruit', 40, { kcal: .5, c: .11, p: .012, f: .004 }, '#D6246E', '#9C1450', 'fruit', { rainbow: 'pink' }),
 ];
 H.KIDS_TARGET = { kcal: 360, c: 55, p: 12, f: 10 }; // one kindergarten lunch, ages 3 to 5 (illustrative)
-H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', purple: '#5B4FC4', white: '#F3EDDA', brown: '#7A4424' };
+H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', pink: '#D6246E', white: '#F3EDDA', brown: '#9C5A2E' };
 // room crumbs and colours look dishes up by id
 [...Object.values(H.WARD_MENU).flat(), ...H.KIDS_MENU].forEach(d => { PL.DISH[d.id] = d; });
 
@@ -64,16 +64,16 @@ H.nutrients = (grams, menu) => {
 const DAYS = ['Sat 19', 'Sun 20', 'Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 H.TODAY = 'Fri 25';
 const PATIENTS = [
-  { id: 'p1', name: 'Kim Minsu', age: 68, room: '7B-12', diet: 'protein', why: 'Recovering from hip surgery', doctor: 'Dr. Yoon (orthopaedics)', app: d => .42 + d * .07, meal: { breakfast: -.15 }, like: { h_spinach: .6, h_greens: .6, h_zucchini: .7 } },
-  { id: 'p2', name: 'Lee Sunhee', age: 74, room: '7B-08', diet: 'diabetic', why: 'Type 2 diabetes', doctor: 'Dr. Kang (endocrinology)', app: () => .82, meal: {}, like: { h_juk: .8, h_rice: .85, h_rice2: .85, h_pear: 1.1 } },
-  { id: 'p3', name: 'Choi Jaeho', age: 57, room: '7B-03', diet: 'lowna', why: 'Heart failure', doctor: 'Dr. Seo (cardiology)', app: () => .84, meal: { dinner: -.08 }, like: { h_sprout: .35, h_doenjang: .3 } },
-  { id: 'p4', name: 'Han Jiyoon', age: 35, room: '7B-15', diet: 'regular', why: 'After appendix surgery', doctor: 'Dr. Lim (general surgery)', app: d => .5 + d * .08, meal: {}, like: { h_milk: .5 } },
+  { id: 'p1', name: 'Tan Boon Huat', age: 68, room: '7B-12', diet: 'protein', why: 'Recovering from hip surgery', doctor: 'Dr. Lee (orthopaedics)', app: d => .42 + d * .07, meal: { breakfast: -.15 }, like: { h_spinach: .6, h_kailan: .6, h_longbean: .7 } },
+  { id: 'p2', name: 'Siti Rahmah', age: 74, room: '7B-08', diet: 'diabetic', why: 'Type 2 diabetes', doctor: 'Dr. Ng (endocrinology)', app: () => .82, meal: {}, like: { h_congee: .8, h_rice: .85, h_rice2: .85, h_papaya: 1.1 } },
+  { id: 'p3', name: 'Rajesh Kumar', age: 57, room: '7B-03', diet: 'lowna', why: 'Heart failure', doctor: 'Dr. Menon (cardiology)', app: () => .84, meal: { dinner: -.08 }, like: { h_vegsoup: .35, h_lotus: .3 } },
+  { id: 'p4', name: 'Chloe Lim', age: 35, room: '7B-15', diet: 'regular', why: 'After appendix surgery', doctor: 'Dr. Wong (general surgery)', app: d => .5 + d * .08, meal: {}, like: { h_milk: .5 } },
 ];
 const KIDS = [
-  { id: 'k1', name: 'Yuna', age: 5, allergy: null, baseline: .3, app: .78, like: { k_broccoli: .3, k_berry: 1.2, k_tomato: 1.1 }, note: 'Yuna helped hand out spoons today and tried a whole broccoli floret!' },
-  { id: 'k2', name: 'Doha', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Doha was a bit tired after outdoor play but finished all the rice.' },
-  { id: 'k3', name: 'Seoah', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Seoah asked for more blueberries and told the class they are "tiny planets".' },
-  { id: 'k4', name: 'Ian', age: 4, allergy: null, baseline: .35, app: .66, like: { k_bulgogi: .5, k_corn: 1.2 }, note: 'Ian liked the corn soup and practised using chopsticks.' },
+  { id: 'k1', name: 'Ava', age: 5, allergy: null, baseline: .3, app: .78, like: { k_broccoli: .3, k_dragon: 1.2, k_tomato: 1.1 }, note: 'Ava helped hand out spoons today and tried a whole broccoli floret!' },
+  { id: 'k2', name: 'Hakim', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Hakim was a bit tired after outdoor play but finished all the rice.' },
+  { id: 'k3', name: 'Kavya', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Kavya asked for more dragon fruit and told the class the seeds look like tiny stars.' },
+  { id: 'k4', name: 'Lucas', age: 4, allergy: null, baseline: .35, app: .66, like: { k_chicken: .5, k_corn: 1.2 }, note: 'Lucas liked the corn soup and practised using his spoon and fork.' },
 ];
 
 function served(menu, diet) {
@@ -124,7 +124,7 @@ function seed() {
 }
 const KIDPREFS = Object.fromEntries(KIDS.map(k => [k.id, k]));
 const PATPREFS = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
-const CARE_V = 5; // bump when the demo data changes shape
+const CARE_V = 6; // bump when the demo data changes shape
 const ensure = () => { if (!PL.S.care || PL.S.care.v !== CARE_V) PL.S.care = seed(); };
 ensure();
 PL.store.subscribe(ensure);
