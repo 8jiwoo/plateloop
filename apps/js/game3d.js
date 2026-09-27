@@ -280,8 +280,28 @@ function buildPeople() {
   if (L.FACES && L.FACES.sophie) {
     const so = G.sophie = add(L.person({ name: 'Sophie', kind: 'pe', house: '#2A5E9E', face: 'sophie', hair: 'bun', hairCol: '#141214', capTilt: -.82, height: 1.6, watch: false, smooth: true, seed: 505 }), -4.2, -5.35, .5, 'dance');
     so.homeYaw = .5; G.solidPeople.push(so); talkTarget(so);
-    const phone = new THREE.Mesh(new THREE.BoxGeometry(.075, .15, .01), L.lam({ color: '#1C1C1E' })); phone.position.set(-3.1, .47, -5.9); phone.rotation.set(-1.2, 0, .3); G.scene.add(phone);
-    const bench = new THREE.Mesh(new THREE.BoxGeometry(.4, .45, .4), L.lam({ color: '#6E757C' })); bench.position.set(-3.1, .225, -5.9); G.scene.add(bench);
+    // her boombox on a stool
+    const stool = new THREE.Mesh(new THREE.BoxGeometry(.4, .45, .4), L.lam({ color: '#6E757C' })); stool.position.set(-3.1, .225, -5.9); G.scene.add(stool);
+    const box = new THREE.Group(); box.position.set(-3.1, .45, -5.9); box.rotation.y = -.6; G.scene.add(box);
+    const bodyM = L.lam({ map: L.tex(128, 64, c => { c.fillStyle = '#B9BDC2'; c.fillRect(0, 0, 128, 64); c.fillStyle = '#2A2D31'; c.fillRect(44, 10, 40, 14); c.fillStyle = '#7FE0A0'; c.fillRect(48, 14, 22, 6); c.fillStyle = '#E0473A'; c.fillRect(74, 14, 6, 6); for (let x = 46; x < 82; x += 6) { c.fillStyle = '#44484D'; c.fillRect(x, 30, 4, 4); } }) });
+    const body = new THREE.Mesh(new THREE.BoxGeometry(.46, .24, .14), bodyM); body.position.y = .12; box.add(body);
+    const handle = new THREE.Mesh(new THREE.BoxGeometry(.34, .025, .025), L.lam({ color: '#2A2D31' })); handle.position.y = .28; box.add(handle);
+    [-1, 1].forEach(s => { const post = new THREE.Mesh(new THREE.BoxGeometry(.02, .05, .02), L.lam({ color: '#2A2D31' })); post.position.set(s * .16, .255, 0); box.add(post); });
+    const ant = new THREE.Mesh(new THREE.CylinderGeometry(.004, .004, .35, 4), L.lam({ color: '#C9CED3' })); ant.position.set(.18, .4, -.03); ant.rotation.z = -.35; box.add(ant);
+    const cone = L.lam({ map: L.tex(64, 64, c => { c.fillStyle = '#1A1B1D'; c.fillRect(0, 0, 64, 64); [30, 22, 14].forEach((r, i) => { c.strokeStyle = i % 2 ? '#3A3D42' : '#55595F'; c.lineWidth = 3; c.beginPath(); c.arc(32, 32, r, 0, Math.PI * 2); c.stroke(); }); c.fillStyle = '#6A6E74'; c.beginPath(); c.arc(32, 32, 7, 0, Math.PI * 2); c.fill(); }) });
+    const speakers = [-1, 1].map(s => { const m = new THREE.Mesh(new THREE.CircleGeometry(.075, 16), cone); m.position.set(s * .15, .11, .072); box.add(m); return m; });
+    G.boombox = { speakers };
+    // the disco: a mirror ball, sweeping beams, coloured lights and dots of light on the floor (off until she sings)
+    const d = new THREE.Group(); d.position.set(so.root.position.x, 0, so.root.position.z); d.visible = false; G.scene.add(d);
+    const cord = new THREE.Mesh(new THREE.CylinderGeometry(.006, .006, .9, 4), L.lam({ color: '#222' })); cord.position.y = 3.75; d.add(cord);
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(.2, 12, 8), new THREE.MeshBasicMaterial({ map: L.tex(64, 32, c => { for (let y = 0; y < 32; y += 4) for (let x = 0; x < 64; x += 4) { const v = 150 + Math.random() * 105; c.fillStyle = `rgb(${v},${v},${v + 10})`; c.fillRect(x, y, 3, 3); } }) }));
+    ball.position.y = 3.25; d.add(ball);
+    const COLS = ['#FF2D95', '#2DE1FF', '#FFD62D', '#7CFF4F', '#B04DFF', '#FF7A2D'];
+    const glowTex = L.tex(64, 64, c => L.blob(c, 32, 32, 32, 32, '#FFFFFF', 1));
+    const beams = COLS.map(col => { const m = new THREE.Mesh(new THREE.ConeGeometry(.35, 3.2, 10, 1, true), new THREE.MeshBasicMaterial({ color: col, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide })); m.geometry.translate(0, -1.6, 0); m.rotation.order = 'YXZ'; m.position.y = 3.25; d.add(m); return m; });
+    const dots = Array.from({ length: 14 }, (_, i) => { const m = new THREE.Mesh(new THREE.CircleGeometry(.22, 14), new THREE.MeshBasicMaterial({ color: COLS[i % COLS.length], map: glowTex, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false })); m.rotation.x = -Math.PI / 2; m.position.y = .012; d.add(m); return m; });
+    const lights = ['#FF2D95', '#2DE1FF', '#FFD62D'].map(col => { const l = new THREE.PointLight(col, 0, 5, 1.4); l.position.set(d.position.x, 2, d.position.z); G.scene.add(l); return l; });
+    G.disco = { group: d, ball, beams, dots, lights, level: 0, on: false };
     W.spots.music = G.SFX.spots.music = [-3.1, .6, -5.9];
   }
   // Disha floats cross-legged above a table in a beam of light, and tells fortunes
@@ -400,6 +420,18 @@ function loop(now) {
   });
   // background chatter at tables: someone is always talking
   G.chatT -= dt; if (G.chatT < 0) { G.chatT = 2 + Math.random() * 3; const seated = G.people.filter(P => P.table && !P.friend); seated.forEach(P => { if (P !== G.talkingTo) P.talking = false; }); for (let i = 0; i < 6; i++) { const P = seated[Math.floor(Math.random() * seated.length)]; if (P) P.talking = true; } }
+  if (G.boombox) { const k = 1 + .09 * Math.pow(Math.abs(Math.sin(G.t * Math.PI * 2.133)), 4); G.boombox.speakers.forEach(sp => sp.scale.setScalar(k)); }
+  if (G.disco) {
+    const D = G.disco; D.level += ((D.on ? 1 : 0) - D.level) * Math.min(1, dt * 2.5);
+    D.group.visible = D.level > .01;
+    if (D.group.visible) {
+      const t = G.t, L2 = D.level;
+      D.ball.rotation.y += dt * 1.2; D.ball.position.y = 3.25 + (1 - L2) * .9;
+      D.beams.forEach((b, i) => { const a = t * (.7 + i * .09) + i * 1.05; b.rotation.set(.55 + .25 * Math.sin(t * 1.3 + i), a, 0); b.material.opacity = .13 * L2; });
+      D.dots.forEach((m, i) => { const a = t * (.5 + (i % 4) * .15) * (i % 2 ? 1 : -1) + i * .9, r = .6 + (i % 5) * .45; m.position.x = Math.cos(a) * r; m.position.z = Math.sin(a) * r; m.material.opacity = .55 * L2; });
+      }
+    D.lights.forEach((l, i) => { const a = G.t * 1.6 + i * 2.1; l.position.set(D.group.position.x + Math.cos(a) * 1.2, 2, D.group.position.z + Math.sin(a) * 1.2); l.intensity = 1.3 * D.level * (.6 + .4 * Math.abs(Math.sin(G.t * 6.7 + i))); });
+  }
   if (G.shrine) {
     const s = G.shrine, y = 1.08 + (s.lift || 0) + Math.sin(G.t * 1.1) * .06;
     G.disha.root.position.y = y; s.halo.position.set(s.T.x, y + .62, s.T.z); s.halo.material.opacity = .26 + Math.sin(G.t * 1.7) * .06;
@@ -846,14 +878,14 @@ async function sophieSings() {
   const S = G.sophie;
   await convo(S, async () => {
     await say(S, G.phase === 'done' ? 'You finished your tray? Then you get the encore!' : 'Oh, hi! Do you want to hear the song I wrote about lunch?');
-    S.singing = true; await sleep(700);
+    S.singing = true; G.disco.on = true; await sleep(700);
     const hp = new THREE.Vector3(); S.head.getWorldPosition(hp);
     G.SFX.sing(at(hp), SONG.flatMap(l => l[1]));
     for (const [words, notes] of SONG) {
       showSub(S.name, `♪ ${words} ♪`, true); S.talking = true;
       await sleep(notes.reduce((a, n) => a + n[2], 0) * 500);
     }
-    S.talking = false; S.singing = false;
+    S.talking = false; S.singing = false; G.disco.on = false;
     await say(S, 'Thanks for listening! Back to practice.');
   });
 }
