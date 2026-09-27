@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlateLoop</title>
+<meta name="description" content="AI tray scanning that cuts school food waste. Four apps: the scanner, its screen, the kitchen dashboard and Loopi, the student pet app.">
+<style>
+:root{--bg:#F5F5F7;--card:#FFFFFF;--label:#1D1D1F;--label2:#6E6E73;--sep:rgba(60,60,67,.13);--tint:#34C759;--tint-ink:#248A3D;--blue:#0066CC;
+  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;color-scheme:light}
+@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1C1C1E;--label:#F5F5F7;--label2:#AEAEB2;--sep:rgba(84,84,88,.6);--tint:#30D158;--tint-ink:#30D158;--blue:#2997FF;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--label);font:17px/1.47 var(--font);letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
+main{max-width:980px;margin:0 auto;padding:64px 16px 48px}
+h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.03em;margin:0}
+.lede{font-size:clamp(19px,2.4vw,24px);color:var(--label2);max-width:720px;margin:14px 0 0;line-height:1.35}
+.apps{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:40px}
+.app{display:flex;flex-direction:column;gap:6px;background:var(--card);border-radius:20px;padding:22px;text-decoration:none;color:inherit;transition:transform .15s}
+.app:hover{transform:translateY(-2px)}
+.n{font-size:13px;font-weight:600;color:var(--tint-ink)}
+.app h2{font-size:24px;letter-spacing:-.02em;margin:0}
+.app p{margin:0;color:var(--label2);font-size:15px}
+.app span{margin-top:auto;padding-top:10px;color:var(--blue);font-size:15px;font-weight:500}
+h3{font-size:21px;letter-spacing:-.02em;margin:48px 0 10px}
+ol{margin:0;padding-left:22px;color:var(--label2)}
+ol li{margin:6px 0}
+ol b{color:var(--label)}
+.all{display:inline-block;margin-top:18px;background:var(--tint);color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:999px}
+footer{margin-top:56px;padding-top:18px;border-top:.5px solid var(--sep);font-size:13px;color:var(--label2)}
+@media (max-width:640px){main{padding-top:40px}.apps{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<main>
+  <h1>PlateLoop</h1>
+  <p class="lede">AI tray scanning that cuts school food waste. Students scan their tray before and after lunch, the kitchen learns what actually gets eaten, and each student's pet, Loopi, is fed by their real lunch.</p>
+
+  <div class="apps">
+    <a class="app" href="dist/1-plateloop-scanner-3d.html"><div class="n">1</div><h2>Scanner</h2><p>The hardware in 3D: depth camera, scale, screen, ID reader and compost bin. Drag to turn it around.</p><span>Open</span></a>
+    <a class="app" href="dist/2-plateloop-kiosk.html"><div class="n">2</div><h2>Kiosk</h2><p>The scanner's screen. Scan a tray before lunch and again after to see what was eaten.</p><span>Open</span></a>
+    <a class="app" href="dist/3-plateloop-kitchen.html"><div class="n">3</div><h2>Kitchen</h2><p>For kitchen staff: live scans, waste by dish, nutrition, and how much to order tomorrow.</p><span>Open</span></a>
+    <a class="app" href="dist/4-loopi-student-app.html"><div class="n">4</div><h2>Loopi</h2><p>The student app. Lunch feeds Loopi, leftovers end up on its floor, and classes compete to waste less.</p><span>Open</span></a>
+  </div>
+
+  <h3>Try it</h3>
+  <ol>
+    <li>Open the <b>Kiosk</b>, pick Minji, and scan her tray before lunch, then after.</li>
+    <li>Open <b>Loopi</b>: her lunch is waiting in the bowl, and whatever she left is on the floor.</li>
+    <li>Open <b>Kitchen</b>: the tray is in the live feed and the waste charts.</li>
+  </ol>
+  <p style="color:var(--label2);font-size:15px;margin:12px 0 0">The apps share one demo in your browser. "Reset demo" in any of them starts over.</p>
+  <a class="all" href="apps/">Open all four in one window</a>
+
+  <footer>A hackathon prototype. Numbers in the demo are illustrative.</footer>
+</main>
+</body>
+</html>

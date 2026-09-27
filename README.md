@@ -1,5 +1,7 @@
 # PlateLoop
 
+**Live demo:** https://8jiwoo.github.io/plateloop/
+
 **AI tray scanning that cuts school food waste. One scanner, two scans, and a Tamagotchi that rewards students for taking only what they'll eat.**
 
 Built for the EcoLoop sustainability hackathon.
