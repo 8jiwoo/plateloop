@@ -148,7 +148,7 @@ function screen() {
   } else {
     const r = k.result, g = r.game;
     const chips = [`Points <em>+${r.xp}</em>`];
-    if (g) { chips.push(`Loopi <em>+${g.hunger} food</em>`); if (g.heart) chips.push('<em>+1 heart</em>'); }
+    if (g) { chips.push(`Loopi <em>+${g.hunger} food</em>`); if (g.heart) chips.push('<em>+1 heart</em>'); chips.push(`<em>+${g.gems}</em> gems`); }
     if (r.co2 > 0) chips.push(`CO₂ saved <em>${r.co2} g</em>`);
     if (r.zero) chips.unshift(`<em>+1 fruit</em> on the Green Tree`);
     main = `${left()}<div class="kio-right">
