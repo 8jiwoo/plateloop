@@ -637,3 +637,86 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .face-ic{width:52px;height:52px;border-radius:14px;background:var(--tint-soft);color:var(--tint-ink);display:grid;place-items:center;flex:none}
 .face-ic svg{width:30px;height:30px}
 .kio-face > div:last-child{display:flex;flex-direction:column;gap:1.4cqw}
+
+/* ================================================================ Loopi Care (hospital) + Loopi Kids (kindergarten) */
+.chip.plain{padding:7px 14px}
+.demo-box{display:flex;flex-direction:column;gap:8px;background:var(--bg2);border-radius:14px;padding:12px;box-shadow:var(--shadow-s)}
+.demo-box label{font-size:12px;font-weight:600;color:var(--label2)}
+.care-icon{background:linear-gradient(145deg,#E8F3FF,#CFE3F7)}
+.kids-icon{background:linear-gradient(145deg,#FFF4D6,#FFE1A8)}
+.phone-tabs.three{grid-template-columns:repeat(3,1fr)}
+.phone-tabs.two{grid-template-columns:repeat(2,1fr)}
+.care .phone-tabs button[aria-selected="true"]{color:var(--blue)}
+.care-alert{display:flex;gap:10px;align-items:flex-start;background:var(--orange-soft);color:var(--label);border-radius:14px;padding:11px 14px;font-size:13.5px;line-height:1.4;flex:none}
+.care-alert svg{width:20px;height:20px;color:var(--orange);flex:none;margin-top:1px}
+.care-alert.ok{background:var(--tint-soft)}
+.care-alert.ok svg{color:var(--tint-ink)}
+.group.companion{flex-direction:row;align-items:center;gap:14px;padding:14px}
+.group.companion > * + *{border-top:0}
+.group.companion canvas{width:84px;height:70px;image-rendering:pixelated;border-radius:14px;background:#DDE4D4;flex:none}
+.group.companion b{display:block;font-size:15px}
+.group.companion span{font-size:13.5px;color:var(--label2);line-height:1.35}
+.meal-dots{display:flex;align-items:center;gap:5px;margin-top:8px}
+.meal-dots i{width:22px;height:8px;border-radius:999px;background:var(--fill2)}
+.meal-dots i.on{background:var(--tint)}
+.meal-dots i.part{background:var(--orange)}
+.meal-dots small{font-size:12px;color:var(--label2);margin-left:6px}
+.group.pad{padding:6px 14px 12px}
+.group.pad > * + *{border-top:0}
+.hrow.wide{grid-template-columns:62px minmax(0,1fr) auto;margin-top:8px}
+.hrow.wide b{font-size:13px;white-space:nowrap}
+.hrow.wide b small{font-weight:500;color:var(--label3);font-size:11.5px}
+.rep-head{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px}
+.rep-head > * + *{border-top:0}
+.rep-head b{display:block;font:700 18px var(--font-d);letter-spacing:-.02em}
+.rep-head span:not(.pill){font-size:12.5px;color:var(--label2)}
+.rep-kpis{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0}
+.rep-kpis b{display:block;font:700 22px var(--font-d);letter-spacing:-.02em}
+.rep-kpis span{font-size:12.5px;color:var(--label2)}
+.finding{display:grid;grid-template-columns:8px 1fr;gap:10px;align-items:start;padding:10px 14px;font-size:14px;line-height:1.4}
+.finding i{width:8px;height:8px;border-radius:50%;margin-top:6px}
+.g-row.two-col{grid-template-columns:minmax(0,1fr) auto}
+.g-row.two-col .g-v{max-width:220px;white-space:normal}
+.two-btn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.note{padding:12px 14px}
+.note > * + *{border-top:0}
+.note p{font-size:14.5px;line-height:1.45}
+.note span{display:block;font-size:12px;color:var(--label2);margin-top:6px}
+.gate-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gate-opts .btn{font-size:22px;padding:14px 0;border-radius:16px}
+/* kids: bigger, rounder, fewer words */
+.kids .phone-tabs button[aria-selected="true"]{color:#FF9F0A}
+.kid-actions button{padding:14px 4px;border-radius:20px;font-size:14px}
+.kid-actions button svg{width:34px;height:34px;color:#FF9F0A}
+.kid-actions button.hot{background:#FF9F0A;color:#fff}
+.kid-actions button.hot svg{color:#fff}
+.rainbow,.stickers{padding:14px;gap:10px;align-items:center;text-align:center}
+.rainbow > * + *,.stickers > * + *{border-top:0}
+.rainbow b,.stickers b{font:700 17px var(--font-d)}
+.rainbow > span{font-size:14px;color:var(--label2)}
+.rb-dots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.rb{width:40px;height:40px;border-radius:50%;border:3px dashed color-mix(in srgb,var(--c) 70%,transparent);display:grid;place-items:center;color:#fff}
+.rb.on{background:var(--c);border:3px solid var(--c);box-shadow:inset 0 0 0 2px rgba(255,255,255,.4)}
+.rb svg{width:20px;height:20px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.st-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.sticker{display:flex;flex-direction:column;align-items:center;gap:3px}
+.st-food{position:relative;width:48px;height:48px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px #fff,0 0 0 4.5px var(--e),0 3px 8px rgba(0,0,0,.18);transform:rotate(-6deg)}
+.st-food i{position:absolute;top:17px;width:5px;height:6px;border-radius:50%;background:#1D1D1F}
+.st-food i:first-child{left:15px}.st-food i:nth-child(2){right:15px}
+.st-food em{position:absolute;left:50%;top:27px;width:12px;height:6px;margin-left:-6px;border-bottom:2.5px solid #1D1D1F;border-radius:0 0 12px 12px}
+.sticker small{font-size:12px;font-weight:600;text-transform:capitalize}
+.sticker .stars{font-size:11px;color:#FFB800;letter-spacing:1px;min-height:14px}
+.sticker.empty .st-food{background:var(--fill2);box-shadow:0 0 0 3px var(--bg2),0 0 0 4.5px var(--fill3);transform:none}
+.sticker.empty .st-food i,.sticker.empty .st-food em{opacity:.25}
+.sticker.empty small{color:var(--label3)}
+@media print{.stu-side,.phone-tabs,.demo-switch,.phone-top,.two-btn{display:none!important}.phone{box-shadow:none!important;height:auto!important;overflow:visible!important}.phone-body{overflow:visible!important}}
+.grow-btn{background:#FF9F0A;animation:pop .5s ease-out}
+.grow-btn:hover{background:#F08F00}
+/* Kitchen: carbon breakdown */
+.cstack{display:flex;height:14px;border-radius:999px;overflow:hidden;margin-top:14px;gap:2px}
+.cstack i{display:block;height:100%}
+.clist{display:flex;flex-direction:column;margin-top:10px}
+.clist div{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:.5px solid var(--sep);font-size:14px}
+.clist div:last-child{border-bottom:0}
+.clist b{font-weight:600}
+.clist .dot{width:10px;height:10px}
