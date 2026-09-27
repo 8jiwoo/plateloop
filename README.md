@@ -11,7 +11,7 @@ Students scan their lunch tray **before** lunch (what was served) and **after** 
 | App | File | For |
 |---|---|---|
 | **PlateLoop Scanner** | `dist/1-plateloop-scanner-3d.html` | Product page with the annotated, rotatable 3D scanner |
-| **PlateLoop Kiosk** | `dist/2-plateloop-kiosk.html` | The scanner's screen: card / QR / face ID, before and after scans, nutrition, the school Green Tree |
+| **PlateLoop Kiosk** | `dist/2-plateloop-kiosk.html` | The scanner's screen: face sign-in, before and after scans, nutrition, the school Green Tree |
 | **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, plan & order, daily report |
 | **Loopi** | `dist/4-loopi-student-app.html` | Students: the Loopi pet, health report, games, student and school leaderboards |
 
@@ -84,6 +84,5 @@ Useful habits:
 ## Notes
 
 - All names, numbers, nutrition targets and CO₂ factors are demo or illustrative values. Replace them with your national school-meal standard and published factors (e.g. EPA WARM) before presenting.
-- The QR code in Loopi is a visual placeholder, not a readable code.
-- Face ID is described as opt-in: only a match code would be stored, never photos.
-- The Loopi game systems are adapted from our Eggotchi prototype. Some features (health report, environment dashboard, green tree, multiple ID methods) take inspiration from existing school-meal scanners such as Nuvilab.
+- Students sign in only with their face. The scanner would keep a match code on the device, never a photo; the demo just simulates the match.
+- The Loopi game systems are adapted from our Eggotchi prototype. Some features (health report, environment dashboard, green tree, face sign-in) take inspiration from existing school-meal scanners such as Nuvilab.
