@@ -1150,7 +1150,7 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-cross.on{width:14px;height:14px;margin:-7px 0 0 -7px;background:none;border:2px solid #34C759;box-shadow:0 0 0 1px #000}
 .g3-prompt{position:absolute;left:50%;top:calc(50% + 26px);transform:translateX(-50%);white-space:nowrap;font-size:13px;padding:5px 10px;background:rgba(10,14,20,.66)}
 .g3-prompt b{display:inline-block;min-width:18px;padding:1px 5px;margin-right:6px;background:#fff;color:#111;text-shadow:none;text-align:center;font-weight:400}
-.g3-msg{position:absolute;left:50%;bottom:16%;transform:translateX(-50%);width:max-content;max-width:84%;text-align:center;font-size:13px;line-height:1.45;padding:8px 14px;background:rgba(10,14,20,.72);border:2px solid #34C759;animation:g3in .25s steps(3)}
+.g3-msg{position:absolute;left:50%;top:22%;transform:translateX(-50%);width:max-content;max-width:84%;text-align:center;font-size:13px;line-height:1.45;padding:8px 14px;background:rgba(10,14,20,.72);border:2px solid #34C759;animation:g3in .25s steps(3)}
 .g3-msg b{color:#FFD60A;font-weight:400}
 @keyframes g3in{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 .g3-eat{position:absolute;right:12px;top:12px;width:190px;display:flex;flex-direction:column;gap:8px;padding:10px;background:rgba(10,14,20,.66)}
@@ -1175,7 +1175,7 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-logo{display:flex;flex-direction:column;align-items:center;gap:4px}
 .g3-logo span{font-size:12px;letter-spacing:.3em;color:#34C759}
 .g3-logo b{font-size:clamp(28px,7vw,42px);font-weight:400;line-height:1;color:#FFD60A;text-shadow:3px 3px 0 #B8321E,6px 6px 0 #000}
-.g3-sub{font-size:12px;color:#B8BEC6}
+.g3-sub2{font-size:12px;color:#B8BEC6}
 .g3-label{font-size:11px;letter-spacing:.2em;color:#7C828A}
 .g3-say{font-size:14px;color:#E8F5EA}
 .g3-tip{font-size:11px;line-height:1.5;color:#8E959E}
@@ -1195,6 +1195,27 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-stats span{font-size:9.5px;color:#8E959E}
 .g3-stats b{font-size:14px;font-weight:400;color:#fff}
 @media (max-width:560px){.g3{padding:8px}.g3-view{aspect-ratio:auto;width:100%;height:calc(100svh - 90px)}.g3-obj{max-width:calc(100% - 28px)}.g3-obj b{font-size:11px}.g3-eat{top:auto;bottom:130px;right:8px;width:160px}.g3-choices{grid-template-columns:1fr}.g3-stats{grid-template-columns:repeat(2,1fr)}}
+
+/* Lunch Rush v2: subtitles, choices, chapter card */
+.g3-sub{position:absolute;left:50%;bottom:7%;transform:translateX(-50%);width:min(86%,640px);text-align:center;pointer-events:auto;cursor:pointer;font:500 17px/1.45 var(--font);color:#fff;text-shadow:0 0 3px #000,1px 1px 0 #000,-1px -1px 0 #000,1px -1px 0 #000,-1px 1px 0 #000}
+.g3-sub b{font-weight:700;color:#FFE08A;margin-right:6px}
+.g3-sub.amb{pointer-events:none;font-size:15px;opacity:.92}
+.g3-sub.amb .g3-opts{display:none}
+.g3-opts{display:flex;flex-direction:column;align-items:center;gap:5px;margin-top:10px}
+.g3-opts button{font:500 14px/1.3 var(--font);color:#fff;background:rgba(8,10,14,.62);border:1px solid rgba(255,255,255,.28);padding:7px 14px;min-width:240px;text-align:left;cursor:pointer;text-shadow:none}
+.g3-opts button:hover{background:rgba(43,140,67,.75);border-color:#7FE0A0}
+.g3-opts button i{font-style:normal;display:inline-block;width:20px;color:#FFE08A;font-weight:700}
+.g3-opts small{font:400 11px var(--font);color:rgba(255,255,255,.6);text-shadow:0 0 2px #000}
+.g3-obj.pulse{animation:g3pulse 1.2s ease-out}
+@keyframes g3pulse{0%{background:rgba(255,214,10,.45)}100%{background:rgba(10,14,20,.62)}}
+.g3-card{position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:#000;color:#fff;font-family:Georgia,'Times New Roman',serif;transition:opacity 1.2s ease}
+.g3-card.out{opacity:0}
+.g3-card b{font-size:clamp(26px,5vw,40px);font-weight:400;letter-spacing:.08em}
+.g3-card span{font-size:clamp(13px,2.4vw,17px);letter-spacing:.12em;color:#D8D2C4}
+.g3-card small{font-size:12px;letter-spacing:.1em;color:#8E8A82;margin-top:10px}
+.g3-prompt{top:calc(50% + 22px)}
+@media (max-width:560px){.g3-sub{font-size:14px;bottom:128px;width:92%}.g3-opts button{min-width:0;width:100%}}
+.g3-hud.focus .g3-prompt{top:auto;bottom:4%}.g3-hud.focus .g3-cross{display:none}.g3-hud.focus .g3-sub{bottom:12%}
 
 </style>
 </head>
@@ -1413,10 +1434,11 @@ function scoreMeal(st, served, measured, portion) {
   return { w, served: total, left, improvement, energy, nutrition, joy, xp, groups, vegTried, questDone, lowWaste, streak, mood, line, rightSized };
 }
 
-/** BEFORE lunch. portion: what the kitchen served (S/M/L); the scanner measures the real grams. */
-PL.scanBefore = (sid, portion, method = 'face') => {
+/** BEFORE lunch. portion: what the kitchen served (S/M/L); the scanner measures the real grams.
+ *  pick (optional): dish id → serving multiplier, when the student asked for less or more of a dish. */
+PL.scanBefore = (sid, portion, method = 'face', pick = null) => {
   const st = PL.student(sid), T = PL.S.today;
-  const served = Object.fromEntries(MENU.map(d => [d.id, Math.round(d.g[portion] * (.94 + Math.random() * .12))]));
+  const served = Object.fromEntries(MENU.map(d => [d.id, Math.max(1, Math.round(d.g[portion] * (pick && pick[d.id] || 1) * (.94 + Math.random() * .12)))]));
   const tray = ++T.trayNo;
   T.clock += .2;
   st.before = { served, t: PL.clock(), tray, method };
