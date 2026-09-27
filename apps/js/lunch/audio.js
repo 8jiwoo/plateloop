@@ -198,6 +198,37 @@ L.Sound = () => {
     thunder: () => { burst(5, { vol: .12, type: 'lowpass', freq: 120, attack: 1, buf: brownBuf }); },
   };
 
+  /* ------------------------------------------------------------ singing */
+  // vowel formants (Hz) for a light soprano
+  const VOWELS = { a: [800, 1150, 2900], e: [480, 1950, 2700], i: [330, 2500, 3100], o: [470, 830, 2800], u: [350, 760, 2600] };
+  /** Sing a melody: notes are [vowel, midi, beats]; returns how long it takes, in seconds. */
+  function sing(pos, notes, bpm = 120) {
+    if (!ctx || muted) return 0;
+    const beat = 60 / bpm, out = panner(pos, 1.4, .7);
+    const osc = ctx.createOscillator(); osc.type = 'sawtooth';
+    const vib = ctx.createOscillator(); vib.frequency.value = 5.4; const vg = ctx.createGain(); vg.gain.value = 22; vib.connect(vg).connect(osc.detune);
+    const air = loopSrc(), ag = ctx.createGain(); ag.gain.value = .06;
+    const src = ctx.createGain(); osc.connect(src); air.connect(ag).connect(src);
+    const env = ctx.createGain(); env.gain.value = 0;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5000;
+    const fs = [0, 1, 2].map(i => { const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = [7, 9, 12][i]; const g = ctx.createGain(); g.gain.value = [1, .55, .3][i]; src.connect(f).connect(g).connect(env); return f; });
+    const vol = ctx.createGain(); vol.gain.value = .5; env.connect(lp).connect(vol).connect(out);
+    let t = ctx.currentTime + .15;
+    notes.forEach(([v, midi, beats]) => {
+      const dur = beats * beat;
+      if (!v) { env.gain.setTargetAtTime(0, t, .05); t += dur; return; }
+      const f = 440 * Math.pow(2, (midi - 69) / 12);
+      osc.frequency.setTargetAtTime(f, t, .02);
+      VOWELS[v].forEach((hz, i) => fs[i].frequency.setTargetAtTime(hz, t, .03));
+      env.gain.setTargetAtTime(.9, t, .025); env.gain.setTargetAtTime(.3, t + dur * .82, .025);
+      burst(.04, { vol: .025, type: 'highpass', freq: 3500, pos, delay: t - ctx.currentTime });
+      t += dur;
+    });
+    env.gain.setTargetAtTime(0, t, .1);
+    osc.start(); vib.start(); osc.stop(t + 1); vib.stop(t + 1);
+    return t - ctx.currentTime;
+  }
+
   /* ------------------------------------------------------------ per frame */
   function listen(cam) {
     if (!ctx) return;
@@ -222,7 +253,7 @@ L.Sound = () => {
   return {
     get ctx() { return ctx; },
     get muted() { return muted; },
-    spots, start, listen, tick,
+    spots, start, listen, tick, sing,
     play(name, pos, ...a) { if (ctx && !muted && ctx.state === 'running' && FX[name]) FX[name](pos, ...a); },
     toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .85, ctx.currentTime, .05); return muted; },
     /** Quieter crowd while talking to someone or reading the scanner. */
