@@ -1,14 +1,15 @@
 """
-Build the seven PlateLoop apps as self-contained HTML files.
+Build the eight PlateLoop apps as self-contained HTML files.
 
   python build.py <out_dir>
 
-Outputs seven separate apps: 1-plateloop-scanner-3d.html, 2-plateloop-kiosk.html,
+Outputs eight separate apps: 1-plateloop-scanner-3d.html, 2-plateloop-kiosk.html,
 3-plateloop-kitchen.html, 4-loopi-student-app.html, 5-loopi-care-hospital.html,
-6-loopi-kids-kindergarten.html and 7-loopi-work-office.html. They have no shared navigation.
+6-loopi-kids-kindergarten.html, 7-loopi-work-office.html and
+8-plateloop-lunch-rush-3d.html (a first-person 3D game of a canteen lunch with the scanner). They have no shared navigation.
 Each file inlines the CSS, the shared core + visuals and its own app, so it runs by
 double-clicking. scanner-3d.html also embeds three.js, the 3D model and the renders, so it
-works offline. All seven share one demo save in the browser, so a tray scanned on the scanner
+works offline. All eight share one demo save in the browser, so a tray scanned on the scanner
 screen shows up in the kitchen and student apps open in other tabs.
 """
 import base64, io, os, sys
@@ -27,6 +28,7 @@ PAGES = {
     'care':    ('5-loopi-care-hospital.html',  'Loopi Care',         ['js/health.js', 'js/care.js']),
     'kids':    ('6-loopi-kids-kindergarten.html', 'Loopi Kids',      ['js/health.js', 'js/kids.js']),
     'work':    ('7-loopi-work-office.html',    'Loopi Work',         ['js/health.js', 'js/work.js']),
+    'lunch':   ('8-plateloop-lunch-rush-3d.html', 'Lunch Rush',      ['vendor/three.min.js', 'js/game3d.js']),
 }
 FILES = {k: v[0] for k, v in PAGES.items()}
 
