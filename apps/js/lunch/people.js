@@ -414,7 +414,14 @@ function fighter(P, dt) {
   else if (pose === 'flail') { const f = t * 18; hy = .84; arm(P.armR, Math.sin(f) * 1.5 - 1, -1.2 + Math.cos(f * 1.3), -1 + Math.sin(f * .7)); arm(P.armL, Math.cos(f) * 1.5 - 1, 1.2 + Math.sin(f * 1.1), -1 + Math.cos(f * .8)); leg(P.legR, Math.sin(f * 1.2) * .9 - .3, -.3, 1 + Math.sin(f) * .6); leg(P.legL, Math.cos(f * 1.1) * .9 - .3, .3, 1 + Math.cos(f) * .6); }
   else if (pose === 'lie') { hy = .12; hrx = -1.52; arm(P.armR, 0, -1.2, -.2); arm(P.armL, 0, 1.2, -.2); leg(P.legR, .05, -.2, .1); leg(P.legL, .05, .2, .1); }
   else if (pose === 'run') { const ph = t * 14; hy = .82 + .03 * Math.abs(Math.sin(ph)); hrx = .25; arm(P.armR, -Math.sin(ph) * .9, -.1, -1.3); arm(P.armL, Math.sin(ph) * .9, .1, -1.3); leg(P.legR, Math.sin(ph) * .8, 0, .6 + .6 * Math.max(0, -Math.sin(ph))); leg(P.legL, -Math.sin(ph) * .8, 0, .6 + .6 * Math.max(0, Math.sin(ph))); }
-  else if (pose === 'kick') { hy = .84; hrx = -.15; arm(P.armR, -.2, -1.5, -.2); arm(P.armL, -.2, 1.5, -.2); leg(P.legR, -1.45, -.25, 0); leg(P.legL, -1.1, .1, 2.0); }
+  else if (pose === 'kick') {
+    // spinning kicks: the legs take turns snapping out while the arms windmill
+    const f = t * 11, right = Math.sin(f) > 0, snap = 1 - Math.exp(-40 * dt), to2 = (r, x, y, z) => { r.x += (x - r.x) * snap; r.y += (y - r.y) * snap; r.z += (z - r.z) * snap; };
+    hy = .84; hrx = -.15;
+    to2(P.armR.sh.rotation, -.3 + Math.sin(f * .5) * .6, 0, -1.4); to2(P.armL.sh.rotation, -.3 - Math.sin(f * .5) * .6, 0, 1.4);
+    to2(P.legR.hip.rotation, right ? -1.5 : -.9, 0, right ? -.35 : -.1); to2(P.legR.knee.rotation, right ? 0 : 1.9, 0, 0);
+    to2(P.legL.hip.rotation, right ? -.9 : -1.5, 0, right ? .1 : .35); to2(P.legL.knee.rotation, right ? 1.9 : 0, 0, 0);
+  }
   else if (pose === 'bump') { hy = .3; hrx = -.35; arm(P.armR, -.3, -.6, -.3); arm(P.armL, -.3, .6, -.3); leg(P.legR, -1.45, -.15, .15); leg(P.legL, -1.45, .15, .15); }
   P.hips.position.y += (hy - P.hips.position.y) * k; P.hips.position.x = 0;
   P.hips.rotation.x += (hrx - P.hips.rotation.x) * k; P.hips.rotation.y = 0; P.hips.rotation.z = 0;
