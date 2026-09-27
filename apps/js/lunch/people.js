@@ -417,28 +417,48 @@ function pray(P, dt, split) {
 
 /** Breakdancing on the spot, as a flowing routine: toprock, dropping into footwork, a windmill, a headspin
  *  and a freeze, then back up. Each move is a smooth function of time and moves blend into each other. */
-const BREAK = [['toprock', 5], ['footwork', 4.5], ['windmill', 3.5], ['headspin', 3.2], ['freeze', 1.8], ['footwork', 2.5]];
+const BREAK = [['toprock', 4], ['robot', 3.2], ['footwork', 3.5], ['windmill', 3], ['headspin', 3], ['dizzy', 2.6], ['sprinkler', 3.4], ['floss', 3.2], ['chicken', 3.2], ['worm', 3.6], ['dab', 1.4], ['footwork', 2]];
+const BASE = { y: .84, rx: 0, ry: 0, rz: 0, hx: 0, spin: 0, yawOff: 0, chest: 0, hy: 0, hp: 0, ar: [0, -.07, -.1], al: [0, .07, -.1], lr: [0, 0, 0], ll: [0, 0, 0] };
 function breakPose(name, T) {
-  const b = T * Math.PI * 2 * 1.07, s = Math.sin(b), c = Math.cos(b);
-  if (name === 'toprock') return { y: .8 + .03 * Math.abs(Math.sin(b * 2)), rx: .12, rz: .07 * s, spin: .5 * Math.sin(b * .25), chest: .08, hy: .25 * Math.sin(b * .5), hp: .08 * Math.sin(b * 2),
-    ar: [-.7 - .5 * Math.max(0, -s), -.45, -1.4], al: [-.7 - .5 * Math.max(0, s), .45, -1.4], lr: [-.45 * Math.max(0, s), -.15 * s, .7 * Math.max(0, s)], ll: [-.45 * Math.max(0, -s), -.15 * s, .7 * Math.max(0, -s)] };
-  if (name === 'footwork') { const f = T * Math.PI * 2 * .9, fs = Math.sin(f), fc = Math.cos(f);
-    return { y: .36, rx: .6, rz: .12 * fs, spin: 1.4, chest: .25, hy: -.2, hp: -.35,
-      ar: [-.6 + .3 * fs, -.55, -.5], al: [-1.25, .35, -.15], lr: [-1.1 + .7 * fs, -.25 + .35 * fc, 1.5 - .6 * fs], ll: [-1.1 - .7 * fs, .25 + .35 * fc, 1.5 + .6 * fs] }; }
-  if (name === 'windmill') { const w = T * 6.5;
-    return { y: .36, rx: -1.22, rz: .5 * Math.sin(w), spin: 6.5, chest: .15, hy: 0, hp: .25,
-      ar: [.1, -1.35, -.1], al: [.1, 1.35, -.1], lr: [-1.05 + .3 * Math.sin(w), -.8, .1], ll: [-1.05 - .3 * Math.sin(w), .8, .1] }; }
-  if (name === 'headspin') return { y: .79, rx: Math.PI, rz: 0, spin: 9, chest: 0, hy: 0, hp: 0,
-    ar: [-2.7, -.55, -.9], al: [-2.7, .55, -.9], lr: [0, -.55, 0], ll: [0, .55, 0] };
-  return { y: .46, rx: .15, rz: 1.05, spin: 0, chest: .1, hy: .4, hp: -.25, // freeze
-    ar: [-.15, .25, -.1], al: [-.5, 1.3, -.8], lr: [-1.5, -.2, 2.1], ll: [-.3, .5, .4] };
+  const b = T * Math.PI * 2 * 1.07, s = Math.sin(b), c = Math.cos(b), beat = T * Math.PI * 2 * 2.133, bs = Math.sin(beat);
+  const P = o => ({ ...BASE, ...o });
+  switch (name) {
+    case 'toprock': return P({ y: .8 + .03 * Math.abs(Math.sin(b * 2)), rx: .12, rz: .07 * s, spin: .5 * Math.sin(b * .25), chest: .08, hy: .25 * Math.sin(b * .5), hp: .08 * Math.sin(b * 2),
+      ar: [-.7 - .5 * Math.max(0, -s), -.45, -1.4], al: [-.7 - .5 * Math.max(0, s), .45, -1.4], lr: [-.45 * Math.max(0, s), -.15 * s, .7 * Math.max(0, s)], ll: [-.45 * Math.max(0, -s), -.15 * s, .7 * Math.max(0, -s)] });
+    case 'sing': return P({ y: .8 + .025 * Math.abs(bs), rx: .06, rz: .05 * s, chest: -.05, hy: .18 * Math.sin(b * .5), hp: -.15 + .05 * bs,
+      ar: [-1.05, .45, -2.25], al: [-1.3 - .7 * Math.max(0, s), .9 + .3 * s, -.35], lr: [-.35 * Math.max(0, s), -.1, .6 * Math.max(0, s)], ll: [-.35 * Math.max(0, -s), .1, .6 * Math.max(0, -s)] });
+    case 'robot': { const q = Math.floor(T * 4), r1 = Math.sin(q * 1.7), r2 = Math.cos(q * 2.3);
+      return P({ y: .82, ry: r1 * .35, hy: r2 * .7, hp: .12 * r1, ar: [-1.2 + .5 * r1, -.25, -1.57], al: [-1.2 - .5 * r2, .25, -1.57] }); }
+    case 'footwork': { const f = T * Math.PI * 2 * .9, fs = Math.sin(f), fc = Math.cos(f);
+      return P({ y: .36, rx: .6, rz: .12 * fs, spin: 1.4, chest: .25, hy: -.2, hp: -.35,
+        ar: [-.6 + .3 * fs, -.55, -.5], al: [-1.25, .35, -.15], lr: [-1.1 + .7 * fs, -.25 + .35 * fc, 1.5 - .6 * fs], ll: [-1.1 - .7 * fs, .25 + .35 * fc, 1.5 + .6 * fs] }); }
+    case 'windmill': { const w = T * 6.5;
+      return P({ y: .36, rx: -1.22, rz: .5 * Math.sin(w), spin: 6.5, chest: .15, hp: .25,
+        ar: [.1, -1.35, -.1], al: [.1, 1.35, -.1], lr: [-1.05 + .3 * Math.sin(w), -.8, .1], ll: [-1.05 - .3 * Math.sin(w), .8, .1] }); }
+    case 'headspin': return P({ y: .79, rx: Math.PI, spin: 9, ar: [-2.7, -.55, -.9], al: [-2.7, .55, -.9], lr: [0, -.55, 0], ll: [0, .55, 0] });
+    case 'dizzy': { const d = T * Math.PI * 2 * .8, ds = Math.sin(d), dc = Math.cos(d);
+      return P({ y: .82, rx: .16 * ds, rz: .2 * dc, spin: .7 * Math.sin(d * .5), hy: .55 * Math.sin(d * 1.3), hp: .35 * dc,
+        ar: [.3 * ds, -.7 - .3 * dc, -.3], al: [-.3 * ds, .7 + .3 * dc, -.3], lr: [.1 * ds, -.12, .15 * Math.abs(ds)], ll: [-.1 * ds, .12, .15 * Math.abs(dc)] }); }
+    case 'sprinkler': { const ph = (T * 1.1) % 1, step = Math.floor(ph * 7) / 7, off = ph < .82 ? -.8 + step * 1.9 : 1.1 - (ph - .82) / .18 * 1.9;
+      return P({ y: .8, yawOff: off, hy: off * .25, ar: [-1.5, -.1, 0], al: [-2.7, .5, -2.3], lr: [-.35, 0, .45], ll: [0, .05, 0] }); }
+    case 'floss': { const f = T * Math.PI * 2 * 1.6, fs = Math.sin(f), fc = Math.cos(f);
+      return P({ y: .83, hx: -.07 * fs, rz: .12 * fs, hy: .2 * fs, ar: [.4 * fc, .6 * fs, 0], al: [-.4 * fc, .6 * fs, 0], lr: [0, .06 * fs, .05], ll: [0, .06 * fs, .05] }); }
+    case 'chicken': { const a = Math.abs(bs);
+      return P({ y: .74 + .03 * a, rx: .25, chest: .15, spin: .3, hp: .35 * Math.sin(beat * 2),
+        ar: [.1, -(.35 + .7 * a), -2.4], al: [.1, .35 + .7 * a, -2.4], lr: [-.5, -.12, 1.0], ll: [-.5, .12, 1.0] }); }
+    case 'worm': { const w = T * Math.PI * 2 * 1.1;
+      return P({ y: .2 + .12 * Math.max(0, Math.sin(w)), rx: 1.42, chest: .45 * Math.sin(w + 1.2), hp: -.5 + .3 * Math.sin(w + 2),
+        ar: [-1.5, -.3, -1.2], al: [-1.5, .3, -1.2], lr: [.35 * Math.sin(w - 1.2) + .1, 0, .25], ll: [.35 * Math.sin(w - 1.2) + .1, 0, .25] }); }
+    case 'dab': return P({ y: .8, ry: .3, hy: -.6, hp: .55, ar: [-1.7, -1.3, -1.9], al: [-.2, 2.2, 0], lr: [0, -.12, 0], ll: [0, .15, 0] });
+    default: return P({ y: .46, rx: .15, rz: 1.05, chest: .1, hy: .4, hp: -.25, ar: [-.15, .25, -.1], al: [-.5, 1.3, -.8], lr: [-1.5, -.2, 2.1], ll: [-.3, .5, .4] }); // freeze
+  }
 }
 const lerpPose = (a, b, k) => { const o = {}; for (const key in b) o[key] = Array.isArray(b[key]) ? b[key].map((v, i) => a[key][i] + (v - a[key][i]) * k) : a[key] + (b[key] - a[key]) * k; return o; };
 function dance(P, dt) {
   const D = P.dance || (P.dance = { i: 0, t: 0, T: 0, yaw: 0, spin: 0 });
   D.t += dt; D.T += dt;
   // while singing, stay up on the feet (toprock) and face whoever is listening
-  const list = P.singing ? [['toprock', 99]] : BREAK;
+  const list = P.singing ? [['sing', 999]] : BREAK;
   if (P.singing && D.mode !== 'sing') { D.mode = 'sing'; D.prev = D.last; D.i = 0; D.t = 0; }
   if (!P.singing && D.mode === 'sing') { D.mode = null; D.prev = D.last; D.i = 0; D.t = 0; }
   let [name, dur] = list[D.i % list.length];
@@ -449,14 +469,14 @@ function dance(P, dt) {
   D.last = breakPose(name, D.T);
   if (D.prev && e < 1) D.last = lerpPose(D.prev, D.last, e);
   // apply
-  P.hips.position.y = p.y; P.hips.rotation.set(p.rx, 0, p.rz); P.chest.rotation.x = p.chest; P.torso.rotation.x = 0;
+  P.hips.position.y = p.y; P.hips.position.x = p.hx; P.hips.rotation.set(p.rx, p.ry, p.rz); P.chest.rotation.x = p.chest; P.torso.rotation.x = 0;
   P.head.rotation.set(p.hp, p.hy, 0);
   const arm = (A, v) => { A.sh.rotation.x = v[0]; A.sh.rotation.z = v[1]; A.el.rotation.x = v[2]; A.el.rotation.z = 0; };
   arm(P.armR, p.ar); arm(P.armL, p.al);
   const leg = (Lg, v) => { Lg.hip.rotation.x = v[0]; Lg.hip.rotation.z = v[1]; Lg.knee.rotation.x = v[2]; };
   leg(P.legR, p.lr); leg(P.legL, p.ll);
   D.spin += (p.spin - D.spin) * Math.min(1, dt * 3);
-  if (P.faceYaw === undefined) { D.yaw += D.spin * dt; P.root.rotation.y = (P.homeYaw || 0) + D.yaw; }
+  if (P.faceYaw === undefined) { D.yaw += D.spin * dt; P.root.rotation.y = (P.homeYaw || 0) + D.yaw + p.yawOff; }
   else { D.yaw = P.root.rotation.y - (P.homeYaw || 0); }
 }
 
