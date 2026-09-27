@@ -4,8 +4,8 @@
 'use strict';
 const L = PL.L3 = PL.L3 || {};
 
-const SNAP = 'gl_Position.xy = floor(gl_Position.xy / gl_Position.w * vec2(160.0, 120.0) + 0.5) / vec2(160.0, 120.0) * gl_Position.w;';
-/** The PS1 wobble: snap every vertex to a 320×240-ish grid after projection. */
+const SNAP = 'gl_Position.xy = floor(gl_Position.xy / gl_Position.w * vec2(480.0, 360.0) + 0.5) / vec2(480.0, 360.0) * gl_Position.w;';
+/** A gentle PS1 wobble: vertices snap to a fine screen grid after projection. */
 L.psx = m => {
   m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n\t' + SNAP); };
   return m;
@@ -26,13 +26,20 @@ L.rgba = (hex, a) => { const [r, g, b] = rgb(hex); return `rgba(${r},${g},${b},$
 L.lerpHex = (a, b, t) => { const x = rgb(a), y = rgb(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
 
 L.canvas = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return c; };
-L.texOf = (c, rx = 1, ry = 1, smooth = false) => {
+L.texOf = (c, rx = 1, ry = 1, crisp = false) => {
   const t = new THREE.CanvasTexture(c);
-  t.magFilter = t.minFilter = smooth ? THREE.LinearFilter : THREE.NearestFilter; t.generateMipmaps = false;
+  t.magFilter = crisp ? THREE.NearestFilter : THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = 4;
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry);
   return t;
 };
 L.tex = (w, h, draw, rx, ry) => L.texOf(L.canvas(w, h, draw), rx, ry);
+/** Draw into a scratch canvas, then lay it over c with a blur: soft, photographic shading. */
+L.soft = (c, w, h, px, draw) => {
+  const t = document.createElement('canvas'); t.width = w; t.height = h; draw(t.getContext('2d'));
+  c.save(); c.filter = `blur(${px}px)`; c.drawImage(t, 0, 0); c.restore();
+};
+/** Faceted low-poly look: every face gets its own flat normal. */
+L.facet = g => { const n = g.index ? g.toNonIndexed() : g; n.computeVertexNormals(); return n; };
 
 /** Photographic grit: per-pixel luminance noise, like a scanned photo texture. */
 L.grain = (c, w, h, amt = 12, seed = 7) => {
