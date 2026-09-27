@@ -134,6 +134,11 @@ L.Sound = () => {
       const am = ctx.createGain(); am.gain.value = .6; const lfo = ctx.createOscillator(); lfo.frequency.value = rnd(2.6, 3.2); const lg = ctx.createGain(); lg.gain.value = .3; lfo.connect(lg).connect(am.gain); lfo.start();
       const lv = ctx.createGain(); lv.gain.value = .04; ns.connect(lp3).connect(am).connect(lv).connect(panner(p, 1, .3));
     });
+    // a soft, shimmering hum where Disha floats
+    if (spots.shrine) {
+      const pn = panner(spots.shrine, 1.2, 1);
+      [220, 329.6, 440.5].forEach((f, i) => { const o = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain(); o.frequency.value = f; g.gain.value = .018 / (i + 1); lfo.frequency.value = .15 + i * .07; lg.gain.value = .012 / (i + 1); lfo.connect(lg).connect(g.gain); o.connect(g).connect(pn); o.start(); lfo.start(); });
+    }
     // a phone playing a song through its tiny speaker
     if (spots.music) renderMusic().then(buf => {
       if (!ctx) return;
@@ -195,6 +200,19 @@ L.Sound = () => {
     whoosh: () => burst(.4, { vol: .03, freq: 500, q: .7, to: 1300, attack: .12 }),
     bell: () => [[659.3, 523.3, 587.3, 392], [392, 587.3, 659.3, 523.3]].flat().forEach((f, i) => bellNote(f, i * .64 + (i > 3 ? .5 : 0))),
     koel: p => { const base = rnd(640, 700); for (let i = 0; i < 3; i++) { const f = base * (1 + i * .07); tone(f, .18, { vol: .025, to: f * 1.1, pos: p, delay: i * .8 }); tone(f * 1.3, .32, { vol: .03, to: f * 1.42, pos: p, delay: i * .8 + .22 }); } },
+    fortune: p => [1318.5, 1760, 2093, 2637].forEach((f, i) => tone(f, 1.6, { vol: .035, pos: p, delay: i * .13, attack: .01 })),
+    // a slow choir-like pad in A major, shimmering bells climbing and falling, and a breath of air
+    celestial: (p, dur = 4) => {
+      if (!ctx) return;
+      const out = at(p), t = ctx.currentTime;
+      [220, 277.2, 329.6, 440, 554.4].forEach((f, i) => [-6, 6].forEach(cents => {
+        const o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter(); o.type = i % 2 ? 'triangle' : 'sawtooth'; o.frequency.value = f; o.detune.value = cents;
+        lp.type = 'lowpass'; lp.frequency.value = 1400; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.022, t + 1.1); g.gain.setValueAtTime(.022, t + dur - .8); g.gain.linearRampToValueAtTime(0, t + dur + .6);
+        o.connect(lp).connect(g).connect(out); o.start(t); o.stop(t + dur + .7);
+      }));
+      [880, 1108.7, 1318.5, 1760, 2217.5, 2637, 2217.5, 1760, 1318.5, 1760, 2217.5, 3520].forEach((f, i) => tone(f, 1.4, { vol: .03, pos: p, delay: .3 + i * .27, attack: .005 }));
+      burst(dur, { vol: .03, type: 'highpass', freq: 6000, attack: 1.2, pos: p });
+    },
     thunder: () => { burst(5, { vol: .12, type: 'lowpass', freq: 120, attack: 1, buf: brownBuf }); },
   };
 
