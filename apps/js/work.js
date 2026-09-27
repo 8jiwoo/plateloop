@@ -11,26 +11,26 @@ const H = PL.health;
 const d = (id, name, g, n, color, edge, x) => ({ id, name, g, n, color, edge, ...x });
 const LINES = {
   A: { name: 'Chicken rice', lc: 'chicken rice stall', dishes: [
-    d('w_rice', 'Chicken rice', 250, { kcal: 1.7, c: .3, p: .03, f: .04, fb: .004, na: 1.5 }, '#F3E6B8', '#C9B272', { base: true }),
-    d('w_roast', 'Roast chicken', 120, { kcal: 2.0, c: 0, p: .25, f: .11, fb: 0, na: 3.5 }, '#C98A4B', '#8E5E28'),
-    d('w_soup', 'Chicken broth', 200, { kcal: .15, c: .01, p: .01, f: .006, fb: 0, na: 3.5 }, '#EAD9A6', '#B8A36A', { broth: true }),
-    d('w_chilli', 'Chilli sauce', 25, { kcal: .8, c: .1, p: .01, f: .04, fb: .01, na: 10 }, '#E2462F', '#A52A1A', { side: true }),
-    d('w_cucumber', 'Cucumber slices', 40, { kcal: .15, c: .03, p: .007, f: .001, fb: .005, na: .02 }, '#9CCB6B', '#6A9440'),
+    d('w_rice', 'Chicken rice', 250, { kcal: 1.7, c: .3, p: .03, f: .04, fb: .004, na: 1.5 }, '#F3E6B8', '#C9B272', { base: true , group: 'grain' }),
+    d('w_roast', 'Roast chicken', 120, { kcal: 2.0, c: 0, p: .25, f: .11, fb: 0, na: 3.5 }, '#C98A4B', '#8E5E28', { group: 'protein' }),
+    d('w_soup', 'Chicken broth', 200, { kcal: .15, c: .01, p: .01, f: .006, fb: 0, na: 3.5 }, '#EAD9A6', '#B8A36A', { broth: true , group: 'soup' }),
+    d('w_chilli', 'Chilli sauce', 25, { kcal: .8, c: .1, p: .01, f: .04, fb: .01, na: 10 }, '#E2462F', '#A52A1A', { side: true , group: 'sauce' }),
+    d('w_cucumber', 'Cucumber slices', 40, { kcal: .15, c: .03, p: .007, f: .001, fb: .005, na: .02 }, '#9CCB6B', '#6A9440', { group: 'veg' }),
   ] },
   B: { name: 'Grill and salad', lc: 'grill and salad', dishes: [
-    d('w_chicken', 'Grilled chicken breast', 130, { kcal: 1.65, c: 0, p: .31, f: .036, fb: 0, na: .7 }, '#D9A066', '#9C6A35'),
-    d('w_brown', 'Brown rice', 150, { kcal: 1.12, c: .23, p: .026, f: .009, fb: .018, na: 0 }, '#C9A878', '#8E7248', { base: true }),
-    d('w_salad', 'Green salad', 120, { kcal: .9, c: .06, p: .015, f: .07, fb: .02, na: 2.5 }, '#6DBE45', '#3F7D32'),
-    d('w_potato', 'Roast sweet potato', 100, { kcal: .9, c: .21, p: .016, f: .001, fb: .03, na: .4 }, '#E08A3C', '#A85A1C', { side: true }),
-    d('w_yogurt', 'Greek yogurt', 100, { kcal: .97, c: .04, p: .09, f: .05, fb: 0, na: .4 }, '#FFFFFF', '#C7C7CC'),
+    d('w_chicken', 'Grilled chicken breast', 130, { kcal: 1.65, c: 0, p: .31, f: .036, fb: 0, na: .7 }, '#D9A066', '#9C6A35', { group: 'protein' }),
+    d('w_brown', 'Brown rice', 150, { kcal: 1.12, c: .23, p: .026, f: .009, fb: .018, na: 0 }, '#C9A878', '#8E7248', { base: true , group: 'grain' }),
+    d('w_salad', 'Green salad', 120, { kcal: .9, c: .06, p: .015, f: .07, fb: .02, na: 2.5 }, '#6DBE45', '#3F7D32', { group: 'veg' }),
+    d('w_potato', 'Roast sweet potato', 100, { kcal: .9, c: .21, p: .016, f: .001, fb: .03, na: .4 }, '#E08A3C', '#A85A1C', { side: true , group: 'grain' }),
+    d('w_yogurt', 'Greek yogurt', 100, { kcal: .97, c: .04, p: .09, f: .05, fb: 0, na: .4 }, '#FFFFFF', '#C7C7CC', { group: 'dairy' }),
   ] },
   C: { name: 'Noodle stall', lc: 'noodle stall', dishes: [
-    d('w_laksa', 'Laksa', 450, { kcal: 1.3, c: .12, p: .045, f: .07, fb: .01, na: 3.6 }, '#F0A04B', '#B86E1E', { base: true, broth: true }),
-    d('w_wonton', 'Fried wontons', 90, { kcal: 2.8, c: .25, p: .09, f: .16, fb: .01, na: 4.5 }, '#E6B566', '#A67A2E', { side: true }),
-    d('w_sambal', 'Sambal on the side', 20, { kcal: 1.5, c: .1, p: .02, f: .1, fb: .02, na: 9 }, '#C8321E', '#8A1F12', { side: true }),
+    d('w_laksa', 'Laksa', 450, { kcal: 1.3, c: .12, p: .045, f: .07, fb: .01, na: 3.6 }, '#F0A04B', '#B86E1E', { base: true, broth: true , group: 'grain' }),
+    d('w_wonton', 'Fried wontons', 90, { kcal: 2.8, c: .25, p: .09, f: .16, fb: .01, na: 4.5 }, '#E6B566', '#A67A2E', { side: true , group: 'protein' }),
+    d('w_sambal', 'Sambal on the side', 20, { kcal: 1.5, c: .1, p: .02, f: .1, fb: .02, na: 9 }, '#C8321E', '#8A1F12', { side: true , group: 'sauce' }),
   ] },
 };
-const EGGS = d('w_eggs', 'Two boiled eggs', 100, { kcal: 1.55, c: .01, p: .13, f: .11, fb: 0, na: 1.2 }, '#FFF6E0', '#D9C08A');
+const EGGS = d('w_eggs', 'Two boiled eggs', 100, { kcal: 1.55, c: .01, p: .13, f: .11, fb: 0, na: 1.2 }, '#FFF6E0', '#D9C08A', { group: 'protein' });
 [...Object.values(LINES).flatMap(l => l.dishes), EGGS].forEach(x => { PL.DISH[x.id] = x; });
 const menuOf = (line, eggs) => [...LINES[line].dishes, ...(eggs ? [EGGS] : [])];
 
@@ -158,6 +158,8 @@ const ICON = {
   check: I('<path d="M5 12.5l4.5 4.5L19 7"/>'),
 };
 const MINS = ['p', 'fb']; // protein and fibre are minimums for office workers
+const V = PL.V;
+const GOAL_ICON = { muscle: 'muscle', lose: 'scale', energy: 'bolt', balanced: 'plate' };
 const TONE = { warn: 'var(--orange)', good: 'var(--tint)', info: 'var(--blue)' };
 const TABS = { today: 'Today', report: 'Report', goals: 'Goals' };
 
@@ -166,7 +168,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="stu work">
     <aside class="stu-side">
-      <div class="loopi-brand"><span class="loopi-icon work-icon" aria-hidden="true"><canvas width="44" height="37" data-form="crystal" data-stage="adult"></canvas></span><div><b>Loopi Work</b><span>by PlateLoop · for office canteens</span></div></div>
+      <div class="loopi-brand"><span class="loopi-icon work-icon" aria-hidden="true">${PL.V.loopi('happy', 46)}</span><div><b>Loopi Work</b><span>by PlateLoop · for office canteens</span></div></div>
       <p class="stu-note">Demo: pick a worker</p>
       <div class="chips" id="work-who"></div>
       <div class="demo-box">
@@ -208,43 +210,43 @@ function render(keep) {
   $('#work-preset', root).value = ui.preset;
   $('#work-eggs', root).checked = eggsOn(w);
   const sb = $('#work-scan', root); sb.textContent = todayRec(w) ? 'Lunch is done' : 'Scan lunch tray'; sb.disabled = !!todayRec(w);
-  $('#work-top', root).innerHTML = `<span class="avatar">${esc(w.name.split(' ').map(s => s[0]).join(''))}</span><div><b>${esc(w.name)}</b><span>${esc(w.dept)} · goal: ${GOALS[w.goal].name.toLowerCase()}</span></div>`;
+  $('#work-top', root).innerHTML = `${V.avatar(w, 36)}<div><b>${esc(w.name)}</b><span>${esc(w.dept)} · goal: ${GOALS[w.goal].name.toLowerCase()}</span></div>`;
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   body.innerHTML = ({ today, report, goals })[ui.tab](w, rec);
   if (ui.tab === 'goals') wireGoals(w);
   const pr = $('#work-print', body); if (pr) pr.onclick = () => print();
   const sh = $('#work-share', body); if (sh) sh.onclick = () => PL.toast('Shared with the company health programme (demo, nothing was sent).');
-  PL.paintPets(root);
   if (keep) body.scrollTop = y;
 }
 
 /* ---------------------------------------------------------------- Today: the pick for your goal, then how lunch went */
+const RING_KIND = { kcal: 'range', p: 'aim', c: 'range', f: 'limit', fb: 'aim', na: 'limit' };
+const rings = (n, T, keys) => `<div class="vrings">${keys.map(k => V.ring(n[k], T[k], H.NAMES[k][0], H.NAMES[k][1], RING_KIND[k])).join('')}</div>`;
+const iconFor = t => /protein/i.test(t) ? 'muscle' : /kcal|lunch/i.test(t) ? 'scale' : /salt|sodium/i.test(t) ? 'salt' : /fibre/i.test(t) ? 'leaf' : /target/i.test(t) ? 'check' : 'plate';
+const tips = list => `<div class="vtips">${list.map(([k, t, x]) => V.tip(iconFor(t), k, t, x)).join('')}</div>`;
 function today(w, rec) {
   const T = targets(w).lunch, R = todayRec(w), G = GOALS[w.goal];
-  const keys = ['kcal', 'p', ...G.key.filter(k => k !== 'kcal' && k !== 'p'), 'na'].filter((k, i, a) => a.indexOf(k) === i);
+  const keys = ['kcal', 'p', ...G.key.filter(k => k !== 'kcal' && k !== 'p'), 'na'].filter((k, i, a) => a.indexOf(k) === i).slice(0, 3);
   if (R) {
     const menu = menuOf(R.line, R.eggs), fb = feedback(w, R.n), co2 = Math.round(Math.max(0, .17 * Object.values(R.served).reduce((a, b) => a + b, 0) - R.left) / 1000 * PL.CO2_PER_KG * 1000);
+    const good = fb.length === 1 && fb[0][0] === 'good';
     return `
-    <section class="group rep-head"><div><b>Your lunch</b><span>${LINES[R.line].name}${R.eggs ? ' + boiled eggs' : ''} · scanned before and after</span></div><span class="pill">${pct(1 - R.w)} eaten</span></section>
-    <section class="group">${fb.map(([k, t, s]) => `<div class="finding"><i style="background:${TONE[k]}"></i><span><b>${t}</b> ${s}</span></div>`).join('')}</section>
-    <h4 class="sec">Against your lunch target</h4>
-    <section class="group pad">${H.nutrientRows(R.n, T, ['kcal', 'p', 'c', 'f', 'fb', 'na'], MINS)}</section>
-    <h4 class="sec">Dish by dish</h4>
-    <section class="group">${H.dishRows(menu, R)}</section>
+    ${V.guide(good ? 'cheer' : 'think', good ? `Right on target for ${G.for}. Same again tomorrow would be great.` : `Here's how lunch went against your goal: ${G.for}.`)}
+    <div class="vcard"><h3>Your lunch <small>${LINES[R.line].name}${R.eggs ? ' + eggs' : ''} · ${pct(1 - R.w)} eaten</small></h3>${V.tray(menu, R)}</div>
+    ${good ? '' : tips(fb)}
+    <div class="vcard"><h3>Against your lunch target</h3>${rings(R.n, T, ['kcal', 'p', 'fb', 'na'])}</div>
+    <div class="vcard"><h3>Plate balance</h3>${V.healthyPlate(V.plateShares(menu, R.eaten))}</div>
     <p class="foot">${co2 > 0 ? `Less left than the office average, which kept about ${co2} g of CO₂ out of the air. ` : ''}Tomorrow's pick appears here in the morning.</p>`;
   }
-  const best = rec[0];
+  const best = rec[0], bestMenu = menuOf(best.line, best.set.some(t => t.id === 'eggs'));
   return `
-  <section class="group pick">
-    <div class="pick-head"><span class="pill green">Best for ${G.for}</span><b>${best.line} · ${LINES[best.line].name}</b><span>${LINES[best.line].dishes.map(x => x.name).join(', ')}</span></div>
+  ${V.guide('point', `Today's best pick for ${G.for} is the ${LINES[best.line].lc}${best.set.length ? ', with a small change' : ''}.`)}
+  <div class="vcard pick2"><h3><span><span class="pill green">Best for ${G.for}</span></span><small>${best.line} · ${LINES[best.line].name}</small></h3>
+    ${V.tray(bestMenu, null, { size: 36, tag: d => d.id === 'w_eggs' ? 'Add' : '' })}
     ${best.set.length ? `<ul class="tweaks">${best.set.map(t => `<li>${ICON.check}<span>${typeof t.say === 'function' ? t.say(best.line) : t.say}</span></li>`).join('')}</ul>` : ''}
-    <div class="pad-in">${H.nutrientRows(best.n, T, keys, MINS)}</div>
-  </section>
-  <h4 class="sec">The other lines today</h4>
-  <section class="group">${rec.slice(1).map(o => { const [word, cls] = fitWord(o.plain); return `<div class="g-row two-col"><span><b>${o.line} · ${LINES[o.line].name}</b><br><small class="muted">${plateNutrients(o.line, { frac: {}, eggs: false, broth: null }).kcal} kcal · ${plateNutrients(o.line, { frac: {}, eggs: false, broth: null }).p} g protein</small></span><span class="fit ${cls}">${word}</span></div>`; }).join('')}</section>
-  <h4 class="sec">Your lunch target</h4>
-  <section class="group"><div class="g-row two-col"><span>${T.kcal} kcal · ${T.p} g protein · ${T.fb} g fibre</span><span class="g-v">under ${T.na} mg sodium</span></div></section>
-  <p class="foot">Look at the camera on the scanner before and after you eat. Your targets come from your goal on the Goals tab.</p>`;
+    ${rings(best.n, T, keys)}</div>
+  <div class="vcard"><h3>The other lines today</h3><div class="lines2">${rec.slice(1).map(o => { const [word, cls] = fitWord(o.plain), n0 = plateNutrients(o.line, { frac: {}, eggs: false, broth: null }); return `<div><div class="lthumbs">${LINES[o.line].dishes.slice(0, 3).map(x => V.food(x, 30)).join('')}</div><div><b>${o.line} · ${LINES[o.line].name}</b><small>${n0.kcal} kcal · ${n0.p} g protein · ${n0.na.toLocaleString('en-US')} mg sodium</small></div><span class="fit ${cls}">${word}</span></div>`; }).join('')}</div></div>
+  <p class="foot">Your lunch target: ${T.kcal} kcal, ${T.p} g protein, ${T.fb} g fibre, under ${T.na} mg sodium. It comes from your goal on the Goals tab.</p>`;
 }
 
 /* ---------------------------------------------------------------- Report: the weekly healthcare report */
@@ -268,22 +270,19 @@ function report(w) {
   if (w.goal === 'energy' || avg.fb < T.fb * .75) recs.push([avg.fb >= T.fb * .9 ? 'good' : 'info', `Fibre averaged ${avg.fb} g against ${T.fb} g.`, avg.fb >= T.fb * .9 ? 'Good for steady energy.' : 'Days with salad, brown rice or sweet potato keep you full and steady through the afternoon.']);
   if (worst && distance(worst.n, T, w.goal) > .3) recs.push(['info', `${DAYNAME[worst.day.split(' ')[0]]}'s ${LINES[worst.line].lc} was the furthest from your goal.`, `Next time, check the pick on the Today tab first.`]);
   const days = log.map(r => r.day);
+  const grams = {}; log.forEach(r => Object.entries(r.eaten).forEach(([id, g]) => { grams[id] = (grams[id] || 0) + g; }));
+  const allDishes = [...Object.values(LINES).flatMap(l => l.dishes), EGGS];
   return `
-  <section class="group rep-head"><div><b>Weekly report</b><span>${days[0]} to ${days[days.length - 1]} · ${n} lunches scanned</span></div><span class="pill">${G.name}</span></section>
-  <section class="group health-top">
-    <div class="ring-wrap"><svg viewBox="0 0 110 110" class="ring" aria-hidden="true"><circle cx="55" cy="55" r="42" fill="none" stroke="var(--fill2)" stroke-width="11"/><circle cx="55" cy="55" r="42" fill="none" stroke="var(--tint)" stroke-width="11" stroke-linecap="round" stroke-dasharray="${(264 * onTarget / n).toFixed(1)} 264" transform="rotate(-90 55 55)"/></svg><div class="ring-in"><b class="num">${onTarget}/${n}</b><span>lunches on target</span></div></div>
-    <div class="rep-kpis"><div><b class="num">${avg.p} g</b><span>protein a lunch · target ${T.p} g</span></div><div><b class="num">${avg.kcal}</b><span>kcal a lunch · target ${T.kcal}</span></div></div>
-  </section>
+  ${V.guide(onTarget >= n / 2 ? 'cheer' : 'think', `${onTarget} of ${n} lunches this week were on target for ${G.for}.`)}
+  <div class="vcard"><h3>An average lunch <small>vs your target</small></h3>${rings(avg, T, ['kcal', 'p', 'fb', 'na'])}</div>
   <h4 class="sec">Recommendations</h4>
-  <section class="group">${recs.map(([k, t, s]) => `<div class="finding"><i style="background:${TONE[k]}"></i><span><b>${t}</b> ${s}</span></div>`).join('')}</section>
-  <h4 class="sec">Protein each lunch, share of target</h4>
-  <section class="group chart">${H.dayBars(days, log.map(r => r.n.p / T.p), 'Protein each lunch')}</section>
-  <h4 class="sec">Calories each lunch, share of target</h4>
-  <section class="group chart">${H.dayBars(days, log.map(r => r.n.kcal / T.kcal), 'Calories each lunch')}</section>
-  <h4 class="sec">Average lunch</h4>
-  <section class="group pad">${H.nutrientRows(avg, T, ['kcal', 'p', 'c', 'f', 'fb', 'na'], MINS)}</section>
-  <h4 class="sec">What you picked</h4>
-  <section class="group">${lineCount.map(([k, c]) => `<div class="g-row two-col"><span>${k} · ${LINES[k].name}</span><span class="g-v num">${c} ${c === 1 ? 'day' : 'days'}</span></div>`).join('')}<div class="g-row two-col"><span>Food left on your tray</span><span class="g-v num">${pct(waste)} (office ${pct(.17)})</span></div></section>
+  ${tips(recs)}
+  <div class="vcard"><h3>Protein each lunch <small>share of target</small></h3>${H.dayBars(days, log.map(r => r.n.p / T.p), 'Protein each lunch')}</div>
+  <div class="vcard"><h3>Calories each lunch <small>share of target</small></h3>${V.week(days, log.map(r => Math.min(1, r.n.kcal / T.kcal)), { good: .85 })}</div>
+  <div class="vcard"><h3>Plate balance <small>all week</small></h3>${V.healthyPlate(V.plateShares(allDishes, grams))}</div>
+  <div class="vcard"><h3>What you picked</h3><div class="lines2">${lineCount.map(([k, c]) => `<div><div class="lthumbs">${LINES[k].dishes.slice(0, 3).map(x => V.food(x, 30)).join('')}</div><div><b>${k} · ${LINES[k].name}</b><small>${c} ${c === 1 ? 'day' : 'days'}</small></div><span class="fit ${fitWord(distance(plateNutrients(k, { frac: {}, eggs: false, broth: null }), T, w.goal))[1]}">${c}×</span></div>`).join('')}</div>
+    <p class="hint" style="margin-top:10px">You left ${pct(waste)} of your food on average. The office average is ${pct(.17)}.</p></div>
+  <div class="vcard"><h3>Average lunch, in detail</h3>${H.nutrientRows(avg, T, ['kcal', 'p', 'c', 'f', 'fb', 'na'], MINS)}</div>
   <div class="two-btn"><button class="btn primary" id="work-share">Share with health programme</button><button class="btn" id="work-print">Print</button></div>
   <p class="foot">Only you see this report unless you share it. Targets are estimates from your goal and body details, not medical advice.</p>`;
 }
@@ -294,7 +293,7 @@ function goals(w) {
   const seg = (id, opts, val) => `<div class="seg" id="${id}">${opts.map(([v, l]) => `<button data-v="${v}" aria-pressed="${v === val}">${l}</button>`).join('')}</div>`;
   return `
   <h4 class="sec">My goal</h4>
-  <div class="goal-grid">${Object.entries(GOALS).map(([k, G]) => `<button class="goal-opt ${k === w.goal ? 'on' : ''}" data-goal="${k}"><b>${G.name}</b><span>${G.blurb}</span></button>`).join('')}</div>
+  <div class="goal-grid">${Object.entries(GOALS).map(([k, G]) => `<button class="goal-opt ${k === w.goal ? 'on' : ''}" data-goal="${k}">${V.icon(GOAL_ICON[k], 'var(--indigo)')}<b>${G.name}</b><span>${G.blurb}</span></button>`).join('')}</div>
   <h4 class="sec">About me</h4>
   <section class="group form">
     <div class="f-row"><span>Sex</span>${seg('f-sex', [['f', 'Female'], ['m', 'Male']], w.sex)}</div>
@@ -324,6 +323,5 @@ PL.apps.work = {
   mount,
   unmount() { root = null; },
   update() { render(true); },
-  tick(t) { if (root) PL.paintPets($('.stu-side', root), t); },
 };
 })();
