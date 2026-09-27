@@ -2,11 +2,11 @@
 
 **Live demo:** https://8jiwoo.github.io/plateloop/
 
-**An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals or kindergartens.**
+**An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals, kindergartens or offices.**
 
 Built for the EcoLoop sustainability hackathon.
 
-People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives six separate apps:
+People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives seven separate apps:
 
 | App | File | For |
 |---|---|---|
@@ -16,6 +16,7 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **Loopi** | `dist/4-loopi-student-app.html` | Students: the Loopi pet, nutrition report, student and school leaderboards |
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
 | **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Kindergartens: a picture-first pet and rainbow plate for children, a lunch report with allergy checks for parents |
+| **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
 
@@ -31,12 +32,12 @@ python -m http.server 8765
 
 Then open http://localhost:8765/dist/2-plateloop-kiosk.html and http://localhost:8765/dist/4-loopi-student-app.html.
 
-**Development version** (all six apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
+**Development version** (all seven apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
 
 ## Project layout
 
 ```
-apps/                 source for the six apps
+apps/                 source for the seven apps
   index.html          dev page with an app switcher
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync, pixel pet
@@ -49,9 +50,10 @@ apps/                 source for the six apps
   js/student.js       Loopi student app
   js/care.js          Loopi Care (hospital patients)
   js/kids.js          Loopi Kids (kindergartens)
+  js/work.js          Loopi Work (office workers: goals, targets, daily pick, weekly report)
   vendor/             three.js r128 + GLTFLoader (for offline 3D)
   build.py            builds the standalone files in dist/
-dist/                 the six standalone apps (generated, committed for convenience)
+dist/                 the seven standalone apps (generated, committed for convenience)
 hardware/             Blender scanner: build script, .blend, .glb, renders
 docs/                 project overview and screenshots
 ```

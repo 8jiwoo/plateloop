@@ -13,6 +13,7 @@ School kitchens plan meals as **standard portion × headcount**, with no data on
 
 5. **Loopi Care**: the hospital patient app. Each patient's intake is measured against the targets for their diet (high protein, diabetic, low sodium), with an alert when they leave most of two meals, and a weekly healthcare report for the doctor and dietitian. In hospitals the goal flips: food left on a tray usually means a patient isn't eating enough.
 6. **Loopi Kids**: the kindergarten app. Children see a picture-first Loopi, a rainbow of the food colours they ate and a sticker book of foods they've tried. Behind a grown-up check, parents get a lunch report with nutrients for the child's age, allergy checks and eating habits.
+7. **Loopi Work**: the office app. Each worker sets a goal (build muscle, lose weight, steady energy or eat balanced) and their height, weight, age and activity. PlateLoop works out personal targets, recommends the canteen line and small tweaks that fit the goal each day, gives feedback after the meal ("not enough protein: 21 of 31 g"), and builds a weekly healthcare report with recommendations.
 
 The Kitchen app also includes **carbon management**: the cafeteria's whole footprint from ingredients, food waste, and energy, water and deliveries, tracked monthly toward carbon-neutral operation. Every tray also shows the CO₂ it saved, live.
 
