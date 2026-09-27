@@ -782,7 +782,7 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .guide .speak{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:var(--tint);color:#fff;display:grid;place-items:center}
 .guide .speak svg{width:18px;height:18px}
 /* food + tray */
-.food{display:block}
+svg.food{display:block}
 .vtray{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:8px;padding:10px;border-radius:22px;background:linear-gradient(145deg,#EEF1F3,#DDE2E6);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(0,0,0,.06)}
 .vcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:16px;background:rgba(255,255,255,.72);box-shadow:inset 0 1px 3px rgba(0,0,0,.06);text-align:center;color:#1D1D1F}
 .vcell.hi{background:#fff;box-shadow:0 0 0 2.5px var(--tint),0 6px 16px -6px rgba(52,199,89,.5)}
@@ -954,6 +954,24 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .phone-body > *{flex-shrink:0}
 .warm .seg button[aria-pressed="true"]{background:#fff!important;color:var(--label);box-shadow:0 1px 3px rgba(120,80,30,.15)}
 .warm .seg button{color:var(--label2)}
+/* ================================================================ Loopi (teens and uni): Tamagotchi screens */
+.petstats{background:var(--bg2);border-radius:20px;box-shadow:var(--shadow-s);overflow:hidden;flex:none}
+.petstats > div{display:grid;grid-template-columns:38px 58px 1fr auto;gap:10px;align-items:center;padding:9px 14px}
+.petstats > div + div{border-top:.5px solid var(--sep)}
+.petstats span{font-size:14px;color:var(--label2)}
+.petstats b{font-size:13px;color:var(--label2)}
+.petstats .pips i{width:15px;height:15px;border-radius:5px}
+.growcard .stages{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:10px}
+.growcard .stages div{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11.5px;font-weight:600;color:var(--label3)}
+.growcard .stages canvas{width:56px;height:47px;image-rendering:pixelated;border-radius:12px;background:#DDE4D4;opacity:.45;filter:grayscale(.6)}
+.growcard .stages .past canvas{opacity:.8;filter:none}
+.growcard .stages .now canvas{opacity:1;filter:none;box-shadow:0 0 0 3px var(--tint)}
+.growcard .stages .now{color:var(--tint-ink)}
+.growcard p{margin:0;font-size:13.5px;color:var(--label2);line-height:1.4}
+.growcard p b{color:var(--label)}
+.petguide canvas{width:84px;height:70px;image-rendering:pixelated;border-radius:18px;background:#DDE4D4;flex:none;margin-bottom:18px}
+.pfpet{width:84px;height:70px;image-rendering:pixelated;border-radius:16px;background:#DDE4D4;flex:none}
+.pod canvas{image-rendering:pixelated;border-radius:12px;background:#DDE4D4}
 
 </style>
 </head>
@@ -988,13 +1006,13 @@ const MENU = PL.MENU = [
   { id: 'kailan', n: { c: .04, p: .03, f: .04 }, name: 'Stir-fried kailan', group: 'veg', g: { S: 30, M: 45, L: 60 }, kcal: .6, price: .009, color: '#3F7D32', edge: '#2A5A22', slot: [0, 0] },
   { id: 'cabbage', n: { c: .05, p: .012, f: .02 }, name: 'Braised cabbage', group: 'veg', g: { S: 25, M: 35, L: 45 }, kcal: .4, price: .004, color: '#D8E6A8', edge: '#9DB36A', slot: [1, 0] },
   { id: 'melon', n: { c: .08, p: .006, f: .002 }, name: 'Watermelon', group: 'fruit', g: { S: 50, M: 70, L: 90 }, kcal: .3, price: .004, color: '#F2545B', edge: '#B8323A', slot: [2, 0] },
-  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Brown rice mix', group: 'grain', g: { S: 130, M: 180, L: 230 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
-  { id: 'chicken', n: { c: .03, p: .22, f: .08 }, name: 'Soy sauce chicken', group: 'protein', g: { S: 60, M: 90, L: 120 }, kcal: 1.75, price: .012, color: '#9C5A2E', edge: '#6B3A1A', slot: [1, 1] },
+  { id: 'rice', n: { c: .32, p: .03, f: .003 }, name: 'Brown rice mix', group: 'grain', g: { S: 170, M: 230, L: 290 }, kcal: 1.45, price: .0032, color: '#F3EDDA', edge: '#BFB28E', slot: [0, 1] },
+  { id: 'chicken', n: { c: .03, p: .22, f: .08 }, name: 'Soy sauce chicken', group: 'protein', g: { S: 80, M: 115, L: 150 }, kcal: 1.75, price: .012, color: '#9C5A2E', edge: '#6B3A1A', slot: [1, 1] },
   { id: 'soup', n: { c: .04, p: .02, f: .01 }, name: 'ABC soup', group: 'soup', g: { S: 150, M: 200, L: 250 }, kcal: .3, price: .0021, color: '#E8A25C', edge: '#B8722F', slot: [2, 1] },
 ];
 const DISH = PL.DISH = Object.fromEntries(MENU.map(d => [d.id, d]));
-/* nutrition: per-lunch targets for a Primary 3 student (illustrative, about a third of the daily need) */
-PL.TARGET = { kcal: 580, c: 85, p: 25, f: 16 };
+/* nutrition: per-lunch targets for a Secondary 3 student (illustrative, about a third of the daily need) */
+PL.TARGET = { kcal: 700, c: 100, p: 30, f: 22 };
 PL.NUTRIENTS = [['kcal', 'Calories', 'kcal'], ['c', 'Carbs', 'g'], ['p', 'Protein', 'g'], ['f', 'Fat', 'g']];
 PL.nutrientsOf = grams => {
   const o = { kcal: 0, c: 0, p: 0, f: 0 };
@@ -1006,6 +1024,7 @@ PL.nStatus = (k, v) => { const r = v / PL.TARGET[k]; return r < .8 ? 'low' : r >
 /* environment equivalents (illustrative factors: 2.5 kg CO2e per kg food, a pine tree absorbs ~6.6 kg CO2 a year, a car emits ~0.17 kg CO2 per km) */
 PL.env = kg => { const co2 = kg * 2.5; return { kg, co2, trees: co2 / 6.6, km: co2 / .17 }; };
 PL.CRAVING = 'kailan';
+PL.SCHOOL = 'Harbourlight Secondary'; // fictional demo school
 const TYPICAL_LEFT = PL.TYPICAL_LEFT = { kailan: .50, cabbage: .44, melon: .10, rice: .13, chicken: .05, soup: .38 };
 PL.FORMS = {
   leafy: { name: 'Leafy', why: 'veggies tried', key: 'veg' },
@@ -1043,11 +1062,11 @@ const CLASS_SEED = [
 ];
 const SCHOOLS = [
   // fictional schools for the demo
-  { id: 'maple', name: 'Maple Bay Primary', red: .34, acc: .93, kg: 1510 },
-  { id: 'orchid', name: 'Orchid Grove Primary', red: .27, acc: .91, kg: 1122 },
-  { id: 'sunbird', name: 'Sunbird Primary', red: .22, acc: .89, kg: 864 },
+  { id: 'maple', name: 'Maple Bay Secondary', red: .34, acc: .93, kg: 1510 },
+  { id: 'orchid', name: 'Orchid Grove Secondary', red: .27, acc: .91, kg: 1122 },
+  { id: 'sunbird', name: 'Sunbird Secondary', red: .22, acc: .89, kg: 864 },
   { id: 'kingfisher', name: 'Kingfisher Secondary', red: .19, acc: .90, kg: 1390 },
-  { id: 'tembusu', name: 'Tembusu Hill Primary', red: .12, acc: .86, kg: 402 },
+  { id: 'tembusu', name: 'Tembusu Hill Secondary', red: .12, acc: .86, kg: 402 },
 ];
 const DAYS = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 
@@ -1089,7 +1108,7 @@ function freshState() {
 }
 
 /* ------------------------------------------------------------ store (localStorage + cross-tab sync) */
-const KEY = 'plateloop-sg-v8';
+const KEY = 'plateloop-sg-v9';
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('plateloop') : null;
 const subs = new Set();
 function readStored() {
@@ -1129,7 +1148,7 @@ PL.streakRows = () => [...PL.S.students].sort((a, b) => b.pet.streak - a.pet.str
 PL.cls32Scanned = () => PL.S.students.filter(s => s.cls === '3B' && s.scanned).length;
 PL.schoolRows = () => {
   const cr = PL.S.classes.map(PL.classStats);
-  const us = { id: 'harbourlight', name: 'Harbourlight Primary', us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
+  const us = { id: 'harbourlight', name: PL.SCHOOL, us: true, red: cr.reduce((a, c) => a + c.red, 0) / cr.length, acc: .93, kg: PL.S.term.kg };
   return [us, ...SCHOOLS].sort((a, b) => b.red - a.red);
 };
 PL.todayTotals = () => { let sv = 0, lf = 0, val = 0; MENU.forEach(d => { const x = PL.S.today.dish[d.id]; sv += x.served; lf += x.ret; val += x.ret * d.price; }); return { sv, lf, val, w: lf / sv }; };
@@ -1221,6 +1240,7 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
   st.log.unshift({ day: 'Fri 25', portion, w: r.w, pts: r.xp, n: r.intake });
   st.log = st.log.slice(0, 6);
   r.servedBy = served; r.measured = measured;
+  r.game = PL.game ? PL.game.feedLunch(st, r) : null; // Loopi's hunger, hearts and the plate in its bowl
   // completed trays feed the kitchen's waste numbers and the class league
   MENU.forEach(d => { T.dish[d.id].served += served[d.id]; T.dish[d.id].ret += measured[d.id]; });
   T.trays++;
@@ -1592,10 +1612,136 @@ const TIPICON = {
   salt: '<path d="M12 12h12l3 20H9Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M13 12c0-5 10-5 10 0M15 7h.1M18 6h.1M21 7h.1" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
   recycle: '<path d="M13 8l5-4 5 4M18 4v12M8 28l-3-6 6-2M5 22l9 5M28 28l3-6-6-2M31 22l-9 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
   cloud: '<path d="M10 28a7 7 0 0 1-1-14 9 9 0 0 1 17-2 7 7 0 0 1 1 16Z" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/>',
+  smile: '<circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 21c3.5 4 8.5 4 12 0M13 14h.1M23 14h.1" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>',
+  heart: '<path d="M18 31 6 19a7 7 0 0 1 12-9 7 7 0 0 1 12 9Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>',
+  bowl: '<path d="M4 16h28a14 12 0 0 1-28 0Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M13 10c0-2 2-3 2-5M21 10c0-2 2-3 2-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
 };
 V.icon = (name, color) => `<span class="vicon" style="--ic:${color}"><svg viewBox="0 0 36 36" aria-hidden="true">${TIPICON[name] || TIPICON.leaf}</svg></span>`;
 /** tone: good | warn | info */
 V.tip = (icon, tone, title, text) => `<div class="vtip ${tone}">${V.icon(icon, { good: 'var(--tint)', warn: '#F28C28', info: 'var(--blue)', bad: '#FF6B5B' }[tone])}<div><b>${title}</b>${text ? `<span>${text}</span>` : ''}</div></div>`;
+})();
+
+</script>
+<script>
+/* ---- js/game.js ---- */
+/* Loopi's rules. Loopi only eats real school lunches: when a tray is scanned back, the food the student
+   ate waits in Loopi's bowl. A tray with less left than the student's own usual earns a heart, and full
+   hearts grow Loopi from egg to adult. Whatever was left on the tray turns up as crumbs on Loopi's floor
+   until it's swept into the compost. No currency, no shop; Loopi never gets sick and never dies.
+   State lives on each student as st.game. */
+(() => {
+'use strict';
+const { MENU } = PL;
+const G = PL.game = {};
+const V = 2;
+
+G.HUNGER_MAX = [4, 6, 8, 10];
+G.HEARTS_REQ = [3, 5, 7, 9];
+G.PLAYS_PER_DAY = 5;
+G.PETS_PER_DAY = 5;
+
+const today = () => new Date().toISOString().slice(0, 10);
+const hash = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+const daily = g => { if (!g.day || g.day.d !== today()) g.day = { d: today(), balls: 0, pets: 0 }; return g.day; };
+
+/** Leftovers become crumbs: one per 20 g left of a dish, at most 3 per dish. */
+const crumbsFrom = (left, menu = MENU) => menu.flatMap(d => Array(Math.min(3, Math.floor((left[d.id] || 0) / 20))).fill(d.id));
+
+/** The tray is "good" when less is left than 15 %, or a quarter less than the student's usual. */
+G.heartLine = st => Math.max(.15, st.baseline * .75);
+
+/* ---------------------------------------------------------------- setup */
+G.init = st => {
+  const r = PL.rng(hash(st.id)), stage = PL.STAGES.indexOf(PL.stageOf(st.pet.xp)), req = G.HEARTS_REQ[stage];
+  // whatever was left at the last lunch is still lying around
+  const n = Math.min(4, Math.round(st.log[0].w * 12));
+  return {
+    v: V, name: 'Loopi', stage,
+    hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
+    hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
+    plate: null, mess: (st.messSeed || ['kailan', 'cabbage', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
+    eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
+  };
+};
+G.ensure = st => { if (!st.game || st.game.v !== V) st.game = G.init(st); return st.game; };
+const ensureAll = () => PL.S.students.forEach(G.ensure);
+ensureAll();
+PL.store.subscribe(ensureAll);
+
+G.hungerMax = g => G.HUNGER_MAX[g.stage];
+G.heartsReq = g => G.HEARTS_REQ[g.stage];
+G.plantOf = st => Math.min(4, Math.floor(st.pet.c.lowWaste / 5));
+
+/* ---------------------------------------------------------------- lunch */
+/** Called after the second scan (school, or kindergarten with its own menu). Hunger and hearts change
+    right away; the food waits in the bowl. */
+G.feedLunch = (st, r, menu = MENU) => {
+  const g = G.ensure(st), max = G.hungerMax(g), req = G.heartsReq(g);
+  if (g.plate && !g.plate.eaten) g.mess.push(...g.plate.crumbs); // yesterday's uneaten plate still counts
+  const gain = 1 + (r.w < .3 ? 1 : 0) + (r.w < .12 ? 1 : 0);
+  g.hunger = Math.min(max, g.hunger + gain);
+  let heart = false;
+  if (r.w < G.heartLine(st) && g.hearts < req) {
+    g.hearts++; heart = true;
+    if (g.hearts === req && g.stage < 3) g.ready = true;
+  }
+  g.plate = {
+    eaten: false, heart, gain,
+    food: menu.filter(d => r.servedBy[d.id] - r.measured[d.id] > 10).map(d => d.id),
+    crumbs: crumbsFrom(r.measured, menu),
+  };
+  return { hunger: gain, heart, ready: g.ready, crumbs: g.plate.crumbs.length };
+};
+/** Loopi eats what's in the bowl; the tray's leftovers land on the floor. */
+G.serveLunch = st => {
+  const g = G.ensure(st), p = g.plate;
+  if (!p || p.eaten) return null;
+  p.eaten = true;
+  g.mess.push(...p.crumbs);
+  return p;
+};
+G.sweep = (st, dish) => {
+  const g = G.ensure(st), i = g.mess.indexOf(dish);
+  if (i >= 0) { g.mess.splice(i, 1); g.composted++; }
+  return g.mess.length;
+};
+G.evolve = st => {
+  const g = G.ensure(st);
+  if (!g.ready) return null;
+  g.ready = false; g.hearts = 0; g.stage = Math.min(3, g.stage + 1);
+  return PL.STAGES[g.stage];
+};
+
+/* ---------------------------------------------------------------- play */
+G.playBall = st => {
+  const g = G.ensure(st), d = daily(g);
+  if (d.balls >= G.PLAYS_PER_DAY) return false;
+  d.balls++; st.pet.jo = Math.min(100, st.pet.jo + 3); return true;
+};
+G.petLoopi = st => {
+  const g = G.ensure(st), d = daily(g);
+  if (d.pets >= G.PETS_PER_DAY) return false;
+  d.pets++; st.pet.jo = Math.min(100, st.pet.jo + 1); return true;
+};
+
+/* ---------------------------------------------------------------- badges: each unlocks something Loopi can wear */
+G.BADGES = [
+  { id: 'first', name: 'First scan', item: 'cap', how: 'Scan a lunch tray', test: st => st.log.length > 0 },
+  { id: 'small', name: 'Small and clean', item: 'bow', how: 'Finish a small portion', test: st => st.log.some(l => l.portion === 'S' && l.w < .12) },
+  { id: 'streak', name: 'Three in a row', item: 'scarf', how: '3 clean trays in a row', test: st => st.pet.streak >= 3 },
+  { id: 'veg', name: 'Veggie explorer', item: 'flower', how: 'Try the veggies 10 times', test: st => st.pet.c.veg >= 10 },
+  { id: 'kailan', name: 'Kailan week', item: 'glasses', how: 'Taste the kailan 3 times', test: st => st.pet.quest >= 3 },
+  { id: 'balanced', name: 'Balanced plate', item: 'halo', how: 'Eat from every food group 5 times', test: st => st.pet.c.balanced >= 5 },
+  { id: 'class', name: 'Team goal', item: 'wings', how: 'Your class goes under 20% waste', test: st => { const c = PL.S.classes.find(c => c.id === st.cls); return c.ret / c.served < .2; } },
+  { id: 'top3', name: 'Podium', item: 'headphones', how: 'Be top 3 in your class', test: st => PL.studentRows().findIndex(s => s.id === st.id) < 3 },
+  { id: 'adult', name: 'All grown up', item: 'crown', how: 'Grow Loopi into an adult', test: st => G.ensure(st).stage === 3 },
+];
+G.earned = st => G.BADGES.filter(b => b.test(st));
+G.wear = (st, item) => {
+  const g = G.ensure(st);
+  if (!G.earned(st).some(b => b.item === item)) return;
+  g.eq = g.eq === item ? null : item;
+};
 })();
 
 </script>
