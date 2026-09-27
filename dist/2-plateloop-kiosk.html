@@ -1137,10 +1137,10 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;box-sizing:border-box;background:#0B0D10}
 .g3-view{position:relative;width:min(100%,calc((100vh - 70px) * 4 / 3));aspect-ratio:4/3;background:#000;overflow:hidden;border-radius:6px;box-shadow:0 0 0 1px #22262C,0 30px 80px -30px #000;user-select:none;-webkit-user-select:none;touch-action:none}
 .g3-view [hidden]{display:none!important}
-#g3-cv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;outline:0;cursor:crosshair}
-.g3-view::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px)}
+#g3-cv{position:absolute;inset:0;width:100%;height:100%;outline:0;cursor:crosshair}
+
 .g3-help{margin:0;max-width:720px;text-align:center;font:500 12px/1.5 var(--font);color:#7C828A}
-.g3-view,.g3-view button{font-family:'Silkscreen',monospace}
+.g3-view,.g3-view button{font-family:var(--font)}
 .g3-hud{position:absolute;inset:0;pointer-events:none;color:#fff;text-shadow:2px 2px 0 #000}
 .g3-hud button{pointer-events:auto}
 .g3-obj{position:absolute;left:14px;top:12px;max-width:58%;display:flex;flex-direction:column;gap:3px;padding:8px 11px;background:rgba(10,14,20,.62);border-left:4px solid #FFD60A}
@@ -1216,6 +1216,27 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-prompt{top:calc(50% + 22px)}
 @media (max-width:560px){.g3-sub{font-size:14px;bottom:128px;width:92%}.g3-opts button{min-width:0;width:100%}}
 .g3-hud.focus .g3-prompt{top:auto;bottom:4%}.g3-hud.focus .g3-cross{display:none}.g3-hud.focus .g3-sub{bottom:12%}
+
+/* Lunch Rush v3: clean type, quieter HUD */
+.g3-hud{text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.g3-obj{border-left-width:3px;background:rgba(10,12,14,.45);padding:7px 11px}
+.g3-obj span{font-size:10px;font-weight:600;letter-spacing:.16em}
+.g3-obj b{font-size:14px;font-weight:500}
+.g3-prompt{font-size:14px;background:rgba(10,12,14,.5);border-radius:4px}
+.g3-prompt b{border-radius:3px;font-weight:700}
+.g3-msg{font-size:14px;border-width:1px;border-color:rgba(255,255,255,.35);background:rgba(10,12,14,.55);border-radius:4px}
+.g3-eat{background:rgba(10,12,14,.5);border-radius:4px}
+.g3-dishes div{font-size:12px}
+.g3-eat button,.g3-use{font-weight:700;border-radius:4px}
+.g3-panel{border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.6);border-color:#2A2F36}
+.g3-panel h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;text-shadow:none;color:#F2EBDD}
+.g3-logo b{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:.06em;color:#F2EBDD;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.g3-logo span{font-weight:600}
+.g3-students button,.g3-choices button{border-radius:4px;box-shadow:none}
+.g3-students button b,.g3-choices button b{font-weight:600}
+.g3-stats div{border-radius:4px}
+.g3-grade{border-radius:6px;box-shadow:none;font-family:Georgia,'Times New Roman',serif}
+.g3-mute{border-radius:4px}
 
 </style>
 </head>

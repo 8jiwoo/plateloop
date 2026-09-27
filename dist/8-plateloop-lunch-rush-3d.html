@@ -1137,10 +1137,10 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;box-sizing:border-box;background:#0B0D10}
 .g3-view{position:relative;width:min(100%,calc((100vh - 70px) * 4 / 3));aspect-ratio:4/3;background:#000;overflow:hidden;border-radius:6px;box-shadow:0 0 0 1px #22262C,0 30px 80px -30px #000;user-select:none;-webkit-user-select:none;touch-action:none}
 .g3-view [hidden]{display:none!important}
-#g3-cv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated;image-rendering:crisp-edges;outline:0;cursor:crosshair}
-.g3-view::after{content:"";position:absolute;inset:0;pointer-events:none;z-index:3;background:repeating-linear-gradient(0deg,rgba(0,0,0,.14) 0 1px,transparent 1px 3px)}
+#g3-cv{position:absolute;inset:0;width:100%;height:100%;outline:0;cursor:crosshair}
+
 .g3-help{margin:0;max-width:720px;text-align:center;font:500 12px/1.5 var(--font);color:#7C828A}
-.g3-view,.g3-view button{font-family:'Silkscreen',monospace}
+.g3-view,.g3-view button{font-family:var(--font)}
 .g3-hud{position:absolute;inset:0;pointer-events:none;color:#fff;text-shadow:2px 2px 0 #000}
 .g3-hud button{pointer-events:auto}
 .g3-obj{position:absolute;left:14px;top:12px;max-width:58%;display:flex;flex-direction:column;gap:3px;padding:8px 11px;background:rgba(10,14,20,.62);border-left:4px solid #FFD60A}
@@ -1216,6 +1216,27 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-prompt{top:calc(50% + 22px)}
 @media (max-width:560px){.g3-sub{font-size:14px;bottom:128px;width:92%}.g3-opts button{min-width:0;width:100%}}
 .g3-hud.focus .g3-prompt{top:auto;bottom:4%}.g3-hud.focus .g3-cross{display:none}.g3-hud.focus .g3-sub{bottom:12%}
+
+/* Lunch Rush v3: clean type, quieter HUD */
+.g3-hud{text-shadow:0 1px 3px rgba(0,0,0,.8)}
+.g3-obj{border-left-width:3px;background:rgba(10,12,14,.45);padding:7px 11px}
+.g3-obj span{font-size:10px;font-weight:600;letter-spacing:.16em}
+.g3-obj b{font-size:14px;font-weight:500}
+.g3-prompt{font-size:14px;background:rgba(10,12,14,.5);border-radius:4px}
+.g3-prompt b{border-radius:3px;font-weight:700}
+.g3-msg{font-size:14px;border-width:1px;border-color:rgba(255,255,255,.35);background:rgba(10,12,14,.55);border-radius:4px}
+.g3-eat{background:rgba(10,12,14,.5);border-radius:4px}
+.g3-dishes div{font-size:12px}
+.g3-eat button,.g3-use{font-weight:700;border-radius:4px}
+.g3-panel{border-radius:6px;box-shadow:0 20px 60px rgba(0,0,0,.6);border-color:#2A2F36}
+.g3-panel h2{font-family:Georgia,'Times New Roman',serif;font-weight:400;text-shadow:none;color:#F2EBDD}
+.g3-logo b{font-family:Georgia,'Times New Roman',serif;font-weight:400;letter-spacing:.06em;color:#F2EBDD;text-shadow:0 2px 12px rgba(0,0,0,.6)}
+.g3-logo span{font-weight:600}
+.g3-students button,.g3-choices button{border-radius:4px;box-shadow:none}
+.g3-students button b,.g3-choices button b{font-weight:600}
+.g3-stats div{border-radius:4px}
+.g3-grade{border-radius:6px;box-shadow:none;font-family:Georgia,'Times New Roman',serif}
+.g3-mute{border-radius:4px}
 
 </style>
 </head>
@@ -5815,8 +5836,8 @@ G.drawSprite = (ctx, name, x, y, s) => {
 'use strict';
 const L = PL.L3 = PL.L3 || {};
 
-const SNAP = 'gl_Position.xy = floor(gl_Position.xy / gl_Position.w * vec2(160.0, 120.0) + 0.5) / vec2(160.0, 120.0) * gl_Position.w;';
-/** The PS1 wobble: snap every vertex to a 320×240-ish grid after projection. */
+const SNAP = 'gl_Position.xy = floor(gl_Position.xy / gl_Position.w * vec2(480.0, 360.0) + 0.5) / vec2(480.0, 360.0) * gl_Position.w;';
+/** A gentle PS1 wobble: vertices snap to a fine screen grid after projection. */
 L.psx = m => {
   m.onBeforeCompile = sh => { sh.vertexShader = sh.vertexShader.replace('#include <project_vertex>', '#include <project_vertex>\n\t' + SNAP); };
   return m;
@@ -5837,13 +5858,20 @@ L.rgba = (hex, a) => { const [r, g, b] = rgb(hex); return `rgba(${r},${g},${b},$
 L.lerpHex = (a, b, t) => { const x = rgb(a), y = rgb(b); return '#' + x.map((v, i) => Math.round(v + (y[i] - v) * t).toString(16).padStart(2, '0')).join(''); };
 
 L.canvas = (w, h, draw) => { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); return c; };
-L.texOf = (c, rx = 1, ry = 1, smooth = false) => {
+L.texOf = (c, rx = 1, ry = 1, crisp = false) => {
   const t = new THREE.CanvasTexture(c);
-  t.magFilter = t.minFilter = smooth ? THREE.LinearFilter : THREE.NearestFilter; t.generateMipmaps = false;
+  t.magFilter = crisp ? THREE.NearestFilter : THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter; t.generateMipmaps = true; t.anisotropy = 4;
   t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rx, ry);
   return t;
 };
 L.tex = (w, h, draw, rx, ry) => L.texOf(L.canvas(w, h, draw), rx, ry);
+/** Draw into a scratch canvas, then lay it over c with a blur: soft, photographic shading. */
+L.soft = (c, w, h, px, draw) => {
+  const t = document.createElement('canvas'); t.width = w; t.height = h; draw(t.getContext('2d'));
+  c.save(); c.filter = `blur(${px}px)`; c.drawImage(t, 0, 0); c.restore();
+};
+/** Faceted low-poly look: every face gets its own flat normal. */
+L.facet = g => { const n = g.index ? g.toNonIndexed() : g; n.computeVertexNormals(); return n; };
 
 /** Photographic grit: per-pixel luminance noise, like a scanned photo texture. */
 L.grain = (c, w, h, amt = 12, seed = 7) => {
@@ -5894,19 +5922,20 @@ L.loopi = (c, x, y, s, mood = 'happy') => {
 </script>
 <script>
 /* ---- js/lunch/audio.js ---- */
-/* Lunch Rush soundscape, all synthesised with Web Audio (no sound files).
-   Positional (HRTF) sources placed around the canteen, a hall reverb, and a random scheduler for life:
-   crowd chatter (voiced formants with syllable rhythm), cutlery clinks, bench scrapes, wok sizzle and the
-   ladle, the drinks-stall till, ceiling fans, cicadas and birds outside (koel, sparrows, mynahs), distant
-   thunder, the school chime. One-shots for footsteps, eating, the scanner and trays. */
+/* Lunch Rush soundscape, all synthesised with Web Audio (no sound files), built to run smoothly:
+   the crowd murmur is rendered once, offline, into seamless loops played from a few spots in the hall;
+   positional sound uses cheap equal-power panners, and one-shots share a small pool instead of creating new
+   nodes each time. Beds: crowd, room tone, rain outside, the wok, ceiling fans. Events: cutlery, benches,
+   the ladle, the till, trays, a distant koel, far-off thunder, the school chime. */
 (() => {
 'use strict';
 const L = PL.L3;
 
 L.Sound = () => {
-  let ctx = null, master, dry, verbIn, noiseBuf, brownBuf, muted = false;
-  const voices = [], spots = { tables: [], crowd: [], kitchen: [], ladle: null, till: null, rack: null, fans: [], outside: [] };
-  const clock = {};
+  let ctx = null, master, dry, verbIn, noiseBuf, brownBuf, flatOut, muted = false;
+  const spots = { tables: [], crowd: [], kitchen: [], ladle: null, till: null, rack: null, fans: [], outside: [] };
+  const clock = {}, pool = [], loops = [];
+  let poolI = 0;
   const V1 = new THREE.Vector3(), V2 = new THREE.Vector3(), V3 = new THREE.Vector3(), Q = new THREE.Quaternion();
   const rnd = (a, b) => a + Math.random() * (b - a), pick = a => a[Math.floor(Math.random() * a.length)];
 
@@ -5914,188 +5943,189 @@ L.Sound = () => {
   function start() {
     if (ctx) { if (ctx.state === 'suspended') ctx.resume(); return; }
     const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
-    ctx = new A();
-    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -18; comp.ratio.value = 4; comp.connect(ctx.destination);
-    master = ctx.createGain(); master.gain.value = muted ? 0 : .9; master.connect(comp);
+    ctx = new A({ latencyHint: 'playback' });
+    const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 3; comp.connect(ctx.destination);
+    master = ctx.createGain(); master.gain.value = muted ? 0 : .85; master.connect(comp);
     dry = ctx.createGain(); dry.connect(master);
-    // hall reverb: tiled walls and a high roof
-    const conv = ctx.createConvolver(); conv.buffer = impulse(2.6, 2.8);
-    verbIn = ctx.createGain(); verbIn.gain.value = .32; const verbOut = ctx.createGain(); verbOut.gain.value = .55;
+    const conv = ctx.createConvolver(); conv.buffer = impulse(2.8, 2.6);
+    verbIn = ctx.createGain(); verbIn.gain.value = .3; const verbOut = ctx.createGain(); verbOut.gain.value = .5;
     verbIn.connect(conv).connect(verbOut).connect(master);
-    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
+    flatOut = ctx.createGain(); flatOut.connect(dry); const fw = ctx.createGain(); fw.gain.value = .25; flatOut.connect(fw).connect(verbIn);
+    noiseBuf = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate);
     { const d = noiseBuf.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
     brownBuf = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate);
     { const d = brownBuf.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++) { l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; } }
+    for (let i = 0; i < 10; i++) pool.push(panner([0, 1, 0], 1.2, .7));
     beds();
   }
   function impulse(sec, decay) {
     const n = Math.floor(ctx.sampleRate * sec), b = ctx.createBuffer(2, n, ctx.sampleRate);
-    for (let ch = 0; ch < 2; ch++) {
-      const d = b.getChannelData(ch);
-      for (let i = 0; i < n; i++) { const k = i / n; d[i] = (Math.random() * 2 - 1) * Math.pow(1 - k, decay) * Math.min(1, i / (ctx.sampleRate * .012)); }
-      // a few early reflections off the tiles
-      [.013, .021, .034, .047].forEach((s, j) => { const i = Math.floor(ctx.sampleRate * (s + ch * .003)); if (i < n) d[i] += (j % 2 ? -.6 : .7); });
-    }
+    for (let ch = 0; ch < 2; ch++) { const d = b.getChannelData(ch); for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, decay) * Math.min(1, i / (ctx.sampleRate * .015)); }
     return b;
   }
   const setPos = (pn, p) => { if (pn.positionX) { pn.positionX.value = p[0]; pn.positionY.value = p[1]; pn.positionZ.value = p[2]; } else pn.setPosition(p[0], p[1], p[2]); };
   function panner(p, ref = 1.5, wet = 1) {
     const pn = ctx.createPanner();
-    pn.panningModel = 'HRTF'; pn.distanceModel = 'inverse'; pn.refDistance = ref; pn.maxDistance = 80; pn.rolloffFactor = 1.1;
+    pn.panningModel = 'equalpower'; pn.distanceModel = 'inverse'; pn.refDistance = ref; pn.maxDistance = 60; pn.rolloffFactor = 1;
     setPos(pn, p); pn.connect(dry);
     if (wet) { const w = ctx.createGain(); w.gain.value = wet; pn.connect(w).connect(verbIn); }
     return pn;
   }
-  function flat(wet = .4) { const g = ctx.createGain(); g.connect(dry); if (wet) { const w = ctx.createGain(); w.gain.value = wet; g.connect(w).connect(verbIn); } return g; }
-  const loopNoise = (buf = noiseBuf) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.start(0, Math.random() * 2); return s; };
-  /** A looping control signal (0..1) at a low sample rate, used as a gain envelope. */
-  function envBuffer(sec, fill) { const sr = 8000, n = sr * sec, b = ctx.createBuffer(1, n, sr); fill(b.getChannelData(0), sr, n); return b; }
-  const syllables = sec => envBuffer(sec, (d, sr, n) => {
-    let i = Math.floor(Math.random() * sr);
-    while (i < n) {
-      if (Math.random() < .13) { i += Math.floor(sr * rnd(.35, 1.4)); continue; }
-      const len = Math.floor(sr * rnd(.06, .22)), amp = rnd(.35, 1);
-      for (let k = 0; k < len && i + k < n; k++) d[i + k] = amp * Math.sin(Math.PI * k / len);
-      i += len + Math.floor(sr * rnd(.02, .11));
+  const at = p => { if (!p) return flatOut; const pn = pool[poolI++ % pool.length]; setPos(pn, p); return pn; };
+  const loopSrc = (buf = noiseBuf) => { const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.start(0, Math.random() * 2); return s; };
+
+  /* ------------------------------------------------------------ offline-rendered crowd */
+  /** Crowd murmur: many softly filtered voices with a syllable rhythm, rendered once into a seamless loop. */
+  async function renderCrowd(sec, voices, seed) {
+    const sr = 22050, n = sr * sec, oc = new OfflineAudioContext(2, n, sr);
+    const nb = oc.createBuffer(1, sr * 3, sr); { const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const lp = oc.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 2600; lp.connect(oc.destination);
+    for (let v = 0; v < voices; v++) {
+      const env = oc.createBuffer(1, n, sr), d = env.getChannelData(0);
+      let i = Math.floor(Math.random() * sr);
+      while (i < n) {
+        if (Math.random() < .14) { i += Math.floor(sr * rnd(.4, 1.6)); continue; }
+        const len = Math.floor(sr * rnd(.08, .24)), amp = rnd(.35, 1);
+        for (let k = 0; k < len && i + k < n; k++) d[i + k] = amp * Math.pow(Math.sin(Math.PI * k / len), 1.5);
+        i += len + Math.floor(sr * rnd(.03, .12));
+      }
+      const ns = oc.createBufferSource(); ns.buffer = nb; ns.loop = true;
+      const f0 = Math.random() < .5 ? rnd(110, 150) : rnd(190, 240), osc = oc.createOscillator(); osc.type = 'triangle'; osc.frequency.value = f0;
+      const og = oc.createGain(), ng = oc.createGain(); og.gain.value = .35; ng.gain.value = .8;
+      const f1 = oc.createBiquadFilter(); f1.type = 'bandpass'; f1.Q.value = 3; const f2 = oc.createBiquadFilter(); f2.type = 'bandpass'; f2.Q.value = 4;
+      for (let t = 0; t < sec; t += rnd(.12, .28)) { f1.frequency.setTargetAtTime(rnd(350, 820), t, .04); f2.frequency.setTargetAtTime(rnd(1000, 2200), t, .04); osc.frequency.setTargetAtTime(f0 * rnd(.9, 1.15), t, .08); }
+      const src = oc.createGain(); ns.connect(ng).connect(src); osc.connect(og).connect(src); src.connect(f1); src.connect(f2);
+      const g = oc.createGain(); g.gain.value = 0; f1.connect(g); f2.connect(g);
+      const es = oc.createBufferSource(); es.buffer = env; es.connect(g.gain);
+      const pan = oc.createStereoPanner(); pan.pan.value = rnd(-.8, .8); const lv = oc.createGain(); lv.gain.value = rnd(.5, 1);
+      g.connect(lv).connect(pan).connect(lp);
+      ns.start(0, Math.random() * 3); osc.start(); es.start();
     }
-  });
-  const crackle = sec => envBuffer(sec, (d, sr, n) => { let v = .2; for (let i = 0; i < n; i++) { if (Math.random() < .0035) v = Math.min(1, v + rnd(.3, .9)); v = .2 + (v - .2) * .994; d[i] = v; } });
+    const out = await oc.startRendering();
+    return seamless(out, Math.floor(sr * .8));
+  }
+  /** Crossfade the end into the start so the loop point can't click. */
+  function seamless(b, N) {
+    const len = b.length - N, o = ctx.createBuffer(b.numberOfChannels, len, b.sampleRate);
+    for (let ch = 0; ch < b.numberOfChannels; ch++) {
+      const s = b.getChannelData(ch), d = o.getChannelData(ch); let peak = 0;
+      for (let i = 0; i < len - N; i++) d[i] = s[i + N];
+      for (let j = 0; j < N; j++) { const k = j / N; d[len - N + j] = s[b.length - N + j] * (1 - k) + s[j] * k; }
+      for (let i = 0; i < len; i++) peak = Math.max(peak, Math.abs(d[i]));
+      if (peak > 0) for (let i = 0; i < len; i++) d[i] *= .5 / peak;
+    }
+    return o;
+  }
 
   /* ------------------------------------------------------------ beds */
   function beds() {
-    // room tone: air, fans, the city beyond the school
-    const rt = loopNoise(brownBuf), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 260;
-    const g = ctx.createGain(); g.gain.value = .16; rt.connect(lp).connect(g).connect(flat(.2));
-    // crowd: 3–4 voices around each cluster of tables
-    spots.crowd.forEach(([x, z], ci) => { for (let k = 0; k < (ci % 2 ? 3 : 4); k++) voices.push(voice([x + rnd(-1.4, 1.4), 1.15, z + rnd(-1, 1)], Math.random() < .5 ? rnd(110, 150) : rnd(190, 250))); });
-    // kitchens: wok sizzle with crackle, the exhaust hood
+    // room tone: air, the fans, the building
+    const rt = loopSrc(brownBuf), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 240;
+    const g = ctx.createGain(); g.gain.value = .14; rt.connect(lp).connect(g).connect(flatOut);
+    // rain on the roof and the field outside, from the open side
+    spots.outside.slice(0, 2).forEach(([x, y, z]) => {
+      const ns = loopSrc(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500;
+      const lp2 = ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 5200;
+      const lv = ctx.createGain(); lv.gain.value = .1; ns.connect(hp).connect(lp2).connect(lv).connect(panner([x, 3, 9.5], 5, .4));
+    });
+    { const ns = loopSrc(), bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = .5; const lv = ctx.createGain(); lv.gain.value = .035; ns.connect(bp).connect(lv).connect(panner([0, 4.3, 0], 8, .2)); }
+    // kitchens: a wok's sizzle
     spots.kitchen.forEach(p => {
-      const ns = loopNoise(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2600;
-      const env = ctx.createGain(); env.gain.value = 0; const es = ctx.createBufferSource(); es.buffer = crackle(7); es.loop = true; es.connect(env.gain); es.start(0, Math.random() * 7);
-      const lv = ctx.createGain(); lv.gain.value = .07; ns.connect(hp).connect(env).connect(lv).connect(panner(p, 1.2));
-      const hum = ctx.createOscillator(); hum.frequency.value = 98 + Math.random() * 6; const hg = ctx.createGain(); hg.gain.value = .012;
-      const air = loopNoise(brownBuf), alp = ctx.createBiquadFilter(); alp.type = 'lowpass'; alp.frequency.value = 400; const ag = ctx.createGain(); ag.gain.value = .08;
-      const hood = panner([p[0], 2.6, p[2]], 1.5); hum.connect(hg).connect(hood); air.connect(alp).connect(ag).connect(hood); hum.start();
+      const ns = loopSrc(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2400;
+      const am = ctx.createGain(); am.gain.value = .6; const lfo = ctx.createOscillator(); lfo.frequency.value = rnd(.15, .3); const lg = ctx.createGain(); lg.gain.value = .35; lfo.connect(lg).connect(am.gain); lfo.start();
+      const lv = ctx.createGain(); lv.gain.value = .045; ns.connect(hp).connect(am).connect(lv).connect(panner(p, 1.2, .8));
     });
-    // ceiling fans: a slow whoosh with the blade rhythm
-    spots.fans.forEach(p => {
-      const ns = loopNoise(), lp2 = ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 520;
-      const am = ctx.createGain(); am.gain.value = .6; const lfo = ctx.createOscillator(); lfo.frequency.value = rnd(2.6, 3.4); const lg = ctx.createGain(); lg.gain.value = .35; lfo.connect(lg).connect(am.gain); lfo.start();
-      const lv = ctx.createGain(); lv.gain.value = .05; ns.connect(lp2).connect(am).connect(lv).connect(panner(p, 1, .3));
+    // two ceiling fans nearby
+    spots.fans.slice(0, 2).forEach(p => {
+      const ns = loopSrc(), lp3 = ctx.createBiquadFilter(); lp3.type = 'lowpass'; lp3.frequency.value = 450;
+      const am = ctx.createGain(); am.gain.value = .6; const lfo = ctx.createOscillator(); lfo.frequency.value = rnd(2.6, 3.2); const lg = ctx.createGain(); lg.gain.value = .3; lfo.connect(lg).connect(am.gain); lfo.start();
+      const lv = ctx.createGain(); lv.gain.value = .04; ns.connect(lp3).connect(am).connect(lv).connect(panner(p, 1, .3));
     });
-    // cicadas in the trees outside, swelling slowly
-    spots.outside.forEach(p => {
-      const ns = loopNoise(), bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = rnd(4800, 5600); bp.Q.value = 7;
-      const am = ctx.createGain(); am.gain.value = .5; const buzz = ctx.createOscillator(); buzz.frequency.value = rnd(38, 46); const bg = ctx.createGain(); bg.gain.value = .5; buzz.connect(bg).connect(am.gain); buzz.start();
-      const sw = ctx.createGain(); sw.gain.value = .5; const swell = ctx.createOscillator(); swell.frequency.value = rnd(.04, .08); const sg = ctx.createGain(); sg.gain.value = .45; swell.connect(sg).connect(sw.gain); swell.start();
-      const lv = ctx.createGain(); lv.gain.value = .9; ns.connect(bp).connect(am).connect(sw).connect(lv).connect(panner(p, 6, .15));
-    });
-  }
-  /** One chatting voice: a buzzy source through two moving formants, gated by a syllable rhythm. */
-  function voice(pos, f0) {
-    const osc = ctx.createOscillator(); osc.type = 'sawtooth'; osc.frequency.value = f0;
-    const vib = ctx.createOscillator(); vib.frequency.value = rnd(4, 6); const vg = ctx.createGain(); vg.gain.value = f0 * .03; vib.connect(vg).connect(osc.frequency);
-    const og = ctx.createGain(), ns = loopNoise(), ng = ctx.createGain(); og.gain.value = .5; ng.gain.value = .6;
-    const f1 = ctx.createBiquadFilter(); f1.type = 'bandpass'; f1.Q.value = 4.5; f1.frequency.value = 600;
-    const f2 = ctx.createBiquadFilter(); f2.type = 'bandpass'; f2.Q.value = 6; f2.frequency.value = 1700;
-    const src = ctx.createGain(); osc.connect(og).connect(src); ns.connect(ng).connect(src); src.connect(f1); src.connect(f2);
-    const f2g = ctx.createGain(); f2g.gain.value = .6; f2.connect(f2g);
-    const env = ctx.createGain(); env.gain.value = 0; f1.connect(env); f2g.connect(env);
-    const es = ctx.createBufferSource(); es.buffer = syllables(11); es.loop = true; es.connect(env.gain);
-    const lv = ctx.createGain(); lv.gain.value = 1.6; env.connect(lv).connect(panner(pos, 2, .9));
-    osc.start(); vib.start(); es.start(0, Math.random() * 11);
-    return { f1, f2, osc, f0, lv, next: 0 };
+    // the crowd, from a few spots in the hall, once it has rendered
+    renderCrowd(14, 16).then(buf => {
+      if (!ctx) return;
+      spots.crowd.slice(0, 4).forEach(([x, z], i) => {
+        const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.playbackRate.value = rnd(.96, 1.04);
+        const g2 = ctx.createGain(); g2.gain.value = 0; s.connect(g2).connect(panner([x, 1.2, z], 3, .9));
+        s.start(0, i * 3.3 % buf.duration); loops.push(g2); g2.gain.setTargetAtTime(.55, ctx.currentTime, 1.5);
+      });
+    }).catch(() => {});
   }
 
   /* ------------------------------------------------------------ one-shots */
-  function tone(f, dur, { type = 'sine', vol = .1, to = null, at = 0, pos = null, attack = .004, ref = 1.2, wet = .6 } = {}) {
+  function tone(f, dur, { type = 'sine', vol = .1, to = null, delay = 0, pos = null, attack = .005 } = {}) {
     if (!ctx) return;
-    const t = ctx.currentTime + at, o = ctx.createOscillator(), g = ctx.createGain();
+    const t = ctx.currentTime + delay, o = ctx.createOscillator(), g = ctx.createGain();
     o.type = type; o.frequency.setValueAtTime(f, t); if (to) o.frequency.exponentialRampToValueAtTime(to, t + dur);
-    g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    o.connect(g).connect(pos ? panner(pos, ref, wet) : flat(wet * .5)); o.start(t); o.stop(t + dur + .05);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + attack); g.gain.setTargetAtTime(0, t + attack, dur / 4);
+    o.connect(g).connect(at(pos)); o.start(t); o.stop(t + dur + .1);
   }
-  function burst(dur, { vol = .2, type = 'bandpass', freq = 1000, q = 1, to = null, at = 0, pos = null, attack = .002, ref = 1.2, buf = null, wet = .6 } = {}) {
+  function burst(dur, { vol = .2, type = 'bandpass', freq = 1000, q = 1, to = null, delay = 0, pos = null, attack = .004, buf = null } = {}) {
     if (!ctx) return;
-    const t = ctx.currentTime + at, s = ctx.createBufferSource(); s.buffer = buf || noiseBuf;
+    const t = ctx.currentTime + delay, s = ctx.createBufferSource(); s.buffer = buf || noiseBuf;
     const f = ctx.createBiquadFilter(); f.type = type; f.frequency.setValueAtTime(freq, t); if (to) f.frequency.exponentialRampToValueAtTime(to, t + dur); f.Q.value = q;
-    const g = ctx.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + attack); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    s.connect(f).connect(g).connect(pos ? panner(pos, ref, wet) : flat(wet * .5)); s.start(t, Math.random() * 2); s.stop(t + dur + .05);
+    const g = ctx.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + attack); g.gain.setTargetAtTime(0, t + attack, dur / 4);
+    s.connect(f).connect(g).connect(at(pos)); s.start(t, Math.random() * 2); s.stop(t + dur + .1);
   }
-  /** Struck metal: inharmonic partials with a fast decay. */
-  const metal = (pos, base, vol, dur, at = 0) => [1, 2.76, 5.4, 8.93].forEach((r, i) => tone(base * r * rnd(.99, 1.01), dur / (1 + i * .6), { vol: vol / (1 + i), pos, at, ref: 1 }));
-  const bellNote = (f, at, vol = .05) => [1, 2, 2.76, 4.1].forEach((r, i) => tone(f * r, 2.2 / (1 + i * .7), { vol: vol / (1 + i * 1.5), at, attack: .01, wet: 1.4 }));
+  const metal = (pos, base, vol, dur, delay = 0) => [1, 2.76, 5.4].forEach((r, i) => tone(base * r * rnd(.99, 1.01), dur / (1 + i * .6), { vol: vol / (1 + i), pos, delay }));
+  const bellNote = (f, delay, vol = .045) => [1, 2, 2.76].forEach((r, i) => tone(f * r, 2.4 / (1 + i * .7), { vol: vol / (1 + i * 1.6), delay, attack: .01 }));
 
   const FX = {
-    clink: p => metal(p, rnd(2300, 3900), rnd(.03, .07), rnd(.12, .22)),
-    ladle: p => { metal(p, rnd(620, 760), .11, .55); burst(.05, { vol: .12, freq: 2200, pos: p }); },
-    till: p => { tone(1850, .07, { type: 'square', vol: .04, pos: p }); tone(1850, .07, { type: 'square', vol: .04, pos: p, at: .12 }); },
-    chair: p => burst(rnd(.25, .5), { vol: .06, freq: rnd(380, 520), q: 5, to: rnd(650, 900), pos: p, attack: .03 }),
-    tray: p => { burst(.09, { vol: .3, freq: 2400, q: .8, pos: p }); metal(p, rnd(820, 980), .08, .4); burst(.06, { vol: .18, freq: 1900, q: .8, pos: p, at: .11 }); },
-    traySlide: p => { burst(.38, { vol: .1, freq: 1700, q: 2, to: 2600, pos: p, attack: .05 }); FX.tray(p); },
-    trayDown: p => { burst(.05, { vol: .2, freq: 1500, q: .7, pos: p }); metal(p, 700, .05, .25); },
-    beep: p => tone(1320, .13, { vol: .12, pos: p, ref: .8 }),
-    ok: p => [784, 988, 1175].forEach((f, i) => tone(f, .16, { type: 'triangle', vol: .09, pos: p, at: i * .09, ref: .8 })),
-    scan: (p, dur = 1.6) => { tone(170, dur, { type: 'sawtooth', vol: .018, to: 520, pos: p, attack: .1, ref: .8 }); burst(dur, { vol: .02, freq: 3200, q: 3, pos: p, attack: .2 }); },
-    shutter: p => { burst(.025, { vol: .2, freq: 3500, pos: p }); burst(.03, { vol: .15, freq: 2500, pos: p, at: .05 }); },
-    step: (p = null) => { burst(.07, { vol: .09, freq: rnd(1000, 1500), q: .9, pos: p }); tone(72, .08, { vol: .06, to: 45, pos: p }); },
-    crunch: () => { burst(.06, { vol: .22, freq: 2600, q: .7, wet: .1 }); burst(.05, { vol: .18, freq: 3200, q: .7, at: .09, wet: .1 }); burst(.05, { vol: .12, freq: 2200, q: .7, at: .2, wet: .1 }); },
-    soft: () => { burst(.1, { vol: .2, type: 'lowpass', freq: 900, wet: .1 }); burst(.08, { vol: .12, type: 'lowpass', freq: 700, at: .18, wet: .1 }); },
-    slurp: () => burst(.3, { vol: .12, freq: 700, q: 3, to: 2600, attack: .05, wet: .1 }),
-    spoon: () => metal(null, rnd(2900, 3400), .035, .15),
-    scrape: p => { burst(.55, { vol: .16, freq: 1300, q: 3, to: 800, pos: p, attack: .04 }); burst(.3, { vol: .1, freq: 2100, q: 4, to: 1500, pos: p, at: .3 }); },
-    plop: p => { tone(170, .2, { vol: .12, to: 60, pos: p }); burst(.06, { vol: .08, type: 'lowpass', freq: 600, pos: p }); },
-    blip: () => tone(rnd(470, 540), .035, { type: 'triangle', vol: .022, wet: .1 }),
-    select: () => { tone(660, .06, { type: 'square', vol: .025, wet: .1 }); tone(990, .08, { type: 'square', vol: .025, at: .06, wet: .1 }); },
-    whoosh: () => burst(.35, { vol: .06, freq: 500, q: .7, to: 1400, attack: .1, wet: .2 }),
-    // Westminster-style school chime
-    bell: () => [[659.3, 523.3, 587.3, 392], [392, 587.3, 659.3, 523.3]].flat().forEach((f, i) => bellNote(f, i * .62 + (i > 3 ? .5 : 0))),
-    koel: p => { const base = rnd(640, 720); for (let i = 0; i < 4; i++) { const f = base * (1 + i * .07); tone(f, .16, { vol: .05, to: f * 1.12, pos: p, at: i * .72, ref: 5, wet: .3 }); tone(f * 1.3, .3, { vol: .06, to: f * 1.45, pos: p, at: i * .72 + .2, ref: 5, wet: .3 }); } },
-    sparrow: p => { const n = 3 + Math.floor(Math.random() * 4); for (let i = 0; i < n; i++) tone(rnd(4200, 5200), .05, { vol: .025, to: rnd(3600, 5600), pos: p, at: i * rnd(.09, .16), ref: 4, wet: .2 }); },
-    mynah: p => { tone(rnd(1600, 2000), .13, { vol: .03, to: 2700, pos: p, ref: 4, wet: .3 }); tone(2600, .1, { vol: .03, to: 1500, pos: p, at: .17, ref: 4, wet: .3 }); tone(2100, .06, { vol: .025, pos: p, at: .34, ref: 4 }); },
-    thunder: () => { burst(4.5, { vol: .22, type: 'lowpass', freq: 140, attack: .7, buf: brownBuf, wet: 1 }); burst(2.5, { vol: .1, type: 'lowpass', freq: 90, attack: .3, at: .5, buf: brownBuf, wet: 1 }); },
+    clink: p => metal(p, rnd(2400, 3600), rnd(.02, .04), rnd(.12, .2)),
+    ladle: p => metal(p, rnd(620, 740), .07, .5),
+    till: p => { tone(1800, .07, { type: 'triangle', vol: .03, pos: p }); tone(1800, .07, { type: 'triangle', vol: .03, pos: p, delay: .12 }); },
+    chair: p => burst(rnd(.3, .5), { vol: .04, freq: rnd(380, 520), q: 5, to: rnd(650, 900), pos: p, attack: .04 }),
+    tray: p => { burst(.1, { vol: .16, freq: 2300, q: .8, pos: p }); metal(p, rnd(820, 960), .05, .4); },
+    traySlide: p => { burst(.38, { vol: .07, freq: 1700, q: 2, to: 2500, pos: p, attack: .06 }); FX.tray(p); },
+    trayDown: p => { burst(.06, { vol: .12, freq: 1500, q: .7, pos: p }); metal(p, 700, .03, .25); },
+    beep: p => tone(1320, .14, { vol: .07, pos: p }),
+    ok: p => [784, 988, 1175].forEach((f, i) => tone(f, .18, { type: 'triangle', vol: .055, pos: p, delay: i * .09 })),
+    scan: (p, dur = 1.6) => tone(170, dur, { type: 'triangle', vol: .02, to: 480, pos: p, attack: .15 }),
+    shutter: p => burst(.03, { vol: .12, freq: 3200, pos: p }),
+    step: () => { burst(.07, { vol: .045, freq: rnd(900, 1300), q: .9 }); tone(70, .08, { vol: .04, to: 48 }); },
+    crunch: () => { burst(.06, { vol: .12, freq: 2600, q: .7 }); burst(.05, { vol: .1, freq: 3100, q: .7, delay: .1 }); },
+    soft: () => burst(.12, { vol: .12, type: 'lowpass', freq: 900 }),
+    slurp: () => burst(.3, { vol: .07, freq: 700, q: 3, to: 2400, attack: .06 }),
+    spoon: () => metal(null, rnd(2900, 3300), .02, .14),
+    scrape: p => { burst(.55, { vol: .1, freq: 1300, q: 3, to: 800, pos: p, attack: .05 }); burst(.3, { vol: .06, freq: 2000, q: 4, to: 1500, pos: p, delay: .3 }); },
+    plop: p => { tone(160, .2, { vol: .08, to: 60, pos: p }); burst(.06, { vol: .05, type: 'lowpass', freq: 600, pos: p }); },
+    blip: () => {},
+    select: () => tone(740, .08, { type: 'triangle', vol: .025 }),
+    whoosh: () => burst(.4, { vol: .03, freq: 500, q: .7, to: 1300, attack: .12 }),
+    bell: () => [[659.3, 523.3, 587.3, 392], [392, 587.3, 659.3, 523.3]].flat().forEach((f, i) => bellNote(f, i * .64 + (i > 3 ? .5 : 0))),
+    koel: p => { const base = rnd(640, 700); for (let i = 0; i < 3; i++) { const f = base * (1 + i * .07); tone(f, .18, { vol: .025, to: f * 1.1, pos: p, delay: i * .8 }); tone(f * 1.3, .32, { vol: .03, to: f * 1.42, pos: p, delay: i * .8 + .22 }); } },
+    thunder: () => { burst(5, { vol: .12, type: 'lowpass', freq: 120, attack: 1, buf: brownBuf }); },
   };
 
   /* ------------------------------------------------------------ per frame */
   function listen(cam) {
     if (!ctx) return;
-    const l = ctx.listener; cam.getWorldPosition(V1); cam.getWorldQuaternion(Q);
+    const l = ctx.listener, t = ctx.currentTime; cam.getWorldPosition(V1); cam.getWorldQuaternion(Q);
     V2.set(0, 0, -1).applyQuaternion(Q); V3.set(0, 1, 0).applyQuaternion(Q);
-    if (l.positionX) { l.positionX.value = V1.x; l.positionY.value = V1.y; l.positionZ.value = V1.z; l.forwardX.value = V2.x; l.forwardY.value = V2.y; l.forwardZ.value = V2.z; l.upX.value = V3.x; l.upY.value = V3.y; l.upZ.value = V3.z; }
-    else { l.setPosition(V1.x, V1.y, V1.z); l.setOrientation(V2.x, V2.y, V2.z, V3.x, V3.y, V3.z); }
+    if (l.positionX) {
+      [[l.positionX, V1.x], [l.positionY, V1.y], [l.positionZ, V1.z], [l.forwardX, V2.x], [l.forwardY, V2.y], [l.forwardZ, V2.z], [l.upX, V3.x], [l.upY, V3.y], [l.upZ, V3.z]].forEach(([p, v]) => p.setTargetAtTime(v, t, .04));
+    } else { l.setPosition(V1.x, V1.y, V1.z); l.setOrientation(V2.x, V2.y, V2.z, V3.x, V3.y, V3.z); }
   }
   function tick(dt) {
-    if (!ctx || muted) return;
+    if (!ctx || muted || ctx.state !== 'running') return;
     const every = (k, a, b, fn) => { if (clock[k] === undefined) clock[k] = rnd(a, b); clock[k] -= dt; if (clock[k] <= 0) { clock[k] = rnd(a, b); fn(); } };
     const table = () => { const [x, z] = pick(spots.tables); return [x + rnd(-1.2, 1.2), .8, z + rnd(-.4, .4)]; };
-    if (spots.tables.length) { every('clink', .22, .9, () => FX.clink(table())); every('chair', 5, 14, () => FX.chair([table()[0], .3, table()[2]])); }
-    if (spots.ladle) every('ladle', 5, 12, () => FX.ladle(spots.ladle));
-    if (spots.till) every('till', 11, 24, () => FX.till(spots.till));
-    if (spots.rack) every('tray', 14, 32, () => FX.tray(spots.rack));
-    if (spots.outside.length) {
-      const out = () => { const [x, y, z] = pick(spots.outside); return [x + rnd(-8, 8), y + rnd(0, 3), z + rnd(-3, 5)]; };
-      every('sparrow', 3, 8, () => FX.sparrow(out())); every('mynah', 8, 19, () => FX.mynah(out())); every('koel', 20, 40, () => FX.koel(out()));
-    }
-    every('thunder', 60, 130, FX.thunder);
-    // chatter: formants glide between vowels, pitch rises and falls
-    const now = ctx.currentTime;
-    voices.forEach(v => {
-      if (now < v.next) return;
-      v.next = now + rnd(.11, .26);
-      v.f1.frequency.setTargetAtTime(rnd(320, 860), now, .03);
-      v.f2.frequency.setTargetAtTime(rnd(950, 2300), now, .03);
-      v.osc.frequency.setTargetAtTime(v.f0 * rnd(.88, 1.18), now, .08);
-    });
+    if (spots.tables.length) { every('clink', .5, 1.6, () => FX.clink(table())); every('chair', 8, 18, () => FX.chair(table())); }
+    if (spots.ladle) every('ladle', 7, 14, () => FX.ladle(spots.ladle));
+    if (spots.till) every('till', 14, 28, () => FX.till(spots.till));
+    if (spots.rack) every('tray', 16, 34, () => FX.tray(spots.rack));
+    if (spots.outside.length) every('koel', 30, 60, () => { const [x, y, z] = pick(spots.outside); FX.koel([x + rnd(-8, 8), y, z]); });
+    every('thunder', 50, 110, FX.thunder);
   }
 
   return {
     get ctx() { return ctx; },
     get muted() { return muted; },
     spots, start, listen, tick,
-    play(name, pos, ...a) { if (ctx && !muted && FX[name]) FX[name](pos, ...a); },
-    toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .9, ctx.currentTime, .05); return muted; },
+    play(name, pos, ...a) { if (ctx && !muted && ctx.state === 'running' && FX[name]) FX[name](pos, ...a); },
+    toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .85, ctx.currentTime, .05); return muted; },
     /** Quieter crowd while talking to someone or reading the scanner. */
-    duck(on) { if (!ctx) return; voices.forEach(v => v.lv.gain.setTargetAtTime(on ? .7 : 1.6, ctx.currentTime, .3)); },
+    duck(on) { if (ctx) loops.forEach(g => g.gain.setTargetAtTime(on ? .25 : .55, ctx.currentTime, .4)); },
     suspend() { if (ctx && ctx.state === 'running') ctx.suspend(); },
     resume() { if (ctx && ctx.state === 'suspended') ctx.resume(); },
     close() { if (ctx) ctx.close(); ctx = null; },
@@ -6106,278 +6136,307 @@ L.Sound = () => {
 </script>
 <script>
 /* ---- js/lunch/people.js ---- */
-/* Lunch Rush people: low-poly characters with painted, pre-lit textures (faces, uniforms, hair), in the
-   spirit of lo-fi indie games with photo-textured people. Heads turn to look at you, eyes blink, mouths move
-   while they talk, and they have poses for standing, walking, sitting, eating, serving, carrying a tray,
-   waving and wiping. */
+/* Lunch Rush people, in the style of low-poly indie horror characters: a faceted, flat-shaded body and head
+   with a front-on painted face pasted onto the head (planar projection, so it stretches round the sides),
+   long hair as a few flat panels, uniforms painted with soft light and folds. Faces don't animate; heads
+   turn to look at you when you're close. Poses: stand, walk, sit, eat, serve, carry a tray, wave, wipe. */
 (() => {
 'use strict';
 const L = PL.L3;
 const TAU = Math.PI * 2;
 
-L.SKINS = ['#F3D3B3', '#EAC29C', '#DDAE84', '#C79268', '#A36E48', '#7E5133'];
-L.HAIRS = ['#16110F', '#1D1612', '#241A14', '#2E221A', '#3A2B21'];
-L.HOUSE = ['#C8342B', '#1F5FAF', '#2E8B3E', '#E0A21A'];
+L.SKINS = ['#EDC7A6', '#E2B48E', '#D29E76', '#BC8660', '#99653F', '#76492C'];
+L.HAIRS = ['#15100E', '#1B1411', '#221914', '#2B2019', '#382920'];
+L.HOUSE = ['#B8392E', '#2A5E9E', '#2F7D44', '#C9981E'];
 
-/** Outfits: top style, colours, bottoms, shoes, sleeves and extras. */
 const OUTFITS = {
-  boy:     { top: 'shirt', col: '#F2F2EE', bottom: 'trousers', bot: '#3A3E47', shoes: 'white', sleeves: 'short', crest: true },
-  girl:    { top: 'blouse', col: '#F5F4F0', bottom: 'skirt', bot: '#26324F', shoes: 'white', sleeves: 'short', socks: true, crest: true },
-  pe:      { top: 'tee', col: '#C8342B', bottom: 'shorts', bot: '#1D1F24', shoes: 'white', sleeves: 'short', socks: true, print: 'HLS' },
-  teacher: { top: 'shirt', col: '#BCD3E8', bottom: 'trousers', bot: '#2A2C31', shoes: 'black', sleeves: 'long', lanyard: true },
-  auntie:  { top: 'tee', col: '#8E3B46', apron: '#EFEBE2', bottom: 'trousers', bot: '#1E1E22', shoes: 'black', sleeves: 'short', gloves: '#7FB2E0', floral: true },
-  cook:    { top: 'tee', col: '#B8322A', apron: '#E6E0D2', bottom: 'trousers', bot: '#25252A', shoes: 'black', sleeves: 'short' },
+  boy:     { top: 'shirt', col: '#EFEFEA', bottom: 'trousers', bot: '#3A3E47', shoes: 'white', sleeves: 'short', crest: true },
+  girl:    { top: 'blouse', col: '#F1EFE9', bottom: 'skirt', bot: '#1F2740', shoes: 'black', sleeves: 'short', socks: true, tie: '#1F2740', crest: true },
+  pe:      { top: 'tee', col: '#B8392E', bottom: 'shorts', bot: '#1D1F24', shoes: 'white', sleeves: 'short', socks: true, print: 'HLS' },
+  teacher: { top: 'shirt', col: '#BCD0E2', bottom: 'trousers', bot: '#2A2C31', shoes: 'black', sleeves: 'long', lanyard: true },
+  auntie:  { top: 'tee', col: '#8A4450', apron: '#ECE8DF', bottom: 'trousers', bot: '#1E1E22', shoes: 'black', sleeves: 'short', gloves: '#8DB6DC' },
+  cook:    { top: 'tee', col: '#A83A30', apron: '#E3DDCF', bottom: 'trousers', bot: '#25252A', shoes: 'black', sleeves: 'short' },
   uncle:   { top: 'tee', col: '#9AA3AD', apron: '#2E5C8A', bottom: 'trousers', bot: '#2B2B30', shoes: 'black', sleeves: 'short' },
-  cleaner: { top: 'polo', col: '#2F6B4F', bottom: 'trousers', bot: '#55585E', shoes: 'black', sleeves: 'short', logo: 'CLEANING' },
-  makcik:  { top: 'kurung', col: '#5FA3A0', bottom: 'longskirt', bot: '#5FA3A0', shoes: 'black', sleeves: 'long', floral: true },
+  cleaner: { top: 'polo', col: '#35684F', bottom: 'trousers', bot: '#55585E', shoes: 'black', sleeves: 'short', logo: 'CLEANING' },
+  makcik:  { top: 'kurung', col: '#6FA3A0', bottom: 'longskirt', bot: '#6FA3A0', shoes: 'black', sleeves: 'long' },
 };
 
-/* ================================================================ painted textures */
-function faceCanvas(o, mode) {
-  const W = 256, H = 128, fx = 64, r = L.rng(o.seed);
-  return L.canvas(W, H, c => {
-    c.fillStyle = o.skin; c.fillRect(0, 0, W, H);
-    L.wrapShade(c, W, H, .25, .4);
-    L.vshade(c, W, H, .1, .38);
-    // baked light: cheek blush, eye sockets, under-nose and jaw shadow
-    [-1, 1].forEach(s => { L.blob(c, fx + s * 22, 75, 12, 7, '#E06A74', o.adult ? .09 : .15); L.blob(c, fx + s * 13, 60, 12, 7, '#4A2E22', .17); });
-    L.blob(c, fx, 101, 36, 10, '#3A2418', .3);
-    L.blob(c, fx + 5, 66, 3, 9, '#5A3222', .14);
-    L.blob(c, fx - 1, 70, 4, 3, '#FFF3E4', .3);
-    c.fillStyle = 'rgba(60,30,22,.5)'; c.fillRect(fx - 4, 73, 2, 1); c.fillRect(fx + 2, 73, 2, 1);
-    L.blob(c, fx, 76, 7, 2, '#4A2A1C', .18);
-    if (o.adult) { c.strokeStyle = 'rgba(70,40,28,.18)'; c.lineWidth = 1; [-1, 1].forEach(s => { c.beginPath(); c.moveTo(fx + s * 6, 71); c.quadraticCurveTo(fx + s * 10, 78, fx + s * 8, 85); c.stroke(); }); c.beginPath(); c.moveTo(fx - 9, 47); c.lineTo(fx + 9, 47); c.stroke(); }
-    if (o.stubble) { c.fillStyle = 'rgba(40,30,25,.22)'; for (let i = 0; i < 260; i++) { const a = r() * Math.PI, d = 20 + r() * 12; c.fillRect(fx + Math.cos(a) * d * .95 - .5, 80 + Math.sin(a) * d * .6, 1, 1); } }
-    // ears (u = 0 and .5)
-    [0, 128, 256].forEach(x => { L.blob(c, x, 64, 6, 10, '#B06A50', .35); L.blob(c, x, 64, 3, 6, '#4A2A1C', .25); });
-    // mouth
-    if (mode === 'talk') {
-      c.fillStyle = '#3A1512'; c.beginPath(); c.ellipse(fx, 84, 4.6, 3, 0, 0, TAU); c.fill();
-      c.fillStyle = '#EDE6DC'; c.fillRect(fx - 3, 81.5, 6, 1.3);
-      c.strokeStyle = o.lip; c.lineWidth = 1.2; c.beginPath(); c.ellipse(fx, 84, 5.4, 3.6, 0, 0, TAU); c.stroke();
-    } else {
-      L.blob(c, fx, 85.5, 5, 2.2, o.lip, .6);
-      c.strokeStyle = L.mix(o.lip, -.45); c.lineWidth = 1.3; c.beginPath(); c.moveTo(fx - 6, 83); c.quadraticCurveTo(fx, 85, fx + 6, 83); c.stroke();
-    }
-    // eyes and brows
-    [-1, 1].forEach(s => {
-      const cx = fx + s * 13, cy = 60;
-      if (mode === 'blink') { c.strokeStyle = '#1A110D'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(cx - 6, cy); c.quadraticCurveTo(cx, cy + 2, cx + 6, cy); c.stroke(); }
-      else {
-        c.fillStyle = '#F1EAE2'; c.beginPath(); c.ellipse(cx, cy, 6.8, o.eyeH, 0, 0, TAU); c.fill();
-        c.fillStyle = o.iris; c.beginPath(); c.arc(cx, cy + .3, 3.1, 0, TAU); c.fill();
-        c.fillStyle = '#080504'; c.beginPath(); c.arc(cx, cy + .3, 1.3, 0, TAU); c.fill();
-        c.fillStyle = '#fff'; c.fillRect(cx - 1.2, cy - 1.6, 1.3, 1.3);
-        c.strokeStyle = '#150E0B'; c.lineWidth = 2; c.beginPath(); c.ellipse(cx, cy, 7.1, o.eyeH + .5, 0, Math.PI * 1.03, Math.PI * 1.97); c.stroke();
-        c.beginPath(); c.moveTo(cx + s * 6, cy - .6); c.lineTo(cx + s * 7.6, cy - 2); c.stroke();
-        c.strokeStyle = 'rgba(60,35,25,.35)'; c.lineWidth = 1; c.beginPath(); c.ellipse(cx, cy, 5.6, o.eyeH, 0, Math.PI * .15, Math.PI * .85); c.stroke();
-      }
-      c.strokeStyle = L.mix(o.hairCol, .08); c.lineWidth = o.brow; c.lineCap = 'round';
-      c.beginPath(); c.moveTo(cx - s * 7, cy - 6); c.quadraticCurveTo(cx - s * 1, cy - 9.5, cx + s * 7.5, cy - 7); c.stroke();
-      if (o.glasses) { c.strokeStyle = '#222'; c.lineWidth = 1.4; L.roundRect(c, cx - 8.5, cy - 5.5, 17, 11, 3); c.stroke(); L.blob(c, cx - 3, cy - 2, 4, 2, '#FFFFFF', .25); }
+/* ================================================================ the face: a front-on painted portrait */
+// head size used for the planar projection: x in ±HW, y in ±HH map to the whole texture
+const HW = .1, HH = .125, FS = 256;
+function faceCanvas(o) {
+  const S = FS, cx = 128, r = L.rng(o.seed), skin = o.skin;
+  const dark = L.lerpHex(skin, '#3A1E12', .35), darker = L.lerpHex(skin, '#2A140C', .55), light = L.lerpHex(skin, '#FFF4E6', .32);
+  const EY = 124, BY = 100, NY = 160, MY = 190;
+  return L.canvas(S, S, c => {
+    // skin, darker toward the sides of the head
+    c.fillStyle = L.lerpHex(skin, '#2A140C', .22); c.fillRect(0, 0, S, S);
+    const g = c.createRadialGradient(cx - 10, 118, 8, cx, 140, 130);
+    g.addColorStop(0, light); g.addColorStop(.5, skin); g.addColorStop(1, L.lerpHex(skin, '#2A140C', .28));
+    c.fillStyle = g; c.beginPath(); c.ellipse(cx, 140, 108, 124, 0, 0, TAU); c.fill();
+    // form: temples, cheekbones, jaw, eye sockets, nose, chin (key light from the upper left)
+    L.soft(c, S, S, 6, t => {
+      [-1, 1].forEach(s => {
+        L.blob(t, cx + s * 96, 112, 22, 56, darker, s > 0 ? .5 : .35);
+        L.blob(t, cx + s * 66, 182, 20, 26, dark, .26);
+        L.blob(t, cx + s * 80, 214, 26, 34, darker, s > 0 ? .4 : .3);
+        L.blob(t, cx + s * 44, 154, 26, 16, '#D96A6E', o.adult ? .12 : .2);
+        L.blob(t, cx + s * 40, 120, 28, 17, darker, .34);
+        L.blob(t, cx + s * 40, 98, 30, 8, light, .3);
+      });
+      L.blob(t, cx - 6, 66, 62, 28, light, .4);
+      L.blob(t, cx + 12, 142, 8, 30, darker, .4);
+      L.blob(t, cx - 5, 140, 6, 28, light, .5);
+      L.blob(t, cx, 172, 22, 7, darker, .5);
+      L.blob(t, cx, 214, 22, 8, darker, .38);
+      L.blob(t, cx - 4, 228, 20, 10, light, .3);
+      L.blob(t, cx, 256, 96, 18, darker, .6);
     });
-    if (o.glasses) { c.strokeStyle = '#222'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(fx - 4.5, 58); c.lineTo(fx + 4.5, 58); c.stroke(); c.beginPath(); c.moveTo(fx - 21, 58); c.lineTo(fx - 40, 60); c.moveTo(fx + 21, 58); c.lineTo(fx + 40, 60); c.stroke(); }
-    // hair or headscarf
-    if (o.hair === 'tudung') paintTudung(c, W, H, fx, o, r);
-    else if (o.hair !== 'bald') paintHair(c, W, H, fx, o, r);
-    L.grain(c, W, H, 9, o.seed);
+    // adult lines and stubble
+    if (o.adult) L.soft(c, S, S, 1.2, t => {
+      t.strokeStyle = L.rgba('#3A1E12', .35); t.lineWidth = 2;
+      [-1, 1].forEach(s => { t.beginPath(); t.moveTo(cx + s * 18, 164); t.quadraticCurveTo(cx + s * 30, 180, cx + s * 27, 198); t.stroke(); t.beginPath(); t.moveTo(cx + s * 26, 134); t.quadraticCurveTo(cx + s * 40, 140, cx + s * 54, 134); t.stroke(); });
+      t.globalAlpha = .6; [70, 80].forEach(y => { t.beginPath(); t.moveTo(cx - 32, y); t.quadraticCurveTo(cx, y - 4, cx + 32, y); t.stroke(); });
+    });
+    if (o.stubble) L.soft(c, S, S, .8, t => { t.fillStyle = L.rgba('#241A16', .3); for (let i = 0; i < 1400; i++) { const a = r() * Math.PI, d = 50 + r() * 34, x = cx + Math.cos(a) * d * .85, y = 176 + Math.sin(a) * d * .75; if (y > 172) t.fillRect(x, y, 1.2, 1.2); } for (let i = 0; i < 260; i++) t.fillRect(cx - 22 + r() * 44, 176 + r() * 7, 1.2, 1.2); });
+    // eyes
+    [-1, 1].forEach(s => {
+      const ex = cx + s * 40, h = o.eyeH, w = 17, ix = ex - s * w, ox = ex + s * w;
+      const eye = new Path2D(); eye.moveTo(ix, EY + 1); eye.quadraticCurveTo(ex, EY - h * 1.9, ox, EY - 2); eye.quadraticCurveTo(ex + s * 2, EY + h * 1.15, ix, EY + 1);
+      if (!o.mono) L.soft(c, S, S, 1, t => { t.strokeStyle = L.rgba('#3A1E12', .45); t.lineWidth = 1.6; t.beginPath(); t.moveTo(ix + s * 2, EY - h - 2); t.quadraticCurveTo(ex, EY - h * 2.6, ox, EY - h - 3); t.stroke(); });
+      L.blob(c, ex, EY + 9, 18, 6, dark, .3);
+      c.save(); c.clip(eye);
+      const sg = c.createLinearGradient(ix, 0, ox, 0); sg.addColorStop(0, '#CFC4BC'); sg.addColorStop(.5, '#EEE7E0'); sg.addColorStop(1, '#C4B8AF'); c.fillStyle = sg; c.fillRect(ex - 22, EY - 16, 44, 30);
+      const ig = c.createRadialGradient(ex - 1, EY - 2, 1, ex, EY - 1, 9); ig.addColorStop(0, o.iris2); ig.addColorStop(.7, o.iris); ig.addColorStop(1, '#0E0805');
+      c.fillStyle = ig; c.beginPath(); c.arc(ex, EY - 1, 8.6, 0, TAU); c.fill();
+      c.fillStyle = '#050302'; c.beginPath(); c.arc(ex, EY - 1, 3.4, 0, TAU); c.fill();
+      const lg = c.createLinearGradient(0, EY - 12, 0, EY + 2); lg.addColorStop(0, 'rgba(20,10,6,.55)'); lg.addColorStop(1, 'rgba(20,10,6,0)'); c.fillStyle = lg; c.fillRect(ex - 22, EY - 16, 44, 18);
+      c.fillStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.arc(ex - 3, EY - 4, 1.8, 0, TAU); c.fill();
+      c.restore();
+      c.strokeStyle = '#140B08'; c.lineWidth = 2.6; c.lineCap = 'round'; c.beginPath(); c.moveTo(ix, EY + 1); c.quadraticCurveTo(ex, EY - h * 1.9, ox, EY - 2); c.stroke();
+      c.lineWidth = 1.2; for (let k = 0; k < 4; k++) { const t = .55 + k * .12, x = ix + (ox - ix) * t, y = EY - h * 1.9 * 2 * t * (1 - t) - 1; c.beginPath(); c.moveTo(x, y); c.lineTo(x + s * 3, y - 3); c.stroke(); }
+      c.strokeStyle = L.rgba('#6A3A2C', .45); c.lineWidth = 1; c.beginPath(); c.moveTo(ox, EY - 2); c.quadraticCurveTo(ex + s * 2, EY + h * 1.15, ix, EY + 1); c.stroke();
+      L.blob(c, ix + s * 2, EY + 1, 3, 2, '#C9706C', .6);
+      // brows: many fine strokes along an arch
+      c.strokeStyle = L.rgba(o.hairCol, .55); c.lineCap = 'round';
+      const bi = ex - s * 19, bo = ex + s * 20;
+      for (let k = 0; k < 46; k++) { const t = k / 45, x = bi + (bo - bi) * t, y = BY + 2 - Math.sin(Math.min(1, t * 1.3) * Math.PI * .6) * 6 + t * 3 + (r() - .5) * 2; c.lineWidth = (1 - t) * o.brow + .6; c.beginPath(); c.moveTo(x, y + 2); c.lineTo(x + s * 4, y - 1); c.stroke(); }
+      if (o.glasses) { c.strokeStyle = '#1E1C1C'; c.lineWidth = 2.2; L.roundRect(c, ex - 21, EY - 15, 42, 28, 7); c.stroke(); L.blob(c, ex - 8, EY - 7, 10, 4, '#FFFFFF', .22); }
+    });
+    if (o.glasses) { c.strokeStyle = '#1E1C1C'; c.lineWidth = 2.2; c.beginPath(); c.moveTo(cx - 19, EY - 6); c.quadraticCurveTo(cx, EY - 10, cx + 19, EY - 6); c.stroke(); c.beginPath(); c.moveTo(cx - 61, EY - 6); c.lineTo(cx - 110, EY - 2); c.moveTo(cx + 61, EY - 6); c.lineTo(cx + 110, EY - 2); c.stroke(); }
+    // nose
+    L.soft(c, S, S, 1.2, t => {
+      [-1, 1].forEach(s => { t.fillStyle = L.rgba('#1E0E08', .7); t.beginPath(); t.ellipse(cx + s * 9, NY + 5, 5, 2.6, s * .35, 0, TAU); t.fill(); t.strokeStyle = L.rgba('#3A1E12', .45); t.lineWidth = 2; t.beginPath(); t.arc(cx + s * 13, NY, 7, s > 0 ? -.6 : Math.PI - 1.8, s > 0 ? 1.8 : Math.PI + .6); t.stroke(); });
+      L.blob(t, cx - 2, NY - 4, 8, 6, light, .6);
+    });
+    // mouth
+    L.soft(c, S, S, .9, t => {
+      const up = new Path2D(); up.moveTo(cx - 24, MY); up.quadraticCurveTo(cx - 14, MY - 7, cx - 6, MY - 7); up.quadraticCurveTo(cx, MY - 4, cx + 6, MY - 7); up.quadraticCurveTo(cx + 14, MY - 7, cx + 24, MY); up.quadraticCurveTo(cx, MY + 3, cx - 24, MY);
+      t.fillStyle = L.mix(o.lip, -.18); t.fill(up);
+      const lo = new Path2D(); lo.moveTo(cx - 22, MY + 1); lo.quadraticCurveTo(cx, MY + 17, cx + 22, MY + 1); lo.quadraticCurveTo(cx, MY + 3, cx - 22, MY + 1);
+      t.fillStyle = o.lip; t.fill(lo);
+      L.blob(t, cx - 2, MY + 8, 9, 3, '#FFF0E6', .3);
+      t.strokeStyle = L.rgba('#2A0E0A', .8); t.lineWidth = 1.8; t.beginPath(); t.moveTo(cx - 24, MY); t.quadraticCurveTo(cx, MY + 3, cx + 24, MY); t.stroke();
+      [-1, 1].forEach(s => L.blob(t, cx + s * 25, MY + 1, 4, 3, '#2A0E0A', .4));
+      t.strokeStyle = L.rgba('#3A1E12', .2); t.lineWidth = 1.5; [-1, 1].forEach(s => { t.beginPath(); t.moveTo(cx + s * 4, NY + 12); t.lineTo(cx + s * 5, MY - 7); t.stroke(); });
+    });
+    // hair or headscarf around the face
+    if (o.hair === 'tudung') tudung(c, S, cx, o, r); else if (o.hair !== 'bald') hair(c, S, cx, o, r);
+    // skin texture and a touch of softness
+    L.grain(c, S, S, 7, o.seed);
+    L.soft(c, S, S, .5, t => t.drawImage(c.canvas, 0, 0));
   });
 }
-function hairline(o, x, W, r) {
-  let a = ((x / W - .25) % 1 + 1) % 1; if (a > .5) a -= 1; a = Math.abs(a);
-  const back = { short: 94, crop: 90, bun: 98, bob: 112, long: 128, pony: 100, net: 96 }[o.hair] || 96;
-  if (a < .12) return o.fringe ? 50 + r() * 4 : 38 + (a / .12) * (a / .12) * 5;
-  if (a < .24) return (o.fringe ? 50 : 43) + (a - .12) / .12 * (o.hair === 'long' || o.hair === 'bob' ? 40 : 22);
-  return 66 + (a - .24) / .26 * (back - 66);
+function hairPath(o, cx) {
+  const long = o.hair === 'long' || o.hair === 'bob' || o.hair === 'pony', p = new Path2D(), top = o.fringe ? 96 : 52;
+  p.moveTo(0, 0); p.lineTo(256, 0);
+  const side = long ? (o.hair === 'bob' ? 206 : 256) : 128;
+  p.lineTo(256, side);
+  if (long) { p.lineTo(236, side); p.quadraticCurveTo(222, 150, 214, 96); }
+  else p.lineTo(224, 100);
+  if (o.fringe) { for (let x = 214; x >= 42; x -= 8) p.lineTo(x, top + ((x / 8) % 2) * 5 + Math.abs(x - cx) * .08); }
+  else { p.quadraticCurveTo(196, 58, cx + 4, top); p.quadraticCurveTo(60, 58, 42, 100); }
+  if (long) { p.quadraticCurveTo(34, 150, 20, side); p.lineTo(0, side); }
+  else { p.lineTo(32, 100); p.lineTo(0, side); }
+  p.closePath();
+  return p;
 }
-function paintHair(c, W, H, fx, o, r) {
-  const path = new Path2D(); path.moveTo(0, 0);
-  for (let x = 0; x <= W; x += 2) path.lineTo(x, hairline(o, x, W, r));
-  path.lineTo(W, 0); path.closePath();
-  c.save(); c.clip(path);
-  c.fillStyle = o.hairCol; c.fillRect(0, 0, W, H);
-  for (let i = 0; i < 520; i++) { const x = r() * W, y = r() * 20; c.strokeStyle = r() < .5 ? L.rgba('#000000', .25) : L.rgba('#FFFFFF', .07); c.lineWidth = 1; c.beginPath(); c.moveTo(x, y); c.quadraticCurveTo(x + (r() - .5) * 8, y + 40, x + (r() - .5) * 14, y + 60 + r() * 60); c.stroke(); }
-  L.blob(c, fx, 18, 60, 7, '#FFFFFF', .12); L.blob(c, fx + 128, 26, 60, 8, '#FFFFFF', .06);
-  if (o.hair === 'net') { c.strokeStyle = 'rgba(255,255,255,.18)'; for (let x = 0; x < W; x += 5) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 20, 110); c.stroke(); } }
+function hair(c, S, cx, o, r) {
+  const p = hairPath(o, cx);
+  // the hair's shadow on the skin
+  L.soft(c, S, S, 5, t => { t.fillStyle = 'rgba(25,12,8,.45)'; t.translate(0, 5); t.fill(p); });
+  c.save(); c.clip(p);
+  const g = c.createLinearGradient(0, 0, 0, S); g.addColorStop(0, L.mix(o.hairCol, .1)); g.addColorStop(1, L.mix(o.hairCol, -.2)); c.fillStyle = g; c.fillRect(0, 0, S, S);
+  for (let i = 0; i < 700; i++) { const x0 = cx + (r() - .5) * 20, dir = r() < .5 ? -1 : 1, x1 = cx + dir * (20 + r() * 120), y1 = 60 + r() * 200; c.strokeStyle = r() < .55 ? 'rgba(0,0,0,.28)' : L.rgba('#FFFFFF', .06 + r() * .06); c.lineWidth = .8 + r(); c.beginPath(); c.moveTo(x0, -5); c.quadraticCurveTo((x0 + x1) / 2 + dir * 30, 20 + r() * 30, x1, y1); c.stroke(); }
+  L.blob(c, cx - 30, 36, 60, 12, '#FFFFFF', .12);
+  if (o.hair === 'net') { c.strokeStyle = 'rgba(255,255,255,.2)'; c.lineWidth = 1; for (let x = -60; x < S; x += 7) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x + 60, 110); c.stroke(); c.beginPath(); c.moveTo(x + 60, 0); c.lineTo(x, 110); c.stroke(); } }
   c.restore();
-  // soft shadow the hair throws on the forehead
-  for (let x = 0; x < W; x += 2) { const y = hairline(o, x, W, r); const g = c.createLinearGradient(0, y, 0, y + 5); g.addColorStop(0, 'rgba(30,20,15,.3)'); g.addColorStop(1, 'rgba(30,20,15,0)'); c.fillStyle = g; c.fillRect(x, y, 2, 5); }
 }
-function paintTudung(c, W, H, fx, o, r) {
-  c.save(); c.beginPath(); c.rect(0, 0, W, H); c.ellipse(fx, 73, 26, 35, 0, 0, TAU); c.clip('evenodd');
-  c.fillStyle = o.tudungCol; c.fillRect(0, 0, W, H); L.wrapShade(c, W, H, .25, .3);
-  for (let i = 0; i < 40; i++) { const x = r() * W; L.blob(c, x, 40 + r() * 80, 3, 30, r() < .5 ? '#000000' : '#FFFFFF', .08); }
+function tudung(c, S, cx, o, r) {
+  L.soft(c, S, S, 4, t => { t.fillStyle = 'rgba(25,12,8,.4)'; t.beginPath(); t.rect(0, 0, S, S); t.ellipse(cx, 150, 80, 100, 0, 0, TAU); t.fill('evenodd'); });
+  c.save(); c.beginPath(); c.rect(0, 0, S, S); c.ellipse(cx, 146, 78, 100, 0, 0, TAU); c.clip('evenodd');
+  c.fillStyle = o.tudungCol; c.fillRect(0, 0, S, S);
+  L.soft(c, S, S, 4, t => { for (let i = 0; i < 26; i++) L.blob(t, r() * S, r() * S, 6, 40, r() < .6 ? '#000000' : '#FFFFFF', .12); L.blob(t, 0, 140, 50, 140, '#000000', .25); L.blob(t, S, 140, 50, 140, '#000000', .3); });
   c.restore();
-  c.strokeStyle = L.mix(o.tudungCol, -.3); c.lineWidth = 1.5; c.beginPath(); c.ellipse(fx, 73, 26, 35, 0, 0, TAU); c.stroke();
 }
 function hairCanvas(o) {
-  const r = L.rng(o.seed + 3), col = o.hair === 'tudung' ? o.tudungCol : o.hair === 'net' ? '#F2F2F0' : o.hairCol;
-  return L.canvas(64, 64, c => {
-    c.fillStyle = col; c.fillRect(0, 0, 64, 64);
-    if (o.hair === 'net' || o.hair === 'tudung') { for (let i = 0; i < 24; i++) L.blob(c, r() * 64, r() * 64, 2, 12, r() < .5 ? '#000000' : '#FFFFFF', .08); }
-    else for (let i = 0; i < 180; i++) { const x = r() * 64; c.strokeStyle = r() < .6 ? 'rgba(0,0,0,.28)' : 'rgba(255,255,255,.08)'; c.beginPath(); c.moveTo(x, 0); c.lineTo(x + (r() - .5) * 6, 64); c.stroke(); }
-    const g = c.createLinearGradient(0, 0, 0, 64); g.addColorStop(0, 'rgba(255,255,255,.12)'); g.addColorStop(.35, 'rgba(255,255,255,0)'); g.addColorStop(1, 'rgba(0,0,0,.35)');
-    c.fillStyle = g; c.fillRect(0, 0, 64, 64); L.grain(c, 64, 64, 10, o.seed);
+  const r = L.rng(o.seed + 3), col = o.hair === 'tudung' ? o.tudungCol : o.hair === 'net' ? '#EDEDEA' : o.hairCol;
+  return L.canvas(128, 128, c => {
+    const g = c.createLinearGradient(0, 0, 0, 128); g.addColorStop(0, L.mix(col, .1)); g.addColorStop(1, L.mix(col, -.25)); c.fillStyle = g; c.fillRect(0, 0, 128, 128);
+    if (o.hair === 'net' || o.hair === 'tudung') L.soft(c, 128, 128, 3, t => { for (let i = 0; i < 20; i++) L.blob(t, r() * 128, r() * 128, 5, 30, r() < .5 ? '#000000' : '#FFFFFF', .12); });
+    else for (let i = 0; i < 420; i++) { const x = r() * 128; c.strokeStyle = r() < .6 ? 'rgba(0,0,0,.3)' : 'rgba(255,255,255,.07)'; c.lineWidth = .8 + r(); c.beginPath(); c.moveTo(x, 0); c.bezierCurveTo(x + (r() - .5) * 10, 40, x + (r() - .5) * 10, 90, x + (r() - .5) * 12, 128); c.stroke(); }
+    L.blob(c, 64, 20, 70, 10, '#FFFFFF', .1);
   });
 }
+/* ================================================================ clothes */
 function topCanvas(o, f) {
-  const W = 128, H = 128, fx = 64, r = L.rng(o.seed + 11);
+  const W = 256, H = 256, fx = 128, r = L.rng(o.seed + 11), ink = 'rgba(0,0,0,.22)';
   return L.canvas(W, H, c => {
     c.fillStyle = f.col; c.fillRect(0, 0, W, H);
-    if (f.floral) for (let i = 0; i < 70; i++) { const x = r() * W, y = r() * H; c.fillStyle = L.rgba(r() < .5 ? '#F7D6A8' : '#F4F0E8', .55); c.beginPath(); c.arc(x, y, 1.6, 0, TAU); c.fill(); }
-    // creases and folds
-    for (let i = 0; i < 16; i++) L.blob(c, r() * W, 30 + r() * 90, 3, 12 + r() * 14, r() < .6 ? '#000000' : '#FFFFFF', r() < .6 ? .08 : .1);
-    c.strokeStyle = 'rgba(0,0,0,.1)'; for (let i = 0; i < 10; i++) { const x = fx + (r() - .5) * 60; c.beginPath(); c.moveTo(x, 100); c.lineTo(x + (r() - .5) * 10, 114); c.stroke(); }
-    [fx - 32, fx + 32].forEach(x => { c.fillStyle = 'rgba(0,0,0,.12)'; c.fillRect(x, 0, 1, H); });
-    const ink = 'rgba(0,0,0,.22)';
+    L.soft(c, W, H, 5, t => {
+      for (let i = 0; i < 22; i++) L.blob(t, r() * W, 50 + r() * 190, 6, 26 + r() * 30, r() < .6 ? '#000000' : '#FFFFFF', r() < .6 ? .1 : .14);
+      [fx - 64, fx + 64].forEach(x => L.blob(t, x, 130, 18, 140, '#000000', .16));
+      L.blob(t, fx, 205, 70, 18, '#000000', .1);
+    });
     if (f.top === 'shirt' || f.top === 'polo') {
-      c.fillStyle = L.mix(f.col, -.12); c.fillRect(0, 0, W, 5);
-      [-1, 1].forEach(s => { c.fillStyle = f.col; c.beginPath(); c.moveTo(fx + s * 3, 5); c.lineTo(fx + s * 17, 2); c.lineTo(fx + s * 10, 19); c.closePath(); c.fill(); c.strokeStyle = ink; c.lineWidth = 1; c.stroke(); });
-      c.fillStyle = o.skin; c.beginPath(); c.moveTo(fx - 3, 5); c.lineTo(fx + 3, 5); c.lineTo(fx, 14); c.closePath(); c.fill();
-      c.fillStyle = 'rgba(0,0,0,.08)'; c.fillRect(fx - 1, 14, 3, f.top === 'polo' ? 22 : 100);
-      const n = f.top === 'polo' ? [22, 30] : [24, 40, 56, 72, 88];
-      n.forEach(y => { c.fillStyle = '#E4E4DE'; c.beginPath(); c.arc(fx, y, 1.8, 0, TAU); c.fill(); c.fillStyle = 'rgba(0,0,0,.35)'; c.fillRect(fx - .5, y - .5, 1, 1); });
-      if (f.top === 'shirt' && !f.lanyard) { c.strokeStyle = ink; c.strokeRect(fx + 9, 34, 16, 17); c.fillStyle = 'rgba(0,0,0,.08)'; c.fillRect(fx + 9, 34, 16, 3); }
-      if (f.crest) { c.fillStyle = '#1F2F5A'; c.beginPath(); c.moveTo(fx + 13, 38); c.lineTo(fx + 21, 38); c.lineTo(fx + 21, 43); c.lineTo(fx + 17, 47); c.lineTo(fx + 13, 43); c.closePath(); c.fill(); c.fillStyle = '#E0B22A'; c.fillRect(fx + 16, 40, 2, 4); }
+      c.fillStyle = L.mix(f.col, -.12); c.fillRect(0, 0, W, 9);
+      c.fillStyle = o.skin; c.beginPath(); c.moveTo(fx - 7, 8); c.lineTo(fx + 7, 8); c.lineTo(fx, 28); c.closePath(); c.fill();
+      [-1, 1].forEach(s => { c.fillStyle = f.col; c.beginPath(); c.moveTo(fx + s * 6, 9); c.lineTo(fx + s * 34, 3); c.lineTo(fx + s * 20, 38); c.closePath(); c.fill(); c.strokeStyle = ink; c.lineWidth = 1.5; c.stroke(); });
+      c.fillStyle = 'rgba(0,0,0,.07)'; c.fillRect(fx - 2, 28, 5, f.top === 'polo' ? 44 : 200);
+      (f.top === 'polo' ? [44, 60] : [48, 80, 112, 144, 176]).forEach(y => { c.fillStyle = '#E2E2DC'; c.beginPath(); c.arc(fx, y, 3.2, 0, TAU); c.fill(); c.strokeStyle = 'rgba(0,0,0,.2)'; c.stroke(); });
+      if (f.top === 'shirt' && !f.lanyard) { c.strokeStyle = ink; c.lineWidth = 1.5; c.strokeRect(fx + 18, 68, 32, 34); }
     } else if (f.top === 'blouse') {
-      c.fillStyle = L.mix(f.col, -.1); c.fillRect(0, 0, W, 4);
-      [-1, 1].forEach(s => { c.fillStyle = '#FFFFFF'; c.beginPath(); c.ellipse(fx + s * 9, 7, 10, 7, s * .3, 0, TAU); c.fill(); c.strokeStyle = ink; c.stroke(); });
-      c.fillStyle = o.skin; c.beginPath(); c.moveTo(fx - 3, 3); c.lineTo(fx + 3, 3); c.lineTo(fx, 10); c.closePath(); c.fill();
-      if (f.crest) { c.fillStyle = '#1F2F5A'; c.beginPath(); c.moveTo(fx + 13, 30); c.lineTo(fx + 21, 30); c.lineTo(fx + 21, 35); c.lineTo(fx + 17, 39); c.lineTo(fx + 13, 35); c.closePath(); c.fill(); c.fillStyle = '#E0B22A'; c.fillRect(fx + 16, 32, 2, 4); }
+      c.fillStyle = L.mix(f.col, -.1); c.fillRect(0, 0, W, 8);
+      c.fillStyle = o.skin; c.beginPath(); c.moveTo(fx - 10, 6); c.lineTo(fx + 10, 6); c.lineTo(fx, 22); c.closePath(); c.fill();
+      [-1, 1].forEach(s => { c.fillStyle = L.mix(f.col, .3); c.beginPath(); c.ellipse(fx + s * 20, 14, 22, 14, s * .25, 0, TAU); c.fill(); c.strokeStyle = ink; c.lineWidth = 1.5; c.stroke(); });
+      if (f.tie) { c.fillStyle = f.tie; c.beginPath(); c.moveTo(fx - 7, 20); c.lineTo(fx + 7, 20); c.lineTo(fx + 9, 110); c.lineTo(fx, 122); c.lineTo(fx - 9, 110); c.closePath(); c.fill(); c.fillStyle = L.mix(f.tie, .15); c.fillRect(fx - 7, 20, 14, 12); }
     } else {
-      c.fillStyle = L.mix(f.col, -.2); c.beginPath(); c.ellipse(fx, 0, 14, 8, 0, 0, TAU); c.fill();
-      c.fillStyle = o.skin; c.beginPath(); c.ellipse(fx, 0, 11, 6, 0, 0, TAU); c.fill();
-      if (f.print) L.lines(c, W, [[f.print, 13, 36, 'rgba(255,255,255,.85)', 'bold', fx]]);
-      if (f.logo) { c.fillStyle = f.col; [-1, 1].forEach(s => { c.beginPath(); c.moveTo(fx + s * 4, 4); c.lineTo(fx + s * 14, 2); c.lineTo(fx + s * 8, 13); c.closePath(); c.fill(); c.strokeStyle = ink; c.stroke(); }); L.lines(c, W, [[f.logo, 6, 34, '#F2F2F2', 'bold', fx + 16]]); }
+      c.fillStyle = L.mix(f.col, -.22); c.beginPath(); c.ellipse(fx, 0, 30, 16, 0, 0, TAU); c.fill();
+      c.fillStyle = o.skin; c.beginPath(); c.ellipse(fx, 0, 24, 12, 0, 0, TAU); c.fill();
+      if (f.print) L.lines(c, W, [[f.print, 24, 70, 'rgba(255,255,255,.85)', 'bold', fx]]);
+      if (f.logo) { [-1, 1].forEach(s => { c.fillStyle = f.col; c.beginPath(); c.moveTo(fx + s * 8, 8); c.lineTo(fx + s * 28, 4); c.lineTo(fx + s * 16, 26); c.closePath(); c.fill(); c.strokeStyle = ink; c.stroke(); }); L.lines(c, W, [[f.logo, 12, 68, '#F2F2F2', 'bold', fx + 32]]); }
     }
-    if (f.lanyard) {
-      c.strokeStyle = '#1F5FAF'; c.lineWidth = 2; c.beginPath(); c.moveTo(fx - 9, 3); c.lineTo(fx - 1, 44); c.moveTo(fx + 9, 3); c.lineTo(fx + 1, 44); c.stroke();
-      c.fillStyle = '#FFFFFF'; c.fillRect(fx - 6, 44, 12, 16); c.fillStyle = '#1F5FAF'; c.fillRect(fx - 6, 44, 12, 4); c.fillStyle = '#C9B8A6'; c.fillRect(fx - 3, 50, 6, 6);
-    }
+    if (f.crest) { const x = fx + 34, y = f.top === 'blouse' ? 60 : 76; c.fillStyle = '#1F2F5A'; c.beginPath(); c.moveTo(x - 8, y - 8); c.lineTo(x + 8, y - 8); c.lineTo(x + 8, y + 2); c.lineTo(x, y + 10); c.lineTo(x - 8, y + 2); c.closePath(); c.fill(); c.fillStyle = '#D9AE2E'; c.fillRect(x - 2, y - 5, 4, 8); }
+    if (f.lanyard) { c.strokeStyle = '#2A5E9E'; c.lineWidth = 4; c.beginPath(); c.moveTo(fx - 18, 6); c.lineTo(fx - 2, 88); c.moveTo(fx + 18, 6); c.lineTo(fx + 2, 88); c.stroke(); c.fillStyle = '#FFFFFF'; c.fillRect(fx - 12, 88, 24, 32); c.fillStyle = '#2A5E9E'; c.fillRect(fx - 12, 88, 24, 8); c.fillStyle = '#C9B8A6'; c.fillRect(fx - 6, 100, 12, 12); }
     if (f.apron) {
-      c.fillStyle = f.apron; c.fillRect(fx - 30, 22, 60, H - 22);
-      c.strokeStyle = 'rgba(0,0,0,.18)'; c.strokeRect(fx - 30, 22, 60, H - 22);
-      c.strokeStyle = f.apron; c.lineWidth = 3; c.beginPath(); c.moveTo(fx - 24, 22); c.lineTo(fx - 10, 0); c.moveTo(fx + 24, 22); c.lineTo(fx + 10, 0); c.stroke();
-      for (let i = 0; i < 8; i++) L.blob(c, fx + (r() - .5) * 50, 60 + r() * 60, 3, 3, '#8A5A2A', .12);
-      c.fillStyle = L.mix(f.apron, -.15); c.fillRect(0, 86, 12, 4); c.fillRect(W - 12, 86, 12, 4);
+      c.fillStyle = f.apron; c.fillRect(fx - 60, 44, 120, H - 44); c.strokeStyle = 'rgba(0,0,0,.16)'; c.lineWidth = 2; c.strokeRect(fx - 60, 44, 120, H - 44);
+      c.strokeStyle = f.apron; c.lineWidth = 6; c.beginPath(); c.moveTo(fx - 48, 44); c.lineTo(fx - 20, 0); c.moveTo(fx + 48, 44); c.lineTo(fx + 20, 0); c.stroke();
+      L.soft(c, W, H, 3, t => { for (let i = 0; i < 10; i++) L.blob(t, fx + (r() - .5) * 100, 120 + r() * 120, 6, 6, '#8A5A2A', .14); });
     }
-    if (f.bottom === 'trousers' || f.bottom === 'shorts') {
-      c.fillStyle = f.bot; c.fillRect(0, 114, W, 14);
-      c.fillStyle = '#16161A'; c.fillRect(0, 111, W, 4); c.fillStyle = '#B8B8B0'; c.fillRect(fx - 3, 111, 6, 4);
-    } else { c.fillStyle = f.bot; c.fillRect(0, 118, W, 10); }
-    L.wrapShade(c, W, H, .5, .2); L.vshade(c, W, H, .08, .22);
-    L.grain(c, W, H, 11, o.seed + 1);
+    if (f.bottom === 'trousers' || f.bottom === 'shorts') { c.fillStyle = f.bot; c.fillRect(0, 228, W, 28); c.fillStyle = '#16161A'; c.fillRect(0, 222, W, 8); c.fillStyle = '#B0B0A8'; c.fillRect(fx - 6, 222, 12, 8); }
+    else { c.fillStyle = f.bot; c.fillRect(0, 236, W, 20); }
+    L.wrapShade(c, W, H, .5, .22); L.vshade(c, W, H, .1, .22); L.grain(c, W, H, 6, o.seed + 1);
   });
 }
 function limbCanvas(o, f, part) {
-  const W = 32, H = 64, r = L.rng(o.seed + part.length);
+  const W = 64, H = 128, r = L.rng(o.seed + part.length);
   return L.canvas(W, H, c => {
-    const skin = o.skin, gloves = f.gloves;
     const fill = (col, y0, y1) => { c.fillStyle = col; c.fillRect(0, y0, W, y1 - y0); };
-    if (part === 'upper') { fill(skin, 0, H); fill(f.col, 0, f.sleeves === 'long' ? H : 34); if (f.sleeves !== 'long') fill(L.mix(f.col, -.18), 31, 34); }
-    else if (part === 'fore') { fill(skin, 0, H); if (f.sleeves === 'long') { fill(f.col, 0, 52); fill(L.mix(f.col, -.15), 48, 52); } }
-    else if (part === 'hand') { fill(gloves || skin, 0, H); }
-    else if (part === 'thigh') { const bare = f.bottom === 'skirt'; fill(bare ? skin : f.bot, 0, H); if (f.bottom === 'shorts') { fill(skin, 38, H); fill(L.mix(f.bot, .15), 34, 38); } if (!bare) { c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(0, 0, 1, H); } }
+    if (part === 'upper') { fill(o.skin, 0, H); fill(f.col, 0, f.sleeves === 'long' ? H : 70); if (f.sleeves !== 'long') fill(L.mix(f.col, -.16), 62, 70); }
+    else if (part === 'fore') { fill(o.skin, 0, H); if (f.sleeves === 'long') { fill(f.col, 0, 104); fill(L.mix(f.col, -.15), 96, 104); } }
+    else if (part === 'hand') fill(f.gloves || o.skin, 0, H);
+    else if (part === 'thigh') { const bare = f.bottom === 'skirt'; fill(bare ? o.skin : f.bot, 0, H); if (f.bottom === 'shorts') { fill(o.skin, 76, H); fill(L.mix(f.bot, .15), 70, 76); } }
     else if (part === 'shin') {
       const bare = f.bottom === 'skirt' || f.bottom === 'shorts';
-      fill(bare ? skin : f.bot, 0, H);
-      if (bare && f.socks) { fill('#F3F3F0', 34, H); c.fillStyle = 'rgba(0,0,0,.08)'; for (let y = 36; y < H; y += 3) c.fillRect(0, y, W, 1); }
-      if (!bare) { c.fillStyle = 'rgba(0,0,0,.18)'; c.fillRect(0, 0, 1, H); }
+      fill(bare ? o.skin : f.bot, 0, H);
+      if (bare && f.socks) { const top = f.bottom === 'skirt' ? 34 : 70; fill('#E9E6DE', top, H); fill('#D9D5CB', top, top + 6); L.soft(c, W, H, 2, t => { for (let y = top + 10; y < H; y += 7) { t.fillStyle = 'rgba(0,0,0,.06)'; t.fillRect(0, y, W, 2); } }); }
     }
-    for (let i = 0; i < 6; i++) L.blob(c, r() * W, r() * H, 2, 8, '#000000', .06);
-    L.wrapShade(c, W, H, 0, .35); L.grain(c, W, H, 10, o.seed + 5);
+    L.soft(c, W, H, 3, t => { for (let i = 0; i < 6; i++) L.blob(t, r() * W, r() * H, 4, 16, '#000000', .08); });
+    L.wrapShade(c, W, H, 0, .28); L.grain(c, W, H, 6, o.seed + 5);
   });
 }
 function shoeCanvas(f) {
-  return L.canvas(32, 32, c => {
+  return L.canvas(64, 64, c => {
     const white = f.shoes === 'white';
-    c.fillStyle = white ? '#EDEDE8' : '#1B1B1E'; c.fillRect(0, 0, 32, 32);
-    c.fillStyle = white ? '#B9B9B2' : '#0C0C0E'; c.fillRect(0, 24, 32, 8);
-    if (white) { c.fillStyle = '#9A9A94'; for (let y = 6; y < 20; y += 4) c.fillRect(12, y, 8, 1); }
-    else L.blob(c, 12, 8, 8, 3, '#FFFFFF', .2);
-    L.grain(c, 32, 32, 10, 3);
+    c.fillStyle = white ? '#E6E5E0' : '#1D1B1B'; c.fillRect(0, 0, 64, 64);
+    c.fillStyle = white ? '#B7B6B0' : '#0C0B0B'; c.fillRect(0, 48, 64, 16);
+    if (white) { c.fillStyle = '#9A9A94'; for (let y = 12; y < 40; y += 8) c.fillRect(24, y, 16, 2); } else L.blob(c, 24, 16, 16, 6, '#FFFFFF', .22);
   });
 }
 function skirtCanvas(o, f) {
-  return L.canvas(64, 64, c => {
-    c.fillStyle = f.bot; c.fillRect(0, 0, 64, 64);
-    if (f.bottom === 'skirt') for (let x = 0; x < 64; x += 4) { c.fillStyle = 'rgba(0,0,0,.22)'; c.fillRect(x, 6, 1, 58); c.fillStyle = 'rgba(255,255,255,.07)'; c.fillRect(x + 1, 6, 1, 58); }
-    if (f.floral) { const r = L.rng(o.seed + 21); for (let i = 0; i < 40; i++) { c.fillStyle = 'rgba(247,214,168,.5)'; c.beginPath(); c.arc(r() * 64, r() * 64, 1.4, 0, TAU); c.fill(); } }
-    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(0, 0, 64, 5); c.fillRect(0, 60, 64, 4);
-    L.wrapShade(c, 64, 64, 0, .35); L.grain(c, 64, 64, 10, o.seed + 9);
+  return L.canvas(128, 128, c => {
+    c.fillStyle = f.bot; c.fillRect(0, 0, 128, 128);
+    if (f.bottom === 'skirt') L.soft(c, 128, 128, 1.5, t => { for (let x = 0; x < 128; x += 8) { t.fillStyle = 'rgba(0,0,0,.3)'; t.fillRect(x, 10, 2, 118); t.fillStyle = 'rgba(255,255,255,.07)'; t.fillRect(x + 3, 10, 2, 118); } });
+    c.fillStyle = 'rgba(0,0,0,.25)'; c.fillRect(0, 0, 128, 10);
+    L.wrapShade(c, 128, 128, 0, .3); L.vshade(c, 128, 128, 0, .2); L.grain(c, 128, 128, 6, o.seed + 9);
   });
 }
 
 /* ================================================================ build */
-const matOf = (c, side) => L.lam({ map: L.texOf(c), side: side || THREE.FrontSide });
-function headGeo() {
-  const g = new THREE.SphereGeometry(1, 14, 10), p = g.attributes.position;
+const matOf = (cv, side) => L.lam({ map: L.texOf(cv), side: side || THREE.FrontSide });
+const facetMesh = (geo, mat) => new THREE.Mesh(L.facet(geo), mat);
+function shapeHead(g) {
+  const p = g.attributes.position;
   for (let i = 0; i < p.count; i++) {
     let x = p.getX(i), y = p.getY(i), z = p.getZ(i);
-    if (y < 0) { const k = 1 + y * .3; x *= k; z *= (1 + y * .12); }
-    if (z > .55) z = .55 + (z - .55) * .75;
-    p.setXYZ(i, x * .095, y * .118, z * .105);
+    if (y < 0) { x *= 1 + y * .34; z *= 1 + y * .1; }
+    if (y < -.55 && z > 0) z += (-y - .55) * .18;
+    if (z > .45) z = .45 + (z - .45) * .62;
+    x *= 1 - Math.max(0, -z) * .06;
+    p.setXYZ(i, x * .094, y * .122, z * .104);
   }
-  g.computeVertexNormals(); return g;
+  return g;
 }
 
 /**
- * o: { name, kind: outfit key, skin, hair, hairCol, fringe, glasses, adult, tudungCol, house, height, build, seed }
+ * o: { name, kind: outfit key, skin, hair, hairCol, fringe, glasses, mono, adult, stubble, tudungCol, house, height, build, seed }
  */
 L.person = o => {
   o = { skin: L.SKINS[1], hair: 'short', hairCol: L.HAIRS[0], height: 1.65, build: 1, seed: L.hash(o.name || 'x'), ...o };
   const r = L.rng(o.seed);
   o.girl = o.girl !== undefined ? o.girl : ['girl', 'auntie', 'makcik'].includes(o.kind);
-  o.iris = o.iris || ['#2B1A12', '#3A2416', '#22160F'][Math.floor(r() * 3)];
-  o.lip = o.lip || L.lerpHex(o.skin, '#B0564E', o.adult ? .35 : .45);
-  o.eyeH = o.eyeH || 2.5 + r() * .7;
-  o.brow = o.brow || (o.adult ? 2 : 1.6 + r() * .6);
-  o.tudungCol = o.tudungCol || '#F2F0EC';
+  o.iris = o.iris || ['#3A2415', '#2E1C12', '#452B18'][Math.floor(r() * 3)];
+  o.iris2 = L.mix(o.iris, .25);
+  o.lip = o.lip || L.lerpHex(o.skin, '#A8504A', o.adult ? .35 : .45);
+  o.eyeH = o.eyeH || 5.2 + r() * 1.6;
+  o.mono = o.mono !== undefined ? o.mono : r() < .45;
+  o.brow = o.brow || (o.adult ? 3 : 2.2 + r() * .8);
+  o.tudungCol = o.tudungCol || '#EEECE6';
   const f = { ...OUTFITS[o.kind || 'boy'] }; if (o.kind === 'pe') f.col = o.house || L.HOUSE[Math.floor(r() * 4)];
   const bw = o.build;
-  const P = { o, f, root: new THREE.Group(), pose: 'stand', talking: false, lookAt: null, watch: o.watch !== undefined ? o.watch : r() < .6, t: r() * 100, blinkT: 1 + r() * 4, mouthT: 0, act: null, headYaw: 0, headPitch: 0, name: o.name };
+  const P = { o, f, root: new THREE.Group(), pose: 'stand', lookAt: null, watch: o.watch !== undefined ? o.watch : r() < .6, t: r() * 100, act: null, headYaw: 0, headPitch: 0, name: o.name };
   const R = P.root;
   const hips = P.hips = new THREE.Group(); hips.position.y = .84; R.add(hips);
-  // torso: a lathe profile (hips, waist, chest, shoulders, neck) with an oval section
-  const prof = [[.15, 0], [.152, .06], [.142, .12], [.128, .18], [.13, .24], [.143, .3], [.157, .36], [.165, .42], [.16, .46], [.12, .5], [.058, .525]]
-    .map(([rr, y], j) => new THREE.Vector2(rr * bw * (o.girl && j < 3 ? 1.06 : 1), y));
-  const torso = P.torso = new THREE.Mesh(new THREE.LatheGeometry(prof, 10, Math.PI, TAU), matOf(topCanvas(o, f), THREE.DoubleSide));
+  // torso: a faceted lathe (hips, waist, chest, shoulders, neck) with an oval section
+  const prof = [[.15, 0], [.14, .1], [.128, .19], [.14, .28], [.158, .37], [.165, .44], [.12, .5], [.058, .525]]
+    .map(([rr, y], j) => new THREE.Vector2(rr * bw * (o.girl && j < 2 ? 1.06 : 1), y));
+  const torso = P.torso = facetMesh(new THREE.LatheGeometry(prof, 8, Math.PI, TAU), matOf(topCanvas(o, f), THREE.DoubleSide));
   torso.scale.z = .66; hips.add(torso);
   const chest = P.chest = new THREE.Group(); hips.add(chest);
   const skinMat = L.lam({ color: o.skin });
-  const neck = new THREE.Mesh(new THREE.CylinderGeometry(.044, .05, .1, 8), skinMat); neck.position.y = .56; chest.add(neck);
-  // head
-  const head = P.head = new THREE.Group(); head.position.y = .675; head.scale.setScalar(o.adult ? 1.04 : 1.1); chest.add(head);
-  P.faces = { open: L.texOf(faceCanvas(o, 'open')), blink: L.texOf(faceCanvas(o, 'blink')), talk: L.texOf(faceCanvas(o, 'talk')) };
-  P.faceMat = L.lam({ map: P.faces.open });
-  head.add(new THREE.Mesh(headGeo(), P.faceMat));
+  const neck = facetMesh(new THREE.CylinderGeometry(.043, .05, .1, 6), skinMat); neck.position.y = .56; chest.add(neck);
+  // head: the painted face on the front half, hair colour on the back half
+  const head = P.head = new THREE.Group(); head.position.y = .675; head.scale.setScalar(o.adult ? 1.04 : 1.08); chest.add(head);
+  const front = shapeHead(new THREE.SphereGeometry(1, 7, 8, Math.PI / 2 - 1.8, 3.6, 0, Math.PI));
+  const uv = front.attributes.uv, fp = front.attributes.position;
+  for (let i = 0; i < fp.count; i++) uv.setXY(i, Math.min(.995, Math.max(.005, .5 + fp.getX(i) / (2 * HW))), Math.min(.995, Math.max(.005, .5 + fp.getY(i) / (2 * HH))));
+  P.faceMat = L.lam({ map: L.texOf(faceCanvas(o)) });
+  head.add(facetMesh(front, P.faceMat));
   const hm = matOf(hairCanvas(o), THREE.DoubleSide);
-  const cap = (theta, tilt, sx = .1, sy = .126, sz = .112, y = .008) => { const m = new THREE.Mesh(new THREE.SphereGeometry(1, 14, 7, 0, TAU, 0, Math.PI * theta), hm); m.scale.set(sx, sy, sz); m.rotation.x = tilt; m.position.y = y; head.add(m); return m; };
+  head.add(facetMesh(shapeHead(new THREE.SphereGeometry(1, 5, 8, Math.PI / 2 + 1.8, TAU - 3.6, 0, Math.PI)), o.hair === 'bald' ? skinMat : hm));
+  const shell = (seg, theta, tilt, sx, sy, sz, y = .006) => { const m = facetMesh(new THREE.SphereGeometry(1, seg, 4, 0, TAU, 0, Math.PI * theta), hm); m.scale.set(sx, sy, sz); m.rotation.x = tilt; m.position.y = y; head.add(m); return m; };
   if (o.hair === 'tudung') {
-    cap(.52, -.5, .104, .128, .115);
-    const drape = new THREE.Mesh(new THREE.CylinderGeometry(.092, .17, .19, 14, 1, true), hm); drape.position.set(0, -.16, -.01); drape.scale.z = .8; head.add(drape);
+    shell(8, .55, -.5, .104, .13, .116);
+    const drape = facetMesh(new THREE.CylinderGeometry(.094, .17, .19, 8, 1, true), hm); drape.position.set(0, -.16, -.01); drape.scale.z = .8; head.add(drape);
   } else if (o.hair !== 'bald') {
-    cap(.52, o.hair === 'crop' ? -.62 : -.52);
-    if (o.hair === 'net') cap(.5, -.4, .108, .11, .12, .03);
-    if (o.hair === 'bun') { const b = new THREE.Mesh(new THREE.SphereGeometry(.05, 8, 6), hm); b.position.set(0, .09, -.075); head.add(b); }
-    if (o.fringe) { const fr = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 3, Math.PI / 2 - .95, 1.9, Math.PI * .2, Math.PI * .2), hm); fr.scale.set(.103, .124, .113); head.add(fr); }
-    if (o.hair === 'bob' || o.hair === 'long') {
-      const long = o.hair === 'long', side = new THREE.Mesh(new THREE.CylinderGeometry(.106, long ? .13 : .118, long ? .34 : .15, 14, 1, true, 1.05, TAU - 2.1), hm);
-      side.position.y = long ? -.12 : -.035; side.scale.z = 1.04; head.add(side);
+    shell(8, .5, o.hair === 'crop' ? -.66 : -.58, .1, .128, .112);
+    if (o.hair === 'net') shell(8, .48, -.45, .106, .112, .118, .03);
+    if (o.hair === 'bun') { const b = facetMesh(new THREE.SphereGeometry(.05, 6, 4), hm); b.position.set(0, .09, -.075); head.add(b); }
+    if (o.hair === 'bob' || o.hair === 'long' || o.hair === 'pony') {
+      const long = o.hair === 'long', len = long ? .36 : o.hair === 'bob' ? .17 : .12;
+      const side = facetMesh(new THREE.CylinderGeometry(.106, long ? .13 : .115, len, 8, 1, true, 1.15, TAU - 2.3), hm);
+      side.position.y = .02 - len / 2; side.scale.z = 1.05; head.add(side);
     }
-    if (o.hair === 'pony') {
-      const tail = new THREE.Mesh(new THREE.CylinderGeometry(.032, .012, .24, 6), hm); tail.position.set(0, -.07, -.13); tail.rotation.x = .35; head.add(tail);
-      const tie = new THREE.Mesh(new THREE.CylinderGeometry(.02, .02, .02, 6), L.lam({ color: '#1F5FAF' })); tie.position.set(0, .03, -.115); tie.rotation.x = 1.2; head.add(tie);
-    }
+    if (o.hair === 'pony') { const tail = facetMesh(new THREE.CylinderGeometry(.034, .012, .26, 5), hm); tail.position.set(0, -.08, -.13); tail.rotation.x = .35; head.add(tail); }
   }
   // arms
   const upM = matOf(limbCanvas(o, f, 'upper')), foM = matOf(limbCanvas(o, f, 'fore')), haM = matOf(limbCanvas(o, f, 'hand'));
   const arm = s => {
     const sh = new THREE.Group(); sh.position.set(s * (.165 * bw + .012), .435, 0); chest.add(sh);
-    const ug = new THREE.CylinderGeometry(.046 * bw, .038, .28, 7); ug.translate(0, -.14, 0); sh.add(new THREE.Mesh(ug, upM));
+    const ug = new THREE.CylinderGeometry(.046 * bw, .037, .28, 6); ug.translate(0, -.14, 0); sh.add(facetMesh(ug, upM));
     const el = new THREE.Group(); el.position.y = -.28; sh.add(el);
-    const fg = new THREE.CylinderGeometry(.037, .03, .24, 7); fg.translate(0, -.12, 0); el.add(new THREE.Mesh(fg, foM));
-    const hand = new THREE.Mesh(new THREE.BoxGeometry(.052, .085, .03), haM); hand.position.y = -.285; el.add(hand);
+    const fg = new THREE.CylinderGeometry(.036, .028, .24, 6); fg.translate(0, -.12, 0); el.add(facetMesh(fg, foM));
+    const hand = facetMesh(new THREE.BoxGeometry(.05, .09, .028), haM); hand.position.y = -.285; el.add(hand);
     sh.rotation.z = s * .07;
     return { sh, el, hand };
   };
@@ -6386,24 +6445,23 @@ L.person = o => {
   const thM = matOf(limbCanvas(o, f, 'thigh')), shM = matOf(limbCanvas(o, f, 'shin')), shoeM = matOf(shoeCanvas(f));
   const leg = s => {
     const hip = new THREE.Group(); hip.position.set(s * .083 * bw, 0, 0); hips.add(hip);
-    const tg = new THREE.CylinderGeometry(.074 * bw, .054, .42, 8); tg.translate(0, -.21, 0); hip.add(new THREE.Mesh(tg, thM));
+    const tg = new THREE.CylinderGeometry(.074 * bw, .052, .42, 6); tg.translate(0, -.21, 0); hip.add(facetMesh(tg, thM));
     const knee = new THREE.Group(); knee.position.y = -.42; hip.add(knee);
-    const sg = new THREE.CylinderGeometry(.053, .04, .39, 8); sg.translate(0, -.195, 0); knee.add(new THREE.Mesh(sg, shM));
-    const shoe = new THREE.Mesh(new THREE.BoxGeometry(.09, .065, .23), shoeM); shoe.position.set(0, -.405, .045); knee.add(shoe);
+    const sg = new THREE.CylinderGeometry(.052, .038, .39, 6); sg.translate(0, -.195, 0); knee.add(facetMesh(sg, shM));
+    const shoe = facetMesh(new THREE.BoxGeometry(.088, .065, .23), shoeM); shoe.position.set(0, -.405, .045); knee.add(shoe);
     return { hip, knee };
   };
   P.legR = leg(-1); P.legL = leg(1);
   // skirts
   if (f.bottom === 'skirt' || f.bottom === 'longskirt') {
     const sm = matOf(skirtCanvas(o, f), THREE.DoubleSide), long = f.bottom === 'longskirt';
-    const sk = P.skirt = new THREE.Mesh(new THREE.CylinderGeometry(.152 * bw, long ? .27 : .23, long ? .8 : .36, 14, 1, true), sm);
-    sk.position.y = long ? -.36 : -.14; sk.scale.z = .8; hips.add(sk);
+    const sk = P.skirt = facetMesh(new THREE.CylinderGeometry(.152 * bw, long ? .27 : .25, long ? .8 : .4, 10, 1, true), sm);
+    sk.position.y = long ? -.36 : -.16; sk.scale.z = .82; hips.add(sk);
     const sit = P.skirtSit = new THREE.Group();
-    const ring = new THREE.Mesh(new THREE.CylinderGeometry(.152 * bw, .2, .1, 14, 1, true), sm); ring.position.y = -.02; ring.scale.z = .8; sit.add(ring);
-    const lap = new THREE.Mesh(new THREE.BoxGeometry(.32 * bw, .025, long ? .5 : .38), sm); lap.position.set(0, -.04, .2); sit.add(lap);
+    const ring = facetMesh(new THREE.CylinderGeometry(.152 * bw, .2, .1, 10, 1, true), sm); ring.position.y = -.02; ring.scale.z = .82; sit.add(ring);
+    const lap = facetMesh(new THREE.BoxGeometry(.32 * bw, .025, long ? .5 : .4), sm); lap.position.set(0, -.04, .2); sit.add(lap);
     sit.visible = false; hips.add(sit);
   }
-  // a tray for carrying
   P.tray = L.trayMesh ? L.trayMesh(true) : new THREE.Group(); P.tray.position.set(0, .2, .33); P.tray.visible = false; hips.add(P.tray);
   R.scale.setScalar(o.height / 1.65);
   R.traverse(m => { if (m.isMesh) m.userData.person = P; });
@@ -6415,70 +6473,56 @@ const V = new THREE.Vector3(), W2 = new THREE.Vector3();
 const wrapA = a => { while (a > Math.PI) a -= TAU; while (a < -Math.PI) a += TAU; return a; };
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 
-/** Pose and face for this frame. cam: the player's camera position (for looking at you). */
+/** Pose for this frame. cam: the player's camera position (people nearby look at you). */
 L.animPerson = (P, dt, cam) => {
   P.t += dt;
   const t = P.t, R = P.root, pose = P.pose, sit = pose === 'sit' || pose === 'eat';
-  // skirt swaps for sitting
   if (P.skirt) { P.skirt.visible = !sit; P.skirtSit.visible = sit; }
-  // legs and hips
   let hipY = .84, thigh = 0, knee = 0, thighL = 0, kneeL = 0, lean = 0;
   if (sit) { hipY = .5; thigh = thighL = -1.5; knee = kneeL = 1.42; lean = .1; }
   else if (pose === 'walk') {
-    const ph = P.walkPh || 0; thigh = Math.sin(ph) * .45; thighL = -thigh; knee = Math.max(0, -Math.sin(ph)) * .7 + .05; kneeL = Math.max(0, Math.sin(ph)) * .7 + .05;
-    hipY = .84 + Math.abs(Math.cos(ph)) * .02 - .01;
+    const ph = P.walkPh || 0; thigh = Math.sin(ph) * .42; thighL = -thigh; knee = Math.max(0, -Math.sin(ph)) * .65 + .05; kneeL = Math.max(0, Math.sin(ph)) * .65 + .05;
+    hipY = .84 + Math.abs(Math.cos(ph)) * .018 - .01;
   }
   P.hips.position.y = hipY;
   P.legR.hip.rotation.x = thigh; P.legL.hip.rotation.x = thighL; P.legR.knee.rotation.x = knee; P.legL.knee.rotation.x = kneeL;
   P.chest.rotation.x = lean; P.torso.rotation.x = lean;
-  // breathing and weight shift
-  const br = Math.sin(t * 1.6) * .006;
+  const br = Math.sin(t * 1.5) * .005;
   P.torso.scale.y = 1 + br; P.chest.position.y = br * .5;
-  if (pose === 'stand' || pose === 'serve' || pose === 'wipe' || pose === 'wave') P.hips.rotation.z = Math.sin(t * .45) * .02;
-  // arms
-  const A = (arm, x, z, e, ez = 0) => { arm.sh.rotation.x = damp(arm.sh.rotation.x, x, 10, dt); arm.sh.rotation.z = damp(arm.sh.rotation.z, z, 10, dt); arm.el.rotation.x = damp(arm.el.rotation.x, e, 10, dt); arm.el.rotation.z = ez; };
-  const s = Math.sin(t * 1.2) * .02;
+  if (pose === 'stand' || pose === 'serve' || pose === 'wipe' || pose === 'wave') P.hips.rotation.z = Math.sin(t * .4) * .015;
+  const A = (arm, x, z, e, ez = 0) => { arm.sh.rotation.x = damp(arm.sh.rotation.x, x, 8, dt); arm.sh.rotation.z = damp(arm.sh.rotation.z, z, 8, dt); arm.el.rotation.x = damp(arm.el.rotation.x, e, 8, dt); arm.el.rotation.z = ez; };
+  const s = Math.sin(t * 1.1) * .02;
   if (pose === 'carry' || P.carrying) { A(P.armR, -.45, -.18, -1.25); A(P.armL, -.45, .18, -1.25); }
-  else if (pose === 'walk') { const ph = P.walkPh || 0; A(P.armR, -Math.sin(ph) * .35, -.07, -.25); A(P.armL, Math.sin(ph) * .35, .07, -.25); }
-  else if (false) { A(P.armR, -.45, -.18, -1.25); A(P.armL, -.45, .18, -1.25); }
+  else if (pose === 'walk') { const ph = P.walkPh || 0; A(P.armR, -Math.sin(ph) * .32, -.07, -.22); A(P.armL, Math.sin(ph) * .32, .07, -.22); }
   else if (pose === 'eat') {
-    const cyc = (t * .32 + P.o.seed % 7 * .1) % 1, e = cyc < .25 ? Math.sin(cyc / .25 * Math.PI) : 0;
+    const cyc = (t * .28 + (P.o.seed % 7) * .1) % 1, e = cyc < .28 ? Math.sin(cyc / .28 * Math.PI) : 0;
     A(P.armR, -.45 - e * .55, -.15, -1.15 - e * .75); A(P.armL, -.6, .15, -.95);
   } else if (pose === 'sit') { A(P.armR, -.55, -.12, -1.0); A(P.armL, -.55, .12, -1.0); }
   else if (pose === 'serve') {
     const k = P.act && P.act.kind === 'scoop' ? Math.min(1, (t - P.act.t0) / .9) : 1, e = Math.sin(k * Math.PI);
     A(P.armR, -.55 - e * .6, -.1, -.9 + e * .4); A(P.armL, -.5, .12, -1.1);
     if (k >= 1 && P.act) P.act = null;
-  } else if (pose === 'wipe') { A(P.armR, -.95 + Math.sin(t * 3) * .15, -.2 + Math.cos(t * 3) * .1, -.5); A(P.armL, -.1, .07, -.2); }
-  else if (pose === 'wave') { A(P.armR, 0, -2.5, -.2, Math.sin(t * 9) * .35); A(P.armL, s, .07, -.15); }
+  } else if (pose === 'wipe') { A(P.armR, -.95 + Math.sin(t * 2.6) * .15, -.2 + Math.cos(t * 2.6) * .1, -.5); A(P.armL, -.1, .07, -.2); }
+  else if (pose === 'wave') { A(P.armR, 0, -2.5, -.2, Math.sin(t * 8) * .3); A(P.armL, s, .07, -.15); }
   else { A(P.armR, s, -.07, -.12); A(P.armL, -s, .07, -.12); }
-  // head: look at the player when close, otherwise at a buddy or around
-  let yaw = Math.sin(t * .23 + P.o.seed) * .25, pitch = sit ? .12 : 0;
-  let target = null;
+  // head: look at the player when close, otherwise at a friend or slowly around
+  let yaw = Math.sin(t * .2 + P.o.seed) * .22, pitch = sit ? .1 : 0, target = null;
   if (P.lookAt) target = P.lookAt;
   else if (cam && P.watch && R.position.distanceTo(W2.set(cam.x, 0, cam.z)) < 4.2) target = cam;
   if (target) {
     P.head.getWorldPosition(V);
-    const dx = target.x - V.x, dz = target.z - V.z, dy = target.y - V.y;
-    const a = wrapA(Math.atan2(dx, dz) - R.rotation.y);
-    if (Math.abs(a) < 2) { yaw = Math.max(-1.1, Math.min(1.1, a)); pitch = Math.max(-.5, Math.min(.5, -Math.atan2(dy, Math.hypot(dx, dz)) * .8)) + (sit ? lean * -1 : 0); }
+    const dx = target.x - V.x, dz = target.z - V.z, dy = target.y - V.y, a = wrapA(Math.atan2(dx, dz) - R.rotation.y);
+    if (Math.abs(a) < 2) { yaw = Math.max(-1.05, Math.min(1.05, a)); pitch = Math.max(-.45, Math.min(.45, -Math.atan2(dy, Math.hypot(dx, dz)) * .8)) - lean; }
   }
-  if (P.talking) { yaw += Math.sin(t * 4) * .05; pitch += Math.sin(t * 6.3) * .04; }
-  P.headYaw = damp(P.headYaw, yaw, 6, dt); P.headPitch = damp(P.headPitch, pitch, 6, dt);
+  P.headYaw = damp(P.headYaw, yaw, 4, dt); P.headPitch = damp(P.headPitch, pitch, 4, dt);
   P.head.rotation.set(P.headPitch, P.headYaw, 0);
-  // face: blink, and move the mouth while talking
-  P.blinkT -= dt;
-  let face = 'open';
-  if (P.blinkT < 0) { face = 'blink'; if (P.blinkT < -.13) P.blinkT = 2 + Math.random() * 4; }
-  if (P.talking && face === 'open') { P.mouthT -= dt; if (P.mouthT < 0) { P.mouthOpen = !P.mouthOpen; P.mouthT = .07 + Math.random() * .1; } if (P.mouthOpen) face = 'talk'; }
-  const map = P.faces[face]; if (P.faceMat.map !== map) P.faceMat.map = map;
   P.tray.visible = !!P.carrying;
 };
 
 /** Move along a path of [x, z] points (looping), with walking feet and optional stops. */
 L.walkPerson = (P, dt, speed = 1.1) => {
   const w = P.walk; if (!w) return;
-  if (w.wait > 0) { w.wait -= dt; P.pose = w.stopPose || 'stand'; if (w.wait <= 0 && w.onGo) w.onGo(); return; }
+  if (w.wait > 0) { w.wait -= dt; P.pose = w.stopPose || 'stand'; return; }
   const [tx, tz, stop, stopPose, fn] = w.path[w.i], R = P.root, dx = tx - R.position.x, dz = tz - R.position.z, d = Math.hypot(dx, dz);
   if (d < .08) {
     w.i = (w.i + 1) % w.path.length;
@@ -6487,7 +6531,7 @@ L.walkPerson = (P, dt, speed = 1.1) => {
   }
   const step = Math.min(d, speed * dt);
   R.position.x += dx / d * step; R.position.z += dz / d * step;
-  const want = Math.atan2(dx, dz); R.rotation.y += wrapA(want - R.rotation.y) * Math.min(1, dt * 8);
+  R.rotation.y += wrapA(Math.atan2(dx, dz) - R.rotation.y) * Math.min(1, dt * 8);
   P.walkPh = (P.walkPh || 0) + step * 5.2; P.pose = 'walk';
 };
 })();
@@ -6612,9 +6656,9 @@ L.buildWorld = scene => {
   M.glass = new THREE.MeshBasicMaterial({ color: '#CFE8F2', transparent: true, opacity: .22, depthWrite: false });
 
   /* ------------------------------------------------------------ light */
-  scene.add(new THREE.HemisphereLight('#FFF3DC', '#6A6050', .62));
-  scene.add(new THREE.AmbientLight('#FFFFFF', .28));
-  const sun = new THREE.DirectionalLight('#FFE9C4', .55); sun.position.set(-10, 14, 18); scene.add(sun);
+  scene.add(new THREE.HemisphereLight('#DDE3E2', '#4A463E', .56));
+  scene.add(new THREE.AmbientLight('#F4EDE2', .16));
+  const sun = new THREE.DirectionalLight('#DDE3E8', .3); sun.position.set(-10, 14, 18); scene.add(sun);
   [[-10.4, -8.4, '#FFE2B0'], [-5.6, -8.4, '#FFD9A8'], [.3, -8.4, '#FFF2D8'], [5.8, -8.4, '#FFE2B0'], [10.4, -7.6, '#DFF5E6']].forEach(([x, z, col]) => { const p = new THREE.PointLight(col, .55, 7, 1.6); p.position.set(x, 2.5, z); scene.add(p); });
 
   /* ------------------------------------------------------------ shell */
@@ -6632,10 +6676,10 @@ L.buildWorld = scene => {
   const walk = plane(X1 - X0, 2.5, M.concrete, 0, .005, Z1 + 1.25); walk.rotation.x = -Math.PI / 2;
   // outside: field, trees, a school block, the sky
   const grass = plane(160, 90, M.grass, 0, -.04, Z1 + 47); grass.rotation.x = -Math.PI / 2;
-  const sky = new THREE.Mesh(new THREE.SphereGeometry(95, 16, 10), new THREE.MeshBasicMaterial({ fog: false, side: THREE.BackSide, map: L.tex(8, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#6FA9DD'); g.addColorStop(.46, '#BFDDF2'); g.addColorStop(.5, '#EAF2EE'); g.addColorStop(1, '#9AA48C'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) }));
+  const sky = new THREE.Mesh(new THREE.SphereGeometry(95, 16, 10), new THREE.MeshBasicMaterial({ fog: false, side: THREE.BackSide, map: L.tex(8, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#9BA3A6'); g.addColorStop(.45, '#C9CBC5'); g.addColorStop(.5, '#D4D3CA'); g.addColorStop(1, '#8C8E80'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) }));
   sky.position.set(0, 0, 10); scene.add(sky);
   const tree = L.basic({ transparent: true, alphaTest: .5, side: THREE.DoubleSide, map: L.tex(64, 96, (c, w, h) => {
-    const r = L.rng(21); c.fillStyle = '#5A4130'; c.fillRect(29, 50, 7, 46); c.fillRect(22, 58, 20, 3);
+    const r = L.rng(21); c.fillStyle = '#4E3A2C'; c.fillRect(29, 50, 7, 46);
     for (let i = 0; i < 70; i++) L.blob(c, 32 + (r() - .5) * 56, 30 + (r() - .5) * 38, 8 + r() * 8, 6 + r() * 6, r() < .5 ? '#3E6E2A' : r() < .7 ? '#5C8E3A' : '#2A4E1E', .9);
   }) });
   const r0 = L.rng(33);
@@ -6868,7 +6912,7 @@ L.buildWorld = scene => {
   solid(X1 - .9, X1, 3.1, 4.1);
 
   /* ------------------------------------------------------------ atmosphere: sun shafts, dust, steam */
-  const shaft = new THREE.MeshBasicMaterial({ color: '#FFF1CF', transparent: true, opacity: .05, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, map: L.tex(16, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) });
+  const shaft = new THREE.MeshBasicMaterial({ color: '#EDEFEA', transparent: true, opacity: .035, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, map: L.tex(16, 64, (c, w, h) => { const g = c.createLinearGradient(0, 0, 0, h); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = g; c.fillRect(0, 0, w, h); }) });
   [-10.8, -6.4, -2.1, 2.1, 6.4, 10.8].forEach(x => { const s = plane(3.4, 6.5, shaft, x, 2.2, 6.2, 0); s.rotation.set(-.95, 0, 0); });
   const dustN = 380, dp = new Float32Array(dustN * 3);
   for (let i = 0; i < dustN; i++) { dp[i * 3] = (Math.random() - .5) * 25; dp[i * 3 + 1] = Math.random() * 3.8; dp[i * 3 + 2] = -6 + Math.random() * 15; }
@@ -6878,7 +6922,16 @@ L.buildWorld = scene => {
   const steams = [];
   Wd.anim.filter(a => a.steam).forEach(a => { for (let i = 0; i < 5; i++) { const s = new THREE.Mesh(new THREE.PlaneGeometry(.35, .35), puff); s.position.set(...a.steam); s.userData = { base: a.steam, ph: i / 5 }; scene.add(s); steams.push(s); } });
 
+  // rain beyond the open side
+  const rainN = 900, rp = new Float32Array(rainN * 6);
+  for (let i = 0; i < rainN; i++) { const x = (Math.random() - .5) * 44, y = Math.random() * 9, z = 9.6 + Math.random() * 24; rp.set([x, y, z, x - .02, y - .35, z], i * 6); }
+  const rg = new THREE.BufferGeometry(); rg.setAttribute('position', new THREE.BufferAttribute(rp, 3));
+  const rain = new THREE.LineSegments(rg, new THREE.LineBasicMaterial({ color: '#D8DCDC', transparent: true, opacity: .32, depthWrite: false })); scene.add(rain);
+  // wet ground just outside the canteen
+  const wet = plane(X1 - X0, 2.4, new THREE.MeshBasicMaterial({ color: '#9A9C98', transparent: true, opacity: .22, depthWrite: false }), 0, .012, Z1 + 1.3); wet.rotation.x = -Math.PI / 2;
   Wd.update = (dt, t, cam) => {
+    for (let i = 0; i < rainN; i++) { let y = rp[i * 6 + 1] - dt * 11; if (y < 0) y += 9; rp[i * 6 + 1] = y; rp[i * 6 + 4] = y - .35; }
+    rg.attributes.position.needsUpdate = true;
     Wd.fans.forEach(f => { f.blades.rotation.y += dt * f.speed; });
     for (let i = 0; i < dustN; i++) { dp[i * 3 + 1] += Math.sin(t * .3 + i) * .0015; dp[i * 3] += Math.cos(t * .2 + i * 1.7) * .001; }
     dg.attributes.position.needsUpdate = true;
@@ -7051,7 +7104,7 @@ L.Screen = () => {
 <script>
 /* ---- js/game3d.js ---- */
 /* Lunch Rush: one school lunch with PlateLoop, first person, PS1-style.
-   Take a tray, order at the Healthy Set Meal stall (Auntie Lim asks how much of each dish), scan the full
+   Take a tray, order at the Healthy Set Meal stall (Mrs Lim asks how much of each dish), scan the full
    tray at the PlateLoop station (the camera moves in so you can read the scanner's screen), sit with your
    friends and eat bite by bite, scan again, scrape the leftovers into the scanner's compost module and put
    the tray on the return rack. People talk to you, react, and go about their lunch; a classmate walks the
@@ -7065,12 +7118,12 @@ const { $, $$, esc, pct, MENU } = PL;
 const L = PL.L3;
 let root = null, G = null;
 
-const LOW_H = 240, READ_H = 420, EYE = 1.55;
+const EYE = 1.55, FOG = '#AEB0A8';
 const SERVE = ['rice', 'chicken', 'kailan', 'cabbage', 'soup', 'melon'];
 const PICK = [.55, 1, 1.35];
 const OBJ = {
   getTray: 'Take a tray from the stack at the Healthy Set Meal stall',
-  order: 'Ask Auntie Lim for your lunch',
+  order: 'Ask Mrs Lim for your lunch',
   scanBefore: 'Scan your full tray at the PlateLoop station, in the far corner',
   findSeat: '{a} and {b} kept a seat for you. Sit down to eat',
   eating: 'Eat your lunch: click the food to take a bite',
@@ -7123,28 +7176,31 @@ function init() {
   const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false, powerPreference: 'high-performance' });
   renderer.setPixelRatio(1);
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#C9D6D8');
-  scene.fog = new THREE.Fog('#D5DCD6', 14, 60);
+  scene.background = new THREE.Color(FOG);
+  scene.fog = new THREE.FogExp2(FOG, .043);
   const camera = new THREE.PerspectiveCamera(68, 4 / 3, .03, 200); camera.rotation.order = 'YXZ'; scene.add(camera);
   // post: grain, vignette, grade, 15-bit colour with ordered dithering
-  const rt = new THREE.WebGLRenderTarget(320, 240, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
+  const rt = new THREE.WebGLRenderTarget(640, 480, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
   const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5], bd = new Uint8Array(64);
   bayer.forEach((v, i) => { bd[i * 4] = bd[i * 4 + 1] = bd[i * 4 + 2] = Math.round(v / 16 * 255); bd[i * 4 + 3] = 255; });
   const dither = new THREE.DataTexture(bd, 4, 4, THREE.RGBAFormat); dither.magFilter = dither.minFilter = THREE.NearestFilter; dither.wrapS = dither.wrapT = THREE.RepeatWrapping; dither.needsUpdate = true;
   const post = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
-    uniforms: { tDiffuse: { value: rt.texture }, tDither: { value: dither }, uTime: { value: 0 }, uFade: { value: 0 } },
+    uniforms: { tDiffuse: { value: rt.texture }, tDither: { value: dither }, uTime: { value: 0 }, uFade: { value: 0 }, uPx: { value: new THREE.Vector2(1 / 640, 1 / 480) } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
-    fragmentShader: `uniform sampler2D tDiffuse; uniform sampler2D tDither; uniform float uTime; uniform float uFade; varying vec2 vUv;
+    fragmentShader: `uniform sampler2D tDiffuse; uniform sampler2D tDither; uniform float uTime; uniform float uFade; uniform vec2 uPx; varying vec2 vUv;
       float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
       void main(){
-        vec2 d = vUv - .5; float r2 = dot(d, d); vec2 off = d * r2 * .018;
+        vec2 d = vUv - .5; float r2 = dot(d, d); vec2 off = d * r2 * .008;
         vec3 c = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
-        float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, .86); c = c * vec3(1.04, 1.0, .93) + vec3(.018, .016, .012);
-        c *= 1.0 - r2 * .95;
-        c += (hash(gl_FragCoord.xy + fract(uTime * 7.13) * 91.7) - .5) * .07;
+        // soft glow around bright areas (windows, lights, the screen), like light scattering in haze
+        vec3 b = vec3(0.0);
+        for (int i = 0; i < 8; i++) { float a = float(i) * .785; vec2 o = vec2(cos(a), sin(a)) * uPx * 6.0; b += max(texture2D(tDiffuse, vUv + o).rgb - .62, 0.0); }
+        c += b * .16;
+        float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, .82); c = c * vec3(1.0, 1.0, .97) * .96 + vec3(.012, .013, .012);
+        c *= 1.0 - r2 * 1.1;
+        c += (hash(gl_FragCoord.xy + fract(uTime * 7.13) * 91.7) - .5) * .035;
         c *= 1.0 - uFade;
-        float dd = texture2D(tDither, gl_FragCoord.xy / 4.0).r - .5;
-        c = floor((c + dd / 31.0) * 31.0 + .5) / 31.0;
+        c += (texture2D(tDither, gl_FragCoord.xy / 4.0).r - .5) / 255.0;
         gl_FragColor = vec4(c, 1.0);
       }`,
     depthTest: false, depthWrite: false,
@@ -7158,15 +7214,15 @@ function init() {
 
   G = {
     renderer, scene, camera, rt, post, postScene, postCam, W, SFX, screen, view, cv,
-    phase: 'title', mode: 'title', paused: true, busy: false, lowH: LOW_H, baseFov: 68,
+    phase: 'title', mode: 'title', paused: true, busy: false, baseFov: 68,
     pos: new THREE.Vector3(0, EYE, 7.6), yaw: 0, pitch: 0, look: { dx: 0, dy: 0 }, keys: {}, stick: { x: 0, y: 0 },
     t: 0, last: performance.now(), raf: 0, stepT: 0, tweens: [], people: [], walkers: [], targets: [], hitMeshes: [],
     ray: new THREE.Raycaster(), touch: matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches,
     pick: {}, eaten: {}, served: false, barkT: {}, chatT: 6, tvT: 0, ready: false,
   };
   const resize = () => {
-    const w = view.clientWidth || 800, h = view.clientHeight || 600, a = w / h, lh = G.lowH;
-    renderer.setSize(Math.round(lh * a), lh, false); rt.setSize(Math.round(lh * a), lh);
+    const w = view.clientWidth || 800, h = view.clientHeight || 600, a = w / h, lh = Math.round(Math.min(h, G.reading ? 900 : 600));
+    renderer.setSize(Math.round(lh * a), lh, false); rt.setSize(Math.round(lh * a), lh); post.material.uniforms.uPx.value.set(1 / (lh * a), 1 / lh);
     camera.aspect = a; G.baseFov = a < 1 ? 86 : 68; if (G.mode !== 'focus') camera.fov = G.baseFov; camera.updateProjectionMatrix();
   };
   G.resize = resize;
@@ -7287,12 +7343,12 @@ function trayToHands(dur = .45) {
 function buildPeople() {
   const W = G.W, add = (P, x, z, ry, pose = 'stand') => { P.root.position.set(x, 0, z); P.root.rotation.y = ry; P.pose = pose; G.scene.add(P.root); G.people.push(P); return P; };
   // staff and named people
-  G.auntie = add(L.person({ name: 'Auntie Lim', kind: 'auntie', hair: 'net', hairCol: '#2A2420', skin: L.SKINS[1], adult: true, height: 1.55, build: 1.12, watch: true }), W.pans.kailan, -8.72, 0, 'serve');
+  G.auntie = add(L.person({ name: 'Mrs Lim', kind: 'auntie', hair: 'net', hairCol: '#2A2420', skin: L.SKINS[1], adult: true, height: 1.55, build: 1.12, watch: true }), W.pans.kailan, -8.72, 0, 'serve');
   G.rahman = add(L.person({ name: 'Mr Rahman', kind: 'teacher', hair: 'short', skin: L.SKINS[3], adult: true, height: 1.74, glasses: true, stubble: true, watch: true }), 8.7, -6.95, 2.3);
-  G.tan = add(L.person({ name: 'Uncle Tan', kind: 'cleaner', hair: 'crop', hairCol: '#8C8780', skin: L.SKINS[2], adult: true, height: 1.63, watch: true }), 11.55, -7.55, Math.PI, 'wipe');
-  G.drinks = add(L.person({ name: 'Uncle Ah Seng', kind: 'uncle', hair: 'crop', hairCol: '#9A948C', skin: L.SKINS[1], adult: true, height: 1.66, watch: true }), -10.3, -8.7, 0);
-  G.cook = add(L.person({ name: 'Auntie Mei', kind: 'cook', hair: 'bun', skin: L.SKINS[0], adult: true, height: 1.55, build: 1.08 }), -5.4, -8.85, 0, 'wipe');
-  G.makcik = add(L.person({ name: 'Makcik Rosnah', kind: 'makcik', hair: 'tudung', tudungCol: '#E9B8C6', skin: L.SKINS[3], adult: true, height: 1.56, watch: true }), 5.9, -8.7, 0);
+  G.tan = add(L.person({ name: 'Mr Tan', kind: 'cleaner', hair: 'crop', hairCol: '#8C8780', skin: L.SKINS[2], adult: true, height: 1.63, watch: true }), 11.55, -7.55, Math.PI, 'wipe');
+  G.drinks = add(L.person({ name: 'Mr Ong', kind: 'uncle', hair: 'crop', hairCol: '#9A948C', skin: L.SKINS[1], adult: true, height: 1.66, watch: true }), -10.3, -8.7, 0);
+  G.cook = add(L.person({ name: 'Mrs Chua', kind: 'cook', hair: 'bun', skin: L.SKINS[0], adult: true, height: 1.55, build: 1.08 }), -5.4, -8.85, 0, 'wipe');
+  G.makcik = add(L.person({ name: 'Mdm Rosnah', kind: 'makcik', hair: 'tudung', tudungCol: '#E9B8C6', skin: L.SKINS[3], adult: true, height: 1.56, watch: true }), 5.9, -8.7, 0);
   [G.auntie, G.rahman, G.tan, G.drinks, G.cook, G.makcik].forEach(P => talkTarget(P));
   // ambient students from the class list
   const others = PL.S.students.filter(s => !s.named && s.name !== 'Priya');
@@ -7303,7 +7359,7 @@ function buildPeople() {
     const hair = kind === 'girl' ? ['pony', 'bob', 'long', 'tudung', 'pony', 'long'][Math.floor(rr() * 6)] : ['short', 'crop', 'short'][Math.floor(rr() * 3)];
     return L.person({ name: s.name, kind, hair, fringe: rr() < .4, glasses: rr() < .22, skin: L.SKINS[Math.floor(rr() * 6)], hairCol: L.HAIRS[Math.floor(rr() * 5)], height: 1.52 + rr() * .24, build: .94 + rr() * .12, seed });
   };
-  // friends' table: near the station, two seats kept for them and one "choped" for you
+  // friends' table: near the station, two seats for them and one saved for you with a tissue packet
   G.friendTable = W.tables.find(t => t.x === 4.7 && t.z === -3);
   const chope = new THREE.Mesh(new THREE.BoxGeometry(.12, .025, .08), L.lam({ color: '#F4F4F2' })); chope.position.set(4.7, .49, -2.28); G.scene.add(chope); G.chope = chope;
   G.friendTable.spots.find(s => s.side === 1 && Math.abs(s.x - 4.7) < .01).taken = 'you';
@@ -7367,14 +7423,14 @@ function addTarget(obj, label, act, range = 2.4, extra = {}) {
   return t;
 }
 function talkTarget(P) {
-  return addTarget(P.root, () => (G.busy ? null : P === G.auntie && G.phase === 'order' ? 'Ask Auntie Lim for lunch' : `Talk to ${P.name}`), () => talk(P), 2.6, { person: P });
+  return addTarget(P.root, () => (G.busy ? null : P === G.auntie && G.phase === 'order' ? 'Ask Mrs Lim for lunch' : `Talk to ${P.name}`), () => talk(P), 2.6, { person: P });
 }
 function refreshHitMeshes() { G.hitMeshes = []; G.targets.forEach(t => t.obj.traverse(o => { if (o.isMesh) { o.userData.tgt = t; G.hitMeshes.push(o); } })); }
 function setupStaticTargets() {
   const W = G.W;
   addTarget(W.trayStack, () => (G.phase === 'getTray' && !G.busy ? 'Take a tray' : null), takeTray, 2.4);
   const counter = new THREE.Mesh(new THREE.BoxGeometry(6.2, 1.2, 1), new THREE.MeshBasicMaterial({ visible: false })); counter.position.set(.2, .6, -7.9); G.scene.add(counter);
-  addTarget(counter, () => (G.phase === 'order' && !G.busy ? 'Ask Auntie Lim for lunch' : null), () => talk(G.auntie), 2.4);
+  addTarget(counter, () => (G.phase === 'order' && !G.busy ? 'Ask Mrs Lim for lunch' : null), () => talk(G.auntie), 2.4);
   addTarget(W.standee.group, () => (G.busy ? null : 'Read the how-to sign'), () => { const p = new THREE.Vector3(); W.standee.mesh.getWorldPosition(p); const n = new THREE.Vector3(Math.sin(-.75), 0, Math.cos(-.75)); return inspect({ pos: p.clone().addScaledVector(n, .62).add(new THREE.Vector3(0, .05, 0)), target: p, fov: 50, read: true }, 'Back'); }, 2.4);
   addTarget(W.tv.mesh, () => (G.busy ? null : 'Look at the PlateLoop Live screen'), () => { W.tv.draw(); return inspect({ pos: new THREE.Vector3(11.3, 2.15, -5.6), target: new THREE.Vector3(12.94, 2.2, -5.6), fov: 46, read: true }, 'Back'); }, 3.5);
   W.posters.forEach(p => { const [x, y, z] = p.at; const n = new THREE.Vector3(); p.mesh.getWorldDirection(n); addTarget(p.mesh, () => (G.busy ? null : p.label), () => inspect({ pos: new THREE.Vector3(x, y, z).addScaledVector(n, .75), target: new THREE.Vector3(x, y, z), fov: 50, read: true }, 'Back'), 2.4); });
@@ -7429,7 +7485,7 @@ function loop(now) {
   if (G.dlg && G.dlg.typing) typeTick(dt);
   if (G.mode !== 'title' && !G.paused) { updateTarget(); barks(); if (G.phase === 'eating' && G.friends) friendChat(dt); }
   G.post.material.uniforms.uTime.value = G.t;
-  const lh = G.reading ? READ_H : LOW_H; if (lh !== G.lowH) { G.lowH = lh; G.resize(); }
+  if (!!G.reading !== !!G.wasReading) { G.wasReading = G.reading; G.resize(); }
   G.renderer.setRenderTarget(G.rt); G.renderer.render(G.scene, camera);
   G.renderer.setRenderTarget(null); G.renderer.render(G.postScene, G.postCam);
   G.raf = requestAnimationFrame(loop);
@@ -7505,7 +7561,6 @@ function typeTick(dt) {
   const d = G.dlg, before = Math.floor(d.shown);
   d.shown = Math.min(d.text.length, d.shown + dt * 48);
   const n = Math.floor(d.shown);
-  if (n !== before && n % 2 === 0 && d.text[n - 1] !== ' ') play('blip');
   $('#g3-say', root).textContent = d.text.slice(0, n);
   if (n >= d.text.length) finishTyping();
 }
@@ -7518,7 +7573,7 @@ function finishTyping() {
     $$('[data-opt]', root).forEach(b => b.onclick = e => { e.stopPropagation(); choose(+b.dataset.opt); });
   } else $('#g3-opts', root).innerHTML = `<small>${G.touch ? 'Tap' : 'E / click'} to continue</small>`;
 }
-function advance() { const d = G.dlg; if (!d) return false; if (d.typing) { finishTyping(); return true; } if (d.options) return true; G.dlg = null; play('blip'); d.resolve(-1); return true; }
+function advance() { const d = G.dlg; if (!d) return false; if (d.typing) { finishTyping(); return true; } if (d.options) return true; G.dlg = null; d.resolve(-1); return true; }
 function choose(i) { const d = G.dlg; if (!d || d.typing || !d.options || i < 0 || i >= d.options.length) return; G.dlg = null; play('select'); d.resolve(i); }
 function waitUse(label) { return new Promise(res => { G.waiting = { label, resolve: res }; }); }
 /** Run a conversation: face the person, quieter crowd, lock movement. */
@@ -7548,9 +7603,9 @@ function barks() {
   const near = (P, d) => G.camera.position.distanceTo(V.set(P.root.position.x, EYE, P.root.position.z)) < d;
   const once = (k, cd, fn) => { if ((G.barkT[k] || 0) > G.t) return; G.barkT[k] = G.t + cd; fn(); };
   if (G.phase === 'scanBefore' && near(G.rahman, 3)) once('rahman1', 25, () => chatter(G.rahman, 'Tray here first. Look at the camera, then put it on the scale.'));
-  if (G.phase === 'findSeat' && G.friends && near(G.friends[0], 4.5)) once('friends1', 30, () => { const F = G.friends[0]; F.pose = 'wave'; setTimeout(() => { if (G && F) F.pose = 'sit'; }, 2400); chatter(F, `${first()}! Over here, we choped a seat for you.`); });
-  if (G.phase === 'getTray' && near(G.auntie, 3.2)) once('auntie1', 30, () => chatter(G.auntie, 'Tray at the stack there, take one first!'));
-  if (G.phase === 'compost' && near(G.tan, 3)) once('tan1', 25, () => chatter(G.tan, 'Scrape into the compost first ah, the white one beside the scanner.'));
+  if (G.phase === 'findSeat' && G.friends && near(G.friends[0], 4.5)) once('friends1', 30, () => { const F = G.friends[0]; F.pose = 'wave'; setTimeout(() => { if (G && F) F.pose = 'sit'; }, 2400); chatter(F, `${first()}! Over here, we saved you a seat.`); });
+  if (G.phase === 'getTray' && near(G.auntie, 3.2)) once('auntie1', 30, () => chatter(G.auntie, 'Please take a tray from the stack first.'));
+  if (G.phase === 'compost' && near(G.tan, 3)) once('tan1', 25, () => chatter(G.tan, 'Scrape your leftovers into the compost first. It\'s the white bin beside the scanner.'));
   if (G.phase === 'scanAfter' && near(G.rahman, 3)) once('rahman2', 25, () => chatter(G.rahman, 'Done eating? Scan it again, same as before.'));
 }
 const first = () => (G.student ? G.student.name.split(' ')[0] : '');
@@ -7584,29 +7639,29 @@ function takeTray() {
   trayToHands(.35).then(() => { G.busy = false; });
   play('tray', [G.pos.x, 1, G.pos.z]);
   setPhase('order');
-  setTimeout(() => G && chatter(G.auntie, `Come, come! Healthy set, ${first()}?`), 600);
+  setTimeout(() => G && chatter(G.auntie, `Hello, ${first()}. The healthy set today?`), 600);
 }
 async function orderFlow() {
   const A = G.auntie, W = G.W;
   await convo(A, async () => {
-    await say(A, `Hello ${first()}! Put your tray on the rail, I scoop for you.`);
+    await say(A, `Hello, ${first()}. Put your tray on the rail and I\'ll serve you.`);
     G.faceTarget = null;
     const railQ = new THREE.Quaternion(), railPos = x => new THREE.Vector3(x, W.railY, W.railZ);
     const camPose = x => ({ pos: new THREE.Vector3(x + .05, 1.66, -6.72), target: new THREE.Vector3(x, 1.02, -7.85), fov: 64 });
     await Promise.all([focus(camPose(W.pans.rice), .7), trayToWorld(railPos(W.pans.rice), railQ, .6)]);
     play('trayDown', [W.pans.rice, 1, W.railZ]);
     const lines = {
-      rice: ['Rice how much? Today is brown rice mix.', ['Less rice, please', 'Normal', 'More rice']],
+      rice: ['How much rice? It\'s brown rice today.', ['Less rice, please', 'Normal', 'More rice']],
       chicken: ['Soy sauce chicken. How many pieces?', ['Just one piece', 'Normal', 'Extra piece']],
-      kailan: ['Kailan Week leh! Try a bit?', ['Just a little', 'Normal', 'Lots, please']],
-      cabbage: ['Braised cabbage also?', ['A little', 'Normal', 'More']],
-      soup: ['ABC soup, hot hot. Full bowl?', ['Half bowl', 'Full bowl', 'Extra']],
+      kailan: ['It\'s Kailan Week. Would you like to try some?', ['Just a little', 'Normal', 'Lots, please']],
+      cabbage: ['Some braised cabbage too?', ['A little', 'Normal', 'More']],
+      soup: ['ABC soup? It\'s hot. A full bowl?', ['Half bowl', 'Full bowl', 'Extra']],
       melon: ['Watermelon for dessert.', ['One slice', 'Two slices', 'Three slices']],
     };
     let more = 0, less = 0;
     for (const id of SERVE) {
       const x = W.pans[id];
-      // Auntie shuffles along, the tray slides along the rail
+      // Mrs Lim moves along, the tray slides along the rail
       const ax = A.root.position.x; A.pose = 'walk';
       const g = G.tray.group, gp = g.position.clone(), cam = G.camera, cp = cam.position.clone(), c = camPose(x);
       await tween(.5, e => { A.root.position.x = ax + (x - ax) * e; A.walkPh = (A.walkPh || 0) + .12; g.position.lerpVectors(gp, railPos(x), e); cam.position.lerpVectors(cp, c.pos, e); cam.quaternion.copy(lookQuat(cam.position, c.target)); });
@@ -7623,7 +7678,7 @@ async function orderFlow() {
       await sleep(250);
     }
     A.pose = 'serve';
-    const end = more >= 3 ? 'Wah, hungry today! Finish everything ah, the machine will know.' : less >= 3 ? 'Small portion, very good. Still hungry, come back and I add.' : 'Okay, done! Scan at the PlateLoop machine first, then eat.';
+    const end = more >= 3 ? 'You\'re hungry today! Try to finish it all. The scanner will know.' : less >= 3 ? 'A small portion, good choice. Come back if you\'re still hungry.' : 'There you go. Scan it at the PlateLoop station before you eat.';
     await say(A, end);
     await Promise.all([trayToHands(.5), unfocus(.6)]);
     G.served = true; setPhase('scanBefore');
@@ -7724,7 +7779,7 @@ async function returnFlow() {
   G.pos.set(11.7, EYE, -7.1); G.yaw = -.3; G.pitch = -.05;
   await unfocus(.5);
   G.busy = false;
-  await convo(G.tan, async () => { await say(G.tan, G.result && G.result.w < .1 ? 'Wah, so clean! Thank you ah.' : 'Thank you ah. Tomorrow try to finish more, okay?'); });
+  await convo(G.tan, async () => { await say(G.tan, G.result && G.result.w < .1 ? 'That\'s a clean tray. Thank you!' : 'Thank you. Try to finish a bit more tomorrow.'); });
   setPhase('done'); play('bell');
   G.screen.set('bye', { name: G.student.name });
   setTimeout(() => G && G.screen.set('idle'), 6000);
@@ -7751,19 +7806,19 @@ async function sitAt(t, spot) {
   G.yaw = spot.side > 0 ? 0 : Math.PI; G.pitch = -.55;
   G.mode = 'seat'; G.busy = false; setPhase('eating'); eatHud();
   G.tray.spoon.visible = true; G.tray.spoon.position.copy(G.tray.spoonRest); G.tray.spoon.rotation.set(-.3, .4, 0);
-  if (t === G.friendTable && G.friends) { G.chatQ = friendLines(); G.chatT2 = 5; chatter(G.friends[1], 'Eh finally. Scanned already? Good, now we can eat.'); }
+  if (t === G.friendTable && G.friends) { G.chatQ = friendLines(); G.chatT2 = 5; chatter(G.friends[1], 'There you are. Did you scan? Good, let\'s eat.'); }
   else msg(G.touch ? 'Tap the food to eat. Tap DONE when you\'re full.' : 'Click the food to take bites. Press E when you\'re full.', 3400);
 }
 function friendLines() {
   const [a, b] = G.friends, others = PL.S.students.filter(s => s.named && s.id !== G.student.id && !G.friends.some(f => f.name === s.name)).map(s => s.name);
   return [
-    [a, 'Kailan Week, remember. One bite also counts for Loopi.'],
+    [a, 'Remember it\'s Kailan Week. Even one bite counts for Loopi.'],
     [b, 'My Loopi evolved yesterday. Three clean trays in a row!'],
-    [a, '3B is second in the league now. Don\'t waste ah.'],
+    [a, '3B is second in the league now. Let\'s not waste anything.'],
     [b, `Yesterday ${others[0] || 'someone'} left half the rice. The screen went orange.`],
     [a, 'Did you see? It even shows how much CO₂ you saved.'],
-    [b, 'The rice today not bad leh.'],
-    [a, 'After this, scan again, then compost, then tray return. Easy.'],
+    [b, 'The rice is quite good today.'],
+    [a, 'After this we scan again, compost, and return the trays.'],
   ];
 }
 function friendChat(dt) {
@@ -7805,7 +7860,7 @@ async function standUp() {
   G.pos.set(spot.x, EYE, t.z + spot.side * 1.28); G.yaw = spot.side > 0 ? 0 : Math.PI; G.pitch = -.05;
   G.mode = 'focus'; await unfocus(.5);
   G.busy = false; setPhase('scanAfter');
-  if (G.friends && t === G.friendTable) setTimeout(() => G && chatter(G.friends[0], 'Go scan, then compost and tray return. See you in class!'), 400);
+  if (G.friends && t === G.friendTable) setTimeout(() => G && chatter(G.friends[0], 'Go and scan, then compost and return your tray. See you in class!'), 400);
 }
 
 /* ---------------------------------------------------------------- Priya shows the routine in the background */
@@ -7832,36 +7887,36 @@ async function talk(P) {
   if (P.friend) {
     const [a] = G.friends;
     return convo(P, async () => {
-      if (ph === 'getTray' || ph === 'order' || ph === 'scanBefore') await say(P, P === a ? `${f}! Get your food and scan first, we keep your seat.` : 'The tissue packet is your seat. Chope already!');
-      else if (ph === 'findSeat') await say(P, 'Sit, sit! We saved this one for you.');
+      if (ph === 'getTray' || ph === 'order' || ph === 'scanBefore') await say(P, P === a ? `${f}! Get your food and scan it first. We\'re keeping your seat.` : 'We left a tissue packet on your seat.');
+      else if (ph === 'findSeat') await say(P, 'Sit down, we saved this one for you.');
       else if (ph === 'done') await say(P, 'See you in class!');
-      else await say(P, 'Go scan your tray, then compost and return. See you later!');
+      else await say(P, 'Go and scan your tray, then compost and return it. See you later!');
     });
   }
   const script = {
-    'Auntie Lim': () => ph === 'getTray' ? ['Take a tray from the stack there first, then I scoop for you.'] : ph === 'done' ? ['Tomorrow got curry chicken. Come early!'] : ['Eat slowly, finish everything ah.'],
-    'Uncle Tan': () => ph === 'returnTray' ? ['Tray on the rack here. Just slide it in.'] : ph === 'compost' ? ['Scrape into the compost first. The white box beside the scanner.'] : ph === 'done' ? ['Last time the bins full full every day. Now much less already.'] : [`Afternoon, ${f}! After you eat, tray comes back here ah.`, 'Scrape the leftovers into the compost first, then the tray goes on the rack.'],
-    'Uncle Ah Seng': () => [G.scannedBefore ? 'Milo peng? After your lunch lah.' : 'Drinks later. Scan your tray first, the teacher is watching!'],
-    'Auntie Mei': () => ['Noodles finish already today, sorry! Healthy set still got.'],
-    'Makcik Rosnah': () => ['Nasi lemak tomorrow! Come early, ya.'],
-    'Priya': () => [ph === 'done' ? 'I got 94% today. My Loopi is so happy.' : 'First time? Just look at the camera. It knows your face, no need card.'],
+    'Mrs Lim': () => ph === 'getTray' ? ['Take a tray from the stack first, then I\'ll serve you.'] : ph === 'done' ? ['It\'s curry chicken tomorrow. Come early!'] : ['Take your time and enjoy it.'],
+    'Mr Tan': () => ph === 'returnTray' ? ['Your tray goes on this rack. Just slide it in.'] : ph === 'compost' ? ['Scrape your leftovers into the compost first. It\'s the white bin beside the scanner.'] : ph === 'done' ? ['The bins used to be full every day. Now there\'s much less waste.'] : [`Good afternoon, ${f}. Bring your tray back here after you eat.`, 'Scrape the leftovers into the compost first, then put the tray on the rack.'],
+    'Mr Ong': () => [G.scannedBefore ? 'Would you like an iced Milo? Have your lunch first.' : 'Drinks later. Scan your tray first, the teacher is watching.'],
+    'Mrs Chua': () => ['Sorry, the noodles have sold out today. The healthy set is still available.'],
+    'Mdm Rosnah': () => ['Nasi lemak tomorrow. Come early!'],
+    'Priya': () => [ph === 'done' ? 'I ate 94% today. My Loopi is so happy.' : 'First time? Just look at the camera. It knows your face, so you don\'t need a card.'],
   };
   const lines = (script[P.name] && script[P.name]()) || [genericLine(P)];
   return convo(P, async () => { for (const l of lines) await say(P, l); });
 }
 function genericLine(P) {
-  const pool = ['Eh, the kailan today not bad leh.', 'Scan first before you eat ah, if not it doesn\'t count.', 'My Loopi evolved yesterday!', 'Recess so short sia.', 'I always take less rice now. Can go back for more anyway.', 'The compost goes to the school garden, you know.', 'Did you see the class league? 3E is catching up.', 'Wah, the queue for noodles so long.', 'I finished everything today. The screen went green!', 'Don\'t forget to scrape your tray before you return it.'];
+  const pool = ['The kailan is actually good today.', 'Remember to scan before you eat, or it won\'t count.', 'My Loopi evolved yesterday!', 'Lunch break always feels too short.', 'I take less rice now. I can always go back for more.', 'The compost goes to the school garden, you know.', 'Did you see the class league? 3E is catching up.', 'The noodle queue is so long today.', 'I finished everything today. The screen went green!', 'Don\'t forget to scrape your tray before you return it.'];
   return pool[L.hash(P.name) % pool.length];
 }
 async function rahmanTalk() {
   const R = G.rahman, f = first(), ph = G.phase;
   await convo(R, async () => {
-    const open = { getTray: `Hello, ${f}. Get your food first, then come here to scan.`, order: 'Get your food first, then come here to scan.', scanBefore: 'You have your tray. Look into the camera on top of the screen, put your tray on the scale, and wait for the beep.', findSeat: 'Go and eat first. Come back and scan when you\'re done.', eating: 'Go and eat first.', scanAfter: 'Done eating? Scan it again here, then scrape and return the tray.', compost: 'The compost bin is the white box on the right of the scanner. Scrape everything in.', returnTray: 'Tray goes on the rack. Uncle Tan will take it from there.', done: `Well done, ${f}. 3B gets league points for every clean tray.` }[ph];
+    const open = { getTray: `Hello, ${f}. Get your food first, then come here to scan.`, order: 'Get your food first, then come here to scan.', scanBefore: 'You have your tray. Look into the camera on top of the screen, put your tray on the scale, and wait for the beep.', findSeat: 'Go and eat first. Come back and scan when you\'re done.', eating: 'Go and eat first.', scanAfter: 'Done eating? Scan it again here, then scrape and return the tray.', compost: 'The compost bin is the white box on the right of the scanner. Scrape everything in.', returnTray: 'Tray goes on the rack. Mr Tan will take it from there.', done: `Well done, ${f}. 3B gets league points for every clean tray.` }[ph];
     let i = await ask(R, open, ['How does the scanner work?', 'Why do we scan our trays?', 'Where do the leftovers go?', 'OK, thanks!']);
     while (i >= 0 && i < 3) {
       if (i === 0) { await say(R, 'The camera on the arm sees your food in 3D, and the scale checks the weight. It measures your tray before and after lunch.'); await say(R, 'It knows you from your face, so there\'s nothing to tap or carry. And the photo never leaves the machine.'); }
       if (i === 1) { await say(R, 'So the kitchen knows what we really eat. They cook the right amount, waste less food and save money.'); await say(R, 'And every tray shows how much CO₂ you saved. It adds up for the whole school.'); }
-      if (i === 2) { await say(R, 'Into the compost module on the scanner. The compost goes to our school garden. Maybe your kailan next term!'); }
+      if (i === 2) { await say(R, 'Into the compost module on the scanner. The compost goes to our school garden. Maybe it will grow next term\'s kailan!'); }
       i = await ask(R, 'Anything else?', ['How does the scanner work?', 'Why do we scan our trays?', 'Where do the leftovers go?', 'No, thanks!']);
     }
   });
@@ -7942,7 +7997,7 @@ function use() {
   if (G.waiting) { const w = G.waiting; G.waiting = null; play('select'); w.resolve(); return; }
   if (G.busy) return;
   if (G.mode === 'seat') { if (G.aimDish) bite(G.aimDish); return; }
-  if (G.target) { play('blip'); G.target.act(); }
+  if (G.target) G.target.act();
 }
 function wireInput() {
   const cv = G.cv, view = G.view;
