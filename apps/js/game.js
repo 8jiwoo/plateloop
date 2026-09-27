@@ -33,7 +33,7 @@ G.init = st => {
     v: V, name: 'Loopi', stage,
     hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
     hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
-    plate: null, mess: (st.messSeed || ['spinach', 'kimchi', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
+    plate: null, mess: (st.messSeed || ['kailan', 'cabbage', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
     eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
   };
 };
@@ -104,7 +104,7 @@ G.BADGES = [
   { id: 'small', name: 'Small and clean', item: 'bow', how: 'Finish a small portion', test: st => st.log.some(l => l.portion === 'S' && l.w < .12) },
   { id: 'streak', name: 'Three in a row', item: 'scarf', how: '3 clean trays in a row', test: st => st.pet.streak >= 3 },
   { id: 'veg', name: 'Veggie explorer', item: 'flower', how: 'Try the veggies 10 times', test: st => st.pet.c.veg >= 10 },
-  { id: 'spinach', name: 'Spinach week', item: 'glasses', how: 'Taste the spinach 3 times', test: st => st.pet.quest >= 3 },
+  { id: 'kailan', name: 'Kailan week', item: 'glasses', how: 'Taste the kailan 3 times', test: st => st.pet.quest >= 3 },
   { id: 'balanced', name: 'Balanced plate', item: 'halo', how: 'Eat from every food group 5 times', test: st => st.pet.c.balanced >= 5 },
   { id: 'class', name: 'Team goal', item: 'wings', how: 'Your class goes under 20% waste', test: st => { const c = PL.S.classes.find(c => c.id === st.cls); return c.ret / c.served < .2; } },
   { id: 'top3', name: 'Podium', item: 'headphones', how: 'Be top 3 in your class', test: st => PL.studentRows().findIndex(s => s.id === st.id) < 3 },
