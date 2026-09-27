@@ -46,13 +46,14 @@ const Room = PL.Room = {
   say(text, dur = 3.2) { this.speech = { text, until: this.time + dur }; },
   jump(h = 8, dur = .5) { const p = this.pet; p.jumpT = dur; p.jumpDur = dur; p.jumpH = h; },
   walkTo(x, then, speed) { const p = this.pet; p.target = Math.max(14, Math.min(W - 14, x)); p.mode = 'walk'; p.onArrive = then || null; p.speed = speed || 30; },
-  feed() {
+  /** Feed the lunch waiting in the bowl, or (with a snack id) a snack cooked in the Kitchen. */
+  feed(snack) {
     const p = this.pet;
     if (this.night) { this.say('Zzz… turn the lights on first.'); return; }
     if (p.mode === 'eat') return;
-    const plate = this.hooks.info().plate;
-    if (!plate) { this.say('My food comes from your lunch tray. See you at lunch!', 3.6); return; }
-    this.walkTo(BOWL_X + 12, () => { this.food = plate; p.face = -1; p.mode = 'eat'; p.until = this.time + 2.4; p.eatStart = this.time; }, 44);
+    const plate = snack ? this.hooks.snackFood(snack) : this.hooks.info().plate;
+    if (!plate) { this.say(snack ? 'Hmm, that snack is gone.' : 'My lunch comes from your tray. Cook me a snack in the Kitchen?', 3.6); return; }
+    this.walkTo(BOWL_X + 12, () => { this.food = plate; this.eating = snack || null; p.face = -1; p.mode = 'eat'; p.until = this.time + 2.4; p.eatStart = this.time; }, 44);
   },
   throwBall() {
     if (this.night) { this.say('It\'s bedtime. No ball now.'); return; }
@@ -98,8 +99,9 @@ const Room = PL.Room = {
     else if (p.mode === 'eat') {
       if (this.time > p.until) {
         this.food = null; p.mode = 'happy'; p.until = this.time + .9; this.jump(6);
-        const res = this.hooks.eat();
-        if (res) this.say(res.heart ? 'That was a good lunch. +1 heart!' : res.crumbs ? 'Thanks! Some of it ended up on the floor…' : 'Thanks for lunch!', 3);
+        const snack = this.eating; this.eating = null;
+        const res = snack ? this.hooks.eatSnack(snack) : this.hooks.eat();
+        if (res) this.say(snack ? (res.golden ? 'Golden! That was amazing!' : res.wasFull ? 'So full… but thank you!' : 'Yum, thanks for cooking!') : res.heart ? 'That was a good lunch. +1 heart!' : res.crumbs ? 'Thanks! Some of it ended up on the floor…' : 'Thanks for lunch!', 3);
       }
     }
     else if (p.mode === 'happy') { if (this.time > p.until) { p.mode = 'idle'; p.next = this.time + rand(1.5, 4); } }
