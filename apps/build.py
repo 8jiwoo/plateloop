@@ -6,7 +6,7 @@ Build the seven PlateLoop apps as self-contained HTML files.
 Outputs seven separate apps: 1-plateloop-scanner-3d.html, 2-plateloop-kiosk.html,
 3-plateloop-kitchen.html, 4-loopi-student-app.html, 5-loopi-care-hospital.html,
 6-loopi-kids-kindergarten.html and 7-loopi-work-office.html. They have no shared navigation.
-Each file inlines the CSS, the shared core + game rules and its own app, so it runs by
+Each file inlines the CSS, the shared core + visuals and its own app, so it runs by
 double-clicking. scanner-3d.html also embeds three.js, the 3D model and the renders, so it
 works offline. All seven share one demo save in the browser, so a tray scanned on the scanner
 screen shows up in the kitchen and student apps open in other tabs.
@@ -23,9 +23,9 @@ PAGES = {
     'model':   ('1-plateloop-scanner-3d.html', 'PlateLoop Scanner',  ['vendor/three.min.js', 'vendor/GLTFLoader.js', 'js/model.js']),
     'scanner': ('2-plateloop-kiosk.html',      'PlateLoop Kiosk',    ['js/scanner.js']),
     'kitchen': ('3-plateloop-kitchen.html',    'PlateLoop Kitchen',  ['js/kitchen.js']),
-    'student': ('4-loopi-student-app.html',    'Loopi',              ['js/room.js', 'js/student.js']),
+    'student': ('4-loopi-student-app.html',    'Loopi',              ['js/student.js']),
     'care':    ('5-loopi-care-hospital.html',  'Loopi Care',         ['js/health.js', 'js/care.js']),
-    'kids':    ('6-loopi-kids-kindergarten.html', 'Loopi Kids',      ['js/room.js', 'js/health.js', 'js/kids.js']),
+    'kids':    ('6-loopi-kids-kindergarten.html', 'Loopi Kids',      ['js/health.js', 'js/kids.js']),
     'work':    ('7-loopi-work-office.html',    'Loopi Work',         ['js/health.js', 'js/work.js']),
 }
 FILES = {k: v[0] for k, v in PAGES.items()}
@@ -73,7 +73,7 @@ for app, (fname, title, scripts) in PAGES.items():
     if app == 'model':
         m = read('scanner.gltf.json'); assert '</script' not in m.lower()
         parts.append(f'<script type="application/json" id="model-scanner">{m}</script>')
-    for p in ['js/core.js', 'js/game.js'] + scripts:
+    for p in ['js/core.js', 'js/visual.js'] + scripts:
         parts.append(f'<script>\n/* ---- {p} ---- */\n{inline(p)}\n</script>')
     parts.append(f'<script>{BOOT % {"app": app, "files": FILES}}</script>')
     parts += ['</body>', '</html>']

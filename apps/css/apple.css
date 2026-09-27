@@ -752,3 +752,195 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .f-row.col{grid-template-columns:1fr;gap:8px}
 .f-row input{font:inherit;width:100%;padding:8px 10px;border-radius:10px;border:0;background:var(--fill);color:var(--label);text-align:right}
 .finding b{font-weight:600}
+
+/* ================================================================ Visual toolkit (js/visual.js) */
+.loopi{display:block;overflow:visible;flex:none}
+.loopi .lp-body{animation:lpbob 3.2s ease-in-out infinite;transform-origin:60px 120px}
+.loopi .lp-eye{animation:lpblink 5.5s infinite;transform-box:fill-box;transform-origin:center}
+.loopi .lp-wave{animation:lpwave 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+.loopi .lp-leaf{animation:lpleaf 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+.lp-cheer .lp-body{animation:lpjump 1.4s ease-in-out infinite}
+@keyframes lpbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lpjump{0%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}55%{transform:translateY(0)}}
+@keyframes lpblink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes lpwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+@keyframes lpleaf{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}
+.guide{display:flex;align-items:flex-end;gap:10px;flex:none}
+.guide .bubble{position:relative;flex:1;min-width:0;background:var(--bg2);border-radius:20px 20px 20px 6px;padding:12px 14px;box-shadow:0 2px 10px rgba(0,0,0,.06);margin-bottom:18px;display:flex;gap:10px;align-items:flex-start}
+.guide .bubble p{margin:0;font-size:15px;line-height:1.4;font-weight:500;flex:1}
+.guide.big .bubble p{font-size:17px}
+.guide .speak{flex:none;width:34px;height:34px;border-radius:50%;border:0;background:var(--tint);color:#fff;display:grid;place-items:center}
+.guide .speak svg{width:18px;height:18px}
+/* food + tray */
+.food{display:block}
+.vtray{display:grid;grid-template-columns:repeat(var(--cols),1fr);gap:8px;padding:10px;border-radius:22px;background:linear-gradient(145deg,#EEF1F3,#DDE2E6);box-shadow:inset 0 1px 0 rgba(255,255,255,.7),inset 0 -2px 6px rgba(0,0,0,.06)}
+.vcell{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:16px;background:rgba(255,255,255,.72);box-shadow:inset 0 1px 3px rgba(0,0,0,.06);text-align:center;color:#1D1D1F}
+.vcell.hi{background:#fff;box-shadow:0 0 0 2.5px var(--tint),0 6px 16px -6px rgba(52,199,89,.5)}
+.vcell span{font-size:11.5px;font-weight:600;line-height:1.2}
+.vcell b{font-size:13px;color:#3A3A3C}
+.vcell em{font-style:normal;font-size:10.5px;font-weight:700;color:#fff;background:var(--tint);border-radius:999px;padding:1px 7px}
+.vfood{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#fff;position:relative}
+.vfood.scored{background:conic-gradient(var(--c) calc(var(--p) * 1%),#E5E5EA 0)}
+.vfood.scored::before{content:"";position:absolute;inset:5px;border-radius:50%;background:#fff}
+.vfood .food{position:relative}
+/* My Healthy Plate */
+.hplate{display:grid;grid-template-columns:auto auto 1fr;gap:4px 14px;align-items:center}
+.hplate figure{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.hplate figcaption{font-size:11.5px;font-weight:600;color:var(--label2)}
+.hplate .ideal{opacity:.85}
+.hlegend{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:12.5px}
+.hlegend li{display:grid;grid-template-columns:10px 1fr auto;column-gap:6px;align-items:center}
+.hlegend i{width:10px;height:10px;border-radius:3px}
+.hlegend b{font-size:13px}
+.hlegend small{grid-column:2 / 4;color:var(--label3);font-size:11px;margin-top:-3px}
+.hverdict{grid-column:1 / -1;margin:6px 0 0;font-size:13.5px;font-weight:500;background:var(--fill);border-radius:12px;padding:8px 11px}
+@media (max-width:420px){.hplate{grid-template-columns:auto 1fr}.hplate .ideal{display:none}}
+/* rings */
+.vrings{display:grid;grid-template-columns:repeat(auto-fit,minmax(86px,1fr));gap:10px}
+.vring{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.vr{width:84px;height:84px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);display:grid;place-items:center;position:relative}
+.vr::before{content:"";position:absolute;inset:8px;border-radius:50%;background:var(--bg2)}
+.vr > div{position:relative;display:flex;flex-direction:column;align-items:center;line-height:1.05}
+.vr b{font:700 18px var(--font-d);letter-spacing:-.02em}
+.vr small{font-size:10.5px;color:var(--label3)}
+.vring > span{font-size:12.5px;font-weight:600;color:var(--label2)}
+/* week of plates */
+.vweek{display:flex;justify-content:space-between;gap:6px}
+.vweek > div{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px}
+.vweek i{width:100%;max-width:46px;aspect-ratio:1;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);position:relative;box-shadow:0 0 0 3px var(--bg2),0 0 0 4px var(--sep)}
+.vweek i::after{content:"";position:absolute;inset:30%;border-radius:50%;background:var(--bg2)}
+.vweek b{font-size:12px}
+.vweek span{font-size:11px;color:var(--label3);font-weight:600}
+.vweek .today span{color:var(--tint-ink)}
+/* tips */
+.vicon{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;flex:none;background:color-mix(in srgb,var(--ic) 14%,transparent);color:var(--ic)}
+.vicon svg{width:22px;height:22px}
+.vtip{display:flex;gap:12px;align-items:flex-start;padding:12px 14px}
+.vtip b{display:block;font-size:14.5px;line-height:1.3}
+.vtip span{display:block;font-size:13px;color:var(--label2);line-height:1.4;margin-top:2px}
+.vcard{background:var(--bg2);border-radius:20px;padding:16px;box-shadow:var(--shadow-s);flex:none}
+.vcard > h3{font-size:16px;margin-bottom:12px;display:flex;align-items:center;justify-content:space-between;gap:8px}
+.vcard > h3 small{font:500 12px var(--font);color:var(--label3)}
+.vtips{background:var(--bg2);border-radius:20px;box-shadow:var(--shadow-s);overflow:hidden;flex:none}
+.vtips > * + *{border-top:.5px solid var(--sep)}
+
+/* ================================================================ warm, always-light theme for the children's apps */
+.warm{--bg:#FFF6EA;--bg2:#FFFFFF;--fill:#FFF1DE;--fill2:#F3E6D2;--fill3:#E4D3BA;--label:#2B2118;--label2:#7A6A58;--label3:#A8977F;--sep:rgba(120,90,50,.14);--tint:#3DB85A;--tint-ink:#2B8C43;--tint-soft:#E3F6E5;--bar2:rgba(255,250,242,.9);--shadow-s:0 2px 10px rgba(120,80,30,.07);color-scheme:light;color:var(--label)}
+.warm .phone{background:var(--bg)}
+.warm .phone-top{background:rgba(255,250,242,.92)}
+.warm .phone-tabs{background:rgba(255,250,242,.94)}
+.warm .phone-tabs button[aria-selected="true"]{color:var(--tint-ink)}
+.warm .seg{background:var(--fill2)}
+.warm .seg button[aria-pressed="true"]{background:#fff}
+.warm .btn{background:var(--fill);color:var(--label)}
+.warm .btn.primary{background:var(--tint);color:#fff}
+.warm .vr::before{background:#fff}
+.warm .vweek i::after{background:#fff}
+/* ================================================================ Loopi (students) */
+.av-circle{border-radius:50%;background:var(--av);color:#fff;display:inline-grid;place-items:center;font-weight:700;flex:none;box-shadow:inset 0 -2px 0 rgba(0,0,0,.12)}
+.loopi-icon svg{display:block}
+.journey{list-style:none;margin:0;padding:12px 8px;display:grid;grid-template-columns:repeat(4,1fr);background:var(--bg2);border-radius:20px;box-shadow:var(--shadow-s);position:relative;flex:none}
+.journey li{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;position:relative}
+.journey li + li::before{content:"";position:absolute;top:19px;right:calc(50% + 22px);width:calc(100% - 44px);height:3px;border-radius:3px;background:var(--fill2)}
+.journey li.done + li::before,.journey li.done + li.done::before{background:var(--tint)}
+.journey span{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--fill);color:var(--label3)}
+.journey span svg{width:20px;height:20px}
+.journey li.now span{background:#fff;color:var(--tint-ink);box-shadow:0 0 0 3px var(--tint);animation:pulse 1.8s ease-in-out infinite}
+.journey li.done span{background:var(--tint);color:#fff}
+.journey small{font-size:11px;font-weight:600;color:var(--label2);line-height:1.2}
+.journey li.now small{color:var(--label)}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--tint)}50%{box-shadow:0 0 0 7px color-mix(in srgb,var(--tint) 25%,transparent)}}
+.tries{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tries div{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:16px;background:var(--fill);font-size:12px;font-weight:600;color:var(--label3)}
+.tries div .food{filter:grayscale(1);opacity:.35}
+.tries div.on{background:var(--tint-soft);color:var(--tint-ink)}
+.tries div.on .food{filter:none;opacity:1}
+.goalbar{height:14px;border-radius:999px;background:var(--fill2);overflow:hidden;position:relative}
+.goalbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#FFB23F,var(--tint))}
+.goalbar.done i{background:var(--tint)}
+.podium2{display:grid;grid-template-columns:1fr 1.15fr 1fr;align-items:end;gap:8px;flex:none}
+.pod{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center}
+.pod b{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pod small{font-size:11.5px;color:var(--label2)}
+.pod .step{width:100%;border-radius:14px 14px 0 0;display:grid;place-items:center;font:700 20px var(--font-d);color:#fff;margin-top:4px}
+.pod.p1 .step{height:70px;background:linear-gradient(180deg,#F7C948,#E0A800)}
+.pod.p2 .step{height:48px;background:linear-gradient(180deg,#C9CED4,#9EA4AB)}
+.pod.p3 .step{height:36px;background:linear-gradient(180deg,#E6A673,#C27C3E)}
+.warm .lb{background:var(--bg2);box-shadow:var(--shadow-s)}
+.warm .lb-row.me{background:var(--tint-soft)}
+.lb-row .av-circle{justify-self:center}
+.schools{padding:6px 14px}
+.sch-row{display:grid;grid-template-columns:20px 1fr auto;gap:10px;align-items:center;padding:10px 0;border-bottom:.5px solid var(--sep)}
+.sch-row:last-child{border-bottom:0}
+.sch-row > span{color:var(--label3);font-weight:700;text-align:center}
+.sch-row b{font-size:14px}
+.sch-row.us b:first-child{color:var(--tint-ink)}
+.sbar{height:8px;border-radius:999px;background:var(--fill2);margin-top:5px;overflow:hidden}
+.sbar i{display:block;height:100%;border-radius:999px;background:var(--tint)}
+.profile2{display:flex;align-items:center;gap:14px}
+.profile2 b{display:block;font:700 22px var(--font-d);letter-spacing:-.02em}
+.profile2 span{font-size:13px;color:var(--label2)}
+.statgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;flex:none}
+.statgrid div{background:var(--bg2);border-radius:18px;padding:12px;box-shadow:var(--shadow-s);display:flex;flex-direction:column;gap:6px}
+.statgrid b{font:700 24px var(--font-d);letter-spacing:-.02em;line-height:1}
+.statgrid span{font-size:12px;color:var(--label2);line-height:1.25}
+.hist2{display:flex;flex-direction:column}
+.hist2 div{display:grid;grid-template-columns:30px 1fr auto 40px;gap:10px;align-items:center;padding:8px 0;border-bottom:.5px solid var(--sep);font-size:14px}
+.hist2 div:last-child{border-bottom:0}
+.hist2 i{width:28px;height:28px;border-radius:50%;background:conic-gradient(var(--tint) calc(var(--p) * 1%),var(--fill2) 0);position:relative}
+.hist2 i::after{content:"";position:absolute;inset:7px;border-radius:50%;background:var(--bg2)}
+.hist2 b{font-size:13px;color:var(--label2);font-weight:500}
+.hist2 em{font-style:normal;font-weight:700;color:var(--tint-ink);font-size:13px;text-align:right}
+.phone-top .av-circle{box-shadow:none}
+/* ================================================================ Loopi Kids */
+.kidcard h3{font-size:18px}
+.kids .vcell span{font-size:12.5px}
+.rb-dots.big{gap:10px}
+.rb-dots.big .rb{width:46px;height:46px}
+.kidline{text-align:center;margin:10px 0 0;font-size:15px;font-weight:600;color:var(--label2)}
+.note2{background:#FFF9E8;border:1px dashed #E8CF8A}
+.note2 p{margin:0;font-size:15px;line-height:1.45;font-style:italic}
+.note2 span{display:block;margin-top:6px;font-size:12.5px;color:var(--label2)}
+.kio-left .loopi{width:24cqw;height:auto}
+/* ================================================================ Loopi Care visuals */
+.meals3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.mealc{display:flex;flex-direction:column;align-items:center;gap:6px;padding:10px 6px 12px;border-radius:16px;background:var(--fill);text-align:center}
+.mealc.next{background:var(--bg2);box-shadow:inset 0 0 0 2px var(--blue)}
+.mealc-top{display:flex;flex-direction:column;align-items:center;line-height:1.15}
+.mealc-top b{font-size:13.5px}
+.mealc-top small{font-size:11px;color:var(--label3)}
+.mealc-food{display:flex;flex-wrap:wrap;justify-content:center;gap:0;max-width:64px}
+.mealc-ring{width:52px;height:52px;border-radius:50%;background:conic-gradient(var(--c) calc(var(--p) * 1%),var(--fill2) 0);display:grid;place-items:center;position:relative}
+.mealc-ring::before{content:"";position:absolute;inset:6px;border-radius:50%;background:var(--bg2)}
+.mealc-ring b{position:relative;font-size:13px}
+.mealc-wait{width:52px;height:52px;border-radius:50%;border:2px dashed var(--fill3);display:grid;place-items:center;font-size:12px;font-weight:600;color:var(--label3)}
+.mealc.next .mealc-wait{border-color:var(--blue);color:var(--blue)}
+.mealc > span{font-size:11px;color:var(--label2);line-height:1.25}
+.vtips.alert{background:var(--orange-soft)}
+.leftlist{display:flex;flex-direction:column}
+.leftlist div{display:grid;grid-template-columns:40px 1fr auto;gap:10px;align-items:center;padding:6px 0;border-bottom:.5px solid var(--sep);font-size:14px}
+.leftlist div:last-child{border-bottom:0}
+.leftlist b{font-size:13px;color:#E4674B}
+/* the tray in dark mode (the children's apps stay light) */
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) :not(.warm) > .vcard .vtray,:root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vtray{background:linear-gradient(145deg,#2C2C2E,#232325);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vcell{background:rgba(255,255,255,.06);color:var(--label);box-shadow:none}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vcell b{color:var(--label2)}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vfood.scored::before{background:#2C2C2E}
+  :root:not([data-theme="light"]) .vcard:not(.warm .vcard) .vfood{background:#3A3A3C}
+  :root:not([data-theme="light"]) .hverdict{background:var(--fill)}
+}
+/* ================================================================ Loopi Work visuals */
+.pick2 .vtray{margin-bottom:10px}
+.pick2 .tweaks{padding:0 2px 12px}
+.lines2{display:flex;flex-direction:column}
+.lines2 > div{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:.5px solid var(--sep)}
+.lines2 > div:last-child{border-bottom:0}
+.lines2 b{display:block;font-size:14px}
+.lines2 small{font-size:12px;color:var(--label2)}
+.lthumbs{display:flex;background:var(--fill);border-radius:12px;padding:3px 4px}
+.lthumbs .food{margin:0 -3px}
+.goal-opt .vicon{margin-bottom:4px}
+.phone-body > *{flex-shrink:0}
+.warm .seg button[aria-pressed="true"]{background:#fff!important;color:var(--label);box-shadow:0 1px 3px rgba(120,80,30,.15)}
+.warm .seg button{color:var(--label2)}
