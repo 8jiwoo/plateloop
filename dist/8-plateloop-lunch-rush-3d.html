@@ -6279,12 +6279,15 @@ L.Sound = () => {
       ctx.decodeAudioData(arr.buffer).then(b => { clips[k] = b; }).catch(() => {});
     });
   }
-  /** Play a recorded clip, positioned in the room (or straight to the listener); returns its length. */
-  function clip(name, pos, vol = 1) {
-    const b = clips[name]; if (!ctx || muted || !b) return 0;
-    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; g.gain.value = vol;
-    s.connect(g).connect(pos ? panner(pos, 3, .25) : flatOut); s.start();
-    return b.duration;
+  /** Play a recorded clip (or the part from..to seconds), positioned in the room or straight to the listener.
+   *  Returns a handle with the length and a stop() that fades it out quickly; null if the clip isn't loaded. */
+  function clip(name, pos, vol = 1, from = 0, to = null) {
+    const b = clips[name]; if (!ctx || muted || !b) return null;
+    const end = Math.min(to == null ? b.duration : to, b.duration), len = Math.max(.05, end - from), t = ctx.currentTime;
+    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.setValueAtTime(vol, t + len - .03); g.gain.linearRampToValueAtTime(0, t + len);
+    s.connect(g).connect(pos ? panner(pos, 3, .25) : flatOut); s.start(t, from, len);
+    return { length: len, stop() { const n = ctx.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.linearRampToValueAtTime(0, n + .06); s.stop(n + .08); } };
   }
 
   /* ------------------------------------------------------------ per frame */
@@ -8329,19 +8332,24 @@ async function sophieSings() {
 }
 /** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
+// where each line sits in the supplied "GG freaking EZ" clip (seconds)
+const GGEZ_CUTS = { gg: [0, 1.83], dont: [1.84, 2.74], really: [2.8, 5.06], easy: [5.06, 5.95], end: [6.22, 7.63] };
 async function brawl() {
   const A = G.brawlA, B = G.brawlB, hp = new THREE.Vector3();
+  let now = null;
+  const line = (P, key) => { if (now) now.stop(); P.head.getWorldPosition(hp); now = G.SFX.clip('ggez', at(hp), 1.1, ...GGEZ_CUTS[key]); return !!now; };
   if (A.busy) return;
   A.busy = true;
   await convo(A, async () => {
-    // his own voice line if we have it, otherwise the synthesised jingle
-    A.head.getWorldPosition(hp); if (!G.SFX.clip('ggez', at(hp), 1.1)) play('ggez', at(hp));
+    // each line plays its own part of the recorded clip (or the synthesised jingle if the clip isn't there)
+    if (!line(A, 'gg')) { A.head.getWorldPosition(hp); play('ggez', at(hp)); }
     await say(A, 'GG freaking EZ.');
-    G.faceTarget = B; await say(B, 'Don’t say that.');
-    G.faceTarget = A; await say(A, 'Really?');
-    A.head.getWorldPosition(hp); if (!G.SFX.hasClip('ggez')) play('ez', at(hp));
+    G.faceTarget = B; line(B, 'dont'); await say(B, 'Don’t say that.');
+    G.faceTarget = A; line(A, 'really'); await say(A, 'Really?');
+    if (!line(A, 'easy')) { A.head.getWorldPosition(hp); play('ez', at(hp)); }
     await say(A, 'Freaking easy.');
     hideSub();
+    line(B, 'end');
     // the punch sends Ryan flying
     B.pose = 'punch'; play('whoosh'); await sleep(170);
     B.head.getWorldPosition(hp); play('punch', at(hp));
