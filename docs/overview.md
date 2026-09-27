@@ -24,7 +24,7 @@ The Kitchen app also includes **carbon management**: the cafeteria's whole footp
 
 ## Business model (summary)
 - **Customers:** school districts, contract caterers (one deal covers many kitchens), later hospitals and canteens.
-- **Revenue:** the scanner is leased inside a subscription (no upfront cost). Illustrative tiers: Basic about $150, Pro about $350 per site per month, plus a gamification add-on.
-- **Illustrative ROI:** a school serving 800 meals a day spends about $288k a year on ingredients. Cutting waste by 30% saves about $21.6k a year against about $4.2k for the Pro plan.
+- **Revenue:** the scanner is leased inside a subscription (no upfront cost). Illustrative tiers: Basic about S$200, Pro about S$470 per site per month, plus a gamification add-on.
+- **Illustrative ROI:** a school serving 800 meals a day spends about S$390k a year on ingredients. Cutting waste by 30% saves about S$29k a year against about S$5.6k for the Pro plan.
 
 All figures are illustrative and should be validated in a pilot.

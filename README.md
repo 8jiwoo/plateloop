@@ -4,7 +4,7 @@
 
 **An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals, kindergartens or offices.**
 
-Built for the EcoLoop sustainability hackathon.
+Built for the EcoLoop sustainability hackathon, set in Singapore: local menus, HPB nutrition guidance (under 2,000 mg sodium a day) and the Singapore grid's emission factor.
 
 People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives seven separate apps:
 
