@@ -8,25 +8,25 @@ const PARTS = [
   { p: [0.08, -0.10, 1.49], t: 'Depth camera', s: 'Photographs the tray from 0.62 m above', d: 'A colour camera identifies each dish, and two infrared cameras measure how high the food sits in every compartment. That gives the volume of each food, which becomes grams. It runs twice per tray: before lunch and after.', spec: 'RGB-D · 1280 × 720 depth' },
   { p: [0.08, -0.185, 1.55], t: 'Status light', s: 'Shows when to put the tray down and pick it up', d: 'Soft green means ready. A slow pulse means scanning, so hold still. Two quick blinks mean done.', spec: 'LED strip' },
   { p: [0.08, 0.175, 1.30], t: 'Camera arm', s: 'Holds the camera straight over the tray', d: 'Looking straight down means compartment walls never hide food. The cables run inside the aluminium column.', spec: 'Top at 1.58 m' },
-  { p: [-0.28, 0.02, 1.25], t: 'Screen + face ID', s: 'Instructions, results, and an optional face camera', d: 'Runs PlateLoop Kiosk. An animated banner shows the steps, then the student sees grams, calories and nutrients, Loopi\'s reaction and their points. A small front camera can recognise faces for schools that opt in.', spec: '10.1" touchscreen · 1.15 m high' },
-  { p: [-0.28, -0.15, 0.875], t: 'ID reader', s: 'Student card, QR code or face', d: 'Links the tray to the student: tap a card, show the QR code in the Loopi app, or look at the screen\'s camera. Before lunch it opens a tray, after lunch it closes it. Trays without an ID still count for the kitchen.', spec: 'NFC 13.56 MHz · QR' },
+  { p: [-0.28, 0.035, 1.16], t: 'Screen', s: 'Instructions and results', d: 'Runs PlateLoop Kiosk. An animated banner shows the steps, then the student sees grams, calories and nutrients, Loopi\'s reaction and their points.', spec: '10.1" touchscreen · 1.15 m high' },
+  { p: [-0.276, 0.055, 1.285], t: 'Face camera', s: 'The only way students sign in', d: 'Students just look up at the screen. An infrared face camera recognises them in under a second, even in a dim cafeteria, so there are no cards to lose and no phones needed. It opens the tray before lunch and closes it after. It keeps a match code, never a photo.', spec: 'IR + RGB · under 1 s · on-device' },
   { p: [0.31, -0.19, 0.88], t: 'Weighing platform', s: 'Checks the camera with a scale', d: 'Four load cells weigh the whole tray. If the camera and the scale disagree by more than 10%, the tray is scanned again.', spec: '0–5 kg · ±2 g' },
   { p: [0.08, -0.04, 0.92], t: 'Tray', s: 'Scanned full, then scanned again', d: 'Before: what was served. After: what is left. Eaten = before − after, per dish. The menu is known in advance, so the AI only chooses among today\'s dishes.', spec: 'Standard 6-compartment tray' },
   { p: [0.585, -0.01, 0.87], t: 'Compost bin', s: 'Scraps go here after the second scan', d: 'The bin weighs scraps in bulk for the compost report. The Kitchen app shows how full it is.', spec: '60 L' },
-  { p: [-0.05, -0.235, 0.35], t: 'On-device AI', s: 'Works offline, and photos never leave', d: 'The vision model runs inside the cabinet in about 1.4 s per scan. Only numbers (grams per dish and a card ID) are sent to the Kitchen and Student apps.', spec: 'Edge AI module' },
+  { p: [-0.05, -0.235, 0.35], t: 'On-device AI', s: 'Works offline, and photos never leave', d: 'The vision model runs inside the cabinet in about 1.4 s per scan. Face matching happens here too. Only numbers (grams per dish and a student number) are sent to the Kitchen and Student apps.', spec: 'Edge AI module' },
 ];
 const DIMS = [
   { a: [-0.62, -0.25, 0], b: [-0.62, -0.25, 1.58], label: '1.58 m' },
   { a: [-0.40, -0.40, 0], b: [0.765, -0.40, 0], label: '1.17 m' },
   { a: [0.30, -0.10, 0.885], b: [0.30, -0.10, 1.49], label: '0.62 m' },
 ];
-const SPECS = [['Footprint', '1.17 × 0.46 m'], ['Scans', 'Before and after lunch'], ['Measures', 'Dish, grams, kcal, carbs, protein, fat'], ['ID', 'Card, QR or face'], ['Scan time', '≈ 1.4 s'], ['Power', 'One socket'], ['Network', 'Wi-Fi or Ethernet'], ['Parts', '≈ $1,400 (estimate)']];
+const SPECS = [['Footprint', '1.17 × 0.46 m'], ['Scans', 'Before and after lunch'], ['Measures', 'Dish, grams, kcal, carbs, protein, fat'], ['Sign-in', 'Face only, on-device'], ['Scan time', '≈ 1.4 s'], ['Power', 'One socket'], ['Network', 'Wi-Fi or Ethernet'], ['Parts', '≈ $1,400 (estimate)']];
 
 const q = new URLSearchParams(location.search);
 const IDI = b => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${b}</svg>`;
 const ID_ICONS = {
-  card: IDI('<rect x="3" y="6" width="18" height="12" rx="2.5"/><path d="M7 10h5M7 14h3"/><path d="M16 9.5a3 3 0 0 1 0 5"/>'),
-  qr: IDI('<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3M21 14v7h-4M14 21v-3"/>'),
+  lock: IDI('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3M12 15v2"/>'),
+  fast: IDI('<path d="M13 3 5 13.5h6L10 21l8-10.5h-6Z"/>'),
   face: IDI('<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16a4 4 0 0 0 5 0"/>'),
 };
 const ui = { sel: null, labels: true, dims: true };
@@ -61,23 +61,23 @@ function mount(el) {
       <div><b>C · P · F</b><span>carbs, protein and fat</span></div>
       <div><b>% left</b><span>plate waste for every dish</span></div>
     </div>
-    <h2 class="section-title">Three ways to identify</h2>
+    <h2 class="section-title">Sign in with your face</h2>
     <div class="ids">
-      <div><span class="idic">${ID_ICONS.card}</span><b>Student card</b><span>Tap the NFC reader. Fast and familiar.</span></div>
-      <div><span class="idic">${ID_ICONS.qr}</span><b>QR code</b><span>Shown in the Loopi app. Nothing extra to carry.</span></div>
-      <div><span class="idic">${ID_ICONS.face}</span><b>Face ID</b><span>Hands-free, for schools that opt in. Only a match code is stored, never photos.</span></div>
+      <div><span class="idic">${ID_ICONS.face}</span><b>Hands-free</b><span>Look up at the screen with your tray in both hands. No card to lose, no phone needed.</span></div>
+      <div><span class="idic">${ID_ICONS.fast}</span><b>Under a second</b><span>Fast enough for a lunch line, and the infrared camera works in a dim cafeteria.</span></div>
+      <div><span class="idic">${ID_ICONS.lock}</span><b>Private</b><span>The scanner keeps a match code, never a photo, and it never leaves the scanner.</span></div>
     </div>
     <h2 class="section-title" id="how">How a tray is scanned</h2>
     <div class="flow">
-      <div><span class="n">1</span><b>Before lunch</b>Tap your card and set down your full tray. The scanner records what you were served.</div>
+      <div><span class="n">1</span><b>Before lunch</b>Look at the camera and set down your full tray. The scanner records what you were served.</div>
       <div><span class="n">2</span><b>Eat</b>Enjoy lunch. Loopi's tip on the screen suggests one dish to try.</div>
-      <div><span class="n">3</span><b>After lunch</b>Tap again and set down the tray. The scanner measures what's left.</div>
+      <div><span class="n">3</span><b>After lunch</b>Look at the camera again and set down the tray. The scanner measures what's left.</div>
       <div><span class="n">4</span><b>Results</b>Eaten = before − after. The kitchen sees the data, and your Loopi gets fed.</div>
     </div>
     <h2 class="section-title">Gallery</h2>
     <div class="renders" id="renders">
       <figure><img src="render_scanner_hero.png" alt="PlateLoop Scanner, full view" loading="lazy"><figcaption>The PlateLoop Scanner with its compost bin</figcaption></figure>
-      <figure><img src="render_scanner_detail.png" alt="Close-up of the tray platform, screen and card reader" loading="lazy"><figcaption>Tray platform, screen and card reader</figcaption></figure>
+      <figure><img src="render_scanner_detail.png" alt="Close-up of the screen, face camera and tray platform" loading="lazy"><figcaption>Screen, face camera and tray platform</figcaption></figure>
     </div>
   </div>`;
   PL.$$('[data-jump]', el).forEach(b => b.onclick = () => { const t = document.getElementById(b.dataset.jump); if (t) t.scrollIntoView({ behavior: PL.reduceMotion ? 'auto' : 'smooth', block: 'start' }); });
@@ -144,7 +144,7 @@ function initViewer() {
     c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, H);
     c.fillStyle = '#1D1D1F'; c.font = '700 22px -apple-system, "Segoe UI", sans-serif'; c.fillText('Scan your tray', 16, 40);
     c.fillStyle = '#8E8E93'; c.font = '13px -apple-system, "Segoe UI", sans-serif'; c.fillText('Before lunch and after lunch', 16, 60);
-    ['Tap card', 'Place tray', 'Done'].forEach((s, i) => {
+    ['Look up', 'Place tray', 'Done'].forEach((s, i) => {
       const x = 12 + i * 90, on = i === k;
       c.fillStyle = on ? '#34C759' : '#F2F2F7'; c.beginPath(); c.roundRect ? c.roundRect(x, 110, 82, 60, 12) : c.rect(x, 110, 82, 60); c.fill();
       c.fillStyle = on ? '#FFFFFF' : '#8E8E93'; c.font = '600 13px -apple-system, "Segoe UI", sans-serif'; c.fillText(`${i + 1}  ${s}`, x + 10, 146);
