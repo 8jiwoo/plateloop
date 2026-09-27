@@ -243,14 +243,14 @@ def pet_image():
     bsdf.inputs['Roughness'].default_value = 0.2
     return m
 
-# ---------------------------------------------------------------- food tray (Korean school steel tray)
+# ---------------------------------------------------------------- food tray (steel school canteen tray)
 FOODS = {
     'rice':     hex_rgb('#F3EEDC'),
-    'bulgogi':  hex_rgb('#6B3A1E'),
+    'chicken':  hex_rgb('#9C5A2E'),
     'soup':     hex_rgb('#B9793A'),
-    'spinach':  hex_rgb('#2F6B2A'),
-    'kimchi':   hex_rgb('#D2472A'),
-    'apple':    hex_rgb('#F6E3B0'),
+    'kailan':   hex_rgb('#2F6B2A'),
+    'cabbage':  hex_rgb('#CFE0A0'),
+    'melon':    hex_rgb('#F2545B'),
 }
 
 def tray(name, loc, parent, eaten=None):
@@ -273,11 +273,11 @@ def tray(name, loc, parent, eaten=None):
         box(f'{name}_Rim{i}', dims, p, st, t, bevel=0.0015)
     # compartment centres: back row small sides, front row mains
     slots = {
-        'spinach': (-W / 3, 0.085), 'kimchi': (0, 0.085), 'apple': (W / 3, 0.085),
-        'rice': (-W / 3, -0.055), 'bulgogi': (0, -0.055), 'soup': (W / 3, -0.055),
+        'kailan': (-W / 3, 0.085), 'cabbage': (0, 0.085), 'melon': (W / 3, 0.085),
+        'rice': (-W / 3, -0.055), 'chicken': (0, -0.055), 'soup': (W / 3, -0.055),
     }
-    size = {'spinach': (0.085, 0.07, 0.035), 'kimchi': (0.08, 0.065, 0.035), 'apple': (0.085, 0.07, 0.04),
-            'rice': (0.105, 0.13, 0.065), 'bulgogi': (0.105, 0.12, 0.045), 'soup': (0.105, 0.14, 0.014)}
+    size = {'kailan': (0.085, 0.07, 0.035), 'cabbage': (0.08, 0.065, 0.035), 'melon': (0.085, 0.07, 0.04),
+            'rice': (0.105, 0.13, 0.065), 'chicken': (0.105, 0.12, 0.045), 'soup': (0.105, 0.14, 0.014)}
     for food, (x, y) in slots.items():
         k = 1.0 if eaten is None else eaten.get(food, 1.0)
         if k <= 0.02:
@@ -351,7 +351,7 @@ def build_scanner():
     cyl('PS_BinHole', 0.105, 0.008, (0.585, -0.01, 0.8625), M_INK(), R, seg=64)
     text('PS_BinLabel', 'Compost', 0.035, (0.585, -0.2335, 0.62), M_LABEL(), R)
     tray('PS_Tray', (0.08, -0.04, 0.885), R,
-         eaten={'rice': 0.25, 'bulgogi': 0.0, 'soup': 0.35, 'spinach': 0.7, 'kimchi': 0.4, 'apple': 0.0})
+         eaten={'rice': 0.25, 'chicken': 0.0, 'soup': 0.35, 'kailan': 0.7, 'cabbage': 0.4, 'melon': 0.0})
     return R
 
 scanner = build_scanner()

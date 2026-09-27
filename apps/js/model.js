@@ -9,7 +9,7 @@ const PARTS = [
   { p: [0.08, -0.185, 1.55], t: 'Status light', s: 'Shows when to put the tray down and pick it up', d: 'Soft green means ready. A slow pulse means scanning, so hold still. Two quick blinks mean done.', spec: 'LED strip' },
   { p: [0.08, 0.175, 1.30], t: 'Camera arm', s: 'Holds the camera straight over the tray', d: 'Looking straight down means compartment walls never hide food. The cables run inside the aluminium column.', spec: 'Top at 1.58 m' },
   { p: [-0.28, 0.035, 1.16], t: 'Screen', s: 'Instructions and results', d: 'Runs PlateLoop Kiosk. An animated banner shows the steps, then the student sees grams, calories and nutrients, Loopi\'s reaction and their points.', spec: '10.1" touchscreen · 1.15 m high' },
-  { p: [-0.276, 0.055, 1.285], t: 'Face camera', s: 'The only way students sign in', d: 'Students just look up at the screen. An infrared face camera recognises them in under a second, even in a dim cafeteria, so there are no cards to lose and no phones needed. It opens the tray before lunch and closes it after. It keeps a match code, never a photo.', spec: 'IR + RGB · under 1 s · on-device' },
+  { p: [-0.276, 0.055, 1.285], t: 'Face camera', s: 'The only way students sign in', d: 'Students just look up at the screen. An infrared face camera recognises them in under a second, even in a dim canteen, so there are no cards to lose and no phones needed. It opens the tray before lunch and closes it after. It keeps a match code, never a photo.', spec: 'IR + RGB · under 1 s · on-device' },
   { p: [0.31, -0.19, 0.88], t: 'Weighing platform', s: 'Checks the camera with a scale', d: 'Four load cells weigh the whole tray. If the camera and the scale disagree by more than 10%, the tray is scanned again.', spec: '0–5 kg · ±2 g' },
   { p: [0.08, -0.04, 0.92], t: 'Tray', s: 'Scanned full, then scanned again', d: 'Before: what was served. After: what is left. Eaten = before − after, per dish. The menu is known in advance, so the AI only chooses among today\'s dishes.', spec: 'Standard 6-compartment tray' },
   { p: [0.585, -0.01, 0.87], t: 'Compost bin', s: 'Scraps go here after the second scan', d: 'The bin weighs scraps in bulk for the compost report. The Kitchen app shows how full it is.', spec: '60 L' },
@@ -20,7 +20,7 @@ const DIMS = [
   { a: [-0.40, -0.40, 0], b: [0.765, -0.40, 0], label: '1.17 m' },
   { a: [0.30, -0.10, 0.885], b: [0.30, -0.10, 1.49], label: '0.62 m' },
 ];
-const SPECS = [['Footprint', '1.17 × 0.46 m'], ['Scans', 'Before and after lunch'], ['Measures', 'Dish, grams, kcal, carbs, protein, fat'], ['Sign-in', 'Face only, on-device'], ['Scan time', '≈ 1.4 s'], ['Power', 'One socket'], ['Network', 'Wi-Fi or Ethernet'], ['Parts', '≈ $1,400 (estimate)']];
+const SPECS = [['Footprint', '1.17 × 0.46 m'], ['Scans', 'Before and after lunch'], ['Measures', 'Dish, grams, kcal, carbs, protein, fat'], ['Sign-in', 'Face only, on-device'], ['Scan time', '≈ 1.4 s'], ['Power', 'One socket'], ['Network', 'Wi-Fi or Ethernet'], ['Parts', '≈ S$1,900 (estimate)']];
 
 const q = new URLSearchParams(location.search);
 const IDI = b => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${b}</svg>`;
@@ -41,7 +41,7 @@ function mount(el) {
   </div></nav>
   <div class="hwx">
     <div class="prod-hero">
-      <div class="eyebrow" style="color:var(--tint-ink)">For school cafeterias</div>
+      <div class="eyebrow" style="color:var(--tint-ink)">For canteens in Singapore</div>
       <h1>One scanner.<br>Two scans. Zero guesswork.</h1>
       <p>Students scan their tray before lunch and again after. The difference is exactly what they ate, dish by dish, and it goes straight to the kitchen and to each student's Loopi.</p>
     </div>
@@ -64,7 +64,7 @@ function mount(el) {
     <h2 class="section-title">Sign in with your face</h2>
     <div class="ids">
       <div><span class="idic">${ID_ICONS.face}</span><b>Hands-free</b><span>Look up at the screen with your tray in both hands. No card to lose, no phone needed.</span></div>
-      <div><span class="idic">${ID_ICONS.fast}</span><b>Under a second</b><span>Fast enough for a lunch line, and the infrared camera works in a dim cafeteria.</span></div>
+      <div><span class="idic">${ID_ICONS.fast}</span><b>Under a second</b><span>Fast enough for a lunch line, and the infrared camera works in a dim canteen.</span></div>
       <div><span class="idic">${ID_ICONS.lock}</span><b>Private</b><span>The scanner keeps a match code, never a photo, and it never leaves the scanner.</span></div>
     </div>
     <h2 class="section-title" id="how">How a tray is scanned</h2>
