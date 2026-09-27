@@ -199,7 +199,7 @@ function scoreMeal(st, served, measured, portion) {
 }
 
 /** BEFORE lunch. portion: what the kitchen served (S/M/L); the scanner measures the real grams. */
-PL.scanBefore = (sid, portion, method = 'card') => {
+PL.scanBefore = (sid, portion, method = 'face') => {
   const st = PL.student(sid), T = PL.S.today;
   const served = Object.fromEntries(MENU.map(d => [d.id, Math.round(d.g[portion] * (.94 + Math.random() * .12))]));
   const tray = ++T.trayNo;
@@ -215,7 +215,7 @@ PL.scanBefore = (sid, portion, method = 'card') => {
 };
 
 /** AFTER lunch. eatPct: dish id → % eaten (0–100). Without a before scan the standard portion is assumed. */
-PL.scanAfter = (sid, eatPct, method = 'card') => {
+PL.scanAfter = (sid, eatPct, method = 'face') => {
   const st = PL.student(sid), pet = st.pet, T = PL.S.today;
   const clsRankBefore = PL.classRows().findIndex(r => r.c.id === st.cls) + 1;
   const meRankBefore = PL.studentRows().findIndex(s => s.id === sid) + 1;
