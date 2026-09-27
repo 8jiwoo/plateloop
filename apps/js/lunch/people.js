@@ -378,6 +378,7 @@ L.animPerson = (P, dt, cam) => {
   else if (pose === 'wave') { A(P.armR, 0, -2.5, -.2, Math.sin(t * 8) * .3); A(P.armL, s, .07, -.15); }
   else { A(P.armR, s, -.07, -.12); A(P.armL, -s, .07, -.12); }
   if (pose === 'dance') { dance(P, dt); P.tray.visible = false; return; }
+  if (pose === 'pray' || pose === 'split') { pray(P, dt, pose === 'split'); return; }
   // head: look at the player when close, otherwise at a friend or slowly around
   let yaw = Math.sin(t * .2 + P.o.seed) * .22, pitch = sit ? .1 : 0, target = null;
   if (P.lookAt) target = P.lookAt;
@@ -391,6 +392,27 @@ L.animPerson = (P, dt, cam) => {
   P.head.rotation.set(P.headPitch, P.headYaw, 0);
   P.tray.visible = !!P.carrying;
 };
+
+/** Cross-legged, hands pressed together at the chest, breathing slowly (the root floats; see game3d.js). */
+function pray(P, dt, split) {
+  const t = P.t, k = 1 - Math.exp(-7 * dt), to = (r, x, y, z) => { r.x += (x - r.x) * k; r.y += (y - r.y) * k; r.z += (z - r.z) * k; };
+  if (P.skirt) { P.skirt.visible = !!split; P.skirtSit.visible = !split; }
+  P.hips.position.y += ((split ? .5 : .13) - P.hips.position.y) * k; P.hips.rotation.set(0, 0, 0); P.chest.rotation.x = .04; P.torso.rotation.x = 0; P.chest.position.y = 0;
+  P.torso.scale.y = 1 + Math.sin(t * 1.1) * .008;
+  if (split) {
+    // a side split in the air, arms raised wide
+    [[P.legR, -1], [P.legL, 1]].forEach(([Lg, s]) => { to(Lg.hip.rotation, 0, 0, s * 1.52); to(Lg.knee.rotation, 0, 0, 0); });
+    [[P.armR, -1], [P.armL, 1]].forEach(([A, s]) => { to(A.sh.rotation, 0, 0, s * 2.5); to(A.el.rotation, 0, 0, s * .25); });
+  } else {
+    // thighs out and forward, shins folded inward so they cross in front
+    [[P.legR, -1], [P.legL, 1]].forEach(([Lg, s]) => { to(Lg.hip.rotation, -1.4, s * .2, s * .8); to(Lg.knee.rotation, s * .12, 0, -s * 2.4); });
+    // palms pressed together in front of the chest
+    [[P.armR, -1], [P.armL, 1]].forEach(([A, s]) => { to(A.sh.rotation, -.45, 0, -s * .38); to(A.el.rotation, -1.7, 0, -s * .22); });
+  }
+  if (P.skirtSit) P.skirtSit.children[0].visible = false;
+  if (P.faceYaw === undefined) P.head.rotation.set(.18 + Math.sin(t * .5) * .03, 0, 0);
+  else { P.head.rotation.x += (0 - P.head.rotation.x) * Math.min(1, dt * 3); }
+}
 
 /** Breakdancing on the spot, as a flowing routine: toprock, dropping into footwork, a windmill, a headspin
  *  and a freeze, then back up. Each move is a smooth function of time and moves blend into each other. */
