@@ -242,10 +242,11 @@ PL.scanAfter = (sid, eatPct, method = 'card') => {
   r.intake = PL.nutrientsOf(Object.fromEntries(MENU.map(d => [d.id, served[d.id] - measured[d.id]])));
   r.zero = r.w < .05;
   if (r.zero) { T.zero = (T.zero || 0) + 1; PL.S.term.zero = (PL.S.term.zero || 0) + 1; }
-  st.after = { t: (T.clock += .35, PL.clock()), left: r.left, w: r.w, intake: r.intake, zero: r.zero };
+  st.after = { t: (T.clock += .35, PL.clock()), left: r.left, w: r.w, intake: r.intake, zero: r.zero, served, measured };
   st.log.unshift({ day: 'Fri 25', portion, w: r.w, pts: r.xp, n: r.intake });
   st.log = st.log.slice(0, 6);
-  r.game = PL.game ? PL.game.feedLunch(st, r) : null; // hunger, hearts, Eco Booth kg, gems
+  r.servedBy = served; r.measured = measured;
+  r.game = PL.game ? PL.game.feedLunch(st, r) : null; // hunger, hearts, and the plate waiting in Loopi's bowl
   // completed trays feed the kitchen's waste numbers and the class league
   MENU.forEach(d => { T.dish[d.id].served += served[d.id]; T.dish[d.id].ret += measured[d.id]; });
   T.trays++;

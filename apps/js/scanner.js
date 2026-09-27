@@ -143,7 +143,7 @@ function screen() {
   } else {
     const r = k.result, g = r.game;
     const chips = [`Points <em>+${r.xp}</em>`];
-    if (g) { chips.push(`Hunger <em>+${g.hunger}</em>`); if (g.heart) chips.push(`<em>+1 heart</em>`); chips.push(`Eco Booth <em>+${g.eco.toFixed(2)} kg</em>`); }
+    if (g) { chips.push(`Loopi <em>+${g.hunger} food</em>`); if (g.heart) chips.push(`<em>+1 heart</em>`); }
     if (r.zero) chips.unshift(`<em>+1 fruit</em> on the Green Tree`);
     main = `${left()}<div class="kio-right">
       <div class="kio-bubble">“${esc(r.zero ? 'Zero leftovers! You grew a fruit on the school tree!' : r.line)}”</div>
