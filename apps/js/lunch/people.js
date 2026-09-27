@@ -264,48 +264,50 @@ L.person = o => {
   o.tudungCol = o.tudungCol || '#EEECE6';
   const f = { ...OUTFITS[o.kind || 'boy'] }; if (o.kind === 'pe') f.col = o.house || L.HOUSE[Math.floor(r() * 4)];
   const bw = o.build;
+  // smooth: more segments and soft shading instead of flat facets
+  const facetMesh = (geo, mat) => new THREE.Mesh(o.smooth ? (geo.computeVertexNormals(), geo) : L.facet(geo), mat), sg = n => o.smooth ? n * 2 : n;
   const P = { o, f, root: new THREE.Group(), pose: 'stand', lookAt: null, watch: o.watch !== undefined ? o.watch : r() < .6, t: r() * 100, act: null, headYaw: 0, headPitch: 0, name: o.name };
   const R = P.root;
   const hips = P.hips = new THREE.Group(); hips.position.y = .84; R.add(hips);
   // torso: a faceted lathe (hips, waist, chest, shoulders, neck) with an oval section
   const prof = [[.15, 0], [.14, .1], [.128, .19], [.14, .28], [.158, .37], [.165, .44], [.12, .5], [.058, .525]]
     .map(([rr, y], j) => new THREE.Vector2(rr * bw * (o.girl && j < 2 ? 1.06 : 1), y));
-  const torso = P.torso = facetMesh(new THREE.LatheGeometry(prof, 8, Math.PI, TAU), matOf(topCanvas(o, f), THREE.DoubleSide));
+  const torso = P.torso = facetMesh(new THREE.LatheGeometry(prof, sg(8), Math.PI, TAU), matOf(topCanvas(o, f), THREE.DoubleSide));
   torso.scale.z = .66; hips.add(torso);
   const chest = P.chest = new THREE.Group(); hips.add(chest);
   const skinMat = L.lam({ color: o.skin });
-  const neck = facetMesh(new THREE.CylinderGeometry(.043, .05, .1, 6), skinMat); neck.position.y = .56; chest.add(neck);
+  const neck = facetMesh(new THREE.CylinderGeometry(.043, .05, .1, sg(6)), skinMat); neck.position.y = .56; chest.add(neck);
   // head: the painted face on the front half, hair colour on the back half
   const head = P.head = new THREE.Group(); head.position.y = .675; head.scale.setScalar(o.adult ? 1.04 : 1.08); chest.add(head);
-  const front = shapeHead(new THREE.SphereGeometry(1, 7, 8, Math.PI / 2 - 1.8, 3.6, 0, Math.PI));
+  const front = shapeHead(new THREE.SphereGeometry(1, sg(7), sg(8), Math.PI / 2 - 1.8, 3.6, 0, Math.PI));
   const uv = front.attributes.uv, fp = front.attributes.position;
   for (let i = 0; i < fp.count; i++) uv.setXY(i, Math.min(.995, Math.max(.005, .5 + fp.getX(i) / (2 * HW))), Math.min(.995, Math.max(.005, .5 + fp.getY(i) / (2 * HH))));
   P.faceMat = L.lam({ map: o.photo ? photoTex(o.photo) : L.texOf(faceCanvas(o)) });
   head.add(facetMesh(front, P.faceMat));
   const hm = matOf(hairCanvas(o), THREE.DoubleSide);
-  head.add(facetMesh(shapeHead(new THREE.SphereGeometry(1, 5, 8, Math.PI / 2 + 1.8, TAU - 3.6, 0, Math.PI)), o.hair === 'bald' ? skinMat : hm));
-  const shell = (seg, theta, tilt, sx, sy, sz, y = .006) => { const m = facetMesh(new THREE.SphereGeometry(1, seg, 4, 0, TAU, 0, Math.PI * theta), hm); m.scale.set(sx, sy, sz); m.rotation.x = tilt; m.position.y = y; head.add(m); return m; };
+  head.add(facetMesh(shapeHead(new THREE.SphereGeometry(1, sg(5), sg(8), Math.PI / 2 + 1.8, TAU - 3.6, 0, Math.PI)), o.hair === 'bald' ? skinMat : hm));
+  const shell = (seg, theta, tilt, sx, sy, sz, y = .006) => { const m = facetMesh(new THREE.SphereGeometry(1, sg(seg), sg(4), 0, TAU, 0, Math.PI * theta), hm); m.scale.set(sx, sy, sz); m.rotation.x = tilt; m.position.y = y; head.add(m); return m; };
   if (o.hair === 'tudung') {
     shell(8, .55, -.5, .104, .13, .116);
-    const drape = facetMesh(new THREE.CylinderGeometry(.094, .17, .19, 8, 1, true), hm); drape.position.set(0, -.16, -.01); drape.scale.z = .8; head.add(drape);
+    const drape = facetMesh(new THREE.CylinderGeometry(.094, .17, .19, sg(8), 1, true), hm); drape.position.set(0, -.16, -.01); drape.scale.z = .8; head.add(drape);
   } else if (o.hair !== 'bald') {
     shell(8, .5, o.capTilt || (o.hair === 'crop' ? -.66 : -.58), .1, .128, .112);
     if (o.hair === 'net') shell(8, .48, -.45, .106, .112, .118, .03);
-    if (o.hair === 'bun') { const b = facetMesh(new THREE.SphereGeometry(.05, 6, 4), hm); b.position.set(0, .09, -.075); head.add(b); }
+    if (o.hair === 'bun') { const b = facetMesh(new THREE.SphereGeometry(.05, sg(6), sg(4)), hm); b.position.set(0, .09, -.075); head.add(b); }
     if (o.hair === 'bob' || o.hair === 'long' || o.hair === 'pony') {
       const long = o.hair === 'long', len = long ? .36 : o.hair === 'bob' ? .17 : .12;
-      const side = facetMesh(new THREE.CylinderGeometry(.106, long ? .13 : .115, len, 8, 1, true, 1.15, TAU - 2.3), hm);
+      const side = facetMesh(new THREE.CylinderGeometry(.106, long ? .13 : .115, len, sg(8), 1, true, 1.15, TAU - 2.3), hm);
       side.position.y = .02 - len / 2; side.scale.z = 1.05; head.add(side);
     }
-    if (o.hair === 'pony') { const tail = facetMesh(new THREE.CylinderGeometry(.034, .012, .26, 5), hm); tail.position.set(0, -.08, -.13); tail.rotation.x = .35; head.add(tail); }
+    if (o.hair === 'pony') { const tail = facetMesh(new THREE.CylinderGeometry(.034, .012, .26, sg(5)), hm); tail.position.set(0, -.08, -.13); tail.rotation.x = .35; head.add(tail); }
   }
   // arms
   const upM = matOf(limbCanvas(o, f, 'upper')), foM = matOf(limbCanvas(o, f, 'fore')), haM = matOf(limbCanvas(o, f, 'hand'));
   const arm = s => {
     const sh = new THREE.Group(); sh.position.set(s * (.165 * bw + .012), .435, 0); chest.add(sh);
-    const ug = new THREE.CylinderGeometry(.046 * bw, .037, .28, 6); ug.translate(0, -.14, 0); sh.add(facetMesh(ug, upM));
+    const ug = new THREE.CylinderGeometry(.046 * bw, .037, .28, sg(6)); ug.translate(0, -.14, 0); sh.add(facetMesh(ug, upM));
     const el = new THREE.Group(); el.position.y = -.28; sh.add(el);
-    const fg = new THREE.CylinderGeometry(.036, .028, .24, 6); fg.translate(0, -.12, 0); el.add(facetMesh(fg, foM));
+    const fg = new THREE.CylinderGeometry(.036, .028, .24, sg(6)); fg.translate(0, -.12, 0); el.add(facetMesh(fg, foM));
     const hand = facetMesh(new THREE.BoxGeometry(.05, .09, .028), haM); hand.position.y = -.285; el.add(hand);
     sh.rotation.z = s * .07;
     return { sh, el, hand };
@@ -315,9 +317,9 @@ L.person = o => {
   const thM = matOf(limbCanvas(o, f, 'thigh')), shM = matOf(limbCanvas(o, f, 'shin')), shoeM = matOf(shoeCanvas(f));
   const leg = s => {
     const hip = new THREE.Group(); hip.position.set(s * .083 * bw, 0, 0); hips.add(hip);
-    const tg = new THREE.CylinderGeometry(.074 * bw, .052, .42, 6); tg.translate(0, -.21, 0); hip.add(facetMesh(tg, thM));
+    const tg = new THREE.CylinderGeometry(.074 * bw, .052, .42, sg(6)); tg.translate(0, -.21, 0); hip.add(facetMesh(tg, thM));
     const knee = new THREE.Group(); knee.position.y = -.42; hip.add(knee);
-    const sg = new THREE.CylinderGeometry(.052, .038, .39, 6); sg.translate(0, -.195, 0); knee.add(facetMesh(sg, shM));
+    const shg = new THREE.CylinderGeometry(.052, .038, .39, sg(6)); shg.translate(0, -.195, 0); knee.add(facetMesh(shg, shM));
     const shoe = facetMesh(new THREE.BoxGeometry(.088, .065, .23), shoeM); shoe.position.set(0, -.405, .045); knee.add(shoe);
     return { hip, knee };
   };
@@ -325,10 +327,10 @@ L.person = o => {
   // skirts
   if (f.bottom === 'skirt' || f.bottom === 'longskirt') {
     const sm = matOf(skirtCanvas(o, f), THREE.DoubleSide), long = f.bottom === 'longskirt';
-    const sk = P.skirt = facetMesh(new THREE.CylinderGeometry(.152 * bw, long ? .27 : .25, long ? .8 : .4, 10, 1, true), sm);
+    const sk = P.skirt = facetMesh(new THREE.CylinderGeometry(.152 * bw, long ? .27 : .25, long ? .8 : .4, sg(10), 1, true), sm);
     sk.position.y = long ? -.36 : -.16; sk.scale.z = .82; hips.add(sk);
     const sit = P.skirtSit = new THREE.Group();
-    const ring = facetMesh(new THREE.CylinderGeometry(.152 * bw, .2, .1, 10, 1, true), sm); ring.position.y = -.02; ring.scale.z = .82; sit.add(ring);
+    const ring = facetMesh(new THREE.CylinderGeometry(.152 * bw, .2, .1, sg(10), 1, true), sm); ring.position.y = -.02; ring.scale.z = .82; sit.add(ring);
     const lap = facetMesh(new THREE.BoxGeometry(.32 * bw, .025, long ? .5 : .4), sm); lap.position.set(0, -.04, .2); sit.add(lap);
     sit.visible = false; hips.add(sit);
   }
@@ -390,25 +392,49 @@ L.animPerson = (P, dt, cam) => {
   P.tray.visible = !!P.carrying;
 };
 
-/** Erratic dancing on the spot: every fraction of a second every joint snaps to a new random pose, with
- *  hops, knee bends, head flicks and the odd sudden half-turn. */
+/** Breakdancing on the spot, as a flowing routine: toprock, dropping into footwork, a windmill, a headspin
+ *  and a freeze, then back up. Each move is a smooth function of time and moves blend into each other. */
+const BREAK = [['toprock', 5], ['footwork', 4.5], ['windmill', 3.5], ['headspin', 3.2], ['freeze', 1.8], ['footwork', 2.5]];
+function breakPose(name, T) {
+  const b = T * Math.PI * 2 * 1.07, s = Math.sin(b), c = Math.cos(b);
+  if (name === 'toprock') return { y: .8 + .03 * Math.abs(Math.sin(b * 2)), rx: .12, rz: .07 * s, spin: .5 * Math.sin(b * .25), chest: .08, hy: .25 * Math.sin(b * .5), hp: .08 * Math.sin(b * 2),
+    ar: [-.7 - .5 * Math.max(0, -s), -.45, -1.4], al: [-.7 - .5 * Math.max(0, s), .45, -1.4], lr: [-.45 * Math.max(0, s), -.15 * s, .7 * Math.max(0, s)], ll: [-.45 * Math.max(0, -s), -.15 * s, .7 * Math.max(0, -s)] };
+  if (name === 'footwork') { const f = T * Math.PI * 2 * .9, fs = Math.sin(f), fc = Math.cos(f);
+    return { y: .36, rx: .6, rz: .12 * fs, spin: 1.4, chest: .25, hy: -.2, hp: -.35,
+      ar: [-.6 + .3 * fs, -.55, -.5], al: [-1.25, .35, -.15], lr: [-1.1 + .7 * fs, -.25 + .35 * fc, 1.5 - .6 * fs], ll: [-1.1 - .7 * fs, .25 + .35 * fc, 1.5 + .6 * fs] }; }
+  if (name === 'windmill') { const w = T * 6.5;
+    return { y: .36, rx: -1.22, rz: .5 * Math.sin(w), spin: 6.5, chest: .15, hy: 0, hp: .25,
+      ar: [.1, -1.35, -.1], al: [.1, 1.35, -.1], lr: [-1.05 + .3 * Math.sin(w), -.8, .1], ll: [-1.05 - .3 * Math.sin(w), .8, .1] }; }
+  if (name === 'headspin') return { y: .79, rx: Math.PI, rz: 0, spin: 9, chest: 0, hy: 0, hp: 0,
+    ar: [-2.7, -.55, -.9], al: [-2.7, .55, -.9], lr: [0, -.55, 0], ll: [0, .55, 0] };
+  return { y: .46, rx: .15, rz: 1.05, spin: 0, chest: .1, hy: .4, hp: -.25, // freeze
+    ar: [-.15, .25, -.1], al: [-.5, 1.3, -.8], lr: [-1.5, -.2, 2.1], ll: [-.3, .5, .4] };
+}
+const lerpPose = (a, b, k) => { const o = {}; for (const key in b) o[key] = Array.isArray(b[key]) ? b[key].map((v, i) => a[key][i] + (v - a[key][i]) * k) : a[key] + (b[key] - a[key]) * k; return o; };
 function dance(P, dt) {
-  const D = P.dance || (P.dance = { t: 0, yaw: 0, g: {} }), R = Math.random;
-  D.t -= dt;
-  if (D.t <= 0) {
-    D.t = .09 + R() * .3;
-    D.g = { rx: -3 + R() * 3.6, rz: -2.7 * R(), re: -2.2 * R(), lx: -3 + R() * 3.6, lz: 2.7 * R(), le: -2.2 * R(), hy: (R() - .5) * 1.8, hp: (R() - .5) * 1, hr: (R() - .5) * .6, sway: (R() - .5) * .55, twist: (R() - .5) * .9, knee: R() * 1, split: (R() - .5) * .9, hop: R() < .35, lean: (R() - .5) * .6 };
-    if (R() < .09) D.yaw += Math.PI * (R() < .5 ? 1 : -1) * (R() < .5 ? .5 : 1);
-  }
-  const g = D.g, k = 1 - Math.exp(-24 * dt), to = (o, key, v) => { o[key] += (v - o[key]) * k; };
-  to(P.armR.sh.rotation, 'x', g.rx); to(P.armR.sh.rotation, 'z', g.rz); to(P.armR.el.rotation, 'x', g.re);
-  to(P.armL.sh.rotation, 'x', g.lx); to(P.armL.sh.rotation, 'z', g.lz); to(P.armL.el.rotation, 'x', g.le);
-  to(P.head.rotation, 'y', g.hy); to(P.head.rotation, 'x', g.hp); to(P.head.rotation, 'z', g.hr);
-  to(P.hips.rotation, 'z', g.sway); to(P.hips.rotation, 'y', g.twist); to(P.chest.rotation, 'x', g.lean);
-  to(P.legR.hip.rotation, 'x', -g.knee * .7 + g.split); to(P.legL.hip.rotation, 'x', -g.knee * .7 - g.split);
-  to(P.legR.knee.rotation, 'x', g.knee * 1.3); to(P.legL.knee.rotation, 'x', g.knee * 1.3);
-  P.hips.position.y = .84 - g.knee * .14 + (g.hop ? Math.abs(Math.sin(P.t * 17)) * .13 : 0);
-  if (P.faceYaw === undefined) { const want = (P.homeYaw || 0) + D.yaw; P.root.rotation.y += (want - P.root.rotation.y) * (1 - Math.exp(-14 * dt)); }
+  const D = P.dance || (P.dance = { i: 0, t: 0, T: 0, yaw: 0, spin: 0 });
+  D.t += dt; D.T += dt;
+  // while singing, stay up on the feet (toprock) and face whoever is listening
+  const list = P.singing ? [['toprock', 99]] : BREAK;
+  if (P.singing && D.mode !== 'sing') { D.mode = 'sing'; D.prev = D.last; D.i = 0; D.t = 0; }
+  if (!P.singing && D.mode === 'sing') { D.mode = null; D.prev = D.last; D.i = 0; D.t = 0; }
+  let [name, dur] = list[D.i % list.length];
+  if (D.t > dur) { D.prev = D.last; D.i = (D.i + 1) % list.length; D.t = 0; [name] = list[D.i]; }
+  let p = breakPose(name, D.T);
+  const k = Math.min(1, D.t / .6), e = k * k * (3 - 2 * k);
+  if (D.prev && e < 1) p = lerpPose(D.prev, p, e);
+  D.last = breakPose(name, D.T);
+  if (D.prev && e < 1) D.last = lerpPose(D.prev, D.last, e);
+  // apply
+  P.hips.position.y = p.y; P.hips.rotation.set(p.rx, 0, p.rz); P.chest.rotation.x = p.chest; P.torso.rotation.x = 0;
+  P.head.rotation.set(p.hp, p.hy, 0);
+  const arm = (A, v) => { A.sh.rotation.x = v[0]; A.sh.rotation.z = v[1]; A.el.rotation.x = v[2]; A.el.rotation.z = 0; };
+  arm(P.armR, p.ar); arm(P.armL, p.al);
+  const leg = (Lg, v) => { Lg.hip.rotation.x = v[0]; Lg.hip.rotation.z = v[1]; Lg.knee.rotation.x = v[2]; };
+  leg(P.legR, p.lr); leg(P.legL, p.ll);
+  D.spin += (p.spin - D.spin) * Math.min(1, dt * 3);
+  if (P.faceYaw === undefined) { D.yaw += D.spin * dt; P.root.rotation.y = (P.homeYaw || 0) + D.yaw; }
+  else { D.yaw = P.root.rotation.y - (P.homeYaw || 0); }
 }
 
 /** Move along a path of [x, z] points (looping), with walking feet and optional stops. */
