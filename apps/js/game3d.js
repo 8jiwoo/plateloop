@@ -899,7 +899,7 @@ async function sophieSings() {
 /** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
 // when each line of the "GG freaking EZ" clip finishes, in seconds: GG freaking EZ, Don't say that, Really?, Freaking easy
-const GGEZ_ENDS = null;
+const GGEZ_ENDS = [2.72, 3.95, 6.2];
 async function brawl() {
   const A = G.brawlA, B = G.brawlB, hp = new THREE.Vector3();
   // the supplied "GG freaking EZ" clip: with GGEZ_ENDS set (when each line finishes, in seconds) it plays
