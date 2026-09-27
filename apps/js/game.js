@@ -230,6 +230,25 @@ G.openCrate = (st, tier) => {
 };
 G.equip = (st, id) => { const g = G.ensure(st); if (id && !g.acc.includes(id)) return; g.eq = g.eq === id ? null : id; };
 
+/* ---------------------------------------------------------------- Loopi's room: ball play and crumbs */
+G.BALLS_PER_DAY = 5;
+/** Fetch with Loopi: +3 Joy, up to 5 times a day (after that it's just for fun). */
+G.playBall = st => {
+  const g = G.ensure(st);
+  if (!g.balls || g.balls.d !== today()) g.balls = { d: today(), n: 0 };
+  if (g.balls.n >= G.BALLS_PER_DAY) return false;
+  g.balls.n++;
+  st.pet.jo = Math.min(100, st.pet.jo + 3);
+  return true;
+};
+/** A swept crumb goes into the compost bin, where the worm farm can grow it back. */
+G.compostCrumb = (st, type) => {
+  const g = G.ensure(st);
+  g.bin.push(type);
+  g.swept = (g.swept || 0) + 1;
+  return g.swept;
+};
+
 /* ---------------------------------------------------------------- Healthy Catch */
 G.catchStart = st => { const g = G.ensure(st); if (G.playsLeft(g) <= 0) return false; g.plays.n++; return true; };
 G.catchEnd = (st, res) => {
