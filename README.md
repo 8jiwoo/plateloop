@@ -42,7 +42,7 @@ apps/                 source for the seven apps
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync
   js/visual.js        Loopi the guide, food drawings, tray, My Healthy Plate, gauges
-  js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, growing up, leftover crumbs, badges)
+  js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, eggs and the Barn, cooking, worm farm, Healthy Catch, crates, badges)
   js/room.js          Loopi's animated pixel room
   js/health.js        hospital and kindergarten menus, demo people, healthcare report parts
   js/model.js         PlateLoop Scanner 3D page
