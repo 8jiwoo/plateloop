@@ -19,7 +19,7 @@ const hash = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const daily = g => { if (!g.day || g.day.d !== today()) g.day = { d: today(), balls: 0, pets: 0 }; return g.day; };
 
 /** Leftovers become crumbs: one per 20 g left of a dish, at most 3 per dish. */
-const crumbsFrom = left => MENU.flatMap(d => Array(Math.min(3, Math.floor((left[d.id] || 0) / 20))).fill(d.id));
+const crumbsFrom = (left, menu = MENU) => menu.flatMap(d => Array(Math.min(3, Math.floor((left[d.id] || 0) / 20))).fill(d.id));
 
 /** The tray is "good" when less is left than 15 %, or a quarter less than the student's usual. */
 G.heartLine = st => Math.max(.15, st.baseline * .75);
@@ -33,7 +33,7 @@ G.init = st => {
     v: V, name: 'Loopi', stage,
     hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
     hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
-    plate: null, mess: ['spinach', 'kimchi', 'soup', 'rice'].slice(0, n), composted: Math.round(15 + r() * 50),
+    plate: null, mess: (st.messSeed || ['spinach', 'kimchi', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
     eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
   };
 };
@@ -47,8 +47,9 @@ G.heartsReq = g => G.HEARTS_REQ[g.stage];
 G.plantOf = st => Math.min(4, Math.floor(st.pet.c.lowWaste / 5));
 
 /* ---------------------------------------------------------------- lunch */
-/** Called by PL.scanAfter. Hunger and hearts change right away; the food waits in the bowl. */
-G.feedLunch = (st, r) => {
+/** Called after the second scan (school, or kindergarten with its own menu). Hunger and hearts change
+    right away; the food waits in the bowl. */
+G.feedLunch = (st, r, menu = MENU) => {
   const g = G.ensure(st), max = G.hungerMax(g), req = G.heartsReq(g);
   if (g.plate && !g.plate.eaten) g.mess.push(...g.plate.crumbs); // yesterday's uneaten plate still counts
   const gain = 1 + (r.w < .3 ? 1 : 0) + (r.w < .12 ? 1 : 0);
@@ -60,8 +61,8 @@ G.feedLunch = (st, r) => {
   }
   g.plate = {
     eaten: false, heart, gain,
-    food: MENU.filter(d => r.servedBy[d.id] - r.measured[d.id] > 10).map(d => d.id),
-    crumbs: crumbsFrom(r.measured),
+    food: menu.filter(d => r.servedBy[d.id] - r.measured[d.id] > 10).map(d => d.id),
+    crumbs: crumbsFrom(r.measured, menu),
   };
   return { hunger: gain, heart, ready: g.ready, crumbs: g.plate.crumbs.length };
 };
