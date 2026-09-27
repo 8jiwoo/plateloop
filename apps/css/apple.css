@@ -656,3 +656,35 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .kit-side{top:0;height:100vh}
 .kit-side .linkish{color:var(--blue);padding:0}
 .kit-side .linkish:hover{background:none;text-decoration:underline}
+
+/* ================================================================ Loopi's room */
+.room{position:relative;border-radius:22px;overflow:hidden;box-shadow:var(--shadow-s);background:#FBF3E4;aspect-ratio:160/110;touch-action:none}
+.room-cv{display:block;width:100%;height:100%;image-rendering:pixelated;cursor:pointer}
+.room-hud{position:absolute;left:10px;right:50px;top:10px;display:flex;gap:6px;flex-wrap:wrap;pointer-events:none}
+.room-hud span{background:rgba(255,255,255,.85);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#1D1D1F;font:600 11.5px var(--font);padding:3px 9px;border-radius:999px}
+.room-expand{position:absolute;right:10px;top:10px;width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.88);color:#1D1D1F;display:grid;place-items:center;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.room-expand svg{width:17px;height:17px}
+.room-say{position:absolute;transform:translateX(-50%);background:#fff;color:#1D1D1F;font:600 12.5px var(--font);padding:6px 11px;border-radius:14px;box-shadow:0 4px 14px rgba(0,0,0,.15);white-space:nowrap;max-width:86%;overflow:hidden;text-overflow:ellipsis;pointer-events:none;margin-bottom:6px}
+.room-actions{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.room-actions button{border:0;background:var(--bg2);border-radius:16px;padding:10px 4px;display:flex;flex-direction:column;align-items:center;gap:4px;font:600 12px var(--font);color:var(--label);box-shadow:var(--shadow-s);transition:transform .12s}
+.room-actions button svg{width:24px;height:24px;color:var(--tint)}
+.room-actions button:active{transform:scale(.95)}
+.snack-strip{display:flex;flex-direction:column;gap:6px}
+.snack-chips{display:flex;gap:8px;overflow-x:auto;padding:2px 2px 6px;scrollbar-width:none}
+.snack-chip{flex:none;display:flex;align-items:center;gap:8px;border:0;background:var(--bg2);border-radius:14px;padding:7px 11px;box-shadow:var(--shadow-s);touch-action:none;cursor:grab;font:inherit;color:inherit}
+.snack-chip b{font-size:13px;font-weight:600}
+.snack-chip small{color:var(--tint-ink);font-weight:600}
+.snack-chip.golden{box-shadow:inset 0 0 0 1.5px var(--yellow)}
+.snack-chip.ghost{position:fixed;z-index:300;pointer-events:none;transform:translate(-50%,-50%) scale(1.08);box-shadow:0 14px 30px rgba(0,0,0,.28)}
+/* full screen: the room is no longer limited to the phone */
+.room-full{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.74);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);display:grid;place-items:center;padding:20px;animation:fade .2s}
+.room-full-in{width:min(1100px,100%,calc((100vh - 230px) * 160 / 110));display:flex;flex-direction:column;gap:12px}
+.room-full .room{border-radius:26px;box-shadow:0 30px 80px -20px rgba(0,0,0,.6)}
+.room-full .room-hud span{font-size:14px;padding:5px 12px}
+.room-full .room-say{font-size:17px;padding:9px 15px;border-radius:16px}
+.room-full .room-actions button{background:rgba(255,255,255,.12);color:#fff;box-shadow:none;font-size:13px}
+.room-full .room-actions button svg{color:#30D158}
+.room-full .snack-strip .hint{color:rgba(255,255,255,.72)}
+.room-full .snack-strip .linkish{color:#64D2FF}
+.room-full .snack-chip{background:rgba(255,255,255,.14);color:#fff;box-shadow:none}
+.room-full .snack-chip small{color:#30D158}
