@@ -277,11 +277,11 @@ function buildPeople() {
   const sink = add(student(311), -12.2, 2.1, -Math.PI / 2, 'wipe'); G.solidPeople.push(sink); talkTarget(sink);
   // Sophie dances next to the Healthy Set Meal stall, to music from her phone
   if (L.FACES && L.FACES.sophie) {
-    const so = G.sophie = add(L.person({ name: 'Sophie', kind: 'girl', face: 'sophie', hair: 'bun', hairCol: '#141214', capTilt: -.82, height: 1.6, watch: false, seed: 505 }), -3.8, -6.05, .5, 'dance');
+    const so = G.sophie = add(L.person({ name: 'Sophie', kind: 'pe', house: '#2A5E9E', face: 'sophie', hair: 'bun', hairCol: '#141214', capTilt: -.82, height: 1.6, watch: false, smooth: true, seed: 505 }), -4.2, -5.35, .5, 'dance');
     so.homeYaw = .5; G.solidPeople.push(so); talkTarget(so);
-    const phone = new THREE.Mesh(new THREE.BoxGeometry(.075, .15, .01), L.lam({ color: '#1C1C1E' })); phone.position.set(-3.45, .47, -6.35); phone.rotation.set(-1.2, 0, .3); G.scene.add(phone);
-    const bench = new THREE.Mesh(new THREE.BoxGeometry(.4, .45, .4), L.lam({ color: '#6E757C' })); bench.position.set(-3.45, .225, -6.35); G.scene.add(bench);
-    W.spots.music = G.SFX.spots.music = [-3.45, .6, -6.35];
+    const phone = new THREE.Mesh(new THREE.BoxGeometry(.075, .15, .01), L.lam({ color: '#1C1C1E' })); phone.position.set(-3.1, .47, -5.9); phone.rotation.set(-1.2, 0, .3); G.scene.add(phone);
+    const bench = new THREE.Mesh(new THREE.BoxGeometry(.4, .45, .4), L.lam({ color: '#6E757C' })); bench.position.set(-3.1, .225, -5.9); G.scene.add(bench);
+    W.spots.music = G.SFX.spots.music = [-3.1, .6, -5.9];
   }
   // Priya walks the whole PlateLoop routine in the background
   const priya = G.priya = add(L.person({ name: 'Priya', kind: 'girl', hair: 'long', skin: L.SKINS[4], height: 1.6, watch: true, seed: 77 }), 3.9, -6.9, Math.PI / 2, 'walk');
@@ -296,8 +296,8 @@ function buildPeople() {
   talkTarget(priya);
   G.walkers.push(priya);
   // two more students walking about
-  const w1 = add(student(401), -6, -4.8, 0, 'walk'); w1.walk = { i: 0, wait: 0, path: [[-11.4, -4.7], [-11.6, 1.2], [-11.8, 2.1, 4, 'wipe'], [-11.4, -4.7], [-6, -4.8, 5, 'stand'], [-1, -4.9]] };
-  const w2 = add(student(402), -3, -4.9, 0, 'walk'); w2.walk = { i: 0, wait: 0, path: [[-10.1, -6.7, 4, 'stand'], [-10, -5], [-7, 6.8], [-2.3, 7.4, 6, 'stand'], [-2.3, -4.9]] };
+  const w1 = add(student(401), -6, -4.8, 0, 'walk'); w1.walk = { i: 0, wait: 0, path: [[-11.4, -4.7], [-11.6, 1.2], [-11.8, 2.1, 4, 'wipe'], [-11.4, -4.7], [-6, -4.1, 5, 'stand'], [-1, -4.1]] };
+  const w2 = add(student(402), -3, -4.9, 0, 'walk'); w2.walk = { i: 0, wait: 0, path: [[-6.6, -4.1], [-10.1, -6.7, 4, 'stand'], [-10, -5], [-7, 6.8], [-2.3, 7.4, 6, 'stand'], [-2.3, -4.1]] };
   [w1, w2].forEach(P => { G.walkers.push(P); talkTarget(P); });
   // standing people you bump into
   G.solidPeople.push(G.rahman, G.tan);
@@ -786,6 +786,7 @@ async function npcScan(P, after) {
 async function talk(P) {
   if (P === G.auntie && G.phase === 'order') return orderFlow();
   if (P === G.rahman) return rahmanTalk();
+  if (P === G.sophie) return sophieSings();
   const f = first(), ph = G.phase;
   if (P.friend) {
     const [a] = G.friends;
@@ -807,6 +808,28 @@ async function talk(P) {
   };
   const lines = (script[P.name] && script[P.name]()) || [genericLine(P)];
   return convo(P, async () => { for (const l of lines) await say(P, l); });
+}
+/** Sophie stops breaking, gets up and sings her lunch song, with the lyrics as subtitles. */
+const SONG = [
+  ['Take a tray, take a bite, finish every little grain', [['e', 72, .5], ['a', 72, .5], ['e', 74, 1], ['e', 76, .5], ['a', 76, .5], ['a', 74, 1], ['i', 72, .5], ['i', 74, .5], ['e', 76, .5], ['i', 77, .5], ['i', 76, .5], ['o', 74, .5], ['e', 72, 2], [null, 0, 1]]],
+  ['Scan it once, scan it twice, Loopi’s happy once again', [['a', 72, .5], ['i', 72, .5], ['a', 74, 1], ['a', 76, .5], ['i', 76, .5], ['a', 77, 1], ['u', 79, .5], ['i', 77, .5], ['a', 76, .5], ['i', 74, .5], ['a', 72, .5], ['a', 74, .5], ['e', 76, 2], [null, 0, 1]]],
+  ['Kailan on the side, and the rice is looking fine', [['a', 77, .5], ['a', 77, .5], ['o', 76, .5], ['a', 74, .5], ['a', 76, 1], ['a', 74, .5], ['a', 72, .5], ['a', 74, 1], ['i', 76, .5], ['u', 77, .5], ['i', 76, .5], ['a', 74, 2], [null, 0, 1]]],
+  ['Leave it clean, leave it green, every single time', [['i', 79, .5], ['i', 77, .5], ['i', 76, 1], ['i', 79, .5], ['i', 77, .5], ['i', 76, 1], ['e', 74, .5], ['i', 74, .5], ['i', 76, .5], ['o', 74, .5], ['a', 72, 2.5]]],
+];
+async function sophieSings() {
+  const S = G.sophie;
+  await convo(S, async () => {
+    await say(S, G.phase === 'done' ? 'You finished your tray? Then you get the encore!' : 'Oh, hi! Do you want to hear the song I wrote about lunch?');
+    S.singing = true; await sleep(700);
+    const hp = new THREE.Vector3(); S.head.getWorldPosition(hp);
+    G.SFX.sing(at(hp), SONG.flatMap(l => l[1]));
+    for (const [words, notes] of SONG) {
+      showSub(S.name, `♪ ${words} ♪`, true); S.talking = true;
+      await sleep(notes.reduce((a, n) => a + n[2], 0) * 500);
+    }
+    S.talking = false; S.singing = false;
+    await say(S, 'Thanks for listening! Back to practice.');
+  });
 }
 function genericLine(P) {
   const pool = ['The kailan is actually good today.', 'Remember to scan before you eat, or it won\'t count.', 'My Loopi evolved yesterday!', 'Lunch break always feels too short.', 'I take less rice now. I can always go back for more.', 'The compost goes to the school garden, you know.', 'Did you see the class league? 3E is catching up.', 'The noodle queue is so long today.', 'I finished everything today. The screen went green!', 'Don\'t forget to scrape your tray before you return it.'];
