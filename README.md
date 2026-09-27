@@ -15,7 +15,7 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
 | **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: a Tamagotchi fed by real lunches, their tray and healthy plate, class and school leaderboards |
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
-| **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Preschools: Loopi guides children in pictures and reads aloud; a lunch report with allergy checks for parents |
+| **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Preschools: an animated Loopi with sounds for children; separate Parents (one child's report) and Teachers (whole class, check-ins, allergies, notes) sections |
 | **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
