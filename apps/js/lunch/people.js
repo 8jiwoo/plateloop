@@ -224,6 +224,13 @@ function skirtCanvas(o, f) {
   });
 }
 
+/** A photo face fitted to the same layout (see sophie.js): drawn once the image has loaded. */
+function photoTex(face) {
+  const cv = L.canvas(512, 512, c => { c.fillStyle = face.skin; c.fillRect(0, 0, 512, 512); }), tex = L.texOf(cv);
+  const img = new Image(); img.onload = () => { cv.getContext('2d').drawImage(img, 0, 0, 512, 512); tex.needsUpdate = true; }; img.src = face.src;
+  return tex;
+}
+
 /* ================================================================ build */
 const matOf = (cv, side) => L.lam({ map: L.texOf(cv), side: side || THREE.FrontSide });
 const facetMesh = (geo, mat) => new THREE.Mesh(L.facet(geo), mat);
@@ -245,6 +252,7 @@ function shapeHead(g) {
  */
 L.person = o => {
   o = { skin: L.SKINS[1], hair: 'short', hairCol: L.HAIRS[0], height: 1.65, build: 1, seed: L.hash(o.name || 'x'), ...o };
+  if (o.face && L.FACES && L.FACES[o.face]) { o.photo = L.FACES[o.face]; o.skin = o.photo.skin; }
   const r = L.rng(o.seed);
   o.girl = o.girl !== undefined ? o.girl : ['girl', 'auntie', 'makcik'].includes(o.kind);
   o.iris = o.iris || ['#3A2415', '#2E1C12', '#452B18'][Math.floor(r() * 3)];
@@ -272,7 +280,7 @@ L.person = o => {
   const front = shapeHead(new THREE.SphereGeometry(1, 7, 8, Math.PI / 2 - 1.8, 3.6, 0, Math.PI));
   const uv = front.attributes.uv, fp = front.attributes.position;
   for (let i = 0; i < fp.count; i++) uv.setXY(i, Math.min(.995, Math.max(.005, .5 + fp.getX(i) / (2 * HW))), Math.min(.995, Math.max(.005, .5 + fp.getY(i) / (2 * HH))));
-  P.faceMat = L.lam({ map: L.texOf(faceCanvas(o)) });
+  P.faceMat = L.lam({ map: o.photo ? photoTex(o.photo) : L.texOf(faceCanvas(o)) });
   head.add(facetMesh(front, P.faceMat));
   const hm = matOf(hairCanvas(o), THREE.DoubleSide);
   head.add(facetMesh(shapeHead(new THREE.SphereGeometry(1, 5, 8, Math.PI / 2 + 1.8, TAU - 3.6, 0, Math.PI)), o.hair === 'bald' ? skinMat : hm));
@@ -281,7 +289,7 @@ L.person = o => {
     shell(8, .55, -.5, .104, .13, .116);
     const drape = facetMesh(new THREE.CylinderGeometry(.094, .17, .19, 8, 1, true), hm); drape.position.set(0, -.16, -.01); drape.scale.z = .8; head.add(drape);
   } else if (o.hair !== 'bald') {
-    shell(8, .5, o.hair === 'crop' ? -.66 : -.58, .1, .128, .112);
+    shell(8, .5, o.capTilt || (o.hair === 'crop' ? -.66 : -.58), .1, .128, .112);
     if (o.hair === 'net') shell(8, .48, -.45, .106, .112, .118, .03);
     if (o.hair === 'bun') { const b = facetMesh(new THREE.SphereGeometry(.05, 6, 4), hm); b.position.set(0, .09, -.075); head.add(b); }
     if (o.hair === 'bob' || o.hair === 'long' || o.hair === 'pony') {
@@ -367,6 +375,7 @@ L.animPerson = (P, dt, cam) => {
   } else if (pose === 'wipe') { A(P.armR, -.95 + Math.sin(t * 2.6) * .15, -.2 + Math.cos(t * 2.6) * .1, -.5); A(P.armL, -.1, .07, -.2); }
   else if (pose === 'wave') { A(P.armR, 0, -2.5, -.2, Math.sin(t * 8) * .3); A(P.armL, s, .07, -.15); }
   else { A(P.armR, s, -.07, -.12); A(P.armL, -s, .07, -.12); }
+  if (pose === 'dance') { dance(P, dt); P.tray.visible = false; return; }
   // head: look at the player when close, otherwise at a friend or slowly around
   let yaw = Math.sin(t * .2 + P.o.seed) * .22, pitch = sit ? .1 : 0, target = null;
   if (P.lookAt) target = P.lookAt;
@@ -380,6 +389,27 @@ L.animPerson = (P, dt, cam) => {
   P.head.rotation.set(P.headPitch, P.headYaw, 0);
   P.tray.visible = !!P.carrying;
 };
+
+/** Erratic dancing on the spot: every fraction of a second every joint snaps to a new random pose, with
+ *  hops, knee bends, head flicks and the odd sudden half-turn. */
+function dance(P, dt) {
+  const D = P.dance || (P.dance = { t: 0, yaw: 0, g: {} }), R = Math.random;
+  D.t -= dt;
+  if (D.t <= 0) {
+    D.t = .09 + R() * .3;
+    D.g = { rx: -3 + R() * 3.6, rz: -2.7 * R(), re: -2.2 * R(), lx: -3 + R() * 3.6, lz: 2.7 * R(), le: -2.2 * R(), hy: (R() - .5) * 1.8, hp: (R() - .5) * 1, hr: (R() - .5) * .6, sway: (R() - .5) * .55, twist: (R() - .5) * .9, knee: R() * 1, split: (R() - .5) * .9, hop: R() < .35, lean: (R() - .5) * .6 };
+    if (R() < .09) D.yaw += Math.PI * (R() < .5 ? 1 : -1) * (R() < .5 ? .5 : 1);
+  }
+  const g = D.g, k = 1 - Math.exp(-24 * dt), to = (o, key, v) => { o[key] += (v - o[key]) * k; };
+  to(P.armR.sh.rotation, 'x', g.rx); to(P.armR.sh.rotation, 'z', g.rz); to(P.armR.el.rotation, 'x', g.re);
+  to(P.armL.sh.rotation, 'x', g.lx); to(P.armL.sh.rotation, 'z', g.lz); to(P.armL.el.rotation, 'x', g.le);
+  to(P.head.rotation, 'y', g.hy); to(P.head.rotation, 'x', g.hp); to(P.head.rotation, 'z', g.hr);
+  to(P.hips.rotation, 'z', g.sway); to(P.hips.rotation, 'y', g.twist); to(P.chest.rotation, 'x', g.lean);
+  to(P.legR.hip.rotation, 'x', -g.knee * .7 + g.split); to(P.legL.hip.rotation, 'x', -g.knee * .7 - g.split);
+  to(P.legR.knee.rotation, 'x', g.knee * 1.3); to(P.legL.knee.rotation, 'x', g.knee * 1.3);
+  P.hips.position.y = .84 - g.knee * .14 + (g.hop ? Math.abs(Math.sin(P.t * 17)) * .13 : 0);
+  if (P.faceYaw === undefined) { const want = (P.homeYaw || 0) + D.yaw; P.root.rotation.y += (want - P.root.rotation.y) * (1 - Math.exp(-14 * dt)); }
+}
 
 /** Move along a path of [x, z] points (looping), with walking feet and optional stops. */
 L.walkPerson = (P, dt, speed = 1.1) => {
