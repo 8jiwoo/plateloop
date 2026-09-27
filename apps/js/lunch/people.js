@@ -351,6 +351,7 @@ L.animPerson = (P, dt, cam) => {
   P.t += dt;
   const t = P.t, R = P.root, pose = P.pose, sit = pose === 'sit' || pose === 'eat';
   if (pose === 'pray' || pose === 'split') { pray(P, dt, pose === 'split'); return; }
+  if (FIGHT.has(pose)) { fighter(P, dt); return; }
   if (P.skirt) { P.skirt.visible = !sit; P.skirtSit.visible = sit; }
   let hipY = .84, thigh = 0, knee = 0, thighL = 0, kneeL = 0, lean = 0;
   if (sit) { hipY = .5; thigh = thighL = -1.5; knee = kneeL = 1.42; lean = .1; }
@@ -393,6 +394,34 @@ L.animPerson = (P, dt, cam) => {
   P.head.rotation.set(P.headPitch, P.headYaw, 0);
   P.tray.visible = !!P.carrying;
 };
+
+/** Two students squaring up: a bouncing guard with the odd jab, a punch, flailing through the air, lying
+ *  flat, running, a flying spin kick, and landing on your backside. The game moves the root; this sets limbs. */
+const FIGHT = new Set(['fight', 'punch', 'flail', 'lie', 'run', 'kick', 'bump']);
+function fighter(P, dt) {
+  const t = P.t, pose = P.pose, k = pose === 'flail' ? 1 : 1 - Math.exp(-16 * dt);
+  const to = (r, x, y, z) => { r.x += (x - r.x) * k; r.y += (y - r.y) * k; r.z += (z - r.z) * k; };
+  const arm = (A, x, z, e) => { to(A.sh.rotation, x, 0, z); to(A.el.rotation, e, 0, 0); };
+  const leg = (Lg, x, z, kn) => { to(Lg.hip.rotation, x, 0, z); to(Lg.knee.rotation, kn, 0, 0); };
+  let hy = .8, hrx = 0;
+  if (P.skirt) { P.skirt.visible = true; P.skirtSit.visible = false; }
+  if (pose === 'fight') {
+    const b = Math.sin(t * 7 + P.o.seed), jab = Math.sin(t * 2.3 + (P.o.seed % 3)) > .82, jab2 = Math.sin(t * 1.7 + P.o.seed) > .9;
+    hy = .8 + .025 * Math.abs(b); hrx = .1;
+    arm(P.armR, jab ? -1.55 : -1.1, .25, jab ? -.1 : -2.0); arm(P.armL, jab2 ? -1.55 : -1.05, -.3, jab2 ? -.1 : -2.1);
+    leg(P.legR, -.3, -.12, .45); leg(P.legL, .15, .12, .25);
+  } else if (pose === 'punch') { hy = .78; hrx = .25; arm(P.armR, -1.6, .05, -.05); arm(P.armL, -.9, -.3, -2.1); leg(P.legR, -.5, -.1, .6); leg(P.legL, .35, .1, .1); }
+  else if (pose === 'flail') { const f = t * 18; hy = .84; arm(P.armR, Math.sin(f) * 1.5 - 1, -1.2 + Math.cos(f * 1.3), -1 + Math.sin(f * .7)); arm(P.armL, Math.cos(f) * 1.5 - 1, 1.2 + Math.sin(f * 1.1), -1 + Math.cos(f * .8)); leg(P.legR, Math.sin(f * 1.2) * .9 - .3, -.3, 1 + Math.sin(f) * .6); leg(P.legL, Math.cos(f * 1.1) * .9 - .3, .3, 1 + Math.cos(f) * .6); }
+  else if (pose === 'lie') { hy = .12; hrx = -1.52; arm(P.armR, 0, -1.2, -.2); arm(P.armL, 0, 1.2, -.2); leg(P.legR, .05, -.2, .1); leg(P.legL, .05, .2, .1); }
+  else if (pose === 'run') { const ph = t * 14; hy = .82 + .03 * Math.abs(Math.sin(ph)); hrx = .25; arm(P.armR, -Math.sin(ph) * .9, -.1, -1.3); arm(P.armL, Math.sin(ph) * .9, .1, -1.3); leg(P.legR, Math.sin(ph) * .8, 0, .6 + .6 * Math.max(0, -Math.sin(ph))); leg(P.legL, -Math.sin(ph) * .8, 0, .6 + .6 * Math.max(0, Math.sin(ph))); }
+  else if (pose === 'kick') { hy = .84; hrx = -.15; arm(P.armR, -.2, -1.5, -.2); arm(P.armL, -.2, 1.5, -.2); leg(P.legR, -1.45, -.25, 0); leg(P.legL, -1.1, .1, 2.0); }
+  else if (pose === 'bump') { hy = .3; hrx = -.35; arm(P.armR, -.3, -.6, -.3); arm(P.armL, -.3, .6, -.3); leg(P.legR, -1.45, -.15, .15); leg(P.legL, -1.45, .15, .15); }
+  P.hips.position.y += (hy - P.hips.position.y) * k; P.hips.position.x = 0;
+  P.hips.rotation.x += (hrx - P.hips.rotation.x) * k; P.hips.rotation.y = 0; P.hips.rotation.z = 0;
+  P.chest.rotation.x = 0; P.torso.rotation.x = 0; P.chest.position.y = 0;
+  P.head.rotation.x += ((pose === 'lie' ? .3 : -hrx * .6) - P.head.rotation.x) * k; P.head.rotation.y *= 1 - k;
+  P.tray.visible = false;
+}
 
 /** Cross-legged, hands pressed together at the chest, breathing slowly (the root floats; see game3d.js). */
 function pray(P, dt, split) {
