@@ -80,6 +80,23 @@ L.Sound = () => {
     const out = await oc.startRendering();
     return seamless(out, Math.floor(sr * .8));
   }
+  /** A bouncy four-bar loop at 128 bpm: kick, hats, bass and a square-wave hook. */
+  async function renderMusic() {
+    const sr = 22050, beat = 60 / 128, bars = 8, n = Math.round(sr * beat * 4 * bars), oc = new OfflineAudioContext(1, n, sr);
+    const out = oc.createGain(); out.gain.value = .6; out.connect(oc.destination);
+    const nb = oc.createBuffer(1, sr, sr); { const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
+    const note = (f, t, dur, type, vol) => { const o = oc.createOscillator(), g = oc.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .005); g.gain.setTargetAtTime(0, t + dur * .6, dur / 5); o.connect(g).connect(out); o.start(t); o.stop(t + dur + .05); };
+    const chords = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]];
+    const hook = [0, 2, 1, 2, 0, 2, 1, 0];
+    for (let b = 0; b < bars * 4; b++) {
+      const t = b * beat, ch = chords[Math.floor(b / 4) % 4];
+      { const o = oc.createOscillator(), g = oc.createGain(); o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + .12); g.gain.setValueAtTime(.9, t); g.gain.setTargetAtTime(0, t + .02, .05); o.connect(g).connect(out); o.start(t); o.stop(t + .25); }
+      [.5, .75].forEach(k => { const s = oc.createBufferSource(), f = oc.createBiquadFilter(), g = oc.createGain(); s.buffer = nb; f.type = 'highpass'; f.frequency.value = 7000; g.gain.setValueAtTime(.25, t + k * beat); g.gain.setTargetAtTime(0, t + k * beat, .02); s.connect(f).connect(g).connect(out); s.start(t + k * beat, Math.random() * .5, .08); });
+      note(ch[0] / 2, t + beat / 2, beat / 2, 'square', .12);
+      [0, .5].forEach((k, j) => note(ch[hook[(b * 2 + j) % 8]] * 2, t + k * beat, beat / 2.2, 'square', .06));
+    }
+    return oc.startRendering();
+  }
   /** Crossfade the end into the start so the loop point can't click. */
   function seamless(b, N) {
     const len = b.length - N, o = ctx.createBuffer(b.numberOfChannels, len, b.sampleRate);
@@ -117,6 +134,14 @@ L.Sound = () => {
       const am = ctx.createGain(); am.gain.value = .6; const lfo = ctx.createOscillator(); lfo.frequency.value = rnd(2.6, 3.2); const lg = ctx.createGain(); lg.gain.value = .3; lfo.connect(lg).connect(am.gain); lfo.start();
       const lv = ctx.createGain(); lv.gain.value = .04; ns.connect(lp3).connect(am).connect(lv).connect(panner(p, 1, .3));
     });
+    // a phone playing a song through its tiny speaker
+    if (spots.music) renderMusic().then(buf => {
+      if (!ctx) return;
+      const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true;
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 650;
+      const lp4 = ctx.createBiquadFilter(); lp4.type = 'lowpass'; lp4.frequency.value = 4200;
+      const g2 = ctx.createGain(); g2.gain.value = .22; s.connect(hp).connect(lp4).connect(g2).connect(panner(spots.music, .8, .5)); s.start();
+    }).catch(() => {});
     // the crowd, from a few spots in the hall, once it has rendered
     renderCrowd(14, 16).then(buf => {
       if (!ctx) return;
