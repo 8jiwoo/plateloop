@@ -5,17 +5,17 @@
 const { $, $$, pct, fmt1, money, esc, MENU, rng, clamp } = PL;
 
 const HISTORY = (() => { const r = rng(11); return Array.from({ length: 30 }, (_, i) => i < 10 ? .29 + (r() - .5) * .04 : clamp(.29 - (i - 9) * .0065 + (r() - .5) * .03, .12, .35)); })();
-const TREND = { spinach: [.46, +17, 'Spinach Week quest is working: 46% → 63% eaten on quest days.'], kimchi: [.55, +1, 'Serve 25 g by default and let students take more.'], apple: [.88, +1, 'Popular. Keep it.'], rice: [.82, +4, 'More students choose Small since portion sizes started.'], bulgogi: [.94, +2, 'Most popular dish. Keep the portion.'], soup: [.58, -2, 'Cut the default ladle from 200 to 150 ml.'] };
+const TREND = { kailan: [.46, +17, 'Kailan Week quest is working: 46% → 63% eaten on quest days.'], cabbage: [.55, +1, 'Serve 25 g by default and let students take more.'], melon: [.88, +1, 'Popular. Keep it.'], rice: [.82, +4, 'More students choose Small since portion sizes started.'], chicken: [.94, +2, 'Most popular dish. Keep the portion.'], soup: [.58, -2, 'Cut the default ladle from 200 to 150 ml.'] };
 const TOMORROW = [
   { id: 'rice', name: 'Rice', std: 180, learned: 148, err: .05, tags: ['grain'], bom: [['Rice (raw)', .42, 2.2]] },
-  { id: 'curry', name: 'Pork & vegetable curry', std: 150, learned: 131, err: .06, tags: ['protein'], bom: [['Pork shoulder', .20, 9.0], ['Potato', .22, 1.6], ['Carrot', .10, 1.8], ['Onion', .14, 1.4], ['Curry roux', .07, 7.0]] },
-  { id: 'soup', name: 'Seaweed soup', std: 200, learned: 122, err: .09, tags: ['soup'], bom: [['Dried seaweed', .012, 30], ['Beef brisket', .03, 18], ['Soy sauce', .02, 3.0]] },
+  { id: 'curry', name: 'Chicken curry', std: 150, learned: 131, err: .06, tags: ['protein'], bom: [['Chicken thigh', .22, 7.5], ['Potato', .22, 1.6], ['Carrot', .10, 1.8], ['Onion', .12, 1.4], ['Curry paste', .06, 8.0]] },
+  { id: 'soup', name: 'Fishball soup', std: 200, learned: 122, err: .09, tags: ['soup'], bom: [['Fishballs', .08, 9.0], ['Chinese cabbage', .10, 2.0], ['Soy sauce', .02, 3.0]] },
   { id: 'tofu', name: 'Fried tofu', std: 70, learned: 55, err: .08, tags: ['protein'], bom: [['Firm tofu', .9, 3.2], ['Cooking oil', .05, 2.5]] },
   { id: 'sprout', name: 'Bean sprout side', std: 50, learned: 29, err: .11, tags: ['veg'], bom: [['Bean sprouts', .95, 2.4], ['Sesame oil', .02, 12]] },
-  { id: 'kimchi', name: 'Kimchi', std: 40, learned: 22, err: .10, tags: ['veg'], bom: [['Kimchi', 1.0, 4.5]] },
-  { id: 'yogurt', name: 'Yogurt', std: 85, learned: 81, err: .03, tags: ['fruit'], bom: [['Yogurt', 1.0, 3.5]] },
+  { id: 'cucumber', name: 'Cucumber salad', std: 40, learned: 22, err: .10, tags: ['veg'], bom: [['Cucumber', 1.0, 2.2]] },
+  { id: 'fruit', name: 'Papaya', std: 85, learned: 81, err: .03, tags: ['fruit'], bom: [['Papaya', 1.0, 2.0]] },
 ];
-const INVENTORY = { 'Rice (raw)': 60, 'Kimchi': 12, 'Onion': 8, 'Soy sauce': 10, 'Cooking oil': 15, 'Sesame oil': 2 };
+const INVENTORY = { 'Rice (raw)': 60, 'Onion': 8, 'Soy sauce': 10, 'Cooking oil': 15, 'Sesame oil': 2, 'Curry paste': 3 };
 const ENROLLED = 840;
 const MAPE = TOMORROW.reduce((a, d) => a + d.err, 0) / TOMORROW.length;
 const SEED_MIX = { S: 35, M: 84, L: 21 }; // portion sizes of the 140 trays scanned before the demo starts
@@ -39,7 +39,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="kit">
     <aside class="kit-side">
-      <div class="who"><span class="kit-logo" aria-hidden="true"></span><div><b>PlateLoop Kitchen</b><span>Haneul Elementary</span></div></div>
+      <div class="who"><span class="kit-logo" aria-hidden="true"></span><div><b>PlateLoop Kitchen</b><span>Harbourlight Primary</span></div></div>
       ${NAV.map(([id, label, ic]) => `<button data-view="${id}">${ic}${label}</button>`).join('')}
       <div class="kit-foot"><div id="kit-live"></div><button class="linkish" data-reset style="font-size:13px">Reset demo</button></div>
     </aside>
@@ -86,7 +86,7 @@ function overview() {
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Live scans</h3><span class="hint">Tray numbers, not names</span></div>
       <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}</span></div>`).join('')
-        : `<p class="hint" style="padding:22px 2px">Class 3-2 is about to eat. Scans from the PlateLoop scanner appear here the moment they happen.</p>`}</div></div>
+        : `<p class="hint" style="padding:22px 2px">Class 3B is about to eat. Scans from the PlateLoop scanner appear here the moment they happen.</p>`}</div></div>
     <div class="card chart"><h3>Eaten by dish</h3><p class="hint">Share of each dish eaten on finished trays</p>${chartDish()}</div>
   </div>
   <div class="card chart"><h3>Plate waste, last 30 school days</h3><p class="hint">Food left ÷ food served, whole school</p>${chartTrend()}</div>`;
@@ -161,17 +161,17 @@ function nutrition() {
   const status = { low: ['Low', 'low'], ok: ['Adequate', 'ok'], high: ['Too much', 'mid'] };
   return `
   <div class="page-head"><div><h1>Nutrition</h1><p>What students actually ate at lunch, from the difference between the before and after scans, against the school-lunch target.</p></div></div>
-  <div class="card"><div class="row spread"><h3>Average intake per student</h3><span class="hint">Class 3-2 · ${n} students · latest lunch</span></div>
+  <div class="card"><div class="row spread"><h3>Average intake per student</h3><span class="hint">Class 3B · ${n} students · latest lunch</span></div>
     <div class="nut-legend"><span class="l1">Low</span><span class="l2">Adequate</span><span class="l3">Too much</span></div>
     <div class="nut-rows">${PL.NUTRIENTS.map(([k, label, unit]) => { const [t, c] = status[PL.nStatus(k, avg[k])]; return `<div class="nut-row"><b>${label}</b>${zoneBar(k, avg[k])}<span class="num">${avg[k]} ${unit} <small>/ ${PL.TARGET[k]}</small></span><span class="flag ${c}">${t}</span></div>`; }).join('')}</div>
-    <p class="hint" style="margin-top:12px">Targets are per lunch for a grade 3 student (about a third of the daily need). Replace them with your national school-meal standard.</p></div>
+    <p class="hint" style="margin-top:12px">Targets are per lunch for a Primary 3 student (about a third of the daily need). Replace them with the Health Promotion Board's school meal guidelines.</p></div>
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Students to check on</h3><span class="pill orange">${low.length} flagged</span></div><p class="hint">Ate less than 60% of the calorie target at their last lunch. Visible to the school dietitian and homeroom teacher only.</p>
       <div class="lowlist">${low.length ? low.slice(0, 8).map(x => `<div><span class="av">${esc(x.s.name[0])}</span><div><b>${esc(x.s.name)} · Class ${x.s.cls}</b><span>${x.n.kcal} kcal · protein ${x.n.p} g</span></div><span class="flag low">${pct(x.r)}</span></div>`).join('') : '<p class="hint" style="padding:12px 0">Nobody below 60% right now.</p>'}</div></div>
     <div class="card"><h3>Where nutrients are lost</h3><p class="hint">Nutrients served but left on trays today, all finished trays</p>
       ${(() => { const left = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].ret])); const served = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].served])); const L = PL.nutrientsOf(left), S = PL.nutrientsOf(served);
         return `<div class="nut-rows" style="margin-top:12px">${PL.NUTRIENTS.map(([k, label, unit]) => `<div class="nut-row lost"><b>${label}</b><div class="zbar"><i class="high" style="width:${L[k] / S[k] * 100}%"></i></div><span class="num">${pct(L[k] / S[k])}</span><span class="hint">${Math.round(L[k] / 1000 * (unit === 'g' ? 1 : 1)).toLocaleString('en-US')}${unit === 'g' ? ' kg' : 'k kcal'}</span></div>`).join('')}</div>`; })()}
-      <p class="hint" style="margin-top:12px">Vegetables carry most of the lost fibre and vitamins. The Spinach Week quest targets this.</p></div>
+      <p class="hint" style="margin-top:12px">Vegetables carry most of the lost fibre and vitamins. The Kailan Week quest targets this.</p></div>
   </div>`;
 }
 
@@ -185,7 +185,7 @@ function environment() {
   const gy = t + ih - goal / max * ih;
   chart += `<line x1="${l}" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/><text class="axis" x="${W - 8}" y="${gy - 6}" text-anchor="end" style="fill:var(--orange)">Goal 20%</text></svg>`;
   return `
-  <div class="page-head"><div><h1>Environment</h1><p>The school's impact, shown on the cafeteria screen and in every student's Loopi app.</p></div></div>
+  <div class="page-head"><div><h1>Environment</h1><p>The school's impact, shown on the canteen screen and in every student's Loopi app.</p></div></div>
   <div class="env-hero">
     <div class="env-tree"><canvas id="env-tree" width="200" height="170" aria-label="School Green Tree"></canvas><div><b class="num">${PL.S.today.zero}</b> fruits today · one for every zero-leftover tray</div></div>
     <div class="env-big"><div class="k">CO₂ avoided this term</div><div class="v num">${(e.co2 / 1000).toFixed(2)} t</div><div class="s">from ${Math.round(e.kg).toLocaleString('en-US')} kg of food not wasted</div>
@@ -196,15 +196,15 @@ function environment() {
     <div class="card"><h3>Waste by class this week</h3><p class="hint">Compared with each class's starting level</p>
       <div class="lb" style="margin-top:12px;box-shadow:none;background:var(--fill)">${PL.classRows().map((r, i) => `<div class="lb-row ${i < 3 ? 'top' + (i + 1) : ''}"><span class="lb-rank">${i + 1}</span><canvas width="40" height="34" data-cls="${r.c.id}"></canvas><div><div class="lb-name">Class ${r.c.id}</div><div class="lb-sub">waste ${pct(r.w)} · started at ${pct(r.c.base)}</div></div><div class="lb-val">${r.red > 0 ? '−' + pct(r.red) : '0%'}</div></div>`).join('')}</div></div>
   </div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: 2.5 kg CO₂e per kg of food, 6.6 kg CO₂ absorbed per pine tree per year, 0.17 kg CO₂ per car-km. Swap in published factors (e.g. EPA WARM) before quoting.</p>`;
+  <p class="hint" style="margin-top:14px">Illustrative factors: 2.5 kg CO₂e per kg of food, 6.6 kg CO₂ absorbed per pine tree per year, 0.17 kg CO₂ per car-km. Swap in published factors (e.g. from NEA or EPA WARM) before quoting.</p>`;
 }
 
-/* ---------------------------------------------------------------- Carbon: the whole cafeteria's footprint, toward carbon-neutral operation
+/* ---------------------------------------------------------------- Carbon: the whole canteen's footprint, toward carbon-neutral operation
    Illustrative factors (kg CO₂e): per kg of food produced, per kg of food thrown away, and per unit of
    energy, water and transport. Swap in published factors (e.g. EPA WARM, national grid) before quoting. */
-const EF_FOOD = { rice: 2.7, bulgogi: 27, spinach: 1.2, kimchi: 1.0, apple: .4, soup: 1.4 };
+const EF_FOOD = { rice: 2.7, chicken: 6.1, kailan: 1.2, cabbage: .6, melon: .5, soup: 1.8 };
 const EF_DISPOSAL = .58;
-const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .46], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
+const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .41], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
 const DAYS_PER_MONTH = 20, BEFORE = 1.18, GOAL = .12;
 const CARBON_TREND = [1.16, 1.12, 1.07, 1.05, 1.02, 1];
 function carbonData() {
@@ -222,10 +222,10 @@ function carbonData() {
 function carbon() {
   const c = carbonData(), cut = 1 - c.total / c.before;
   const parts = [['Ingredients', c.foodT, 'var(--orange)'], ['Food waste', c.disposalT, 'var(--red)'], ['Energy, water and transport', c.opsT, 'var(--blue)']];
-  const beef = c.food.find(x => x.d.id === 'bulgogi');
+  const meat = c.food.find(x => x.d.id === 'chicken');
   const actions = [
     ['Cut plate waste from ' + pct(c.w) + ' to 20%', Math.max(0, (c.w - .2) / c.w) * (c.disposalT + c.hidden) * 10, 'Using the dish-by-dish waste data'],
-    ['Swap beef for chicken or tofu once a week', beef.t * .2 * (1 - 6 / 27) * 10, 'Beef is ' + pct(beef.t / c.foodT) + ' of ingredient emissions'],
+    ['Go meat-free with tofu one day a week', meat.t * .2 * (1 - 3 / 6.1) * 10, 'Chicken is ' + pct(meat.t / c.foodT) + ' of ingredient emissions'],
     ['Cook to the forecast, not to enrolment', c.foodT * .06 * 10, 'Plan & order already cooks about 6% less'],
     ['Run dishwashers full and off-peak', c.ops[0].t * .08 * 10, 'About 8% less electricity'],
   ].sort((a, b) => b[1] - a[1]);
@@ -235,7 +235,7 @@ function carbon() {
   const gy = Hh - (BEFORE * (1 - GOAL)) / max * Hh;
   trend += `<line x1="30" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/></svg>`;
   return `
-  <div class="page-head"><div><h1>Carbon</h1><p>Every source of the cafeteria's emissions in one place: ingredients, food waste, and the kitchen's energy, water and deliveries.</p></div><button class="btn" id="copy-carbon">Copy monthly report</button></div>
+  <div class="page-head"><div><h1>Carbon</h1><p>Every source of the canteen's emissions in one place: ingredients, food waste, and the kitchen's energy, water and deliveries.</p></div><button class="btn" id="copy-carbon">Copy monthly report</button></div>
   <div class="kpis">
     <div class="kpi"><div class="k">This month</div><div class="v">${c.total.toFixed(1)} t</div><div class="s">CO₂e, all sources</div></div>
     <div class="kpi"><div class="k">Per meal</div><div class="v">${c.perMeal.toFixed(2)} kg</div><div class="s">${Math.round(c.meals).toLocaleString('en-US')} meals this month</div></div>
@@ -255,11 +255,11 @@ function carbon() {
   </div>
   <h2 class="section-title">Biggest cuts toward carbon-neutral</h2>
   <div class="insights">${actions.map(([t, v, s], i) => `<div class="insight"><span class="ic" style="background:${['var(--tint)', 'var(--blue)', 'var(--orange)', 'var(--purple)'][i]}">${SV('<path d="M4 17l6-6 4 4 6-8"/>')}</span><div><b>${t}: −${v.toFixed(1)} t a school year</b><span>${s}</span></div></div>`).join('')}</div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.46 per kWh; gas 2.2 per m³. Replace with published factors before reporting.</p>`;
+  <p class="hint" style="margin-top:14px">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.41 per kWh (Singapore grid); gas 2.2 per m³. Replace with published factors before reporting.</p>`;
 }
 function carbonReport() {
   const c = carbonData();
-  return `Carbon report, September. The cafeteria produced ${c.total.toFixed(1)} t CO₂e this month (${c.perMeal.toFixed(2)} kg per meal): ${c.foodT.toFixed(1)} t from ingredients, ${c.disposalT.toFixed(1)} t from food waste disposal, and ${c.opsT.toFixed(1)} t from energy, water and deliveries. That is ${pct(1 - c.total / c.before)} below the level before PlateLoop, against a goal of ${pct(GOAL)} this year. Plate waste is ${pct(c.w)}; food thrown away also carried ${c.hidden.toFixed(1)} t of ingredient emissions.`;
+  return `Carbon report, September. The canteen produced ${c.total.toFixed(1)} t CO₂e this month (${c.perMeal.toFixed(2)} kg per meal): ${c.foodT.toFixed(1)} t from ingredients, ${c.disposalT.toFixed(1)} t from food waste disposal, and ${c.opsT.toFixed(1)} t from energy, water and deliveries. That is ${pct(1 - c.total / c.before)} below the level before PlateLoop, against a goal of ${pct(GOAL)} this year. Plate waste is ${pct(c.w)}; food thrown away also carried ${c.hidden.toFixed(1)} t of ingredient emissions.`;
 }
 
 /* ---------------------------------------------------------------- Plan & order */
@@ -268,8 +268,8 @@ function forecast() {
   const rows = TOMORROW.map(d => {
     let k = 1;
     if (p.weather === 'rainy' && d.id === 'soup') k *= 1.10;
-    if (p.weather === 'cold' && d.id === 'soup') k *= 1.15;
-    if (p.weather === 'cold' && d.id === 'yogurt') k *= .92;
+    if (p.weather === 'hot' && d.id === 'soup') k *= .9;
+    if (p.weather === 'hot' && d.id === 'fruit') k *= 1.08;
     if (p.event === 'sports' && (d.tags.includes('grain') || d.tags.includes('protein'))) k *= 1.10;
     return { d, stdKg: ENROLLED * d.std / 1000, newKg: att * d.learned * k * (1 + Math.max(.04, d.err + .01)) / 1000 };
   });
@@ -288,16 +288,16 @@ function plan() {
   <div class="card">
     <div class="controls">
       <div><label for="att">Attendance · <span class="num" id="att-v">${p.att} of ${ENROLLED}</span></label><input type="range" id="att" min="600" max="840" step="1" value="${p.att}"></div>
-      <div><label>Weather</label><div class="seg" id="weather">${['sunny', 'rainy', 'cold'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
-      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'Grade 6 field trip (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+      <div><label>Weather</label><div class="seg" id="weather">${['sunny', 'rainy', 'hot'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
+      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'P6 learning journey (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
     </div>
     <div id="plan-out">${planOut()}</div>
   </div>
   <div class="card"><h3>Cook: recipe tweaks students will eat more of</h3><p class="hint">From 4 weeks of before/after scans</p>
     <div class="insights" style="margin-top:10px">${[
-      ['var(--tint)', 'Spinach namul with sesame dressing', 'Eaten 64% vs. 52% plain in the class A/B test. Make it the default.'],
+      ['var(--tint)', 'Kailan with oyster sauce', 'Eaten 64% vs. 52% plain in the class A/B test. Make it the default.'],
       ['var(--blue)', 'Soup: 150 ml ladle, refills allowed', 'Cuts soup waste from 42% to 24% with no drop in satisfaction.'],
-      ['var(--orange)', 'Kimchi: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
+      ['var(--orange)', 'Cabbage: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
     ].map(([c, t, d]) => `<div class="insight"><span class="ic" style="background:${c}">${SV('<path d="M5 12l5 5 9-10"/>')}</span><div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div></div>`;
 }
 function planOut() {
@@ -327,7 +327,7 @@ function reportData() {
   const text = [
     `Today ${t.trays.toLocaleString('en-US')} trays were scanned before and after lunch, and ${t.eating} students are still eating. Plate waste is ${pct(tot.w)}, ${diff >= 0 ? `${diff.toFixed(0)} points below` : `${(-diff).toFixed(0)} points above`} the ${pct(PL.SCHOOL_BASELINE)} baseline, leaving ${fmt1(tot.lf / 1000)} kg of food (about ${money(tot.val)} of ingredients).`,
     `${best.d.name} was the most eaten dish (${pct(best.e)}). ${worst.d.name} came back the most, with only ${pct(worst.e)} eaten. ${TREND[worst.d.id][2]}`,
-    `Class ${cls.c.id} leads Grade 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
+    `Class ${cls.c.id} leads Primary 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
     `The average student ate ${intakeStats().avg.kcal} kcal and ${intakeStats().avg.p} g of protein at lunch (targets ${PL.TARGET.kcal} kcal and ${PL.TARGET.p} g). ${intakeStats().low.length} students ate less than 60% of their calorie target and are flagged for the dietitian.`,
     `For Monday, the plan cooks ${fmt1(f.tNew)} kg instead of ${fmt1(f.tStd)} kg, saving about ${money(f.costStd - f.cost)} in ingredients. The supplier order totals ${money(f.orderTotal)}.`,
   ];
@@ -339,7 +339,7 @@ function report() {
   const insights = [
     ['var(--orange)', '<path d="M12 3v12M6 9l6 6 6-6M4 21h16"/>', `Serve less ${worst.d.name.toLowerCase()}`, TREND[worst.d.id][2]],
     ['var(--blue)', '<path d="M5 12h14M12 5v14"/>', 'Soup: taken, not eaten', `${fmt1(soup.left / 1000)} kg of soup came back today. A 150 ml ladle would cut most of it.`],
-    ['var(--tint)', '<path d="M4 17l6-6 4 4 6-8"/>', 'Spinach Week is working', 'Students tasting spinach for the quest raised the share eaten by 17 points.'],
+    ['var(--tint)', '<path d="M4 17l6-6 4 4 6-8"/>', 'Kailan Week is working', 'Students tasting kailan for the quest raised the share eaten by 17 points.'],
     ['var(--purple)', '<path d="M6 3h9l4 4v14H6z"/>', `Order ${money(f.orderTotal)} for Monday`, `${fmt1(f.tStd - f.tNew)} kg less food cooked than the standard plan.`],
   ];
   return `
