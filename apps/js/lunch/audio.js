@@ -331,13 +331,30 @@ L.Sound = () => {
   }
   /** Play a recorded clip (or the part from..to seconds), positioned in the room or straight to the listener.
    *  Returns a handle with the length and a stop() that fades it out quickly; null if the clip isn't loaded. */
-  function clip(name, pos, vol = 1, from = 0, to = null) {
+  function clip(name, pos, vol = 1, from = 0, to = null, when = 0) {
     const b = clips[name]; if (!ctx || muted || !b) return null;
-    const end = Math.min(to == null ? b.duration : to, b.duration), len = Math.max(.05, end - from), t = ctx.currentTime;
+    const end = Math.min(to == null ? b.duration : to, b.duration), len = Math.max(.05, end - from), t = Math.max(ctx.currentTime, when);
     const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b;
     g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.setValueAtTime(vol, t + len - .03); g.gain.linearRampToValueAtTime(0, t + len);
     s.connect(g).connect(pos ? panner(pos, 3, .25) : flatOut); s.start(t, from, len);
-    return { length: len, stop() { const n = ctx.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.linearRampToValueAtTime(0, n + .06); s.stop(n + .08); } };
+    return { length: len, end: t + len, stop() { const n = ctx.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.linearRampToValueAtTime(0, n + .06); s.stop(n + .08); } };
+  }
+
+  /** Split a clip into phrases at its natural pauses (quiet for at least 60 ms), so it can be played a
+   *  phrase at a time without ever cutting a word. Returns [[from, to], ...] in seconds. */
+  const phraseCache = {};
+  function phrases(name) {
+    const b = clips[name]; if (!b) return null;
+    if (phraseCache[name]) return phraseCache[name];
+    const d = b.getChannelData(0), sr = b.sampleRate, win = Math.round(sr * .02), env = [];
+    for (let i = 0; i + win <= d.length; i += win) { let s = 0; for (let j = i; j < i + win; j++) s += d[j] * d[j]; env.push(Math.sqrt(s / win)); }
+    let peak = 0; env.forEach(v => { if (v > peak) peak = v; });
+    const cuts = []; let st = -1;
+    env.forEach((v, i) => { const q = v < peak * .04; if (q && st < 0) st = i; if (!q && st >= 0) { if (i - st >= 3) cuts.push((st + i) / 2 * .02); st = -1; } });
+    const out = []; let from = 0;
+    cuts.forEach(c => { if (c - from > .15) { out.push([from, c]); from = c; } });
+    out.push([from, b.duration]);
+    return (phraseCache[name] = out);
   }
 
   /* ------------------------------------------------------------ per frame */
@@ -364,7 +381,7 @@ L.Sound = () => {
   return {
     get ctx() { return ctx; },
     get muted() { return muted; },
-    spots, start, listen, tick, sing, clip,
+    spots, start, listen, tick, sing, clip, phrases,
     hasClip: name => !!clips[name], clipLength: name => clips[name] ? clips[name].duration : 0,
     play(name, pos, ...a) { if (ctx && !muted && ctx.state === 'running' && FX[name]) FX[name](pos, ...a); },
     toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .85, ctx.currentTime, .05); return muted; },
