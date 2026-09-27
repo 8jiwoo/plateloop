@@ -32,6 +32,7 @@ L.Sound = () => {
     brownBuf = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate);
     { const d = brownBuf.getChannelData(0); let l = 0; for (let i = 0; i < d.length; i++) { l = (l + .02 * (Math.random() * 2 - 1)) / 1.02; d[i] = l * 3.5; } }
     for (let i = 0; i < 10; i++) pool.push(panner([0, 1, 0], 1.2, .7));
+    loadClips();
     beds();
   }
   function impulse(sec, decay) {
@@ -318,6 +319,24 @@ L.Sound = () => {
     return t - ctx.currentTime;
   }
 
+  /* ------------------------------------------------------------ recorded clips (see clips.js) */
+  const clips = {};
+  function loadClips() {
+    if (!L.CLIPS) return;
+    Object.entries(L.CLIPS).forEach(([k, url]) => {
+      const bin = atob(url.slice(url.indexOf(',') + 1)), arr = new Uint8Array(bin.length);
+      for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+      ctx.decodeAudioData(arr.buffer).then(b => { clips[k] = b; }).catch(() => {});
+    });
+  }
+  /** Play a recorded clip, positioned in the room (or straight to the listener); returns its length. */
+  function clip(name, pos, vol = 1) {
+    const b = clips[name]; if (!ctx || muted || !b) return 0;
+    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; g.gain.value = vol;
+    s.connect(g).connect(pos ? panner(pos, 3, .25) : flatOut); s.start();
+    return b.duration;
+  }
+
   /* ------------------------------------------------------------ per frame */
   function listen(cam) {
     if (!ctx) return;
@@ -342,7 +361,8 @@ L.Sound = () => {
   return {
     get ctx() { return ctx; },
     get muted() { return muted; },
-    spots, start, listen, tick, sing,
+    spots, start, listen, tick, sing, clip,
+    hasClip: name => !!clips[name], clipLength: name => clips[name] ? clips[name].duration : 0,
     play(name, pos, ...a) { if (ctx && !muted && ctx.state === 'running' && FX[name]) FX[name](pos, ...a); },
     toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .85, ctx.currentTime, .05); return muted; },
     /** Quieter crowd while talking to someone or reading the scanner. */
