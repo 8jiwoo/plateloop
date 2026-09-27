@@ -13,9 +13,9 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **PlateLoop Scanner** | `dist/1-plateloop-scanner-3d.html` | Product page with the annotated, rotatable 3D scanner |
 | **PlateLoop Kiosk** | `dist/2-plateloop-kiosk.html` | The scanner's screen: face sign-in, before and after scans, nutrition, the school Green Tree |
 | **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
-| **Loopi** | `dist/4-loopi-student-app.html` | Students: the Loopi pet, nutrition report, student and school leaderboards |
+| **Loopi** | `dist/4-loopi-student-app.html` | Students: Loopi guides them through lunch, their tray and healthy plate, student and school leaderboards |
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
-| **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Kindergartens: a picture-first pet and rainbow plate for children, a lunch report with allergy checks for parents |
+| **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Preschools: Loopi guides children in pictures and reads aloud; a lunch report with allergy checks for parents |
 | **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
@@ -40,9 +40,8 @@ Then open http://localhost:8765/dist/2-plateloop-kiosk.html and http://localhost
 apps/                 source for the seven apps
   index.html          dev page with an app switcher
   css/apple.css       design system (light + dark)
-  js/core.js          menu, before/after scans, nutrition, storage sync, pixel pet
-  js/game.js          Loopi's rules (lunch feeds Loopi, hearts, growing up, leftover crumbs, badges)
-  js/room.js          Loopi's animated pixel room
+  js/core.js          menu, before/after scans, nutrition, storage sync
+  js/visual.js        Loopi the guide, food drawings, tray, My Healthy Plate, gauges
   js/health.js        hospital and kindergarten menus, demo people, healthcare report parts
   js/model.js         PlateLoop Scanner 3D page
   js/scanner.js       PlateLoop Kiosk
