@@ -329,12 +329,15 @@ L.Sound = () => {
       ctx.decodeAudioData(arr.buffer).then(b => { clips[k] = b; }).catch(() => {});
     });
   }
-  /** Play a recorded clip, positioned in the room (or straight to the listener); returns its length. */
-  function clip(name, pos, vol = 1) {
-    const b = clips[name]; if (!ctx || muted || !b) return 0;
-    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b; g.gain.value = vol;
-    s.connect(g).connect(pos ? panner(pos, 3, .25) : flatOut); s.start();
-    return b.duration;
+  /** Play a recorded clip (or the part from..to seconds), positioned in the room or straight to the listener.
+   *  Returns a handle with the length and a stop() that fades it out quickly; null if the clip isn't loaded. */
+  function clip(name, pos, vol = 1, from = 0, to = null) {
+    const b = clips[name]; if (!ctx || muted || !b) return null;
+    const end = Math.min(to == null ? b.duration : to, b.duration), len = Math.max(.05, end - from), t = ctx.currentTime;
+    const s = ctx.createBufferSource(), g = ctx.createGain(); s.buffer = b;
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.setValueAtTime(vol, t + len - .03); g.gain.linearRampToValueAtTime(0, t + len);
+    s.connect(g).connect(pos ? panner(pos, 3, .25) : flatOut); s.start(t, from, len);
+    return { length: len, stop() { const n = ctx.currentTime; g.gain.cancelScheduledValues(n); g.gain.setValueAtTime(g.gain.value, n); g.gain.linearRampToValueAtTime(0, n + .06); s.stop(n + .08); } };
   }
 
   /* ------------------------------------------------------------ per frame */
