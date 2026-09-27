@@ -1,5 +1,5 @@
 /* Lunch Rush: one school lunch with PlateLoop, first person, PS1-style.
-   Take a tray, order at the Healthy Set Meal stall (Auntie Lim asks how much of each dish), scan the full
+   Take a tray, order at the Healthy Set Meal stall (Mrs Lim asks how much of each dish), scan the full
    tray at the PlateLoop station (the camera moves in so you can read the scanner's screen), sit with your
    friends and eat bite by bite, scan again, scrape the leftovers into the scanner's compost module and put
    the tray on the return rack. People talk to you, react, and go about their lunch; a classmate walks the
@@ -13,12 +13,12 @@ const { $, $$, esc, pct, MENU } = PL;
 const L = PL.L3;
 let root = null, G = null;
 
-const LOW_H = 240, READ_H = 420, EYE = 1.55;
+const EYE = 1.55, FOG = '#AEB0A8';
 const SERVE = ['rice', 'chicken', 'kailan', 'cabbage', 'soup', 'melon'];
 const PICK = [.55, 1, 1.35];
 const OBJ = {
   getTray: 'Take a tray from the stack at the Healthy Set Meal stall',
-  order: 'Ask Auntie Lim for your lunch',
+  order: 'Ask Mrs Lim for your lunch',
   scanBefore: 'Scan your full tray at the PlateLoop station, in the far corner',
   findSeat: '{a} and {b} kept a seat for you. Sit down to eat',
   eating: 'Eat your lunch: click the food to take a bite',
@@ -71,28 +71,31 @@ function init() {
   const renderer = new THREE.WebGLRenderer({ canvas: cv, antialias: false, powerPreference: 'high-performance' });
   renderer.setPixelRatio(1);
   const scene = new THREE.Scene();
-  scene.background = new THREE.Color('#C9D6D8');
-  scene.fog = new THREE.Fog('#D5DCD6', 14, 60);
+  scene.background = new THREE.Color(FOG);
+  scene.fog = new THREE.FogExp2(FOG, .043);
   const camera = new THREE.PerspectiveCamera(68, 4 / 3, .03, 200); camera.rotation.order = 'YXZ'; scene.add(camera);
   // post: grain, vignette, grade, 15-bit colour with ordered dithering
-  const rt = new THREE.WebGLRenderTarget(320, 240, { minFilter: THREE.NearestFilter, magFilter: THREE.NearestFilter });
+  const rt = new THREE.WebGLRenderTarget(640, 480, { minFilter: THREE.LinearFilter, magFilter: THREE.LinearFilter });
   const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5], bd = new Uint8Array(64);
   bayer.forEach((v, i) => { bd[i * 4] = bd[i * 4 + 1] = bd[i * 4 + 2] = Math.round(v / 16 * 255); bd[i * 4 + 3] = 255; });
   const dither = new THREE.DataTexture(bd, 4, 4, THREE.RGBAFormat); dither.magFilter = dither.minFilter = THREE.NearestFilter; dither.wrapS = dither.wrapT = THREE.RepeatWrapping; dither.needsUpdate = true;
   const post = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
-    uniforms: { tDiffuse: { value: rt.texture }, tDither: { value: dither }, uTime: { value: 0 }, uFade: { value: 0 } },
+    uniforms: { tDiffuse: { value: rt.texture }, tDither: { value: dither }, uTime: { value: 0 }, uFade: { value: 0 }, uPx: { value: new THREE.Vector2(1 / 640, 1 / 480) } },
     vertexShader: 'varying vec2 vUv; void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
-    fragmentShader: `uniform sampler2D tDiffuse; uniform sampler2D tDither; uniform float uTime; uniform float uFade; varying vec2 vUv;
+    fragmentShader: `uniform sampler2D tDiffuse; uniform sampler2D tDither; uniform float uTime; uniform float uFade; uniform vec2 uPx; varying vec2 vUv;
       float hash(vec2 p){ return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453); }
       void main(){
-        vec2 d = vUv - .5; float r2 = dot(d, d); vec2 off = d * r2 * .018;
+        vec2 d = vUv - .5; float r2 = dot(d, d); vec2 off = d * r2 * .008;
         vec3 c = vec3(texture2D(tDiffuse, vUv + off).r, texture2D(tDiffuse, vUv).g, texture2D(tDiffuse, vUv - off).b);
-        float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, .86); c = c * vec3(1.04, 1.0, .93) + vec3(.018, .016, .012);
-        c *= 1.0 - r2 * .95;
-        c += (hash(gl_FragCoord.xy + fract(uTime * 7.13) * 91.7) - .5) * .07;
+        // soft glow around bright areas (windows, lights, the screen), like light scattering in haze
+        vec3 b = vec3(0.0);
+        for (int i = 0; i < 8; i++) { float a = float(i) * .785; vec2 o = vec2(cos(a), sin(a)) * uPx * 6.0; b += max(texture2D(tDiffuse, vUv + o).rgb - .62, 0.0); }
+        c += b * .16;
+        float l = dot(c, vec3(.299, .587, .114)); c = mix(vec3(l), c, .82); c = c * vec3(1.0, 1.0, .97) * .96 + vec3(.012, .013, .012);
+        c *= 1.0 - r2 * 1.1;
+        c += (hash(gl_FragCoord.xy + fract(uTime * 7.13) * 91.7) - .5) * .035;
         c *= 1.0 - uFade;
-        float dd = texture2D(tDither, gl_FragCoord.xy / 4.0).r - .5;
-        c = floor((c + dd / 31.0) * 31.0 + .5) / 31.0;
+        c += (texture2D(tDither, gl_FragCoord.xy / 4.0).r - .5) / 255.0;
         gl_FragColor = vec4(c, 1.0);
       }`,
     depthTest: false, depthWrite: false,
@@ -106,15 +109,15 @@ function init() {
 
   G = {
     renderer, scene, camera, rt, post, postScene, postCam, W, SFX, screen, view, cv,
-    phase: 'title', mode: 'title', paused: true, busy: false, lowH: LOW_H, baseFov: 68,
+    phase: 'title', mode: 'title', paused: true, busy: false, baseFov: 68,
     pos: new THREE.Vector3(0, EYE, 7.6), yaw: 0, pitch: 0, look: { dx: 0, dy: 0 }, keys: {}, stick: { x: 0, y: 0 },
     t: 0, last: performance.now(), raf: 0, stepT: 0, tweens: [], people: [], walkers: [], targets: [], hitMeshes: [],
     ray: new THREE.Raycaster(), touch: matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches,
     pick: {}, eaten: {}, served: false, barkT: {}, chatT: 6, tvT: 0, ready: false,
   };
   const resize = () => {
-    const w = view.clientWidth || 800, h = view.clientHeight || 600, a = w / h, lh = G.lowH;
-    renderer.setSize(Math.round(lh * a), lh, false); rt.setSize(Math.round(lh * a), lh);
+    const w = view.clientWidth || 800, h = view.clientHeight || 600, a = w / h, lh = Math.round(Math.min(h, G.reading ? 900 : 600));
+    renderer.setSize(Math.round(lh * a), lh, false); rt.setSize(Math.round(lh * a), lh); post.material.uniforms.uPx.value.set(1 / (lh * a), 1 / lh);
     camera.aspect = a; G.baseFov = a < 1 ? 86 : 68; if (G.mode !== 'focus') camera.fov = G.baseFov; camera.updateProjectionMatrix();
   };
   G.resize = resize;
@@ -235,12 +238,12 @@ function trayToHands(dur = .45) {
 function buildPeople() {
   const W = G.W, add = (P, x, z, ry, pose = 'stand') => { P.root.position.set(x, 0, z); P.root.rotation.y = ry; P.pose = pose; G.scene.add(P.root); G.people.push(P); return P; };
   // staff and named people
-  G.auntie = add(L.person({ name: 'Auntie Lim', kind: 'auntie', hair: 'net', hairCol: '#2A2420', skin: L.SKINS[1], adult: true, height: 1.55, build: 1.12, watch: true }), W.pans.kailan, -8.72, 0, 'serve');
+  G.auntie = add(L.person({ name: 'Mrs Lim', kind: 'auntie', hair: 'net', hairCol: '#2A2420', skin: L.SKINS[1], adult: true, height: 1.55, build: 1.12, watch: true }), W.pans.kailan, -8.72, 0, 'serve');
   G.rahman = add(L.person({ name: 'Mr Rahman', kind: 'teacher', hair: 'short', skin: L.SKINS[3], adult: true, height: 1.74, glasses: true, stubble: true, watch: true }), 8.7, -6.95, 2.3);
-  G.tan = add(L.person({ name: 'Uncle Tan', kind: 'cleaner', hair: 'crop', hairCol: '#8C8780', skin: L.SKINS[2], adult: true, height: 1.63, watch: true }), 11.55, -7.55, Math.PI, 'wipe');
-  G.drinks = add(L.person({ name: 'Uncle Ah Seng', kind: 'uncle', hair: 'crop', hairCol: '#9A948C', skin: L.SKINS[1], adult: true, height: 1.66, watch: true }), -10.3, -8.7, 0);
-  G.cook = add(L.person({ name: 'Auntie Mei', kind: 'cook', hair: 'bun', skin: L.SKINS[0], adult: true, height: 1.55, build: 1.08 }), -5.4, -8.85, 0, 'wipe');
-  G.makcik = add(L.person({ name: 'Makcik Rosnah', kind: 'makcik', hair: 'tudung', tudungCol: '#E9B8C6', skin: L.SKINS[3], adult: true, height: 1.56, watch: true }), 5.9, -8.7, 0);
+  G.tan = add(L.person({ name: 'Mr Tan', kind: 'cleaner', hair: 'crop', hairCol: '#8C8780', skin: L.SKINS[2], adult: true, height: 1.63, watch: true }), 11.55, -7.55, Math.PI, 'wipe');
+  G.drinks = add(L.person({ name: 'Mr Ong', kind: 'uncle', hair: 'crop', hairCol: '#9A948C', skin: L.SKINS[1], adult: true, height: 1.66, watch: true }), -10.3, -8.7, 0);
+  G.cook = add(L.person({ name: 'Mrs Chua', kind: 'cook', hair: 'bun', skin: L.SKINS[0], adult: true, height: 1.55, build: 1.08 }), -5.4, -8.85, 0, 'wipe');
+  G.makcik = add(L.person({ name: 'Mdm Rosnah', kind: 'makcik', hair: 'tudung', tudungCol: '#E9B8C6', skin: L.SKINS[3], adult: true, height: 1.56, watch: true }), 5.9, -8.7, 0);
   [G.auntie, G.rahman, G.tan, G.drinks, G.cook, G.makcik].forEach(P => talkTarget(P));
   // ambient students from the class list
   const others = PL.S.students.filter(s => !s.named && s.name !== 'Priya');
@@ -251,7 +254,7 @@ function buildPeople() {
     const hair = kind === 'girl' ? ['pony', 'bob', 'long', 'tudung', 'pony', 'long'][Math.floor(rr() * 6)] : ['short', 'crop', 'short'][Math.floor(rr() * 3)];
     return L.person({ name: s.name, kind, hair, fringe: rr() < .4, glasses: rr() < .22, skin: L.SKINS[Math.floor(rr() * 6)], hairCol: L.HAIRS[Math.floor(rr() * 5)], height: 1.52 + rr() * .24, build: .94 + rr() * .12, seed });
   };
-  // friends' table: near the station, two seats kept for them and one "choped" for you
+  // friends' table: near the station, two seats for them and one saved for you with a tissue packet
   G.friendTable = W.tables.find(t => t.x === 4.7 && t.z === -3);
   const chope = new THREE.Mesh(new THREE.BoxGeometry(.12, .025, .08), L.lam({ color: '#F4F4F2' })); chope.position.set(4.7, .49, -2.28); G.scene.add(chope); G.chope = chope;
   G.friendTable.spots.find(s => s.side === 1 && Math.abs(s.x - 4.7) < .01).taken = 'you';
@@ -315,14 +318,14 @@ function addTarget(obj, label, act, range = 2.4, extra = {}) {
   return t;
 }
 function talkTarget(P) {
-  return addTarget(P.root, () => (G.busy ? null : P === G.auntie && G.phase === 'order' ? 'Ask Auntie Lim for lunch' : `Talk to ${P.name}`), () => talk(P), 2.6, { person: P });
+  return addTarget(P.root, () => (G.busy ? null : P === G.auntie && G.phase === 'order' ? 'Ask Mrs Lim for lunch' : `Talk to ${P.name}`), () => talk(P), 2.6, { person: P });
 }
 function refreshHitMeshes() { G.hitMeshes = []; G.targets.forEach(t => t.obj.traverse(o => { if (o.isMesh) { o.userData.tgt = t; G.hitMeshes.push(o); } })); }
 function setupStaticTargets() {
   const W = G.W;
   addTarget(W.trayStack, () => (G.phase === 'getTray' && !G.busy ? 'Take a tray' : null), takeTray, 2.4);
   const counter = new THREE.Mesh(new THREE.BoxGeometry(6.2, 1.2, 1), new THREE.MeshBasicMaterial({ visible: false })); counter.position.set(.2, .6, -7.9); G.scene.add(counter);
-  addTarget(counter, () => (G.phase === 'order' && !G.busy ? 'Ask Auntie Lim for lunch' : null), () => talk(G.auntie), 2.4);
+  addTarget(counter, () => (G.phase === 'order' && !G.busy ? 'Ask Mrs Lim for lunch' : null), () => talk(G.auntie), 2.4);
   addTarget(W.standee.group, () => (G.busy ? null : 'Read the how-to sign'), () => { const p = new THREE.Vector3(); W.standee.mesh.getWorldPosition(p); const n = new THREE.Vector3(Math.sin(-.75), 0, Math.cos(-.75)); return inspect({ pos: p.clone().addScaledVector(n, .62).add(new THREE.Vector3(0, .05, 0)), target: p, fov: 50, read: true }, 'Back'); }, 2.4);
   addTarget(W.tv.mesh, () => (G.busy ? null : 'Look at the PlateLoop Live screen'), () => { W.tv.draw(); return inspect({ pos: new THREE.Vector3(11.3, 2.15, -5.6), target: new THREE.Vector3(12.94, 2.2, -5.6), fov: 46, read: true }, 'Back'); }, 3.5);
   W.posters.forEach(p => { const [x, y, z] = p.at; const n = new THREE.Vector3(); p.mesh.getWorldDirection(n); addTarget(p.mesh, () => (G.busy ? null : p.label), () => inspect({ pos: new THREE.Vector3(x, y, z).addScaledVector(n, .75), target: new THREE.Vector3(x, y, z), fov: 50, read: true }, 'Back'), 2.4); });
@@ -377,7 +380,7 @@ function loop(now) {
   if (G.dlg && G.dlg.typing) typeTick(dt);
   if (G.mode !== 'title' && !G.paused) { updateTarget(); barks(); if (G.phase === 'eating' && G.friends) friendChat(dt); }
   G.post.material.uniforms.uTime.value = G.t;
-  const lh = G.reading ? READ_H : LOW_H; if (lh !== G.lowH) { G.lowH = lh; G.resize(); }
+  if (!!G.reading !== !!G.wasReading) { G.wasReading = G.reading; G.resize(); }
   G.renderer.setRenderTarget(G.rt); G.renderer.render(G.scene, camera);
   G.renderer.setRenderTarget(null); G.renderer.render(G.postScene, G.postCam);
   G.raf = requestAnimationFrame(loop);
@@ -453,7 +456,6 @@ function typeTick(dt) {
   const d = G.dlg, before = Math.floor(d.shown);
   d.shown = Math.min(d.text.length, d.shown + dt * 48);
   const n = Math.floor(d.shown);
-  if (n !== before && n % 2 === 0 && d.text[n - 1] !== ' ') play('blip');
   $('#g3-say', root).textContent = d.text.slice(0, n);
   if (n >= d.text.length) finishTyping();
 }
@@ -466,7 +468,7 @@ function finishTyping() {
     $$('[data-opt]', root).forEach(b => b.onclick = e => { e.stopPropagation(); choose(+b.dataset.opt); });
   } else $('#g3-opts', root).innerHTML = `<small>${G.touch ? 'Tap' : 'E / click'} to continue</small>`;
 }
-function advance() { const d = G.dlg; if (!d) return false; if (d.typing) { finishTyping(); return true; } if (d.options) return true; G.dlg = null; play('blip'); d.resolve(-1); return true; }
+function advance() { const d = G.dlg; if (!d) return false; if (d.typing) { finishTyping(); return true; } if (d.options) return true; G.dlg = null; d.resolve(-1); return true; }
 function choose(i) { const d = G.dlg; if (!d || d.typing || !d.options || i < 0 || i >= d.options.length) return; G.dlg = null; play('select'); d.resolve(i); }
 function waitUse(label) { return new Promise(res => { G.waiting = { label, resolve: res }; }); }
 /** Run a conversation: face the person, quieter crowd, lock movement. */
@@ -496,9 +498,9 @@ function barks() {
   const near = (P, d) => G.camera.position.distanceTo(V.set(P.root.position.x, EYE, P.root.position.z)) < d;
   const once = (k, cd, fn) => { if ((G.barkT[k] || 0) > G.t) return; G.barkT[k] = G.t + cd; fn(); };
   if (G.phase === 'scanBefore' && near(G.rahman, 3)) once('rahman1', 25, () => chatter(G.rahman, 'Tray here first. Look at the camera, then put it on the scale.'));
-  if (G.phase === 'findSeat' && G.friends && near(G.friends[0], 4.5)) once('friends1', 30, () => { const F = G.friends[0]; F.pose = 'wave'; setTimeout(() => { if (G && F) F.pose = 'sit'; }, 2400); chatter(F, `${first()}! Over here, we choped a seat for you.`); });
-  if (G.phase === 'getTray' && near(G.auntie, 3.2)) once('auntie1', 30, () => chatter(G.auntie, 'Tray at the stack there, take one first!'));
-  if (G.phase === 'compost' && near(G.tan, 3)) once('tan1', 25, () => chatter(G.tan, 'Scrape into the compost first ah, the white one beside the scanner.'));
+  if (G.phase === 'findSeat' && G.friends && near(G.friends[0], 4.5)) once('friends1', 30, () => { const F = G.friends[0]; F.pose = 'wave'; setTimeout(() => { if (G && F) F.pose = 'sit'; }, 2400); chatter(F, `${first()}! Over here, we saved you a seat.`); });
+  if (G.phase === 'getTray' && near(G.auntie, 3.2)) once('auntie1', 30, () => chatter(G.auntie, 'Please take a tray from the stack first.'));
+  if (G.phase === 'compost' && near(G.tan, 3)) once('tan1', 25, () => chatter(G.tan, 'Scrape your leftovers into the compost first. It\'s the white bin beside the scanner.'));
   if (G.phase === 'scanAfter' && near(G.rahman, 3)) once('rahman2', 25, () => chatter(G.rahman, 'Done eating? Scan it again, same as before.'));
 }
 const first = () => (G.student ? G.student.name.split(' ')[0] : '');
@@ -532,29 +534,29 @@ function takeTray() {
   trayToHands(.35).then(() => { G.busy = false; });
   play('tray', [G.pos.x, 1, G.pos.z]);
   setPhase('order');
-  setTimeout(() => G && chatter(G.auntie, `Come, come! Healthy set, ${first()}?`), 600);
+  setTimeout(() => G && chatter(G.auntie, `Hello, ${first()}. The healthy set today?`), 600);
 }
 async function orderFlow() {
   const A = G.auntie, W = G.W;
   await convo(A, async () => {
-    await say(A, `Hello ${first()}! Put your tray on the rail, I scoop for you.`);
+    await say(A, `Hello, ${first()}. Put your tray on the rail and I\'ll serve you.`);
     G.faceTarget = null;
     const railQ = new THREE.Quaternion(), railPos = x => new THREE.Vector3(x, W.railY, W.railZ);
     const camPose = x => ({ pos: new THREE.Vector3(x + .05, 1.66, -6.72), target: new THREE.Vector3(x, 1.02, -7.85), fov: 64 });
     await Promise.all([focus(camPose(W.pans.rice), .7), trayToWorld(railPos(W.pans.rice), railQ, .6)]);
     play('trayDown', [W.pans.rice, 1, W.railZ]);
     const lines = {
-      rice: ['Rice how much? Today is brown rice mix.', ['Less rice, please', 'Normal', 'More rice']],
+      rice: ['How much rice? It\'s brown rice today.', ['Less rice, please', 'Normal', 'More rice']],
       chicken: ['Soy sauce chicken. How many pieces?', ['Just one piece', 'Normal', 'Extra piece']],
-      kailan: ['Kailan Week leh! Try a bit?', ['Just a little', 'Normal', 'Lots, please']],
-      cabbage: ['Braised cabbage also?', ['A little', 'Normal', 'More']],
-      soup: ['ABC soup, hot hot. Full bowl?', ['Half bowl', 'Full bowl', 'Extra']],
+      kailan: ['It\'s Kailan Week. Would you like to try some?', ['Just a little', 'Normal', 'Lots, please']],
+      cabbage: ['Some braised cabbage too?', ['A little', 'Normal', 'More']],
+      soup: ['ABC soup? It\'s hot. A full bowl?', ['Half bowl', 'Full bowl', 'Extra']],
       melon: ['Watermelon for dessert.', ['One slice', 'Two slices', 'Three slices']],
     };
     let more = 0, less = 0;
     for (const id of SERVE) {
       const x = W.pans[id];
-      // Auntie shuffles along, the tray slides along the rail
+      // Mrs Lim moves along, the tray slides along the rail
       const ax = A.root.position.x; A.pose = 'walk';
       const g = G.tray.group, gp = g.position.clone(), cam = G.camera, cp = cam.position.clone(), c = camPose(x);
       await tween(.5, e => { A.root.position.x = ax + (x - ax) * e; A.walkPh = (A.walkPh || 0) + .12; g.position.lerpVectors(gp, railPos(x), e); cam.position.lerpVectors(cp, c.pos, e); cam.quaternion.copy(lookQuat(cam.position, c.target)); });
@@ -571,7 +573,7 @@ async function orderFlow() {
       await sleep(250);
     }
     A.pose = 'serve';
-    const end = more >= 3 ? 'Wah, hungry today! Finish everything ah, the machine will know.' : less >= 3 ? 'Small portion, very good. Still hungry, come back and I add.' : 'Okay, done! Scan at the PlateLoop machine first, then eat.';
+    const end = more >= 3 ? 'You\'re hungry today! Try to finish it all. The scanner will know.' : less >= 3 ? 'A small portion, good choice. Come back if you\'re still hungry.' : 'There you go. Scan it at the PlateLoop station before you eat.';
     await say(A, end);
     await Promise.all([trayToHands(.5), unfocus(.6)]);
     G.served = true; setPhase('scanBefore');
@@ -672,7 +674,7 @@ async function returnFlow() {
   G.pos.set(11.7, EYE, -7.1); G.yaw = -.3; G.pitch = -.05;
   await unfocus(.5);
   G.busy = false;
-  await convo(G.tan, async () => { await say(G.tan, G.result && G.result.w < .1 ? 'Wah, so clean! Thank you ah.' : 'Thank you ah. Tomorrow try to finish more, okay?'); });
+  await convo(G.tan, async () => { await say(G.tan, G.result && G.result.w < .1 ? 'That\'s a clean tray. Thank you!' : 'Thank you. Try to finish a bit more tomorrow.'); });
   setPhase('done'); play('bell');
   G.screen.set('bye', { name: G.student.name });
   setTimeout(() => G && G.screen.set('idle'), 6000);
@@ -699,19 +701,19 @@ async function sitAt(t, spot) {
   G.yaw = spot.side > 0 ? 0 : Math.PI; G.pitch = -.55;
   G.mode = 'seat'; G.busy = false; setPhase('eating'); eatHud();
   G.tray.spoon.visible = true; G.tray.spoon.position.copy(G.tray.spoonRest); G.tray.spoon.rotation.set(-.3, .4, 0);
-  if (t === G.friendTable && G.friends) { G.chatQ = friendLines(); G.chatT2 = 5; chatter(G.friends[1], 'Eh finally. Scanned already? Good, now we can eat.'); }
+  if (t === G.friendTable && G.friends) { G.chatQ = friendLines(); G.chatT2 = 5; chatter(G.friends[1], 'There you are. Did you scan? Good, let\'s eat.'); }
   else msg(G.touch ? 'Tap the food to eat. Tap DONE when you\'re full.' : 'Click the food to take bites. Press E when you\'re full.', 3400);
 }
 function friendLines() {
   const [a, b] = G.friends, others = PL.S.students.filter(s => s.named && s.id !== G.student.id && !G.friends.some(f => f.name === s.name)).map(s => s.name);
   return [
-    [a, 'Kailan Week, remember. One bite also counts for Loopi.'],
+    [a, 'Remember it\'s Kailan Week. Even one bite counts for Loopi.'],
     [b, 'My Loopi evolved yesterday. Three clean trays in a row!'],
-    [a, '3B is second in the league now. Don\'t waste ah.'],
+    [a, '3B is second in the league now. Let\'s not waste anything.'],
     [b, `Yesterday ${others[0] || 'someone'} left half the rice. The screen went orange.`],
     [a, 'Did you see? It even shows how much CO₂ you saved.'],
-    [b, 'The rice today not bad leh.'],
-    [a, 'After this, scan again, then compost, then tray return. Easy.'],
+    [b, 'The rice is quite good today.'],
+    [a, 'After this we scan again, compost, and return the trays.'],
   ];
 }
 function friendChat(dt) {
@@ -753,7 +755,7 @@ async function standUp() {
   G.pos.set(spot.x, EYE, t.z + spot.side * 1.28); G.yaw = spot.side > 0 ? 0 : Math.PI; G.pitch = -.05;
   G.mode = 'focus'; await unfocus(.5);
   G.busy = false; setPhase('scanAfter');
-  if (G.friends && t === G.friendTable) setTimeout(() => G && chatter(G.friends[0], 'Go scan, then compost and tray return. See you in class!'), 400);
+  if (G.friends && t === G.friendTable) setTimeout(() => G && chatter(G.friends[0], 'Go and scan, then compost and return your tray. See you in class!'), 400);
 }
 
 /* ---------------------------------------------------------------- Priya shows the routine in the background */
@@ -780,36 +782,36 @@ async function talk(P) {
   if (P.friend) {
     const [a] = G.friends;
     return convo(P, async () => {
-      if (ph === 'getTray' || ph === 'order' || ph === 'scanBefore') await say(P, P === a ? `${f}! Get your food and scan first, we keep your seat.` : 'The tissue packet is your seat. Chope already!');
-      else if (ph === 'findSeat') await say(P, 'Sit, sit! We saved this one for you.');
+      if (ph === 'getTray' || ph === 'order' || ph === 'scanBefore') await say(P, P === a ? `${f}! Get your food and scan it first. We\'re keeping your seat.` : 'We left a tissue packet on your seat.');
+      else if (ph === 'findSeat') await say(P, 'Sit down, we saved this one for you.');
       else if (ph === 'done') await say(P, 'See you in class!');
-      else await say(P, 'Go scan your tray, then compost and return. See you later!');
+      else await say(P, 'Go and scan your tray, then compost and return it. See you later!');
     });
   }
   const script = {
-    'Auntie Lim': () => ph === 'getTray' ? ['Take a tray from the stack there first, then I scoop for you.'] : ph === 'done' ? ['Tomorrow got curry chicken. Come early!'] : ['Eat slowly, finish everything ah.'],
-    'Uncle Tan': () => ph === 'returnTray' ? ['Tray on the rack here. Just slide it in.'] : ph === 'compost' ? ['Scrape into the compost first. The white box beside the scanner.'] : ph === 'done' ? ['Last time the bins full full every day. Now much less already.'] : [`Afternoon, ${f}! After you eat, tray comes back here ah.`, 'Scrape the leftovers into the compost first, then the tray goes on the rack.'],
-    'Uncle Ah Seng': () => [G.scannedBefore ? 'Milo peng? After your lunch lah.' : 'Drinks later. Scan your tray first, the teacher is watching!'],
-    'Auntie Mei': () => ['Noodles finish already today, sorry! Healthy set still got.'],
-    'Makcik Rosnah': () => ['Nasi lemak tomorrow! Come early, ya.'],
-    'Priya': () => [ph === 'done' ? 'I got 94% today. My Loopi is so happy.' : 'First time? Just look at the camera. It knows your face, no need card.'],
+    'Mrs Lim': () => ph === 'getTray' ? ['Take a tray from the stack first, then I\'ll serve you.'] : ph === 'done' ? ['It\'s curry chicken tomorrow. Come early!'] : ['Take your time and enjoy it.'],
+    'Mr Tan': () => ph === 'returnTray' ? ['Your tray goes on this rack. Just slide it in.'] : ph === 'compost' ? ['Scrape your leftovers into the compost first. It\'s the white bin beside the scanner.'] : ph === 'done' ? ['The bins used to be full every day. Now there\'s much less waste.'] : [`Good afternoon, ${f}. Bring your tray back here after you eat.`, 'Scrape the leftovers into the compost first, then put the tray on the rack.'],
+    'Mr Ong': () => [G.scannedBefore ? 'Would you like an iced Milo? Have your lunch first.' : 'Drinks later. Scan your tray first, the teacher is watching.'],
+    'Mrs Chua': () => ['Sorry, the noodles have sold out today. The healthy set is still available.'],
+    'Mdm Rosnah': () => ['Nasi lemak tomorrow. Come early!'],
+    'Priya': () => [ph === 'done' ? 'I ate 94% today. My Loopi is so happy.' : 'First time? Just look at the camera. It knows your face, so you don\'t need a card.'],
   };
   const lines = (script[P.name] && script[P.name]()) || [genericLine(P)];
   return convo(P, async () => { for (const l of lines) await say(P, l); });
 }
 function genericLine(P) {
-  const pool = ['Eh, the kailan today not bad leh.', 'Scan first before you eat ah, if not it doesn\'t count.', 'My Loopi evolved yesterday!', 'Recess so short sia.', 'I always take less rice now. Can go back for more anyway.', 'The compost goes to the school garden, you know.', 'Did you see the class league? 3E is catching up.', 'Wah, the queue for noodles so long.', 'I finished everything today. The screen went green!', 'Don\'t forget to scrape your tray before you return it.'];
+  const pool = ['The kailan is actually good today.', 'Remember to scan before you eat, or it won\'t count.', 'My Loopi evolved yesterday!', 'Lunch break always feels too short.', 'I take less rice now. I can always go back for more.', 'The compost goes to the school garden, you know.', 'Did you see the class league? 3E is catching up.', 'The noodle queue is so long today.', 'I finished everything today. The screen went green!', 'Don\'t forget to scrape your tray before you return it.'];
   return pool[L.hash(P.name) % pool.length];
 }
 async function rahmanTalk() {
   const R = G.rahman, f = first(), ph = G.phase;
   await convo(R, async () => {
-    const open = { getTray: `Hello, ${f}. Get your food first, then come here to scan.`, order: 'Get your food first, then come here to scan.', scanBefore: 'You have your tray. Look into the camera on top of the screen, put your tray on the scale, and wait for the beep.', findSeat: 'Go and eat first. Come back and scan when you\'re done.', eating: 'Go and eat first.', scanAfter: 'Done eating? Scan it again here, then scrape and return the tray.', compost: 'The compost bin is the white box on the right of the scanner. Scrape everything in.', returnTray: 'Tray goes on the rack. Uncle Tan will take it from there.', done: `Well done, ${f}. 3B gets league points for every clean tray.` }[ph];
+    const open = { getTray: `Hello, ${f}. Get your food first, then come here to scan.`, order: 'Get your food first, then come here to scan.', scanBefore: 'You have your tray. Look into the camera on top of the screen, put your tray on the scale, and wait for the beep.', findSeat: 'Go and eat first. Come back and scan when you\'re done.', eating: 'Go and eat first.', scanAfter: 'Done eating? Scan it again here, then scrape and return the tray.', compost: 'The compost bin is the white box on the right of the scanner. Scrape everything in.', returnTray: 'Tray goes on the rack. Mr Tan will take it from there.', done: `Well done, ${f}. 3B gets league points for every clean tray.` }[ph];
     let i = await ask(R, open, ['How does the scanner work?', 'Why do we scan our trays?', 'Where do the leftovers go?', 'OK, thanks!']);
     while (i >= 0 && i < 3) {
       if (i === 0) { await say(R, 'The camera on the arm sees your food in 3D, and the scale checks the weight. It measures your tray before and after lunch.'); await say(R, 'It knows you from your face, so there\'s nothing to tap or carry. And the photo never leaves the machine.'); }
       if (i === 1) { await say(R, 'So the kitchen knows what we really eat. They cook the right amount, waste less food and save money.'); await say(R, 'And every tray shows how much CO₂ you saved. It adds up for the whole school.'); }
-      if (i === 2) { await say(R, 'Into the compost module on the scanner. The compost goes to our school garden. Maybe your kailan next term!'); }
+      if (i === 2) { await say(R, 'Into the compost module on the scanner. The compost goes to our school garden. Maybe it will grow next term\'s kailan!'); }
       i = await ask(R, 'Anything else?', ['How does the scanner work?', 'Why do we scan our trays?', 'Where do the leftovers go?', 'No, thanks!']);
     }
   });
@@ -890,7 +892,7 @@ function use() {
   if (G.waiting) { const w = G.waiting; G.waiting = null; play('select'); w.resolve(); return; }
   if (G.busy) return;
   if (G.mode === 'seat') { if (G.aimDish) bite(G.aimDish); return; }
-  if (G.target) { play('blip'); G.target.act(); }
+  if (G.target) G.target.act();
 }
 function wireInput() {
   const cv = G.cv, view = G.view;
