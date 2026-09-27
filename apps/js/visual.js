@@ -157,6 +157,9 @@ const TIPICON = {
   salt: '<path d="M12 12h12l3 20H9Z" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linejoin="round"/><path d="M13 12c0-5 10-5 10 0M15 7h.1M18 6h.1M21 7h.1" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
   recycle: '<path d="M13 8l5-4 5 4M18 4v12M8 28l-3-6 6-2M5 22l9 5M28 28l3-6-6-2M31 22l-9 5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
   cloud: '<path d="M10 28a7 7 0 0 1-1-14 9 9 0 0 1 17-2 7 7 0 0 1 1 16Z" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/>',
+  smile: '<circle cx="18" cy="18" r="14" fill="none" stroke="currentColor" stroke-width="3"/><path d="M12 21c3.5 4 8.5 4 12 0M13 14h.1M23 14h.1" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/>',
+  heart: '<path d="M18 31 6 19a7 7 0 0 1 12-9 7 7 0 0 1 12 9Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/>',
+  bowl: '<path d="M4 16h28a14 12 0 0 1-28 0Z" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path d="M13 10c0-2 2-3 2-5M21 10c0-2 2-3 2-5" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/>',
 };
 V.icon = (name, color) => `<span class="vicon" style="--ic:${color}"><svg viewBox="0 0 36 36" aria-hidden="true">${TIPICON[name] || TIPICON.leaf}</svg></span>`;
 /** tone: good | warn | info */
