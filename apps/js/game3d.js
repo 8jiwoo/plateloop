@@ -109,7 +109,7 @@ function mount(el) {
       </div>
       <div class="g3-menu" id="g3-menu"></div>
     </div>
-    <p class="g3-help">WASD or arrow keys to walk · mouse to look · E or click to use · Esc to pause. On a phone: left thumb walks, drag on the right to look, USE button to use.</p>
+    <p class="g3-help">WASD to walk · move the mouse to look (click the game first, or hold and drag) · arrow keys walk and turn · E or click to use · Esc to pause. On a phone: left thumb walks, drag on the right to look, USE button to use.</p>
   </div>`;
   if (!window.THREE) { $('#g3-menu', el).innerHTML = '<div class="g3-panel"><h2>3D isn\'t available here</h2><p>Open this app in Chrome, Edge or Safari.</p></div>'; return; }
   try { init(); } catch (e) { console.error(e); $('#g3-menu', el).innerHTML = '<div class="g3-panel"><h2>3D isn\'t available here</h2><p>This browser couldn\'t start WebGL. Try Chrome, Edge or Safari.</p></div>'; return; }
@@ -325,7 +325,7 @@ function init() {
     scanner, bin, rack, rackTrays, counter, drawScreen, setFood, box,
     phase: 'title', sid: null, portion: 'M', eaten: null, busy: false, seated: null, tweens: [], keys: {}, yaw: 0, pitch: 0,
     pos: new THREE.Vector3(0, 1.55, 7.5), look: { dx: 0, dy: 0 }, stick: { x: 0, y: 0 }, stepT: 0, t: 0, raf: 0, last: performance.now(),
-    ray: new THREE.Raycaster(), target: null, locked: false, touch: matchMedia('(pointer: coarse)').matches,
+    ray: new THREE.Raycaster(), target: null, locked: false, touch: matchMedia('(pointer: coarse)').matches && !matchMedia('(any-pointer: fine)').matches,
   };
   G.targets = [
     { obj: counter, phases: ['getTray'], label: 'Get your lunch', act: openPortion },
@@ -343,7 +343,8 @@ function loop(now) {
   if (!G || !root || !root.isConnected) return;
   const dt = Math.min(.05, (now - G.last) / 1000); G.last = now; G.t += dt;
   const { THREE, camera } = G;
-  // look (the title screen slowly pans the room)
+  // look (the title screen slowly pans the room); left/right arrow keys also turn, for when the mouse can't be captured
+  if (G.phase !== 'title' && !G.paused && !G.busy) { const turn = (G.keys.ArrowLeft ? 1 : 0) - (G.keys.ArrowRight ? 1 : 0); G.yaw += turn * dt * 2.2; }
   if (G.phase === 'title') { G.yaw += dt * .12; G.pitch = -.05; }
   G.yaw -= G.look.dx * .0024; G.pitch -= G.look.dy * .0024; G.look.dx = G.look.dy = 0;
   G.pitch = Math.max(-1.35, Math.min(1.2, G.pitch));
@@ -352,7 +353,7 @@ function loop(now) {
   if (G.phase !== 'title' && !G.seated && !G.busy && !G.paused) {
     let fx = 0, fz = 0;
     if (G.keys.KeyW || G.keys.ArrowUp) fz -= 1; if (G.keys.KeyS || G.keys.ArrowDown) fz += 1;
-    if (G.keys.KeyA || G.keys.ArrowLeft) fx -= 1; if (G.keys.KeyD || G.keys.ArrowRight) fx += 1;
+    if (G.keys.KeyA) fx -= 1; if (G.keys.KeyD) fx += 1;
     fx += G.stick.x; fz += G.stick.y;
     const len = Math.hypot(fx, fz);
     if (len > .05) {
@@ -592,7 +593,7 @@ function menu(kind) {
       <p class="g3-label">CHOOSE A STUDENT</p>
       <div class="g3-students">${studs.map(s => { const stt = PL.scanState(s); return `<button data-sid="${s.id}" ${stt === 'done' ? 'disabled' : ''}><b>${esc(s.name.toUpperCase())}</b><small>${stt === 'done' ? 'lunch done today' : stt === 'eating' ? 'tray scanned, eating' : 'ready for lunch'}</small></button>`; }).join('')}</div>
       ${studs.every(s => PL.scanState(s) === 'done') ? '<p class="g3-tip">Everyone has had lunch. <button class="g3-link" data-reset>Reset the demo</button> to play again.</p>' : ''}
-      <p class="g3-tip">${G.touch ? 'Left thumb to walk · drag to look · USE to interact' : 'WASD to walk · mouse to look · E or click to use · Esc to pause'}</p>`);
+      <p class="g3-tip">${G.touch ? 'Left thumb to walk · drag to look · USE to interact' : 'WASD to walk · mouse to look (or hold and drag) · arrow keys turn · E or click to use'}</p>`);
     $$('[data-sid]', root).forEach(b => b.onclick = () => start(b.dataset.sid));
   } else if (kind === 'pause') {
     panel(`<h2>PAUSED</h2><p class="g3-sub">${esc(OBJECTIVES[G.phase] || '')}</p>
@@ -617,7 +618,7 @@ function start(sid) {
 }
 
 /* ================================================================ input */
-function lock() { if (!G.touch) { const cv = $('#g3-cv', root); try { const p = cv.requestPointerLock && cv.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} } }
+function lock() { if (!G.noLock) { const cv = $('#g3-cv', root); try { const p = cv.requestPointerLock && cv.requestPointerLock(); if (p && p.catch) p.catch(() => {}); } catch (e) {} } }
 function unlock() { if (document.pointerLockElement) document.exitPointerLock(); }
 function wireInput() {
   const cv = $('#g3-cv', root), view = $('#g3-view', root);
@@ -630,32 +631,37 @@ function wireInput() {
     if (e.type === 'keydown' && e.code === 'KeyM') SFX.toggle();
   };
   const onMouse = e => { if (G && document.pointerLockElement === cv) { G.look.dx += e.movementX; G.look.dy += e.movementY; } };
-  const onLock = () => { if (!G) return; G.locked = document.pointerLockElement === cv; if (!G.locked && !G.paused && G.phase !== 'title' && !G.touch) menu('pause'); };
+  const onLock = () => { if (!G) return; const was = G.locked; G.locked = document.pointerLockElement === cv; if (was && !G.locked && !G.paused && G.phase !== 'title') menu('pause'); };
+  // the mouse can't be captured here (preview frames, some browsers): hold and drag to look instead
+  const onLockErr = () => { if (!G || G.noLock) return; G.noLock = true; msg('Hold the mouse button and drag to look around. Arrow keys turn too.', 4200); };
   document.addEventListener('keydown', onKey); document.addEventListener('keyup', onKey);
-  document.addEventListener('mousemove', onMouse); document.addEventListener('pointerlockchange', onLock);
-  G.off = () => { document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', onKey); document.removeEventListener('mousemove', onMouse); document.removeEventListener('pointerlockchange', onLock); };
-  cv.addEventListener('mousedown', e => {
-    if (G.touch || G.phase === 'title' || G.paused) return;
-    if (document.pointerLockElement !== cv) { lock(); return; }
-    if (e.button === 0) use();
-  });
-  // touch: left half walks (virtual stick), right half looks, taps use
+  document.addEventListener('mousemove', onMouse); document.addEventListener('pointerlockchange', onLock); document.addEventListener('pointerlockerror', onLockErr);
+  G.off = () => { document.removeEventListener('keydown', onKey); document.removeEventListener('keyup', onKey); document.removeEventListener('mousemove', onMouse); document.removeEventListener('pointerlockchange', onLock); document.removeEventListener('pointerlockerror', onLockErr); };
+  // captured mouse: click uses
+  cv.addEventListener('mousedown', e => { if (document.pointerLockElement === cv && e.button === 0 && !G.paused && G.phase !== 'title') use(); });
+  // mouse (not captured): drag to look, click to capture the mouse and use. Touch: left half walks (virtual stick), right half looks, taps use
   const stick = $('#g3-stick', root), knob = stick.querySelector('i');
-  let stickId = null, lookId = null, sx = 0, sy = 0, lx = 0, ly = 0, moved = 0;
+  let stickId = null, lookId = null, sx = 0, sy = 0, lx = 0, ly = 0, moved = 0, mouseDrag = false;
   view.addEventListener('pointerdown', e => {
-    if (!G.touch || e.pointerType === 'mouse' || G.paused || G.phase === 'title' || e.target.closest('button')) return;
+    if (G.paused || G.phase === 'title' || e.target.closest('button')) return;
+    if (e.pointerType === 'mouse') { if (document.pointerLockElement !== cv && e.button === 0) { e.preventDefault(); lookId = e.pointerId; lx = e.clientX; ly = e.clientY; moved = 0; mouseDrag = true; try { view.setPointerCapture(e.pointerId); } catch (_) {} } return; }
     const r = view.getBoundingClientRect();
     if (e.clientX - r.left < r.width * .45 && stickId === null && !G.seated) { stickId = e.pointerId; sx = e.clientX; sy = e.clientY; stick.style.left = (sx - r.left - 50) + 'px'; stick.style.top = (sy - r.top - 50) + 'px'; stick.classList.add('on'); }
     else if (lookId === null) { lookId = e.pointerId; lx = e.clientX; ly = e.clientY; moved = 0; }
   });
   view.addEventListener('pointermove', e => {
     if (e.pointerId === stickId) { const dx = Math.max(-40, Math.min(40, e.clientX - sx)), dy = Math.max(-40, Math.min(40, e.clientY - sy)); G.stick.x = dx / 40; G.stick.y = dy / 40; knob.style.transform = `translate(${dx}px,${dy}px)`; }
-    else if (e.pointerId === lookId) { const dx = e.clientX - lx, dy = e.clientY - ly; G.look.dx += dx * 1.6; G.look.dy += dy * 1.6; moved += Math.abs(dx) + Math.abs(dy); lx = e.clientX; ly = e.clientY; }
+    else if (e.pointerId === lookId) { const dx = e.clientX - lx, dy = e.clientY - ly; const k = mouseDrag ? 1.3 : 1.6; G.look.dx += dx * k; G.look.dy += dy * k; moved += Math.abs(dx) + Math.abs(dy); lx = e.clientX; ly = e.clientY; }
   });
   const end = e => {
     if (e.pointerId === stickId) { stickId = null; G.stick.x = G.stick.y = 0; knob.style.transform = ''; stick.classList.remove('on'); }
     else if (e.pointerId === lookId) {
       lookId = null;
+      if (mouseDrag) {
+        mouseDrag = false;
+        if (moved < 6) { if (G.seated) { const r = cv.getBoundingClientRect(); G.aim = { x: (e.clientX - r.left) / r.width * 2 - 1, y: -((e.clientY - r.top) / r.height * 2 - 1) }; updateTarget(); use(); G.aim = null; } else { use(); lock(); } }
+        return;
+      }
       if (moved < 8 && G.seated) { const r = cv.getBoundingClientRect(); G.aim = { x: (e.clientX - r.left) / r.width * 2 - 1, y: -((e.clientY - r.top) / r.height * 2 - 1) }; updateTarget(); use(); G.aim = null; }
     }
   };
