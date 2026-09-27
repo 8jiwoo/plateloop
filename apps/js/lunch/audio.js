@@ -271,6 +271,19 @@ L.Sound = () => {
       // a breath of shimmering air
       burst(dur + .5, { vol: .05, type: 'highpass', freq: 6500, attack: 1.4 });
     },
+    punch: p => { tone(95, .28, { vol: .3, to: 38, pos: p }); burst(.07, { vol: .4, freq: 2400, q: .7, pos: p }); burst(.12, { vol: .15, type: 'lowpass', freq: 700, pos: p, delay: .02 }); },
+    thud: p => { tone(72, .45, { vol: .32, to: 34, pos: p }); burst(.25, { vol: .2, type: 'lowpass', freq: 420, pos: p }); FX.tray(p); },
+    hiya: p => sing(p, [['i', 64, .25], ['a', 71, .9]], 120, .7),
+    // an original little victory jingle, with a voice singing "G, G, fricking E, Z"
+    ggez: p => {
+      if (!ctx) return;
+      const bpm = 150, b = 60 / bpm, hz = m => 440 * Math.pow(2, (m - 69) / 12);
+      [72, 76, 79, 84, 79, 84, 88].forEach((m, i) => tone(hz(m), .12, { type: 'square', vol: .045, pos: p, delay: i * b / 4 }));
+      [[60, 64, 67], [65, 69, 72], [67, 71, 74], [72, 76, 79]].forEach((ch, i) => ch.forEach(m => tone(hz(m), b * .9, { type: 'square', vol: .025, pos: p, delay: 1.9 * b + i * b })));
+      for (let i = 0; i < 8; i++) { tone(140, .12, { vol: .18, to: 45, pos: p, delay: i * b / 2 }); if (i % 2) burst(.06, { vol: .12, freq: 1800, pos: p, delay: i * b / 2 }); }
+      sing(p, [[null, 0, 2], ['i', 62, .5], ['i', 62, .5], ['i', 60, .25], ['i', 57, .25], ['i', 64, .5], ['i', 69, 1.3]], bpm, .75);
+    },
+    ez: p => { const hz = m => 440 * Math.pow(2, (m - 69) / 12); tone(hz(76), .1, { type: 'square', vol: .04, pos: p }); tone(hz(84), .25, { type: 'square', vol: .04, pos: p, delay: .1 }); sing(p, [['i', 64, .5], ['i', 69, 1]], 150, .7); },
     thunder: () => { burst(5, { vol: .12, type: 'lowpass', freq: 120, attack: 1, buf: brownBuf }); },
   };
 
@@ -278,7 +291,7 @@ L.Sound = () => {
   // vowel formants (Hz) for a light soprano
   const VOWELS = { a: [800, 1150, 2900], e: [480, 1950, 2700], i: [330, 2500, 3100], o: [470, 830, 2800], u: [350, 760, 2600] };
   /** Sing a melody: notes are [vowel, midi, beats]; returns how long it takes, in seconds. */
-  function sing(pos, notes, bpm = 120) {
+  function sing(pos, notes, bpm = 120, level = .5) {
     if (!ctx || muted) return 0;
     const beat = 60 / bpm, out = panner(pos, 1.4, .7);
     const osc = ctx.createOscillator(); osc.type = 'sawtooth';
@@ -288,7 +301,7 @@ L.Sound = () => {
     const env = ctx.createGain(); env.gain.value = 0;
     const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 5000;
     const fs = [0, 1, 2].map(i => { const f = ctx.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = [7, 9, 12][i]; const g = ctx.createGain(); g.gain.value = [1, .55, .3][i]; src.connect(f).connect(g).connect(env); return f; });
-    const vol = ctx.createGain(); vol.gain.value = .5; env.connect(lp).connect(vol).connect(out);
+    const vol = ctx.createGain(); vol.gain.value = level; env.connect(lp).connect(vol).connect(out);
     let t = ctx.currentTime + .15;
     notes.forEach(([v, midi, beats]) => {
       const dur = beats * beat;
