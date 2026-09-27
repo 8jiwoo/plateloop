@@ -9,12 +9,12 @@ School kitchens plan meals as **standard portion × headcount**, with no data on
 1. **PlateLoop Scanner**: the hardware. A depth camera 0.62 m above the tray, a weighing platform that checks the camera, a 10.1" screen, an ID reader (card, QR or face) and a compost bin. The AI runs on the device, and photos never leave it.
 2. **PlateLoop Kiosk**: the scanner screen. An animated banner teaches the three steps. Students see what they were served, what they ate (calories, carbs, protein, fat), their points and rank. Every zero-leftover tray grows a fruit on the school's Green Tree.
 3. **PlateLoop Kitchen**: live scans, waste by dish, nutrition against targets (with students to check on), an environment dashboard (CO₂, tree equivalents, zero-leftover rate), a plan → order → cook → serve cycle with forecasts and supplier orders, and an automatic daily report.
-4. **Loopi**: the student app. A Tamagotchi pet fed by real lunches, a health report (intake vs. targets, you vs. your class, tips), games (Eco Booth, cooking, compost worm farm, Healthy Catch), and student and school leaderboards.
+4. **Loopi**: the student app. A Tamagotchi pet that only eats real lunches: after the tray is scanned back, the food you ate waits in Loopi's bowl, and whatever you left turns up as crumbs on Loopi's floor until you sweep it into the compost. It also shows what you ate (nutrition against targets, you vs. your class), badges that unlock things Loopi can wear, and class and school leaderboards.
 
 ## Why it works
 - **Reward right-sizing, not clean plates.** Loopi scores each student against their *own* usual leftovers, and a small portion fully eaten earns full energy.
-- **The Eco Booth fills with food *saved*, never food thrown away**, so there's no reward for waste.
-- **Kid-safe:** Loopi never dies, pauses on weekends, has no real-money purchases, crates show their odds, names on leaderboards are opt-in, and kitchen staff see tray numbers rather than names.
+- **Leftovers are a small chore, not a punishment.** They show up as crumbs to sweep, so students see their waste without losing anything.
+- **Kid-safe:** Loopi never dies, there's no currency or shop, names on leaderboards are opt-in, and kitchen staff see tray numbers rather than names.
 
 ## Business model (summary)
 - **Customers:** school districts, contract caterers (one deal covers many kitchens), later hospitals and canteens.

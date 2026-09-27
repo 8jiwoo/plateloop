@@ -36,7 +36,7 @@ apps/                 source for the four apps
   index.html          dev page with an app switcher
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync, pixel pet
-  js/game.js          Loopi game rules (hunger, hearts, evolution, Eco Booth, cooking, compost, crates)
+  js/game.js          Loopi's rules (lunch feeds Loopi, hearts, growing up, leftover crumbs, badges)
   js/model.js         PlateLoop Scanner 3D page
   js/scanner.js       PlateLoop Kiosk
   js/kitchen.js       PlateLoop Kitchen
