@@ -1,4 +1,4 @@
-/* Loopi Work: the office cafeteria app. Each worker sets a goal (build muscle, lose weight, steady energy,
+/* Loopi Work: the office canteen app. Each worker sets a goal (build muscle, lose weight, steady energy,
    eat balanced) and a few body details; PlateLoop turns that into personal lunch targets. Every day it
    recommends the canteen line and the small tweaks that fit the goal, and after the tray is scanned it
    says what was missing ("not enough protein") and builds a weekly healthcare report. */
@@ -10,12 +10,12 @@ const H = PL.health;
 /* ---------------------------------------------------------------- the canteen: three lines a day (nutrients per gram) */
 const d = (id, name, g, n, color, edge, x) => ({ id, name, g, n, color, edge, ...x });
 const LINES = {
-  A: { name: 'Korean set', lc: 'Korean set', dishes: [
-    d('w_rice', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, fb: .01, na: 0 }, '#F3EDDA', '#BFB28E', { base: true }),
-    d('w_pork', 'Spicy stir-fried pork', 120, { kcal: 2.2, c: .08, p: .17, f: .13, fb: .005, na: 5 }, '#C4452A', '#8A2D1A'),
-    d('w_stew', 'Soft tofu stew', 250, { kcal: .5, c: .02, p: .04, f: .03, fb: .003, na: 3.6 }, '#E4572E', '#A23A20', { broth: true }),
-    d('w_kimchi', 'Kimchi', 40, { kcal: .3, c: .04, p: .015, f: .005, fb: .02, na: 6 }, '#D5502F', '#A23A20', { side: true }),
-    d('w_sprout', 'Bean sprouts', 50, { kcal: .5, c: .04, p: .03, f: .025, fb: .02, na: 3 }, '#EFE6C4', '#BFB28E'),
+  A: { name: 'Chicken rice', lc: 'chicken rice stall', dishes: [
+    d('w_rice', 'Chicken rice', 250, { kcal: 1.7, c: .3, p: .03, f: .04, fb: .004, na: 1.5 }, '#F3E6B8', '#C9B272', { base: true }),
+    d('w_roast', 'Roast chicken', 120, { kcal: 2.0, c: 0, p: .25, f: .11, fb: 0, na: 3.5 }, '#C98A4B', '#8E5E28'),
+    d('w_soup', 'Chicken broth', 200, { kcal: .15, c: .01, p: .01, f: .006, fb: 0, na: 3.5 }, '#EAD9A6', '#B8A36A', { broth: true }),
+    d('w_chilli', 'Chilli sauce', 25, { kcal: .8, c: .1, p: .01, f: .04, fb: .01, na: 10 }, '#E2462F', '#A52A1A', { side: true }),
+    d('w_cucumber', 'Cucumber slices', 40, { kcal: .15, c: .03, p: .007, f: .001, fb: .005, na: .02 }, '#9CCB6B', '#6A9440'),
   ] },
   B: { name: 'Grill and salad', lc: 'grill and salad', dishes: [
     d('w_chicken', 'Grilled chicken breast', 130, { kcal: 1.65, c: 0, p: .31, f: .036, fb: 0, na: .7 }, '#D9A066', '#9C6A35'),
@@ -24,10 +24,10 @@ const LINES = {
     d('w_potato', 'Roast sweet potato', 100, { kcal: .9, c: .21, p: .016, f: .001, fb: .03, na: .4 }, '#E08A3C', '#A85A1C', { side: true }),
     d('w_yogurt', 'Greek yogurt', 100, { kcal: .97, c: .04, p: .09, f: .05, fb: 0, na: .4 }, '#FFFFFF', '#C7C7CC'),
   ] },
-  C: { name: 'Noodle bar', lc: 'noodle bar', dishes: [
-    d('w_udon', 'Tempura udon', 450, { kcal: 1.1, c: .19, p: .035, f: .025, fb: .01, na: 3.8 }, '#F1D9A7', '#B8955A', { base: true, broth: true }),
-    d('w_dumpling', 'Fried dumplings', 90, { kcal: 2.5, c: .25, p: .08, f: .13, fb: .015, na: 5 }, '#E6B566', '#A67A2E', { side: true }),
-    d('w_radish', 'Pickled radish', 40, { kcal: .25, c: .06, p: .005, f: 0, fb: .01, na: 5 }, '#F7E36B', '#C9B23B', { side: true }),
+  C: { name: 'Noodle stall', lc: 'noodle stall', dishes: [
+    d('w_laksa', 'Laksa', 450, { kcal: 1.3, c: .12, p: .045, f: .07, fb: .01, na: 3.6 }, '#F0A04B', '#B86E1E', { base: true, broth: true }),
+    d('w_wonton', 'Fried wontons', 90, { kcal: 2.8, c: .25, p: .09, f: .16, fb: .01, na: 4.5 }, '#E6B566', '#A67A2E', { side: true }),
+    d('w_sambal', 'Sambal on the side', 20, { kcal: 1.5, c: .1, p: .02, f: .1, fb: .02, na: 9 }, '#C8321E', '#8A1F12', { side: true }),
   ] },
 };
 const EGGS = d('w_eggs', 'Two boiled eggs', 100, { kcal: 1.55, c: .01, p: .13, f: .11, fb: 0, na: 1.2 }, '#FFF6E0', '#D9C08A');
@@ -75,7 +75,7 @@ const fitWord = dist => dist < .12 ? ['Great fit', 'good'] : dist < .25 ? ['Good
 const TWEAKS = [
   { id: 'eggs', say: 'Add the two boiled eggs from the salad bar', ok: () => true, apply: m => { m.eggs = true; } },
   { id: 'half', say: line => `Ask for half ${LINES[line].dishes.find(x => x.base).name.toLowerCase()}`, ok: () => true, apply: (m, line) => { m.frac[LINES[line].dishes.find(x => x.base).id] = .5; } },
-  { id: 'broth', say: 'Leave most of the broth', ok: line => LINES[line].dishes.some(x => x.broth), apply: (m, line) => { m.broth = LINES[line].dishes.find(x => x.broth).id; } },
+  { id: 'broth', say: 'Leave most of the broth or gravy', ok: line => LINES[line].dishes.some(x => x.broth), apply: (m, line) => { m.broth = LINES[line].dishes.find(x => x.broth).id; } },
   { id: 'side', say: line => `Skip the ${LINES[line].dishes.find(x => x.side).name.toLowerCase()}`, ok: line => LINES[line].dishes.some(x => x.side), apply: (m, line) => { m.frac[LINES[line].dishes.find(x => x.side).id] = 0; } },
 ];
 function plateNutrients(line, m) {
@@ -108,10 +108,10 @@ function recommend(w) {
 const WEEK = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
 const DAYNAME = { Mon: 'Monday', Tue: 'Tuesday', Wed: 'Wednesday', Thu: 'Thursday', Fri: 'Friday' };
 const WORKERS = [
-  { id: 'w1', name: 'Park Seojun', dept: 'Design team', sex: 'm', age: 32, cm: 176, kg: 74, act: 'light', goal: 'muscle', days: ['A', 'A', 'B', 'A'], eat: .95, like: { w_stew: .45 } },
-  { id: 'w2', name: 'Kim Hana', dept: 'Finance', sex: 'f', age: 29, cm: 163, kg: 64, act: 'desk', goal: 'lose', days: ['C', 'B', 'C', 'A'], eat: .9, like: { w_salad: .7 } },
-  { id: 'w3', name: 'Lee Daehyun', dept: 'Sales', sex: 'm', age: 45, cm: 172, kg: 80, act: 'desk', goal: 'energy', days: ['C', 'A', 'C', 'A'], eat: .95, like: { w_radish: .4, w_sprout: .5 } },
-  { id: 'w4', name: 'Choi Yerin', dept: 'Engineering', sex: 'f', age: 38, cm: 160, kg: 54, act: 'active', goal: 'balanced', days: ['B', 'B', 'A', 'B'], eat: .85, like: { w_rice: .6 } },
+  { id: 'w1', name: 'Marcus Tan', dept: 'Design team', sex: 'm', age: 32, cm: 176, kg: 74, act: 'light', goal: 'muscle', days: ['A', 'A', 'B', 'A'], eat: .95, like: { w_soup: .45 } },
+  { id: 'w2', name: 'Nur Farhana', dept: 'Finance', sex: 'f', age: 29, cm: 163, kg: 64, act: 'desk', goal: 'lose', days: ['C', 'B', 'C', 'A'], eat: .9, like: { w_salad: .7 } },
+  { id: 'w3', name: 'Ravi Shankar', dept: 'Sales', sex: 'm', age: 45, cm: 172, kg: 80, act: 'desk', goal: 'energy', days: ['C', 'A', 'C', 'A'], eat: .95, like: { w_sambal: .4, w_cucumber: .5 } },
+  { id: 'w4', name: 'Rachel Goh', dept: 'Engineering', sex: 'f', age: 38, cm: 160, kg: 54, act: 'active', goal: 'balanced', days: ['B', 'B', 'A', 'B'], eat: .85, like: { w_rice: .6 } },
 ];
 function record(line, eggs, frac, day) {
   const menu = menuOf(line, eggs), served = {}, eaten = {}, measured = {};
@@ -141,7 +141,7 @@ function feedback(w, n) {
   if (G === 'lose' && r('kcal') > 1.12) out.push(['warn', `About ${n.kcal - T.kcal} kcal over your lunch target.`, 'Half rice or skipping the fried side closes most of the gap.']);
   else if (r('kcal') > 1.25) out.push(['info', `A big lunch: ${n.kcal} of ${T.kcal} kcal.`, 'Keep the afternoon snack light.']);
   if (r('kcal') < .7) out.push(['info', `A light lunch: ${n.kcal} of ${T.kcal} kcal.`, G === 'muscle' ? 'Eat a protein snack this afternoon so you still reach your day.' : 'A piece of fruit this afternoon keeps your energy up.']);
-  if (r('na') > 1.1) out.push(['warn', `Salty: ${n.na.toLocaleString('en-US')} mg sodium, over the 800 mg lunch limit.`, 'Leaving most of the broth cuts about half of it.']);
+  if (r('na') > 1.1) out.push(['warn', `Salty: ${n.na.toLocaleString('en-US')} mg sodium, over the 800 mg lunch limit.`, 'Leaving most of the broth or gravy cuts about half of it.']);
   if (r('fb') < .7 && (G === 'energy' || G === 'balanced' || G === 'lose')) out.push(['info', `Low fibre: ${n.fb} of ${T.fb} g.`, 'Salad, brown rice and sweet potato help you stay full and steady.']);
   if (!out.length) out.push(['good', `Right on target for ${GOALS[G].for}.`, 'Same again tomorrow would be great.']);
   return out;
@@ -166,7 +166,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="stu work">
     <aside class="stu-side">
-      <div class="loopi-brand"><span class="loopi-icon work-icon" aria-hidden="true"><canvas width="44" height="37" data-form="crystal" data-stage="adult"></canvas></span><div><b>Loopi Work</b><span>by PlateLoop · for office cafeterias</span></div></div>
+      <div class="loopi-brand"><span class="loopi-icon work-icon" aria-hidden="true"><canvas width="44" height="37" data-form="crystal" data-stage="adult"></canvas></span><div><b>Loopi Work</b><span>by PlateLoop · for office canteens</span></div></div>
       <p class="stu-note">Demo: pick a worker</p>
       <div class="chips" id="work-who"></div>
       <div class="demo-box">
@@ -261,10 +261,10 @@ function report(w) {
   else recs.push(['good', `Protein averaged ${avg.p} g against ${T.p} g.`, avg.p >= T.p ? 'Nicely done.' : 'Close to your target.']);
   if (w.goal === 'lose') {
     const heavy = Object.keys(LINES).map(k => { const rs = log.filter(r => r.line === k); return [k, rs.length, rs.reduce((s, r) => s + r.n.kcal, 0) / (rs.length || 1)]; }).filter(x => x[1]).sort((a, b) => b[2] - a[2])[0];
-    const fix = { A: 'half rice on Korean set days saves about 150 kcal', B: 'skipping the sweet potato saves about 90 kcal', C: 'skipping the fried dumplings at the noodle bar saves about 225 kcal' }[heavy[0]];
+    const fix = { A: 'asking for half rice at the chicken rice stall saves about 210 kcal', B: 'skipping the sweet potato saves about 90 kcal', C: 'skipping the fried wontons at the noodle stall saves about 250 kcal' }[heavy[0]];
     recs.push([avg.kcal > T.kcal * 1.1 ? 'warn' : 'good', `Lunch averaged ${avg.kcal} kcal against ${T.kcal}.`, avg.kcal > T.kcal * 1.1 ? `Your biggest lunches were at the ${LINES[heavy[0]].lc}: ${fix}.` : 'That keeps you on track to lose weight steadily.']);
   }
-  if (naDays.length >= 2) recs.push(['warn', `Sodium was over the lunch limit on ${naDays.length} of ${n} days, all on ${[...new Set(naDays.map(r => LINES[r.line].name))].join(' or ')} days.`, 'Leaving most of the broth is the easiest fix.']);
+  if (naDays.length >= 2) recs.push(['warn', `Sodium was over the lunch limit on ${naDays.length} of ${n} days, all on ${[...new Set(naDays.map(r => LINES[r.line].name))].join(' or ')} days.`, 'Leaving most of the broth or gravy is the easiest fix.']);
   if (w.goal === 'energy' || avg.fb < T.fb * .75) recs.push([avg.fb >= T.fb * .9 ? 'good' : 'info', `Fibre averaged ${avg.fb} g against ${T.fb} g.`, avg.fb >= T.fb * .9 ? 'Good for steady energy.' : 'Days with salad, brown rice or sweet potato keep you full and steady through the afternoon.']);
   if (worst && distance(worst.n, T, w.goal) > .3) recs.push(['info', `${DAYNAME[worst.day.split(' ')[0]]}'s ${LINES[worst.line].lc} was the furthest from your goal.`, `Next time, check the pick on the Today tab first.`]);
   const days = log.map(r => r.day);
