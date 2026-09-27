@@ -336,9 +336,14 @@ def build_scanner():
     box('PS_ScreenBody', (0.28, 0.018, 0.19), (0, 0, 0), alu, pod, bevel=0.016)
     box('PS_ScreenGlass', (0.272, 0.004, 0.182), (0, -0.008, 0), M_GLOSS(), pod, bevel=0.012)
     plane('ReturnScreen', 0.245, 0.158, (0, -0.0104, 0.0), pet_image(), pod, rot=(math.pi / 2, 0, 0))
-    # flush NFC tap pad with a light ring
-    cyl('PS_TapRing', 0.05, 0.002, (-0.28, -0.15, 0.8605), M_LED(), R, seg=64)
-    cyl('PS_Tap', 0.045, 0.004, (-0.28, -0.15, 0.8615), M_GLOSS(), R, seg=64)
+    # face camera on top of the screen: the only way students sign in (no cards, no QR codes)
+    face = root('PS_FaceCam'); face.parent = pod; face.location = (0, -0.002, 0.112)
+    box('PS_FaceCamBody', (0.12, 0.03, 0.032), (0, 0, 0), M_GLOSS(), face, bevel=0.012)
+    front = (math.pi / 2, 0, 0)
+    cyl('PS_FaceRing', 0.0115, 0.002, (0, -0.0152, 0), M_LED(), face, rot=front, seg=48)
+    cyl('PS_FaceLens', 0.0085, 0.003, (0, -0.016, 0), M_LENS(), face, rot=front, seg=48)
+    for i, x in enumerate((-0.036, 0.036)):
+        cyl(f'PS_FaceIR{i}', 0.0045, 0.002, (x, -0.0155, 0), M_IR(), face, rot=front)
     # compost module
     box('PS_BinPlinth', (0.33, 0.40, 0.05), (0.585, 0.02, 0.025), M_INK(), R, bevel=0.012)
     box('PS_Bin', (0.36, 0.46, 0.81), (0.585, 0, 0.455), shell, R, bevel=0.06)
