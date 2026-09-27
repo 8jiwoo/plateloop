@@ -22,7 +22,7 @@ PAGES = {
     'model':   ('1-plateloop-scanner-3d.html', 'PlateLoop Scanner',  ['vendor/three.min.js', 'vendor/GLTFLoader.js', 'js/model.js']),
     'scanner': ('2-plateloop-kiosk.html',      'PlateLoop Kiosk',    ['js/scanner.js']),
     'kitchen': ('3-plateloop-kitchen.html',    'PlateLoop Kitchen',  ['js/kitchen.js']),
-    'student': ('4-loopi-student-app.html',    'Loopi',              ['js/student.js']),
+    'student': ('4-loopi-student-app.html',    'Loopi',              ['js/room.js', 'js/student.js']),
 }
 FILES = {k: v[0] for k, v in PAGES.items()}
 

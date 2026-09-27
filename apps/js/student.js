@@ -58,7 +58,8 @@ function mount(el) {
       <div id="stu-layer"></div>
     </div>
   </div>`;
-  $$('.phone-tabs button', el).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.tab = b.dataset.tab; render(); $('#stu-body').scrollTop = 0; });
+  $$('.phone-tabs button', el).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.big = false; ui.tab = b.dataset.tab; render(); $('#stu-body').scrollTop = 0; });
+  el.onkeydown = e => { if (e.key === 'Escape' && ui.big) { ui.big = false; render(true); } };
   render();
 }
 
@@ -77,6 +78,7 @@ function render(keepScroll) {
   G.paintIcons(root);
   drawLCD();
   if (ui.tab === 'kitchen' && ui.kseg === 'catch') Catch.attach();
+  wireRoom();
   PL.$$('canvas[data-qr]', root).forEach(drawQR);
   if (keepScroll) body.scrollTop = scroll;
 }
@@ -87,9 +89,7 @@ function loopiTab(st, g) {
   const next = PL.STAGES[g.stage + 1];
   const title = stg.id === 'egg' ? `${esc(g.name)} · Egg` : `${esc(g.name)} · ${stg.name}${stg.id === 'adult' ? ' · ' + FORMS[form].name : ''}`;
   return `
-  <div class="egg"><div class="logo">LOOPI</div><div class="lcd-frame"><canvas id="lcd" width="128" height="104" aria-label="Loopi. Tap to pet." role="button" tabindex="0"></canvas></div>
-    <div class="egg-btns">${['pet', 'stats', 'quest'].map((m, i) => `<button data-lcd="${m}" aria-pressed="${ui.lcd === m}" aria-label="${m}">${'ABC'[i]}</button>`).join('')}</div></div>
-  <p class="hint" style="text-align:center;margin-top:-4px">Tap the screen to pet Loopi</p>
+  ${roomBlock(st, g, false)}
   <div class="card stack" style="gap:10px">
     <div class="row spread"><h3>${title}</h3><span class="rar rar-${g.rarity}">${RARITY_LABEL[g.rarity]}</span></div>
     <div class="meter"><span>Hunger</span><div class="pips">${Array.from({ length: max }, (_, i) => `<i class="${i < g.hunger ? 'on' : ''}"></i>`).join('')}</div><span class="num">${g.hunger}/${max}</span></div>
@@ -98,10 +98,6 @@ function loopiTab(st, g) {
     ${g.ready ? `<button class="btn primary big" id="evolve">${next ? `Evolve into ${/^[AEIOU]/.test(next.name) ? 'an' : 'a'} ${next.name}` : 'Lay an egg'}</button>` : ''}
     ${g.eggs.length ? `<button class="btn big" id="hatch">Hatch the ${RARITY_LABEL[g.eggs[0]].toLowerCase()} egg${g.eggs.length > 1 ? ` (+${g.eggs.length - 1} more)` : ''}</button>` : ''}
     ${[['Energy', pet.en, ''], ['Nutrition', pet.nu, 'nu'], ['Joy', pet.jo, 'jo']].map(([n, v, c]) => `<div class="stat"><span>${n}</span><div class="bar ${c}"><i style="width:${v}%"></i></div><span class="num">${v}</span></div>`).join('')}
-  </div>
-  <div class="card"><div class="row spread"><h3>Snacks</h3><span class="hint">${g.snacks.length} ready</span></div>
-    ${g.snacks.length ? `<div class="snacks">${g.snacks.map(s => { const rc = G.RECIPES.find(r => r.id === s.recipe); return `<div class="snack ${s.golden ? 'golden' : ''}"><div class="seq">${rc.seq.slice(0, 3).map(ING).join('')}</div><div><b>${esc(s.name)}</b><small>+${s.hunger} hunger${s.golden ? ' · counts as 2 meals' : ''}</small></div><button class="btn small" data-feed="${s.id}">Feed</button></div>`; }).join('')}</div>`
-      : `<p class="hint" style="margin-top:6px">No snacks yet. Cook some in the <button class="linkish" data-go="kitchen">Kitchen</button>.</p>`}
   </div>
   <div class="two"><button class="btn" id="open-wardrobe">Wardrobe · ${g.acc.length}/${G.ACCESSORIES.length}</button><button class="btn" id="open-barn">Barn · ${g.barn.length} Loopi${g.barn.length === 1 ? '' : 's'}</button></div>
   <div class="crave"><canvas class="px" width="52" height="44" data-pet="${st.id}"></canvas><div><b>Loopi is craving spinach</b><span class="hint">Taste it at lunch for Spinach Week, ${Math.min(pet.quest, 3)} of 3 done</span><div class="pips q">${[0, 1, 2].map(i => `<i class="${i < pet.quest ? 'on' : ''}"></i>`).join('')}</div></div></div>
@@ -269,6 +265,91 @@ const Catch = {
 };
 
 
+
+/* ================================================================ Loopi's room (big, interactive) */
+const RI = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ROOM_ICONS = {
+  feed: RI('<path d="M4 11h16a8 8 0 0 1-16 0Z"/><path d="M9 7c0-1.5 1-2 1-3.5M14 7c0-1.5 1-2 1-3.5"/>'),
+  play: RI('<circle cx="12" cy="12" r="8"/><path d="M4.5 9.5c4 1 11 1 15 0M4.5 14.5c4-1 11-1 15 0"/>'),
+  sweep: RI('<path d="M14 3l-4 9M6 21l2-9h8l2 9Z"/><path d="M10 16v5M14 16v5"/>'),
+  night: RI('<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>'),
+  day: RI('<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'),
+  expand: RI('<path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/>'),
+  close: RI('<path d="M6 6l12 12M18 6 6 18"/>'),
+};
+const FOOD = { rice: '#F3EDDA', veg: '#3C9A48', protein: '#F4B400', fruit: '#E0453A' };
+function roomBlock(st, g, big) {
+  const stg = PL.stuStage(st), crumbs = PL.Room.crumbs.filter(c => !c.fly).length;
+  return `
+  <div class="room ${big ? 'big' : ''}">
+    <canvas class="room-cv" id="${big ? 'room-cv-big' : 'room-cv'}" aria-label="Loopi's room. Tap Loopi to pet it, tap the floor to walk, tap crumbs to sweep them."></canvas>
+    <div class="room-say" id="${big ? 'room-say-big' : 'room-say'}" hidden></div>
+    <div class="room-hud"><span>${esc(g.name)} · ${stg.name}</span><span class="num">Hunger ${g.hunger}/${G.hungerMax(g)} · Hearts ${g.hearts}/${G.heartsReq(g)}</span></div>
+    <button class="room-expand" ${big ? 'data-room="close"' : 'data-room="expand"'} aria-label="${big ? 'Close full screen' : 'Full screen'}">${ROOM_ICONS[big ? 'close' : 'expand']}</button>
+  </div>
+  <div class="room-actions">
+    <button data-room="feed">${ROOM_ICONS.feed}<span>Feed</span></button>
+    <button data-room="play">${ROOM_ICONS.play}<span>Play</span></button>
+    <button data-room="sweep">${ROOM_ICONS.sweep}<span>Sweep${crumbs ? ` · ${crumbs}` : ''}</span></button>
+    <button data-room="lights">${ROOM_ICONS[PL.Room.night ? 'day' : 'night']}<span>${PL.Room.night ? 'Wake up' : 'Lights off'}</span></button>
+  </div>
+  <div class="snack-strip">${g.snacks.length ? `<span class="hint">Drag a snack to Loopi, or tap it</span><div class="snack-chips">${g.snacks.map(sn => { const rc = G.RECIPES.find(r => r.id === sn.recipe); return `<button class="snack-chip ${sn.golden ? 'golden' : ''}" data-snack="${sn.id}"><span class="seq">${rc.seq.slice(0, 3).map(ING).join('')}</span><b>${esc(sn.name)}</b><small>+${sn.hunger}</small></button>`; }).join('')}</div>`
+    : `<span class="hint">No snacks yet. Cook some in the <button class="linkish" data-go="kitchen">Game</button> tab.</span>`}</div>`;
+}
+const roomHooks = {
+  info: () => PL.petOf(me()),
+  pet: () => { const gems = act(() => G.petLoopi(me())); if (gems) PL.toast(`Loopi found ${gems} gems!`); },
+  eat: id => {
+    const st = me(), g = G.ensure(st), sn = g.snacks.find(x => x.id === id);
+    if (!sn) { PL.Room.say('No snacks… cook some in the Game tab!'); return null; }
+    const rc = G.RECIPES.find(r => r.id === sn.recipe);
+    const res = act(() => G.eatSnack(st, sn.id));
+    if (!res) return null;
+    return { ...res, colors: rc.seq.map(t => FOOD[t]), crumbs: rc.seq.slice(0, 2 + Math.floor(Math.random() * 2)) };
+  },
+  fetched: () => { const ok = act(() => G.playBall(me())); PL.Room.say(ok ? 'Got it! Joy +3' : 'Got it! (Joy is maxed for today)', 2.4); },
+  swept: type => { act(() => G.compostCrumb(me(), type)); if (!PL.Room.crumbs.some(c => !c.done && c !== undefined && !c.fly)) PL.Room.say('All clean! Scraps are in the compost.', 2.4); },
+  chatter: crumbs => {
+    const st = me(), g = G.ensure(st);
+    if (g.ready) return 'My hearts are full! Tap Evolve!';
+    if (crumbs) return 'Can you sweep the crumbs into the compost?';
+    if (g.hunger <= 1) return 'I\'m hungry… got a snack?';
+    if (!st.scanned && !st.before) return 'Scan your tray before lunch!';
+    if (st.before && !st.scanned) return 'Enjoy lunch! Scan again after.';
+    const lines = ['Try the spinach today!', 'Let\'s play ball!', 'Tap me!', 'Lunch was yummy!', 'Scraps turn into soil. Cool!', 'Pick a portion you\'ll finish!'];
+    return lines[Math.floor(Math.random() * lines.length)];
+  },
+};
+function wireRoom() {
+  $$('[data-room]', root).forEach(b => b.onclick = () => {
+    const a = b.dataset.room, g = G.ensure(me());
+    if (a === 'feed') { if (g.snacks.length) PL.Room.feed(g.snacks[0].id); else PL.Room.say('No snacks… cook some in the Game tab!'); }
+    else if (a === 'play') PL.Room.throwBall();
+    else if (a === 'sweep') { if (PL.Room.crumbs.length) PL.Room.sweepAll(); else PL.Room.say('Nothing to sweep. So clean!'); }
+    else if (a === 'lights') { PL.Room.toggleNight(); render(true); }
+    else if (a === 'expand') { ui.big = true; render(true); }
+    else if (a === 'close') { ui.big = false; render(true); }
+  });
+  $$('[data-snack]', root).forEach(ch => ch.onpointerdown = e => {
+    e.preventDefault();
+    const id = ch.dataset.snack, sx = e.clientX, sy = e.clientY; let ghost = null;
+    const mv = ev => {
+      if (!ghost && Math.hypot(ev.clientX - sx, ev.clientY - sy) > 6) { ghost = ch.cloneNode(true); ghost.classList.add('ghost'); document.body.appendChild(ghost); }
+      if (ghost) { ghost.style.left = ev.clientX + 'px'; ghost.style.top = ev.clientY + 'px'; }
+    };
+    const up = ev => {
+      removeEventListener('pointermove', mv); removeEventListener('pointerup', up);
+      if (ghost) ghost.remove();
+      if (!ghost || PL.Room.overCanvas(ev.clientX, ev.clientY)) PL.Room.feed(id);
+    };
+    addEventListener('pointermove', mv); addEventListener('pointerup', up);
+  });
+  $$('[data-go]', root).forEach(b => b.onclick = () => { ui.big = false; ui.tab = b.dataset.go; render(); });
+  const big = $('#room-cv-big', root), small = $('#room-cv', root);
+  if (big) PL.Room.attach(big, $('#room-say-big', root), roomHooks);
+  else if (small) PL.Room.attach(small, $('#room-say', root), roomHooks);
+}
+
 /* ================================================================ Health (Nuvilab-style health care report) */
 function healthTab(st, g) {
   const todayN = st.scanned ? st.after.intake : null, latest = todayN || st.log[0].n, label = todayN ? 'Today\'s lunch' : `Last lunch · ${st.log[0].day}`;
@@ -385,6 +466,7 @@ function modal(title, html) { ui.modal = { title, html }; layer(me(), G.ensure(m
 function layer(st, g) {
   const el = $('#stu-layer', root); if (!el) return;
   let out = '';
+  if (ui.big) out += `<div class="room-full" role="dialog" aria-label="Loopi's room, full screen"><div class="room-full-in">${roomBlock(st, g, true)}</div></div>`;
   if (ui.sheet === 'wardrobe') {
     out += `<div class="sheet" role="dialog" aria-label="Wardrobe"><header><h3>Wardrobe</h3><span class="gems">${GEM}<b class="num">${g.gems}</b></span><button class="btn small" data-close="sheet">Close</button></header><div class="sheet-body">
       <div class="crates">${Object.entries(G.CRATES).map(([k, c]) => `<div class="crate crate-${k}"><b>${c.name}</b><small>${c.w.normal}% · ${c.w.epic}% · ${c.w.legendary}%</small><button class="btn small" data-crate="${k}" ${g.gems >= c.cost ? '' : 'disabled'}>${GEM} ${c.cost}</button></div>`).join('')}</div>
@@ -402,7 +484,7 @@ function layer(st, g) {
   }
   if (ui.modal) out += `<div class="pmodal" role="dialog" aria-label="${esc(ui.modal.title)}"><div class="pmodal-card"><h3>${esc(ui.modal.title)}</h3>${ui.modal.html}<button class="btn primary" data-close="modal">Okay</button></div></div>`;
   el.innerHTML = out;
-  $$('[data-close]', el).forEach(b => b.onclick = () => { ui[b.dataset.close] = null; if (b.dataset.close === 'modal') render(true); else layer(me(), G.ensure(me())); });
+  $$('[data-close]', el).forEach(b => b.onclick = () => { ui[b.dataset.close] = null; if (b.dataset.close === 'modal') render(true); else { layer(me(), G.ensure(me())); wireRoom(); } });
   $$('[data-crate]', el).forEach(b => b.onclick = () => {
     const res = act(() => G.openCrate(me(), b.dataset.crate));
     if (res.error) return PL.toast(res.error);
@@ -491,7 +573,7 @@ PL.apps.student = {
   title: 'Loopi',
   catchGame: Catch,
   mount,
-  unmount() { if (Catch.running) Catch.stop(true); root = null; },
+  unmount() { if (Catch.running) Catch.stop(true); ui.big = false; root = null; },
   update(kind, fromSelf) {
     const ls = PL.S.lastScan;
     if (!fromSelf && ls && ls.at > ui.seenScan) {
