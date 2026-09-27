@@ -201,17 +201,34 @@ L.Sound = () => {
     bell: () => [[659.3, 523.3, 587.3, 392], [392, 587.3, 659.3, 523.3]].flat().forEach((f, i) => bellNote(f, i * .64 + (i > 3 ? .5 : 0))),
     koel: p => { const base = rnd(640, 700); for (let i = 0; i < 3; i++) { const f = base * (1 + i * .07); tone(f, .18, { vol: .025, to: f * 1.1, pos: p, delay: i * .8 }); tone(f * 1.3, .32, { vol: .03, to: f * 1.42, pos: p, delay: i * .8 + .22 }); } },
     fortune: p => [1318.5, 1760, 2093, 2637].forEach((f, i) => tone(f, 1.6, { vol: .035, pos: p, delay: i * .13, attack: .01 })),
-    // a slow choir-like pad in A major, shimmering bells climbing and falling, and a breath of air
-    celestial: (p, dur = 4) => {
+    // celestial: an "aah" choir moving A major -> D major -> A major, a harp glissando up and back down,
+    // high bells twinkling, and a shimmer of air, all drenched in reverb and played straight to the listener
+    celestial: (p, dur = 5.2) => {
       if (!ctx) return;
-      const out = at(p), t = ctx.currentTime;
-      [220, 277.2, 329.6, 440, 554.4].forEach((f, i) => [-6, 6].forEach(cents => {
-        const o = ctx.createOscillator(), g = ctx.createGain(), lp = ctx.createBiquadFilter(); o.type = i % 2 ? 'triangle' : 'sawtooth'; o.frequency.value = f; o.detune.value = cents;
-        lp.type = 'lowpass'; lp.frequency.value = 1400; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.022, t + 1.1); g.gain.setValueAtTime(.022, t + dur - .8); g.gain.linearRampToValueAtTime(0, t + dur + .6);
-        o.connect(lp).connect(g).connect(out); o.start(t); o.stop(t + dur + .7);
+      const t = ctx.currentTime, out = ctx.createGain(); out.gain.value = .9; out.connect(dry);
+      const wet = ctx.createGain(); wet.gain.value = 1.3; out.connect(wet).connect(verbIn);
+      const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+      const chords = [[57, 64, 69, 73, 76], [50, 57, 62, 66, 69], [57, 64, 69, 73, 81]], at3 = [0, dur * .36, dur * .7];
+      chords[0].forEach((m, v) => [-7, 7].forEach(cents => {
+        const o = ctx.createOscillator(); o.type = 'sawtooth'; o.detune.value = cents; o.frequency.setValueAtTime(hz(m), t);
+        chords.forEach((ch, k) => { if (k) o.frequency.setTargetAtTime(hz(ch[v]), t + at3[k], .12); });
+        const vib = ctx.createOscillator(), vg = ctx.createGain(); vib.frequency.value = 4.6 + v * .2; vg.gain.value = 9; vib.connect(vg).connect(o.detune);
+        const mix = ctx.createGain(); mix.gain.value = 0;
+        [[800, 6, 1], [1150, 8, .5], [2900, 10, .22]].forEach(([f, q, gn]) => { const b = ctx.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q; const g = ctx.createGain(); g.gain.value = gn; o.connect(b).connect(g).connect(mix); });
+        mix.gain.setValueAtTime(0, t); mix.gain.linearRampToValueAtTime(.16, t + 1.2); mix.gain.setValueAtTime(.16, t + dur - 1); mix.gain.linearRampToValueAtTime(0, t + dur + 1.4);
+        mix.connect(out); o.start(t); vib.start(t); o.stop(t + dur + 1.6); vib.stop(t + dur + 1.6);
       }));
-      [880, 1108.7, 1318.5, 1760, 2217.5, 2637, 2217.5, 1760, 1318.5, 1760, 2217.5, 3520].forEach((f, i) => tone(f, 1.4, { vol: .03, pos: p, delay: .3 + i * .27, attack: .005 }));
-      burst(dur, { vol: .03, type: 'highpass', freq: 6000, attack: 1.2, pos: p });
+      // a warm low drone underneath
+      { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = hz(45); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(.08, t + 1.5); g.gain.linearRampToValueAtTime(0, t + dur + 1.2); o.connect(g).connect(out); o.start(t); o.stop(t + dur + 1.3); }
+      const pluck = (f, when, vol, len = 1.6) => { const o = ctx.createOscillator(), o2 = ctx.createOscillator(), g = ctx.createGain(); o.type = 'triangle'; o.frequency.value = f; o2.frequency.value = f * 2; const g2 = ctx.createGain(); g2.gain.value = .3; o2.connect(g2).connect(g); o.connect(g); g.gain.setValueAtTime(0, when); g.gain.linearRampToValueAtTime(vol, when + .004); g.gain.setTargetAtTime(0, when + .01, len / 5); g.connect(out); o.start(when); o2.start(when); o.stop(when + len); o2.stop(when + len); };
+      // harp: up two octaves of A major, then back down
+      const scale = [69, 71, 73, 76, 78, 81, 83, 85, 88, 90, 93];
+      scale.forEach((m, i) => pluck(hz(m), t + .25 + i * .075, .09));
+      scale.slice().reverse().forEach((m, i) => pluck(hz(m), t + dur * .62 + i * .075, .08));
+      // bells twinkling high above
+      for (let i = 0; i < 18; i++) { const m = [93, 97, 100, 105, 97, 100][i % 6]; pluck(hz(m), t + .6 + i * (dur - 1) / 18 + Math.random() * .08, .05, 2.4); }
+      // a breath of shimmering air
+      burst(dur + .5, { vol: .05, type: 'highpass', freq: 6500, attack: 1.4 });
     },
     thunder: () => { burst(5, { vol: .12, type: 'lowpass', freq: 120, attack: 1, buf: brownBuf }); },
   };
