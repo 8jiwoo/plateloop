@@ -17,7 +17,7 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
 | **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Preschools: an animated Loopi with sounds for children; separate Parents (one child's report) and Teachers (whole class, check-ins, allergies, notes) sections |
 | **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
-| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person, PS1-style 3D game of one school lunch with PlateLoop: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the compost module, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
+| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person 3D game of one school lunch with PlateLoop, with low-poly characters and a foggy, rainy atmosphere: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the compost module, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
 
