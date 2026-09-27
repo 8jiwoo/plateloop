@@ -160,7 +160,7 @@ const Room = PL.Room = {
     if (n) { ctx.fillStyle = 'rgba(8,10,35,.28)'; ctx.fillRect(0, 0, W, H); }
     // speech bubble (HTML, positioned over the canvas)
     if (this.sayEl) {
-      if (this.speech) { this.sayEl.hidden = false; if (this.sayEl.textContent !== this.speech.text) this.sayEl.textContent = this.speech.text; this.sayEl.style.left = `${Math.max(18, Math.min(82, p.x / W * 100))}%`; this.sayEl.style.bottom = `${(H - (FLOOR - 46 - p.y)) / H * 100}%`; }
+      if (this.speech) { this.sayEl.hidden = false; if (this.sayEl.textContent !== this.speech.text) this.sayEl.textContent = this.speech.text; const rw = this.cv.clientWidth, half = this.sayEl.offsetWidth / 2 + 8; this.sayEl.style.left = `${Math.max(half, Math.min(rw - half, p.x / W * rw))}px`; this.sayEl.style.bottom = `${(H - (FLOOR - 46 - p.y)) / H * 100}%`; }
       else this.sayEl.hidden = true;
     }
   },
