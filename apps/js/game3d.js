@@ -286,7 +286,7 @@ function buildPeople() {
   }
   // Disha floats cross-legged above a table in a beam of light, and tells fortunes
   if (G.dishaTable) {
-    const T = G.dishaTable, di = G.disha = add(L.person({ name: 'Disha', kind: 'girl', face: 'disha', hair: 'long', hairCol: '#140F0E', capTilt: -.85, height: 1.58, watch: false, smooth: true, seed: 808 }), T.x, T.z, 0, 'pray');
+    const T = G.dishaTable, di = G.disha = add(L.person({ name: 'Disha', kind: 'girl', bottom: 'shorts', face: 'disha', hair: 'long', hairCol: '#140F0E', capTilt: -.85, height: 1.58, watch: false, smooth: true, seed: 808 }), T.x, T.z, 0, 'pray');
     di.homeYaw = 0; di.prompt = 'Ask Disha for your fortune'; talkTarget(di);
     const grad = L.tex(8, 64, (c, w, h) => { const g2 = c.createLinearGradient(0, 0, 0, h); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.25, 'rgba(255,255,255,.7)'); g2.addColorStop(1, 'rgba(255,255,255,1)'); c.fillStyle = g2; c.fillRect(0, 0, w, h); });
     const beam = new THREE.Mesh(new THREE.CylinderGeometry(.18, .95, 3.3, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#FFE9B8', map: grad, transparent: true, opacity: .16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
@@ -884,7 +884,7 @@ async function dishaFortune() {
     hideSub();
     // she rises into a split and spins in the light, to celestial music
     const S = G.shrine, y0 = D.root.rotation.y, face = D.faceYaw;
-    D.faceYaw = undefined; D.pose = 'split'; play('celestial', at(S.halo.position), 4);
+    D.faceYaw = undefined; D.pose = 'split'; play('celestial', null, 5.2);
     const turns = Math.PI * 2 * 3, beam0 = S.beam.material.opacity;
     await tween(3.4, e => { D.root.rotation.y = y0 + turns * e; S.lift = Math.sin(e * Math.PI) * .45; S.beam.material.opacity = beam0 * (1 + Math.sin(e * Math.PI) * 1.4); });
     S.lift = 0; S.beam.material.opacity = beam0; D.pose = 'pray';
