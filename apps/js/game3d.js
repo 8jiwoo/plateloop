@@ -246,7 +246,7 @@ function buildPeople() {
   G.makcik = add(L.person({ name: 'Mdm Rosnah', kind: 'makcik', hair: 'tudung', tudungCol: '#E9B8C6', skin: L.SKINS[3], adult: true, height: 1.56, watch: true }), 5.9, -8.7, 0);
   [G.auntie, G.rahman, G.tan, G.drinks, G.cook, G.makcik].forEach(P => talkTarget(P));
   // ambient students from the class list
-  const others = PL.S.students.filter(s => !s.named && s.name !== 'Priya');
+  const others = PL.S.students.filter(s => !s.named && !['Priya', 'Ryan', 'Hafiz'].includes(s.name));
   const r = L.rng(2026);
   let k = 0;
   const student = (seed) => {
@@ -303,6 +303,12 @@ function buildPeople() {
     const lights = ['#FF2D95', '#2DE1FF', '#FFD62D'].map(col => { const l = new THREE.PointLight(col, 0, 5, 1.4); l.position.set(d.position.x, 2, d.position.z); G.scene.add(l); return l; });
     G.disco = { group: d, ball, beams, dots, lights, level: 0, on: true };
     W.spots.music = G.SFX.spots.music = [-3.1, .6, -5.9];
+  }
+  // two students squaring up near the back of the canteen
+  {
+    const A = G.brawlA = add(L.person({ name: 'Ryan', kind: 'pe', house: '#B8392E', hair: 'short', skin: L.SKINS[1], height: 1.7, watch: false, smooth: true, seed: 901 }), 6.3, 7.35, Math.PI / 2, 'fight');
+    const B = G.brawlB = add(L.person({ name: 'Hafiz', kind: 'boy', hair: 'crop', skin: L.SKINS[3], height: 1.72, watch: false, smooth: true, seed: 902 }), 7.5, 7.35, -Math.PI / 2, 'fight');
+    [A, B].forEach(P => { P.root.rotation.order = 'YXZ'; P.prompt = 'What\u2019s going on?'; P.noTurn = true; P.home = P.root.position.clone(); talkTarget(P); G.solidPeople.push(P); });
   }
   // Disha floats cross-legged above a table in a beam of light, and tells fortunes
   if (G.dishaTable) {
@@ -544,7 +550,7 @@ async function convo(P, fn) {
   if (P) {
     P.lookAt = G.camera.position; if (G.mode !== 'focus') G.faceTarget = P;
     // people who are standing turn round to face you
-    if (!P.table && P !== G.auntie) { home = { yaw: P.root.rotation.y, pose: P.pose }; const d = G.camera.position; P.faceYaw = Math.atan2(d.x - P.root.position.x, d.z - P.root.position.z); if (P.pose === 'wipe' || P.pose === 'walk') P.pose = 'stand'; if (P.pose === 'dance') home.yaw = P.homeYaw; }
+    if (!P.table && P !== G.auntie && !P.noTurn) { home = { yaw: P.root.rotation.y, pose: P.pose }; const d = G.camera.position; P.faceYaw = Math.atan2(d.x - P.root.position.x, d.z - P.root.position.z); if (P.pose === 'wipe' || P.pose === 'walk') P.pose = 'stand'; if (P.pose === 'dance') home.yaw = P.homeYaw; }
   }
   try { await fn(); } finally {
     if (P && home) { P.faceYaw = home.yaw; P.pose = home.pose; setTimeout(() => { if (P.faceYaw === home.yaw) P.faceYaw = undefined; }, 1500); }
@@ -845,6 +851,7 @@ async function talk(P) {
   if (P === G.rahman) return rahmanTalk();
   if (P === G.sophie) return sophieSings();
   if (P === G.disha) return dishaFortune();
+  if (P === G.brawlA || P === G.brawlB) return brawl();
   const f = first(), ph = G.phase;
   if (P.friend) {
     const [a] = G.friends;
@@ -889,6 +896,49 @@ async function sophieSings() {
     await say(S, 'Thanks for listening! Back to practice.');
   });
 }
+/** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
+ *  flying with a spinning kung fu kick. */
+async function brawl() {
+  const A = G.brawlA, B = G.brawlB, hp = new THREE.Vector3();
+  if (A.busy) return;
+  A.busy = true;
+  await convo(A, async () => {
+    A.head.getWorldPosition(hp); play('ggez', at(hp));
+    await say(A, 'GG fricking EZ.');
+    G.faceTarget = B; await say(B, 'Don’t say that.');
+    G.faceTarget = A; await say(A, 'Really?');
+    A.head.getWorldPosition(hp); play('ez', at(hp));
+    await say(A, 'Fricking easy.');
+    hideSub();
+    // the punch sends Ryan flying
+    B.pose = 'punch'; play('whoosh'); await sleep(170);
+    B.head.getWorldPosition(hp); play('punch', at(hp));
+    A.pose = 'flail';
+    const p0 = A.root.position.clone();
+    await tween(1.15, e => { A.root.position.set(p0.x - 3.4 * e, Math.sin(e * Math.PI) * 1.4, p0.z); A.root.rotation.x = -e * Math.PI * 3; });
+    B.pose = 'fight';
+    A.root.rotation.x = 0; A.root.position.y = 0; A.pose = 'lie'; play('thud', [A.root.position.x, .2, A.root.position.z]);
+    await sleep(1000);
+    // up again, a run-up, and a flying double spin kick
+    A.pose = 'fight'; await sleep(450);
+    A.pose = 'run'; const p1 = A.root.position.clone(), p2 = new THREE.Vector3(B.root.position.x - 2.1, 0, p0.z);
+    await tween(.75, e => A.root.position.lerpVectors(p1, p2, e));
+    A.pose = 'kick'; A.head.getWorldPosition(hp); play('hiya', at(hp));
+    const y0 = A.root.rotation.y;
+    await tween(1.1, e => { A.root.position.set(p2.x + 1.35 * e, Math.sin(e * Math.PI) * 1.15, p2.z); A.root.rotation.y = y0 + e * Math.PI * 4; });
+    A.root.rotation.y = y0; A.root.position.y = 0; A.pose = 'fight';
+    B.head.getWorldPosition(hp); play('punch', at(hp));
+    B.pose = 'bump'; const b0 = B.root.position.clone();
+    await tween(.35, e => { B.root.position.x = b0.x + .7 * e; });
+    await sleep(1300);
+    // dust off and square up again
+    B.pose = 'fight';
+    const a1 = A.root.position.clone(), b1 = B.root.position.clone();
+    await tween(.9, e => { A.root.position.lerpVectors(a1, A.home, e); B.root.position.lerpVectors(b1, B.home, e); });
+  });
+  A.busy = false;
+}
+
 /** Disha opens her eyes and reads your fortune for the day. */
 const FORTUNES = [
   'Finish every grain today, and something good will follow before the last bell.',
