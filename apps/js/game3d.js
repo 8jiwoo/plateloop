@@ -898,22 +898,24 @@ async function sophieSings() {
 }
 /** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
+// when each line of the "GG freaking EZ" clip finishes, in seconds: GG freaking EZ, Don't say that, Really?, Freaking easy
+const GGEZ_ENDS = null;
 async function brawl() {
   const A = G.brawlA, B = G.brawlB, hp = new THREE.Vector3();
-  // the supplied "GG freaking EZ" clip plays one phrase per line: it pauses at the end of each phrase and
-  // carries on from there at the next line (queued after the current phrase, so nothing is ever cut)
-  const ph = G.SFX.phrases('ggez');
-  let pi = 0, endAt = 0;
+  // the supplied "GG freaking EZ" clip: with GGEZ_ENDS set (when each line finishes, in seconds) it plays
+  // up to the end of each line, pauses, and carries on at the next line; without it, it plays straight through
+  const ends = GGEZ_ENDS;
+  let pi = 0, from = 0, endAt = 0, started = false;
   const line = (P, rest) => {
-    if (!ph || pi >= ph.length) return !!ph;
-    const from = ph[pi][0], to = rest ? ph[ph.length - 1][1] : ph[pi][1];
-    pi = rest ? ph.length : pi + 1;
+    if (!G.SFX.hasClip('ggez')) return false;
+    if (!ends) { if (started) return true; started = true; P.head.getWorldPosition(hp); return !!G.SFX.clip('ggez', at(hp), 1.1); }
+    if (pi > ends.length) return true;
+    const to = rest || pi >= ends.length ? null : ends[pi];
     P.head.getWorldPosition(hp);
     const h = G.SFX.clip('ggez', at(hp), 1.1, from, to, endAt); if (h) endAt = h.end;
+    from = to == null ? 0 : to; pi = rest ? ends.length + 1 : pi + 1;
     return !!h;
   };
-  if (A.busy) return;
-  A.busy = true;
   await convo(A, async () => {
     // each line plays its own part of the recorded clip (or the synthesised jingle if the clip isn't there)
     if (!line(A)) { A.head.getWorldPosition(hp); play('ggez', at(hp)); }
