@@ -30,7 +30,7 @@ function mount(el) {
   el.innerHTML = `
   <div class="stu care">
     <aside class="stu-side">
-      <div class="loopi-brand"><span class="loopi-icon care-icon" aria-hidden="true"><canvas width="44" height="37" data-form="guardian" data-stage="adult"></canvas></span><div><b>Loopi Care</b><span>by PlateLoop · for hospitals</span></div></div>
+      <div class="loopi-brand"><span class="loopi-icon care-icon" aria-hidden="true">${PL.V.loopi('calm', 46)}</span><div><b>Loopi Care</b><span>by PlateLoop · for hospitals</span></div></div>
       <p class="stu-note">Demo: pick a patient</p>
       <div class="chips" id="care-who"></div>
       <div class="demo-box">
@@ -65,53 +65,44 @@ function render(keep) {
   $('#care-serve', root).textContent = next ? `Scan ${mealName(next).toLowerCase()} tray` : 'Today is done';
   $('#care-serve', root).disabled = !next;
   $('#care-preset', root).value = ui.preset;
-  $('#care-top', root).innerHTML = `<canvas width="40" height="34" data-care-pet></canvas><div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div>`;
+  $('#care-top', root).innerHTML = `${PL.V.avatar(P, 36)}<div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div>`;
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   body.innerHTML = ({ today, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
-  paint(0);
   const send = $('#send-report', body); if (send) send.onclick = () => PL.toast(`Report sent to ${P.doctor} and the ward dietitian (demo, nothing was sent).`);
   const pr = $('#print-report', body); if (pr) pr.onclick = () => print();
   if (keep) body.scrollTop = y;
 }
-function companionMood(P) {
-  const last = P.log[P.log.length - 1];
-  return ate(last) >= .75 ? 'joy' : ate(last) >= .5 ? 'happy' : 'meh';
-}
-function paint(t) {
-  const P = me();
-  $$('canvas[data-care-pet]', root).forEach(cv => PL.drawPet(cv, { rows: 30, t, stage: 'adult', form: 'guardian', mood: companionMood(P) }));
-  PL.paintPets(root, t);
-}
-
 /* ================================================================ Today */
+const V = PL.V;
+const ALL = Object.values(H.WARD_MENU).flat();
 function alertFor(P) {
   const last3 = P.log.slice(-3), low = last3.filter(r => ate(r) < .5).length;
-  return low >= 2 ? `Under half eaten at ${low} of the last 3 meals. Your nurse has been told, and the dietitian will stop by today.` : '';
+  return low >= 2 ? `Under half eaten at ${low} of the last 3 meals` : '';
 }
 function today(P) {
   const D = H.DIETS[P.diet], recs = P.log.filter(l => l.day === H.TODAY), tot = sumN(recs), next = H.nextMeal(P);
   const good = recs.filter(r => ate(r) >= .75).length;
   const last = recs[recs.length - 1];
-  const line = !last ? 'Good morning! Breakfast is on its way.'
-    : ate(last) >= .75 ? `You ate well at ${mealName(last.meal).toLowerCase()}. That helps you heal.`
-    : ate(last) >= .5 ? `${pct(ate(last))} of ${mealName(last.meal).toLowerCase()} was eaten. Even a little more helps.`
-    : `Not much of ${mealName(last.meal).toLowerCase()} was eaten. Tell your nurse if something doesn't taste right.`;
-  const alert = alertFor(P);
+  const [expr, line] = !last ? ['wave', 'Good morning! Breakfast is on its way.']
+    : ate(last) >= .75 ? ['happy', `You ate well at ${mealName(last.meal).toLowerCase()}. That helps you heal.`]
+    : ate(last) >= .5 ? ['calm', `${pct(ate(last))} of ${mealName(last.meal).toLowerCase()} was eaten. Even a little more helps.`]
+    : ['think', `Not much of ${mealName(last.meal).toLowerCase()} was eaten. Tell your nurse if something doesn't taste right.`];
+  const alert = alertFor(P), third = P.diet === 'diabetic' ? 'c' : 'na';
   return `
-  ${alert ? `<div class="care-alert">${ICON.alert}<span>${alert}</span></div>` : ''}
-  <section class="group companion">
-    <canvas width="96" height="80" data-care-pet></canvas>
-    <div><b>Loopi</b><span>${line}</span>
-      <div class="meal-dots" aria-label="${good} of 3 meals mostly eaten today">${H.MEALS.map(([id]) => { const r = recs.find(x => x.meal === id); return `<i class="${r ? (ate(r) >= .75 ? 'on' : 'part') : ''}"></i>`; }).join('')}<small>${good} of 3 meals eaten well</small></div></div>
-  </section>
-  <h4 class="sec">Today's meals</h4>
-  <section class="group">${H.MEALS.map(([id, name, t]) => {
-    const r = recs.find(x => x.meal === id);
-    return `<div class="step ${r ? 'done' : ''}"><span class="step-n">${r ? ICON.check : '·'}</span><div><b>${name}</b><span>${r ? `${pct(ate(r))} eaten · ${r.n.kcal} kcal · ${r.n.p} g protein · scanned ${r.t}` : id === next ? `Arrives about ${t}` : `Later, about ${t}`}</span></div></div>`;
-  }).join('')}</section>
-  ${last ? `<h4 class="sec">${mealName(last.meal)}, dish by dish</h4><section class="group">${H.dishRows(H.wardMenu(last.meal, P.diet), last)}</section>` : ''}
-  <h4 class="sec">So far today</h4>
-  <section class="group pad">${H.nutrientRows(tot, D.target, ['kcal', 'p', P.diet === 'diabetic' ? 'c' : 'na'])}</section>
+  ${alert ? `<div class="vtips alert">${V.tip('warn', 'warn', alert, 'Your nurse has been told, and the dietitian will stop by today.')}</div>` : ''}
+  ${V.guide(expr, line)}
+  <div class="vcard"><h3>Today's meals <small>${good} of 3 eaten well</small></h3><div class="meals3">${H.MEALS.map(([id, name, t]) => {
+    const r = recs.find(x => x.meal === id), menu = H.wardMenu(id, P.diet);
+    const col = r ? (ate(r) >= .75 ? 'var(--tint)' : ate(r) >= .5 ? '#FFB23F' : '#FF6B5B') : '';
+    return `<div class="mealc ${r ? 'done' : id === next ? 'next' : ''}">
+      <div class="mealc-top"><b>${name}</b><small>${r ? r.t : t}</small></div>
+      <div class="mealc-food">${menu.slice(0, 4).map(d => V.food(d, 26)).join('')}</div>
+      ${r ? `<div class="mealc-ring" style="--p:${Math.round(ate(r) * 100)};--c:${col}"><b class="num">${pct(ate(r))}</b></div><span>${r.n.kcal} kcal · ${r.n.p} g protein</span>`
+        : `<div class="mealc-wait">${id === next ? 'Next' : 'Later'}</div><span>${id === next ? `Arrives about ${t}` : `About ${t}`}</span>`}
+    </div>`;
+  }).join('')}</div></div>
+  ${last ? `<div class="vcard"><h3>${mealName(last.meal)}, dish by dish</h3>${V.tray(H.wardMenu(last.meal, P.diet), last)}</div>` : ''}
+  <div class="vcard"><h3>So far today <small>of your daily target</small></h3><div class="vrings">${V.ring(tot.kcal, D.target.kcal, 'Energy', 'kcal', 'aim')}${V.ring(tot.p, D.target.p, 'Protein', 'g', 'aim')}${V.ring(tot[third], D.target[third], third === 'c' ? 'Carbs' : 'Sodium', third === 'c' ? 'g' : 'mg', 'limit')}</div></div>
   <p class="foot">Daily targets for a ${D.name.toLowerCase()} diet, set by your care team.</p>`;
 }
 
@@ -119,49 +110,41 @@ function today(P) {
 function findings(P, days, perDay) {
   const D = H.DIETS[P.diet], T = D.target, out = [];
   const lowDays = perDay.filter(n => n.kcal < T.kcal * .75).length;
-  if (lowDays >= 3) out.push(['warn', `Energy was under 75% of the target on ${lowDays} of ${days.length} days. That's a malnutrition risk, so a dietitian review is recommended.`]);
+  if (lowDays >= 3) out.push(['warn', 'warn', `Energy under 75% of target on ${lowDays} of ${days.length} days`, 'That is a malnutrition risk, so a dietitian review is recommended.']);
   const a = perDay.slice(0, 3).reduce((s, n) => s + n.kcal, 0) / 3, b = perDay.slice(-4, -1).reduce((s, n) => s + n.kcal, 0) / 3;
-  if (b > a * 1.12) out.push(['good', `Intake is improving: from about ${Math.round(a)} to ${Math.round(b)} kcal a day over the week.`]);
-  else if (b < a * .88) out.push(['warn', `Intake is falling: from about ${Math.round(a)} to ${Math.round(b)} kcal a day over the week.`]);
+  if (b > a * 1.12) out.push(['good', 'check', 'Intake is improving', `From about ${Math.round(a)} to ${Math.round(b)} kcal a day over the week.`]);
+  else if (b < a * .88) out.push(['warn', 'warn', 'Intake is falling', `From about ${Math.round(a)} to ${Math.round(b)} kcal a day over the week.`]);
   const byMeal = H.MEALS.map(([id, name]) => { const rs = P.log.filter(r => r.meal === id); return [name, rs.reduce((s, r) => s + ate(r), 0) / rs.length]; }).sort((x, y) => x[1] - y[1]);
-  if (byMeal[2][1] - byMeal[0][1] > .12) out.push(['info', `${byMeal[0][0]} is the weakest meal (${pct(byMeal[0][1])} eaten, against ${pct(byMeal[2][1])} at ${byMeal[2][0].toLowerCase()}).`]);
+  if (byMeal[2][1] - byMeal[0][1] > .12) out.push(['info', 'plate', `${byMeal[0][0]} is the weakest meal`, `${pct(byMeal[0][1])} eaten, against ${pct(byMeal[2][1])} at ${byMeal[2][0].toLowerCase()}.`]);
   const avg = k => perDay.reduce((s, n) => s + n[k], 0) / perDay.length;
-  if (P.diet === 'protein') out.push([avg('p') >= T.p * .9 ? 'good' : 'warn', `Protein averaged ${Math.round(avg('p'))} g a day against a ${T.p} g target.`]);
-  if (P.diet === 'diabetic') out.push([avg('c') <= T.c * 1.1 ? 'good' : 'warn', `Carbs averaged ${Math.round(avg('c'))} g a day, ${avg('c') <= T.c * 1.1 ? 'within' : 'over'} the ${T.c} g target.`]);
-  if (P.diet === 'lowna') out.push([avg('na') <= T.na ? 'good' : 'warn', `Sodium averaged ${Math.round(avg('na')).toLocaleString('en-US')} mg a day, ${avg('na') <= T.na ? 'under' : 'over'} the ${T.na.toLocaleString('en-US')} mg limit.`]);
+  if (P.diet === 'protein') out.push(avg('p') >= T.p * .9 ? ['good', 'muscle', 'Protein on target', `${Math.round(avg('p'))} g a day against ${T.p} g.`] : ['warn', 'muscle', `Protein ${Math.round(avg('p'))} g a day, target ${T.p} g`, 'The extra egg, fish and milk are the easiest place to gain.']);
+  if (P.diet === 'diabetic') out.push(avg('c') <= T.c * 1.1 ? ['good', 'check', 'Carbs within target', `${Math.round(avg('c'))} g a day against ${T.c} g.`] : ['warn', 'warn', `Carbs ${Math.round(avg('c'))} g a day, over ${T.c} g`, 'Smaller rice portions would help.']);
+  if (P.diet === 'lowna') out.push(avg('na') <= T.na ? ['good', 'salt', 'Sodium under the limit', `${Math.round(avg('na')).toLocaleString('en-US')} mg a day against ${T.na.toLocaleString('en-US')} mg.`] : ['warn', 'salt', 'Sodium over the limit', `${Math.round(avg('na')).toLocaleString('en-US')} mg a day against ${T.na.toLocaleString('en-US')} mg.`]);
   const left = leftMost(P)[0];
-  if (left && left.left > .45) out.push(['info', `${left.name} comes back the most (${pct(left.left)} left on average).${/soup/i.test(left.name) && P.diet === 'lowna' ? ' Low-salt soups often taste bland; herbs, lemon or sesame can help.' : ' Worth asking the kitchen about a swap.'}`]);
+  if (left && left.left > .45) out.push(['info', 'leaf', `${left.name} comes back the most (${pct(left.left)} left)`, /soup/i.test(left.name) && P.diet === 'lowna' ? 'Low-salt soups often taste bland. Herbs, ginger or pepper can help.' : 'Worth asking the kitchen about a swap.']);
   return out.slice(0, 5);
 }
 function leftMost(P) {
   const m = {};
-  P.log.forEach(r => Object.keys(r.served).forEach(id => { const d = PL.DISH[id]; const k = d.name; m[k] = m[k] || { name: k, s: 0, l: 0 }; m[k].s += r.served[id]; m[k].l += r.measured[id]; }));
-  return Object.values(m).map(x => ({ name: x.name, left: x.l / x.s })).sort((a, b) => b.left - a.left).slice(0, 3);
+  P.log.forEach(r => Object.keys(r.served).forEach(id => { const d = PL.DISH[id], k = d.name; m[k] = m[k] || { d, name: k, s: 0, l: 0 }; m[k].s += r.served[id]; m[k].l += r.measured[id]; }));
+  return Object.values(m).map(x => ({ d: x.d, name: x.name, left: x.l / x.s })).sort((a, b) => b.left - a.left).slice(0, 3);
 }
 function report(P) {
   const D = H.DIETS[P.diet], T = D.target, days = DAYS(), full = days.filter(d => P.log.filter(r => r.day === d).length === 3);
   const perDay = full.map(d => sumN(P.log.filter(r => r.day === d)));
   const avg = Object.fromEntries(Object.keys(T).map(k => [k, Math.round(perDay.reduce((s, n) => s + n[k], 0) / perDay.length)]));
-  const wellEaten = P.log.filter(r => ate(r) >= .75).length;
-  const tone = { warn: 'var(--orange)', good: 'var(--tint)', info: 'var(--blue)' };
+  const grams = {}; P.log.forEach(r => Object.entries(r.eaten).forEach(([id, g]) => { grams[id] = (grams[id] || 0) + g; }));
+  const third = P.diet === 'diabetic' ? 'c' : 'na';
   return `
   <section class="group rep-head"><div><b>Nutrition report</b><span>${full[0]} to ${full[full.length - 1]} · ${P.log.length} meals scanned</span></div><span class="pill">${D.name} diet</span></section>
-  <section class="group health-top">
-    ${H.ring(avg.kcal, T.kcal, `kcal a day · target ${T.kcal.toLocaleString('en-US')}`)}
-    <div class="rep-kpis"><div><b class="num">${avg.p} g</b><span>protein a day · target ${T.p} g</span></div><div><b class="num">${wellEaten}/${P.log.length}</b><span>meals mostly eaten (75%+)</span></div></div>
-  </section>
-  <h4 class="sec">What this means</h4>
-  <section class="group">${findings(P, full, perDay).map(([k, t]) => `<div class="finding"><i style="background:${tone[k]}"></i><span>${t}</span></div>`).join('')}</section>
-  <h4 class="sec">Energy each day, share of target</h4>
-  <section class="group chart">${H.dayBars(full, perDay.map(n => n.kcal / T.kcal), 'Energy each day')}</section>
-  <h4 class="sec">Protein each day, share of target</h4>
-  <section class="group chart">${H.dayBars(full, perDay.map(n => n.p / T.p), 'Protein each day')}</section>
-  <h4 class="sec">Average day</h4>
-  <section class="group pad">${H.nutrientRows(avg, T, ['kcal', 'p', 'c', 'f', 'na'])}</section>
-  <h4 class="sec">By meal</h4>
-  <section class="group">${H.MEALS.map(([id, name]) => { const rs = P.log.filter(r => r.meal === id), a = rs.reduce((s, r) => s + ate(r), 0) / rs.length; return `<div class="dish"><i style="background:var(--fill3);border-color:var(--fill3)"></i><span>${name}</span><span class="dbar"><i style="width:${Math.round(a * 100)}%"></i></span><span class="g-v num">${pct(a)} eaten</span></div>`; }).join('')}</section>
-  <h4 class="sec">Left most often</h4>
-  <section class="group">${leftMost(P).map(x => `<div class="g-row two-col"><span>${esc(x.name)}</span><span class="g-v num">${pct(x.left)} left</span></div>`).join('')}</section>
+  <div class="vcard"><h3>An average day</h3><div class="vrings">${V.ring(avg.kcal, T.kcal, 'Energy', 'kcal', 'aim')}${V.ring(avg.p, T.p, 'Protein', 'g', 'aim')}${V.ring(avg[third], T[third], third === 'c' ? 'Carbs' : 'Sodium', third === 'c' ? 'g' : 'mg', 'limit')}</div></div>
+  <div class="vtips">${findings(P, full, perDay).map(([tone, icon, t, s]) => V.tip(icon, tone, t, s)).join('')}</div>
+  <div class="vcard"><h3>Energy each day <small>share of target</small></h3>${V.week(full, perDay.map(n => Math.min(1, n.kcal / T.kcal)))}</div>
+  <div class="vcard"><h3>Protein each day <small>share of target</small></h3>${H.dayBars(full, perDay.map(n => n.p / T.p), 'Protein each day')}</div>
+  <div class="vcard"><h3>By meal <small>share eaten</small></h3><div class="vrings">${H.MEALS.map(([id, name]) => { const rs = P.log.filter(r => r.meal === id); return V.pctRing(rs.reduce((s, r) => s + ate(r), 0) / rs.length, name); }).join('')}</div></div>
+  <div class="vcard"><h3>Plate balance <small>all week</small></h3>${V.healthyPlate(V.plateShares(ALL, grams))}</div>
+  <div class="vcard"><h3>Left most often</h3><div class="leftlist">${leftMost(P).map(x => `<div>${V.food(x.d, 34)}<span>${esc(x.name)}</span><b class="num">${pct(x.left)} left</b></div>`).join('')}</div></div>
+  <div class="vcard"><h3>Average day, in detail</h3>${H.nutrientRows(avg, T, ['kcal', 'p', 'c', 'f', 'na'])}</div>
   <div class="two-btn"><button class="btn primary" id="send-report">Send to care team</button><button class="btn" id="print-report">Print</button></div>
   <p class="foot">Shared with ${esc(P.doctor)} and the ward dietitian. Measured by the ward scanner before and after every tray; targets are illustrative.</p>`;
 }
@@ -170,7 +153,7 @@ function report(P) {
 function meTab(P) {
   const D = H.DIETS[P.diet];
   return `
-  <section class="group profile"><canvas width="120" height="100" data-care-pet></canvas><div><b>${esc(P.name)}</b><span>${P.age} · Room ${P.room}<br>${esc(P.why)}</span></div></section>
+  <section class="group profile">${PL.V.avatar(P, 64)}<div><b>${esc(P.name)}</b><span>${P.age} · Room ${P.room}<br>${esc(P.why)}</span></div></section>
   <h4 class="sec">Diet</h4>
   <section class="group">
     <div class="g-row two-col"><span>${D.name}</span><span class="g-v">${esc(D.note)}</span></div>
@@ -192,6 +175,5 @@ PL.apps.care = {
   mount,
   unmount() { root = null; },
   update() { render(true); },
-  tick(t) { if (root) paint(t); },
 };
 })();
