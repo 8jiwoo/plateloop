@@ -80,20 +80,30 @@ L.Sound = () => {
     const out = await oc.startRendering();
     return seamless(out, Math.floor(sr * .8));
   }
-  /** A bouncy four-bar loop at 128 bpm: kick, hats, bass and a square-wave hook. */
+  /** Sophie's radio: an upbeat 8-bar pop loop at 128 bpm in C (C G Am F) with kick, clap, hats, bass,
+   *  chord stabs and a lead that plays the tune she sings. */
   async function renderMusic() {
-    const sr = 22050, beat = 60 / 128, bars = 8, n = Math.round(sr * beat * 4 * bars), oc = new OfflineAudioContext(1, n, sr);
-    const out = oc.createGain(); out.gain.value = .6; out.connect(oc.destination);
+    const sr = 32000, beat = 60 / 128, bars = 8, n = Math.round(sr * beat * 4 * bars), oc = new OfflineAudioContext(2, n, sr);
+    const bus = oc.createGain(); bus.gain.value = .7; bus.connect(oc.destination);
     const nb = oc.createBuffer(1, sr, sr); { const d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; }
-    const note = (f, t, dur, type, vol) => { const o = oc.createOscillator(), g = oc.createGain(); o.type = type; o.frequency.value = f; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .005); g.gain.setTargetAtTime(0, t + dur * .6, dur / 5); o.connect(g).connect(out); o.start(t); o.stop(t + dur + .05); };
-    const chords = [[220, 261.6, 329.6], [174.6, 220, 261.6], [261.6, 329.6, 392], [196, 246.9, 293.7]];
-    const hook = [0, 2, 1, 2, 0, 2, 1, 0];
-    for (let b = 0; b < bars * 4; b++) {
-      const t = b * beat, ch = chords[Math.floor(b / 4) % 4];
-      { const o = oc.createOscillator(), g = oc.createGain(); o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(45, t + .12); g.gain.setValueAtTime(.9, t); g.gain.setTargetAtTime(0, t + .02, .05); o.connect(g).connect(out); o.start(t); o.stop(t + .25); }
-      [.5, .75].forEach(k => { const s = oc.createBufferSource(), f = oc.createBiquadFilter(), g = oc.createGain(); s.buffer = nb; f.type = 'highpass'; f.frequency.value = 7000; g.gain.setValueAtTime(.25, t + k * beat); g.gain.setTargetAtTime(0, t + k * beat, .02); s.connect(f).connect(g).connect(out); s.start(t + k * beat, Math.random() * .5, .08); });
-      note(ch[0] / 2, t + beat / 2, beat / 2, 'square', .12);
-      [0, .5].forEach((k, j) => note(ch[hook[(b * 2 + j) % 8]] * 2, t + k * beat, beat / 2.2, 'square', .06));
+    const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+    const panTo = v => { const p = oc.createStereoPanner(); p.pan.value = v; p.connect(bus); return p; };
+    const L = panTo(-.35), R = panTo(.35), C = panTo(0);
+    const note = (f, t, dur, type, vol, out = C, cut = 3000) => { const o = oc.createOscillator(), g = oc.createGain(), lp = oc.createBiquadFilter(); o.type = type; o.frequency.value = f; lp.type = 'lowpass'; lp.frequency.value = cut; g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .006); g.gain.setTargetAtTime(0, t + dur * .7, dur / 5); o.connect(lp).connect(g).connect(out); o.start(t); o.stop(t + dur + .1); };
+    const noise = (t, dur, vol, type, f, out = C) => { const s2 = oc.createBufferSource(), fl = oc.createBiquadFilter(), g = oc.createGain(); s2.buffer = nb; fl.type = type; fl.frequency.value = f; g.gain.setValueAtTime(vol, t); g.gain.setTargetAtTime(0, t, dur); s2.connect(fl).connect(g).connect(out); s2.start(t, Math.random() * .5, dur * 5); };
+    const chords = [[48, 52, 55], [43, 47, 50], [45, 48, 52], [41, 45, 48]];
+    const tune = [[72, 72, 74, 76, 76, 74, 72, 74], [76, 77, 76, 74, 72, 74, 72, 0], [72, 72, 74, 76, 76, 77, 79, 77], [76, 74, 72, 74, 76, 74, 72, 0]];
+    for (let bar = 0; bar < bars; bar++) {
+      const ch = chords[bar % 4], t0 = bar * 4 * beat;
+      for (let q = 0; q < 4; q++) {
+        const t = t0 + q * beat;
+        { const o = oc.createOscillator(), g = oc.createGain(); o.frequency.setValueAtTime(150, t); o.frequency.exponentialRampToValueAtTime(42, t + .14); g.gain.setValueAtTime(1, t); g.gain.setTargetAtTime(0, t + .03, .07); o.connect(g).connect(C); o.start(t); o.stop(t + .4); }
+        if (q % 2) { noise(t, .07, .5, 'bandpass', 1800); noise(t + .012, .05, .3, 'highpass', 3000, R); }
+        noise(t + beat / 2, .02, .18, 'highpass', 8000, R); noise(t + beat * .25, .015, .07, 'highpass', 9000, L); noise(t + beat * .75, .015, .07, 'highpass', 9000, L);
+        note(hz(ch[0] - 12), t, beat * .45, 'sawtooth', .22, C, 500); note(hz(ch[0]), t + beat / 2, beat * .4, 'sawtooth', .16, C, 700);
+        if (q === 1 || q === 3) ch.forEach(m => note(hz(m + 12), t + beat / 2, beat * .35, 'square', .05, L, 2400));
+      }
+      if (bar >= 4) tune[bar % 4].forEach((m, k) => { if (m) note(hz(m), t0 + k * beat / 2, beat * .45, 'square', .07, R, 3200); });
     }
     return oc.startRendering();
   }
@@ -143,9 +153,11 @@ L.Sound = () => {
     if (spots.music) renderMusic().then(buf => {
       if (!ctx) return;
       const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true;
-      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 650;
-      const lp4 = ctx.createBiquadFilter(); lp4.type = 'lowpass'; lp4.frequency.value = 4200;
-      const g2 = ctx.createGain(); g2.gain.value = .22; s.connect(hp).connect(lp4).connect(g2).connect(panner(spots.music, .8, .5)); s.start();
+      const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 110;
+      const lp4 = ctx.createBiquadFilter(); lp4.type = 'lowpass'; lp4.frequency.value = 7500;
+      // loud next to the radio, fading quickly as you walk away
+      const pn = panner(spots.music, 1.4, .45); pn.distanceModel = 'exponential'; pn.rolloffFactor = 1.7; pn.maxDistance = 40;
+      const g2 = ctx.createGain(); g2.gain.value = .85; s.connect(hp).connect(lp4).connect(g2).connect(pn); s.start();
     }).catch(() => {});
     // the crowd, from a few spots in the hall, once it has rendered
     renderCrowd(14, 16).then(buf => {
