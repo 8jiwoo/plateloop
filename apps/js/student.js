@@ -24,6 +24,7 @@ const ICON = {
   check: I('<path d="M5 12.5l4.5 4.5L19 7"/>'),
 };
 const TABS = { loopi: 'Loopi', lunch: 'Lunch', ranks: 'Ranks', me: 'Me' };
+const FACE = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16a4 4 0 0 0 5 0"/></svg>`;
 const PORTION = { S: 'Small', M: 'Regular', L: 'Large' };
 const HEART = on => `<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14 2.5 8.5A3.3 3.3 0 0 1 8 4a3.3 3.3 0 0 1 5.5 4.5Z" fill="${on ? '#FF2D55' : 'none'}" stroke="${on ? '#FF2D55' : 'var(--label3)'}" stroke-width="1.5"/></svg>`;
 
@@ -78,7 +79,6 @@ function paint(t) {
   PL.paintPets(root, t);
   $$('canvas[data-acc]', root).forEach(cv => PL.drawPet(cv, { rows: 30, t, ...PL.petOf(st), stage: PL.petOf(st).stage === 'egg' ? 'baby' : PL.petOf(st).stage, mood: 'happy', acc: cv.dataset.acc }));
   $$('canvas[data-evo]', root).forEach(cv => PL.drawPet(cv, { rows: 30, t, ...PL.petOf(st), mood: 'joy' }));
-  $$('canvas[data-qr]', root).forEach(drawQR);
 }
 
 /* ================================================================ Loopi */
@@ -164,7 +164,7 @@ function lunchTab(st) {
     ${step(!!b, 1, 'Before you eat', b ? `${sum(b.served)} g on your tray · ${b.t}` : 'Scan your full tray at the scanner')}
     ${step(!!a, 2, 'After you eat', a ? `${pct(a.w)} left · ${a.t}` : 'Scan it again before you put it away')}
   </section>`;
-  if (!a) out += `<section class="group qr"><canvas width="116" height="116" data-qr="${st.id}" aria-label="Your scan code"></canvas><div><b>Your scan code</b><span>Hold it under the scanner, or tap your student card.</span></div></section>`;
+  if (!a) out += `<section class="group qr"><span class="face-ic">${FACE}</span><div><b>Just look at the camera</b><span>The scanner knows your face, so there's nothing to tap or carry.</span></div></section>`;
 
   if (a && a.measured) {
     out += `<h4 class="sec">What you ate</h4><section class="group">${MENU.map(d => {
@@ -199,15 +199,6 @@ function lunchTab(st) {
     <div class="goal"><div><b>Class ${st.cls} under 20% waste</b><span>The class is at ${pct(cw)} this week.</span></div>${cw < .2 ? `<span class="ok-mark">${ICON.check}</span>` : `<span class="g-v num">${pct(cw)}</span>`}</div>
   </section>`;
   return out;
-}
-/* a demo scan code: finder squares plus modules seeded by the student id (not a real, readable QR) */
-function drawQR(cv) {
-  const c = cv.getContext('2d'), n = 25, u = Math.floor(cv.width / n), o = Math.floor((cv.width - u * n) / 2);
-  let seed = [...cv.dataset.qr].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7) >>> 0; const rnd = () => (seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296;
-  c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, cv.width, cv.height); c.fillStyle = '#1D1D1F';
-  const finder = (x, y) => { c.fillRect(o + x * u, o + y * u, 7 * u, 7 * u); c.fillStyle = '#FFFFFF'; c.fillRect(o + (x + 1) * u, o + (y + 1) * u, 5 * u, 5 * u); c.fillStyle = '#1D1D1F'; c.fillRect(o + (x + 2) * u, o + (y + 2) * u, 3 * u, 3 * u); };
-  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) { const inF = (x < 8 && y < 8) || (x > n - 9 && y < 8) || (x < 8 && y > n - 9); if (!inF && rnd() < .48) c.fillRect(o + x * u, o + y * u, u, u); }
-  finder(0, 0); finder(n - 7, 0); finder(0, n - 7);
 }
 
 /* ================================================================ Ranks */
@@ -250,7 +241,12 @@ function meTab(st, g) {
     return `<button class="bdg ${got ? '' : 'locked'} ${on ? 'on' : ''}" ${got ? `data-wear="${b.item}"` : 'disabled'} aria-pressed="${on}"><canvas width="72" height="60" data-acc="${b.item}"></canvas><b>${b.name}</b><span>${got ? (on ? 'Wearing' : 'Tap to wear') : b.how}</span></button>`; }).join('')}</div>
   <h4 class="sec">Past lunches</h4>
   <section class="group">${st.log.map(l => `<div class="g-row hist"><span class="g-k">${l.day}</span><span>${PORTION[l.portion]}</span><span class="g-v num">${pct(l.w)} left</span><b class="num">+${l.pts}</b></div>`).join('')}</section>
-  <section class="group"><label class="switch-row"><span>Show my name on the class board</span><input type="checkbox" role="switch" id="optin" ${st.hideName ? '' : 'checked'}></label></section>`;
+  <h4 class="sec">Privacy</h4>
+  <section class="group">
+    <div class="switch-row"><span>Face sign-in</span><span class="g-v">On</span></div>
+    <label class="switch-row"><span>Show my name on the class board</span><input type="checkbox" role="switch" id="optin" ${st.hideName ? '' : 'checked'}></label>
+  </section>
+  <p class="foot">The scanner stores a match code made from your face, never a photo, and it stays inside the scanner. It's deleted when you leave the school.</p>`;
 }
 
 /* ================================================================ overlays: full-screen room, modals */
