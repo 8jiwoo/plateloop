@@ -321,7 +321,7 @@ L.person = o => {
     const knee = new THREE.Group(); knee.position.y = -.42; hip.add(knee);
     const shg = new THREE.CylinderGeometry(.052, .038, .39, sg(6)); shg.translate(0, -.195, 0); knee.add(facetMesh(shg, shM));
     const shoe = facetMesh(new THREE.BoxGeometry(.088, .065, .23), shoeM); shoe.position.set(0, -.405, .045); knee.add(shoe);
-    return { hip, knee };
+    return { hip, knee, shoe };
   };
   P.legR = leg(-1); P.legL = leg(1);
   // skirts
@@ -349,6 +349,7 @@ const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 L.animPerson = (P, dt, cam) => {
   P.t += dt;
   const t = P.t, R = P.root, pose = P.pose, sit = pose === 'sit' || pose === 'eat';
+  if (pose === 'pray' || pose === 'split') { pray(P, dt, pose === 'split'); return; }
   if (P.skirt) { P.skirt.visible = !sit; P.skirtSit.visible = sit; }
   let hipY = .84, thigh = 0, knee = 0, thighL = 0, kneeL = 0, lean = 0;
   if (sit) { hipY = .5; thigh = thighL = -1.5; knee = kneeL = 1.42; lean = .1; }
@@ -378,7 +379,6 @@ L.animPerson = (P, dt, cam) => {
   else if (pose === 'wave') { A(P.armR, 0, -2.5, -.2, Math.sin(t * 8) * .3); A(P.armL, s, .07, -.15); }
   else { A(P.armR, s, -.07, -.12); A(P.armL, -s, .07, -.12); }
   if (pose === 'dance') { dance(P, dt); P.tray.visible = false; return; }
-  if (pose === 'pray' || pose === 'split') { pray(P, dt, pose === 'split'); return; }
   // head: look at the player when close, otherwise at a friend or slowly around
   let yaw = Math.sin(t * .2 + P.o.seed) * .22, pitch = sit ? .1 : 0, target = null;
   if (P.lookAt) target = P.lookAt;
@@ -401,13 +401,13 @@ function pray(P, dt, split) {
   P.torso.scale.y = 1 + Math.sin(t * 1.1) * .008;
   if (split) {
     // a side split in the air, arms raised wide
-    [[P.legR, -1], [P.legL, 1]].forEach(([Lg, s]) => { to(Lg.hip.rotation, 0, 0, s * 1.52); to(Lg.knee.rotation, 0, 0, 0); });
+    [[P.legR, -1], [P.legL, 1]].forEach(([Lg, s]) => { to(Lg.hip.rotation, 0, 0, s * 1.52); to(Lg.knee.rotation, 0, 0, 0); Lg.shoe.rotation.set(0, 0, 0); });
     [[P.armR, -1], [P.armL, 1]].forEach(([A, s]) => { to(A.sh.rotation, 0, 0, s * 2.5); to(A.el.rotation, 0, 0, s * .25); });
   } else {
     // thighs out and forward, shins folded inward so they cross in front
-    [[P.legR, -1], [P.legL, 1]].forEach(([Lg, s]) => { to(Lg.hip.rotation, -1.4, s * .2, s * .8); to(Lg.knee.rotation, s * .12, 0, -s * 2.4); });
+    [[P.legR, -1], [P.legL, 1]].forEach(([Lg, s]) => { to(Lg.hip.rotation, -1.4, s * .2, s * .8); to(Lg.knee.rotation, s * .12, 0, -s * 2.4); Lg.shoe.rotation.set(0, s * 1.45, 0); });
     // palms pressed together in front of the chest
-    [[P.armR, -1], [P.armL, 1]].forEach(([A, s]) => { to(A.sh.rotation, -.45, 0, -s * .38); to(A.el.rotation, -1.7, 0, -s * .22); });
+    [[P.armR, -1], [P.armL, 1]].forEach(([A, s]) => { to(A.sh.rotation, -.2, 0, s * .15); to(A.el.rotation, -2.35, 0, -s * .72); });
   }
   if (P.skirtSit) P.skirtSit.children[0].visible = false;
   if (P.faceYaw === undefined) P.head.rotation.set(.18 + Math.sin(t * .5) * .03, 0, 0);
