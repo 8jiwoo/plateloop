@@ -281,30 +281,32 @@ document.addEventListener('click', e => { if (e.target.closest('[data-reset]')) 
 const LCD = PL.LCD = { bg: '#DDE4D4', ink: '#1D1D1F', mid: '#9AA592' };
 const ACC_SLOT = { cap: 'head', crown: 'head', halo: 'head', headphones: 'head', bow: 'side', flower: 'side', glasses: 'face', scarf: 'neck', wings: 'back', aura: 'aura' };
 PL.drawPet = (cv, o) => {
+  // o.ink / o.mid recolour the outline and shading; o.fill paints the body (for the full-colour room)
+  const INK = o.ink || LCD.ink, MID = o.mid || LCD.mid, FILL = o.fill || null;
   const ctx = cv.getContext('2d');
   const W = cv.width, H = cv.height;
   ctx.imageSmoothingEnabled = false;
-  ctx.fillStyle = o.bg || LCD.bg; ctx.fillRect(0, 0, W, H);
+  if (o.bg === 'none') ctx.clearRect(0, 0, W, H); else { ctx.fillStyle = o.bg || LCD.bg; ctx.fillRect(0, 0, W, H); }
   const rows = o.rows || 30;
   const u = Math.max(1, Math.floor(H / rows));
   const cols = Math.floor(W / u);
   const ox = Math.floor((W - cols * u) / 2), oy = Math.floor((H - rows * u) / 2);
-  const P = (x, y, c = LCD.ink) => { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= cols || y >= rows) return; ctx.fillStyle = c; ctx.fillRect(ox + x * u, oy + y * u, u, u); };
+  const P = (x, y, c = INK) => { x = Math.round(x); y = Math.round(y); if (x < 0 || y < 0 || x >= cols || y >= rows) return; ctx.fillStyle = c; ctx.fillRect(ox + x * u, oy + y * u, u, u); };
   const t = o.t || 0, cx = cols / 2, ground = rows - 4;
-  if (!o.noGround) for (let x = 2; x < cols - 2; x += 2) P(x, ground + 1, LCD.mid);
+  if (!o.noGround) for (let x = 2; x < cols - 2; x += 2) P(x, ground + 1, MID);
   const ell = (ecx, ecy, rx, ry, dither = true) => {
     const inside = (x, y) => ((x + .5 - ecx) / rx) ** 2 + ((y + .5 - ecy) / ry) ** 2 <= 1;
     for (let y = Math.floor(ecy - ry - 1); y <= Math.ceil(ecy + ry + 1); y++)
       for (let x = Math.floor(ecx - rx - 1); x <= Math.ceil(ecx + rx + 1); x++) {
         if (!inside(x, y)) continue;
         const edge = !inside(x - 1, y) || !inside(x + 1, y) || !inside(x, y - 1) || !inside(x, y + 1);
-        if (edge) P(x, y); else if (dither && y > ecy + ry * .35 && (x + y) % 2 === 0) P(x, y, LCD.mid);
+        if (edge) P(x, y); else { if (FILL) P(x, y, FILL); if ((dither || FILL) && y > ecy + ry * .35 && (x + y) % 2 === 0) P(x, y, MID); }
       }
   };
   if (o.stage === 'egg') {
     const wob = t % 4 === 1 ? 1 : t % 4 === 3 ? -1 : 0, ex = cx + wob, ery = 8.5, ey = ground - ery;
     ell(ex, ey, 6.5, ery, false);
-    [[-2, -3], [2, -1], [-1, 2], [3, 3], [0, -6]].forEach(([dx, dy]) => { P(ex + dx - .5, ey + dy, LCD.mid); P(ex + dx + .5, ey + dy, LCD.mid); });
+    [[-2, -3], [2, -1], [-1, 2], [3, 3], [0, -6]].forEach(([dx, dy]) => { P(ex + dx - .5, ey + dy, MID); P(ex + dx + .5, ey + dy, MID); });
     if ((o.progress || 0) > .6) [[-3, -1], [-2, 0], [-1, -1], [0, 0], [1, -1], [2, 0]].forEach(([dx, dy]) => P(ex + dx, ey + dy - 1));
     return;
   }
@@ -324,7 +326,7 @@ PL.drawPet = (cv, o) => {
   };
   eye(Math.round(cx - ex - .5)); eye(Math.round(cx + ex - .5));
   const my = ey + 3, mx = Math.round(cx - .5);
-  if (o.mood === 'joy') { for (let i = -2; i <= 2; i++) P(mx + i, my); P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); P(Math.round(cx - ex - 2.5), my - 1, LCD.mid); P(Math.round(cx + ex + 1.5), my - 1, LCD.mid); }
+  if (o.mood === 'joy') { for (let i = -2; i <= 2; i++) P(mx + i, my); P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); P(Math.round(cx - ex - 2.5), my - 1, MID); P(Math.round(cx + ex + 1.5), my - 1, MID); }
   else if (o.mood === 'happy') { P(mx - 2, my); P(mx + 2, my); P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); }
   else if (o.mood === 'meh') { P(mx - 1, my + 1); P(mx, my + 1); P(mx + 1, my + 1); }
   else P(mx, my + 1);
@@ -332,7 +334,7 @@ PL.drawPet = (cv, o) => {
   const top = Math.round(by - ry), f = o.form, full = o.stage === 'adult';
   const headAcc = ACC_SLOT[o.acc] === 'head';
   const drawAcc = () => {
-    const a = o.acc, xc = cx - .5, I = LCD.ink, M = LCD.mid;
+    const a = o.acc, xc = cx - .5, I = INK, M = MID;
     if (!a) return;
     if (a === 'cap') { for (let x = -3; x <= 3; x++) P(xc + x, top - 1); for (let x = -2; x <= 2; x++) P(xc + x, top - 2, Math.abs(x) === 2 ? I : M); for (let x = -1; x <= 1; x++) P(xc + x, top - 3); P(xc + 4, top - 1); P(xc + 5, top - 1); }
     else if (a === 'crown') { for (let x = -3; x <= 3; x++) { P(xc + x, top - 1); P(xc + x, top - 2, Math.abs(x) === 3 || x === 0 ? I : M); } [-3, 0, 3].forEach(x => P(xc + x, top - 3)); P(xc, top - 4); }
@@ -350,23 +352,23 @@ PL.drawPet = (cv, o) => {
   else if (f === 'leafy') {
     P(cx - .5, top - 1); P(cx - .5, top - 2);
     [[-1, -3], [-2, -3], [-3, -4], [-2, -4], [-4, -5], [-3, -5], [-2, -5]].forEach(([a, b]) => { P(cx - .5 + a, top + b); P(cx - .5 - a, top + b + (full ? 0 : 1)); });
-    if (full) [[-3, 2], [3, 3], [-1, 4]].forEach(([a, b]) => P(cx + a, by + b, LCD.mid));
+    if (full) [[-3, 2], [3, 3], [-1, 4]].forEach(([a, b]) => P(cx + a, by + b, MID));
   } else if (f === 'crystal') {
     const h = full ? 3 : 2;
-    for (let i = 0; i <= h; i++) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - (2 * h - i), Math.abs(j) === i ? LCD.ink : LCD.mid);
-    for (let i = h - 1; i >= 0; i--) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - i, Math.abs(j) === i ? LCD.ink : LCD.mid);
+    for (let i = 0; i <= h; i++) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - (2 * h - i), Math.abs(j) === i ? INK : MID);
+    for (let i = h - 1; i >= 0; i--) for (let j = -i; j <= i; j++) P(cx - .5 + j, top - 1 - i, Math.abs(j) === i ? INK : MID);
     if (full && t % 2 === 0) [[-rx - 3, -ry], [rx + 2, -ry + 2]].forEach(([a, b]) => { P(cx + a, by + b); P(cx + a - 1, by + b); P(cx + a + 1, by + b); P(cx + a, by + b - 1); P(cx + a, by + b + 1); });
   } else if (f === 'guardian') {
     const yb = Math.round(by - ry * .62);
     for (let x = Math.round(cx - rx * .8); x <= Math.round(cx + rx * .8); x++) P(x, yb);
     P(cx - .5, yb - 1); P(cx - .5, yb - 2);
-    if (full) { const sx = Math.round(cx + rx + 1), sy = Math.round(by - 1); for (let y = 0; y < 5; y++) { P(sx, sy + y); P(sx + 3, sy + y); } for (let x = 0; x <= 3; x++) P(sx + x, sy); P(sx + 1, sy + 5); P(sx + 2, sy + 5); P(sx + 1, sy + 2, LCD.mid); P(sx + 2, sy + 2, LCD.mid); }
+    if (full) { const sx = Math.round(cx + rx + 1), sy = Math.round(by - 1); for (let y = 0; y < 5; y++) { P(sx, sy + y); P(sx + 3, sy + y); } for (let x = 0; x <= 3; x++) P(sx + x, sy); P(sx + 1, sy + 5); P(sx + 2, sy + 5); P(sx + 1, sy + 2, MID); P(sx + 2, sy + 2, MID); }
   } else if (f === 'explorer') {
     const w = Math.round(rx * (full ? .95 : .7));
     for (let x = -w; x <= w; x++) P(cx - .5 + x, top);
-    for (let x = -2; x <= 2; x++) { P(cx - .5 + x, top - 1); P(cx - .5 + x, top - 2, x === -2 || x === 2 ? LCD.ink : LCD.mid); }
+    for (let x = -2; x <= 2; x++) { P(cx - .5 + x, top - 1); P(cx - .5 + x, top - 2, x === -2 || x === 2 ? INK : MID); }
     for (let x = -2; x <= 2; x++) P(cx - .5 + x, top - 3);
-    if (full) { const bx = Math.round(cx - rx - 3), byy = Math.round(by - 2); for (let y = 0; y < 5; y++) { P(bx, byy + y); P(bx + 2, byy + y); } P(bx + 1, byy); P(bx + 1, byy + 4); P(bx + 1, byy + 2, LCD.mid); }
+    if (full) { const bx = Math.round(cx - rx - 3), byy = Math.round(by - 2); for (let y = 0; y < 5; y++) { P(bx, byy + y); P(bx + 2, byy + y); } P(bx + 1, byy); P(bx + 1, byy + 4); P(bx + 1, byy + 2, MID); }
   }
   drawAcc();
 };
