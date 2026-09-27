@@ -258,10 +258,11 @@ function buildPeople() {
   G.friendTable = W.tables.find(t => t.x === 4.7 && t.z === -3);
   const chope = new THREE.Mesh(new THREE.BoxGeometry(.12, .025, .08), L.lam({ color: '#F4F4F2' })); chope.position.set(4.7, .49, -2.28); G.scene.add(chope); G.chope = chope;
   G.friendTable.spots.find(s => s.side === 1 && Math.abs(s.x - 4.7) < .01).taken = 'you';
+  G.dishaTable = L.FACES && L.FACES.disha ? W.tables.find(t => t.x === -4.7 && t.z === 1) : null;
   // seated students around the room
   W.tables.forEach((t, ti) => {
     t.spots.forEach((s, si) => {
-      if (s.taken || t === G.friendTable) return;
+      if (s.taken || t === G.friendTable || t === G.dishaTable) return;
       if (r() > (Math.abs(t.x) < 6 ? .5 : .36)) return;
       const P = add(student(ti * 10 + si + 1), s.x, s.z, s.side > 0 ? Math.PI : 0, r() < .6 ? 'eat' : 'sit');
       P.watch = r() < .35; s.taken = P; P.seat = s; P.table = t;
@@ -282,6 +283,24 @@ function buildPeople() {
     const phone = new THREE.Mesh(new THREE.BoxGeometry(.075, .15, .01), L.lam({ color: '#1C1C1E' })); phone.position.set(-3.1, .47, -5.9); phone.rotation.set(-1.2, 0, .3); G.scene.add(phone);
     const bench = new THREE.Mesh(new THREE.BoxGeometry(.4, .45, .4), L.lam({ color: '#6E757C' })); bench.position.set(-3.1, .225, -5.9); G.scene.add(bench);
     W.spots.music = G.SFX.spots.music = [-3.1, .6, -5.9];
+  }
+  // Disha floats cross-legged above a table in a beam of light, and tells fortunes
+  if (G.dishaTable) {
+    const T = G.dishaTable, di = G.disha = add(L.person({ name: 'Disha', kind: 'girl', face: 'disha', hair: 'long', hairCol: '#140F0E', capTilt: -.85, height: 1.58, watch: false, smooth: true, seed: 808 }), T.x, T.z, 0, 'pray');
+    di.homeYaw = 0; di.prompt = 'Ask Disha for your fortune'; talkTarget(di);
+    const grad = L.tex(8, 64, (c, w, h) => { const g2 = c.createLinearGradient(0, 0, 0, h); g2.addColorStop(0, 'rgba(255,255,255,0)'); g2.addColorStop(.25, 'rgba(255,255,255,.7)'); g2.addColorStop(1, 'rgba(255,255,255,1)'); c.fillStyle = g2; c.fillRect(0, 0, w, h); });
+    const beam = new THREE.Mesh(new THREE.CylinderGeometry(.18, .95, 3.3, 24, 1, true), new THREE.MeshBasicMaterial({ color: '#FFE9B8', map: grad, transparent: true, opacity: .16, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+    beam.position.set(T.x, 2.55, T.z); G.scene.add(beam);
+    const glow = L.tex(64, 64, c => L.blob(c, 32, 32, 32, 32, '#FFFFFF', 1));
+    const pool = new THREE.Mesh(new THREE.CircleGeometry(.9, 28), new THREE.MeshBasicMaterial({ color: '#FFE3A6', transparent: true, opacity: .2, blending: THREE.AdditiveBlending, depthWrite: false, map: glow }));
+    pool.rotation.x = -Math.PI / 2; pool.position.set(T.x, .79, T.z); G.scene.add(pool);
+    const halo = new THREE.Sprite(new THREE.SpriteMaterial({ color: '#FFE7B0', transparent: true, opacity: .55, blending: THREE.AdditiveBlending, depthWrite: false, map: glow }));
+    halo.scale.set(1.15, 1.15, 1); G.scene.add(halo);
+    const light = new THREE.PointLight('#FFE3B0', .9, 4.5, 1.6); light.position.set(T.x, 2.3, T.z); G.scene.add(light);
+    const n = 60, sp = new Float32Array(n * 3), sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.BufferAttribute(sp, 3));
+    const sparks = new THREE.Points(sg, new THREE.PointsMaterial({ color: '#FFF1C8', size: 2.5, sizeAttenuation: false, transparent: true, opacity: .8, blending: THREE.AdditiveBlending, depthWrite: false })); G.scene.add(sparks);
+    G.shrine = { T, halo, sparks, sp, n, beam };
+    W.spots.shrine = G.SFX.spots.shrine = [T.x, 1.6, T.z];
   }
   // Priya walks the whole PlateLoop routine in the background
   const priya = G.priya = add(L.person({ name: 'Priya', kind: 'girl', hair: 'long', skin: L.SKINS[4], height: 1.6, watch: true, seed: 77 }), 3.9, -6.9, Math.PI / 2, 'walk');
@@ -326,7 +345,7 @@ function addTarget(obj, label, act, range = 2.4, extra = {}) {
   return t;
 }
 function talkTarget(P) {
-  return addTarget(P.root, () => (G.busy ? null : P === G.auntie && G.phase === 'order' ? 'Ask Mrs Lim for lunch' : `Talk to ${P.name}`), () => talk(P), 2.6, { person: P });
+  return addTarget(P.root, () => (G.busy ? null : P === G.auntie && G.phase === 'order' ? 'Ask Mrs Lim for lunch' : P.prompt || `Talk to ${P.name}`), () => talk(P), 2.6, { person: P });
 }
 function refreshHitMeshes() { G.hitMeshes = []; G.targets.forEach(t => t.obj.traverse(o => { if (o.isMesh) { o.userData.tgt = t; G.hitMeshes.push(o); } })); }
 function setupStaticTargets() {
@@ -381,6 +400,12 @@ function loop(now) {
   });
   // background chatter at tables: someone is always talking
   G.chatT -= dt; if (G.chatT < 0) { G.chatT = 2 + Math.random() * 3; const seated = G.people.filter(P => P.table && !P.friend); seated.forEach(P => { if (P !== G.talkingTo) P.talking = false; }); for (let i = 0; i < 6; i++) { const P = seated[Math.floor(Math.random() * seated.length)]; if (P) P.talking = true; } }
+  if (G.shrine) {
+    const s = G.shrine, y = 1.08 + (s.lift || 0) + Math.sin(G.t * 1.1) * .06;
+    G.disha.root.position.y = y; s.halo.position.set(s.T.x, y + .62, s.T.z); s.halo.material.opacity = .26 + Math.sin(G.t * 1.7) * .06;
+    for (let i = 0; i < s.n; i++) { const a = G.t * (.3 + (i % 5) * .08) + i * 2.4, r = .35 + (i % 7) * .09; s.sp[i * 3] = s.T.x + Math.cos(a) * r; s.sp[i * 3 + 1] = .95 + ((G.t * .25 + i * .137) % 1) * 1.6; s.sp[i * 3 + 2] = s.T.z + Math.sin(a) * r; }
+    s.sparks.geometry.attributes.position.needsUpdate = true;
+  }
   W.update(dt, G.t, camera);
   G.screen.tick(dt);
   G.tvT -= dt; if (G.tvT < 0) { G.tvT = 3; W.tv.draw(); }
@@ -787,6 +812,7 @@ async function talk(P) {
   if (P === G.auntie && G.phase === 'order') return orderFlow();
   if (P === G.rahman) return rahmanTalk();
   if (P === G.sophie) return sophieSings();
+  if (P === G.disha) return dishaFortune();
   const f = first(), ph = G.phase;
   if (P.friend) {
     const [a] = G.friends;
@@ -829,6 +855,45 @@ async function sophieSings() {
     }
     S.talking = false; S.singing = false;
     await say(S, 'Thanks for listening! Back to practice.');
+  });
+}
+/** Disha opens her eyes and reads your fortune for the day. */
+const FORTUNES = [
+  'Finish every grain today, and something good will follow before the last bell.',
+  'A green vegetable will surprise you today. Say yes to it.',
+  'Someone will share a secret with you before the day is over.',
+  'Your Loopi dreams of you. Feed it well and it will grow.',
+  'The tray you return clean returns kindness to you.',
+  'Take less, and you will find you have more.',
+  'A small act at the compost bin will grow into a garden.',
+  'Today’s test will be kinder than you fear.',
+  'The next person you smile at needed it more than you know.',
+  'Luck is hiding in the kailan. Eat it.',
+  'Before the week ends, an old friend will make you laugh until it hurts.',
+  'Your lucky number today is the grams left on your tray. Aim for zero.',
+  'Something you lost will turn up where you least expect it.',
+  'A quiet lunch today brings a loud good idea tomorrow.',
+  'You will be asked for help, and you will know exactly what to say.',
+];
+async function dishaFortune() {
+  const D = G.disha;
+  G.fortunes = G.fortunes && G.fortunes.length ? G.fortunes : FORTUNES.slice().sort(() => Math.random() - .5);
+  const f = G.fortunes.pop();
+  await convo(D, async () => {
+    await say(D, G.toldFortune ? 'You again. The day has more to say. Be still...' : 'Welcome. Be still for a moment, and I will read your day...');
+    hideSub();
+    // she rises into a split and spins in the light, to celestial music
+    const S = G.shrine, y0 = D.root.rotation.y, face = D.faceYaw;
+    D.faceYaw = undefined; D.pose = 'split'; play('celestial', at(S.halo.position), 4);
+    const turns = Math.PI * 2 * 3, beam0 = S.beam.material.opacity;
+    await tween(3.4, e => { D.root.rotation.y = y0 + turns * e; S.lift = Math.sin(e * Math.PI) * .45; S.beam.material.opacity = beam0 * (1 + Math.sin(e * Math.PI) * 1.4); });
+    S.lift = 0; S.beam.material.opacity = beam0; D.pose = 'pray';
+    D.root.rotation.y = y0 + turns; D.faceYaw = face + turns;
+    await sleep(500);
+    play('fortune', at(S.halo.position));
+    await say(D, `✦ ${f} ✦`);
+    await say(D, 'Go well. Come back if you need another.');
+    G.toldFortune = true;
   });
 }
 function genericLine(P) {
