@@ -50,8 +50,8 @@ H.KIDS_MENU = [
   dish('k_dragon', 'Dragon fruit', 40, { kcal: .5, c: .11, p: .012, f: .004 }, '#D6246E', '#9C1450', 'fruit', { rainbow: 'pink' }),
 ];
 H.KIDS_TARGET = { kcal: 360, c: 55, p: 12, f: 10 }; // one kindergarten lunch, ages 3 to 5 (illustrative)
-H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', pink: '#D6246E', white: '#F3EDDA', brown: '#9C5A2E' };
-// room crumbs and colours look dishes up by id
+H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', pink: '#D6246E', white: '#E6DCC3', brown: '#9C5A2E' };
+// dish colours and drawings are looked up by id
 [...Object.values(H.WARD_MENU).flat(), ...H.KIDS_MENU].forEach(d => { PL.DISH[d.id] = d; });
 
 H.nutrients = (grams, menu) => {
@@ -116,7 +116,7 @@ function seedKid(K) {
   return {
     id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: true, baseline: K.baseline,
     pet: { xp: K.id === 'k2' ? 24 : 120 + Math.round(r() * 150), c: { veg: 3 + Math.round(r() * 6), lowWaste: lowWaste + Math.round(r() * 4), balanced: 2 + Math.round(r() * 4), quests: 0 }, en: 60 + Math.round(r() * 25), nu: 60 + Math.round(r() * 25), jo: 60 + Math.round(r() * 30), streak: 0, quest: 0 },
-    log, messSeed: ['k_broccoli', 'k_rice'],
+    log,
   };
 }
 function seed() {
@@ -151,9 +151,7 @@ H.scanKidLunch = (K, preset) => {
   K.scanned = true;
   if (rec.w < .15) { K.pet.c.lowWaste++; K.pet.streak++; } else K.pet.streak = 0;
   if (rec.eaten.k_broccoli + rec.eaten.k_tomato > 20) K.pet.c.veg++;
-  K.pet.xp += 20;
-  const game = PL.game.feedLunch(K, { w: rec.w, servedBy: rec.served, measured: rec.measured }, H.KIDS_MENU);
-  return { ...rec, game };
+  return rec;
 };
 
 /* ---------------------------------------------------------------- report building blocks */
