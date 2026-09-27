@@ -648,6 +648,89 @@ canvas.reveal{display:block;margin:0 auto;width:150px;height:125px;image-renderi
 .face-ic svg{width:30px;height:30px}
 .kio-face > div:last-child{display:flex;flex-direction:column;gap:1.4cqw}
 
+/* ================================================================ Loopi Care (hospital) + Loopi Kids (kindergarten) */
+.chip.plain{padding:7px 14px}
+.demo-box{display:flex;flex-direction:column;gap:8px;background:var(--bg2);border-radius:14px;padding:12px;box-shadow:var(--shadow-s)}
+.demo-box label{font-size:12px;font-weight:600;color:var(--label2)}
+.care-icon{background:linear-gradient(145deg,#E8F3FF,#CFE3F7)}
+.kids-icon{background:linear-gradient(145deg,#FFF4D6,#FFE1A8)}
+.phone-tabs.three{grid-template-columns:repeat(3,1fr)}
+.phone-tabs.two{grid-template-columns:repeat(2,1fr)}
+.care .phone-tabs button[aria-selected="true"]{color:var(--blue)}
+.care-alert{display:flex;gap:10px;align-items:flex-start;background:var(--orange-soft);color:var(--label);border-radius:14px;padding:11px 14px;font-size:13.5px;line-height:1.4;flex:none}
+.care-alert svg{width:20px;height:20px;color:var(--orange);flex:none;margin-top:1px}
+.care-alert.ok{background:var(--tint-soft)}
+.care-alert.ok svg{color:var(--tint-ink)}
+.group.companion{flex-direction:row;align-items:center;gap:14px;padding:14px}
+.group.companion > * + *{border-top:0}
+.group.companion canvas{width:84px;height:70px;image-rendering:pixelated;border-radius:14px;background:#DDE4D4;flex:none}
+.group.companion b{display:block;font-size:15px}
+.group.companion span{font-size:13.5px;color:var(--label2);line-height:1.35}
+.meal-dots{display:flex;align-items:center;gap:5px;margin-top:8px}
+.meal-dots i{width:22px;height:8px;border-radius:999px;background:var(--fill2)}
+.meal-dots i.on{background:var(--tint)}
+.meal-dots i.part{background:var(--orange)}
+.meal-dots small{font-size:12px;color:var(--label2);margin-left:6px}
+.group.pad{padding:6px 14px 12px}
+.group.pad > * + *{border-top:0}
+.hrow.wide{grid-template-columns:62px minmax(0,1fr) auto;margin-top:8px}
+.hrow.wide b{font-size:13px;white-space:nowrap}
+.hrow.wide b small{font-weight:500;color:var(--label3);font-size:11.5px}
+.rep-head{flex-direction:row;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px}
+.rep-head > * + *{border-top:0}
+.rep-head b{display:block;font:700 18px var(--font-d);letter-spacing:-.02em}
+.rep-head span:not(.pill){font-size:12.5px;color:var(--label2)}
+.rep-kpis{display:flex;flex-direction:column;gap:10px;flex:1;min-width:0}
+.rep-kpis b{display:block;font:700 22px var(--font-d);letter-spacing:-.02em}
+.rep-kpis span{font-size:12.5px;color:var(--label2)}
+.finding{display:grid;grid-template-columns:8px 1fr;gap:10px;align-items:start;padding:10px 14px;font-size:14px;line-height:1.4}
+.finding i{width:8px;height:8px;border-radius:50%;margin-top:6px}
+.g-row.two-col{grid-template-columns:minmax(0,1fr) auto}
+.g-row.two-col .g-v{max-width:220px;white-space:normal}
+.two-btn{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.note{padding:12px 14px}
+.note > * + *{border-top:0}
+.note p{font-size:14.5px;line-height:1.45}
+.note span{display:block;font-size:12px;color:var(--label2);margin-top:6px}
+.gate-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gate-opts .btn{font-size:22px;padding:14px 0;border-radius:16px}
+/* kids: bigger, rounder, fewer words */
+.kids .phone-tabs button[aria-selected="true"]{color:#FF9F0A}
+.kid-actions button{padding:14px 4px;border-radius:20px;font-size:14px}
+.kid-actions button svg{width:34px;height:34px;color:#FF9F0A}
+.kid-actions button.hot{background:#FF9F0A;color:#fff}
+.kid-actions button.hot svg{color:#fff}
+.rainbow,.stickers{padding:14px;gap:10px;align-items:center;text-align:center}
+.rainbow > * + *,.stickers > * + *{border-top:0}
+.rainbow b,.stickers b{font:700 17px var(--font-d)}
+.rainbow > span{font-size:14px;color:var(--label2)}
+.rb-dots{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+.rb{width:40px;height:40px;border-radius:50%;border:3px dashed color-mix(in srgb,var(--c) 70%,transparent);display:grid;place-items:center;color:#fff}
+.rb.on{background:var(--c);border:3px solid var(--c);box-shadow:inset 0 0 0 2px rgba(255,255,255,.4)}
+.rb svg{width:20px;height:20px;filter:drop-shadow(0 1px 1px rgba(0,0,0,.35))}
+.st-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;width:100%}
+.sticker{display:flex;flex-direction:column;align-items:center;gap:3px}
+.st-food{position:relative;width:48px;height:48px;border-radius:50%;background:var(--c);box-shadow:0 0 0 3px #fff,0 0 0 4.5px var(--e),0 3px 8px rgba(0,0,0,.18);transform:rotate(-6deg)}
+.st-food i{position:absolute;top:17px;width:5px;height:6px;border-radius:50%;background:#1D1D1F}
+.st-food i:first-child{left:15px}.st-food i:nth-child(2){right:15px}
+.st-food em{position:absolute;left:50%;top:27px;width:12px;height:6px;margin-left:-6px;border-bottom:2.5px solid #1D1D1F;border-radius:0 0 12px 12px}
+.sticker small{font-size:12px;font-weight:600;text-transform:capitalize}
+.sticker .stars{font-size:11px;color:#FFB800;letter-spacing:1px;min-height:14px}
+.sticker.empty .st-food{background:var(--fill2);box-shadow:0 0 0 3px var(--bg2),0 0 0 4.5px var(--fill3);transform:none}
+.sticker.empty .st-food i,.sticker.empty .st-food em{opacity:.25}
+.sticker.empty small{color:var(--label3)}
+@media print{.stu-side,.phone-tabs,.demo-switch,.phone-top,.two-btn{display:none!important}.phone{box-shadow:none!important;height:auto!important;overflow:visible!important}.phone-body{overflow:visible!important}}
+.grow-btn{background:#FF9F0A;animation:pop .5s ease-out}
+.grow-btn:hover{background:#F08F00}
+/* Kitchen: carbon breakdown */
+.cstack{display:flex;height:14px;border-radius:999px;overflow:hidden;margin-top:14px;gap:2px}
+.cstack i{display:block;height:100%}
+.clist{display:flex;flex-direction:column;margin-top:10px}
+.clist div{display:grid;grid-template-columns:14px 1fr auto;gap:8px;align-items:center;padding:8px 0;border-bottom:.5px solid var(--sep);font-size:14px}
+.clist div:last-child{border-bottom:0}
+.clist b{font-weight:600}
+.clist .dot{width:10px;height:10px}
+
 </style>
 </head>
 <body>
@@ -772,7 +855,7 @@ function freshState() {
     v: 7,
     students,
     classes: CLASS_SEED.map(c => ({ ...c })),
-    today: { trays: 140, zero: 17, dish, servedNow: Object.fromEntries(MENU.map(d => [d.id, dish[d.id].served])), eating: 0, feed: [], clock: 11 * 60 + 48, trayNo: 412 },
+    today: { trays: 140, zero: 17, co2: 11200, dish, servedNow: Object.fromEntries(MENU.map(d => [d.id, dish[d.id].served])), eating: 0, feed: [], clock: 11 * 60 + 48, trayNo: 412 },
     term: { kg: 1284, meals: 41210, zero: 6120 },
     zeroWeek: [.11, .14, .13, .16],
     order: { approved: null },
@@ -784,7 +867,14 @@ function freshState() {
 const KEY = 'plateloop-final-v7';
 const chan = 'BroadcastChannel' in window ? new BroadcastChannel('plateloop') : null;
 const subs = new Set();
-function readStored() { try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); return s && s.v === 7 ? s : null; } catch (e) { return null; } }
+function readStored() {
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY) || 'null');
+    if (!s || s.v !== 7) return null;
+    if (s.today.co2 == null) s.today.co2 = 11200; // saves from before the live CO₂ counter
+    return s;
+  } catch (e) { return null; }
+}
 PL.S = readStored() || freshState();
 PL.store = {
   save(kind = 'update') {
@@ -898,8 +988,11 @@ PL.scanAfter = (sid, eatPct, method = 'face') => {
   st.scanned = true;
   r.intake = PL.nutrientsOf(Object.fromEntries(MENU.map(d => [d.id, served[d.id] - measured[d.id]])));
   r.zero = r.w < .05;
+  // CO₂e avoided on this tray compared with the student's usual leftovers, in grams (shown live to the student)
+  r.co2 = Math.round(Math.max(0, st.baseline * r.served - r.left) / 1000 * PL.CO2_PER_KG * 1000);
+  T.co2 = (T.co2 || 0) + r.co2;
   if (r.zero) { T.zero = (T.zero || 0) + 1; PL.S.term.zero = (PL.S.term.zero || 0) + 1; }
-  st.after = { t: (T.clock += .35, PL.clock()), left: r.left, w: r.w, intake: r.intake, zero: r.zero, served, measured };
+  st.after = { t: (T.clock += .35, PL.clock()), left: r.left, w: r.w, intake: r.intake, zero: r.zero, served, measured, co2: r.co2 };
   st.log.unshift({ day: 'Fri 25', portion, w: r.w, pts: r.xp, n: r.intake });
   st.log = st.log.slice(0, 6);
   r.servedBy = served; r.measured = measured;
@@ -1137,7 +1230,7 @@ const hash = s => [...s].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
 const daily = g => { if (!g.day || g.day.d !== today()) g.day = { d: today(), balls: 0, pets: 0 }; return g.day; };
 
 /** Leftovers become crumbs: one per 20 g left of a dish, at most 3 per dish. */
-const crumbsFrom = left => MENU.flatMap(d => Array(Math.min(3, Math.floor((left[d.id] || 0) / 20))).fill(d.id));
+const crumbsFrom = (left, menu = MENU) => menu.flatMap(d => Array(Math.min(3, Math.floor((left[d.id] || 0) / 20))).fill(d.id));
 
 /** The tray is "good" when less is left than 15 %, or a quarter less than the student's usual. */
 G.heartLine = st => Math.max(.15, st.baseline * .75);
@@ -1151,7 +1244,7 @@ G.init = st => {
     v: V, name: 'Loopi', stage,
     hunger: Math.round(G.HUNGER_MAX[stage] * (.4 + r() * .3)),
     hearts: st.named ? req - 1 : Math.floor(r() * req), ready: false,
-    plate: null, mess: ['spinach', 'kimchi', 'soup', 'rice'].slice(0, n), composted: Math.round(15 + r() * 50),
+    plate: null, mess: (st.messSeed || ['spinach', 'kimchi', 'soup', 'rice']).slice(0, n), composted: Math.round(15 + r() * 50),
     eq: st.id === 's3' ? 'crown' : null, day: { d: today(), balls: 0, pets: 0 },
   };
 };
@@ -1165,8 +1258,9 @@ G.heartsReq = g => G.HEARTS_REQ[g.stage];
 G.plantOf = st => Math.min(4, Math.floor(st.pet.c.lowWaste / 5));
 
 /* ---------------------------------------------------------------- lunch */
-/** Called by PL.scanAfter. Hunger and hearts change right away; the food waits in the bowl. */
-G.feedLunch = (st, r) => {
+/** Called after the second scan (school, or kindergarten with its own menu). Hunger and hearts change
+    right away; the food waits in the bowl. */
+G.feedLunch = (st, r, menu = MENU) => {
   const g = G.ensure(st), max = G.hungerMax(g), req = G.heartsReq(g);
   if (g.plate && !g.plate.eaten) g.mess.push(...g.plate.crumbs); // yesterday's uneaten plate still counts
   const gain = 1 + (r.w < .3 ? 1 : 0) + (r.w < .12 ? 1 : 0);
@@ -1178,8 +1272,8 @@ G.feedLunch = (st, r) => {
   }
   g.plate = {
     eaten: false, heart, gain,
-    food: MENU.filter(d => r.servedBy[d.id] - r.measured[d.id] > 10).map(d => d.id),
-    crumbs: crumbsFrom(r.measured),
+    food: menu.filter(d => r.servedBy[d.id] - r.measured[d.id] > 10).map(d => d.id),
+    crumbs: crumbsFrom(r.measured, menu),
   };
   return { hunger: gain, heart, ready: g.ready, crumbs: g.plate.crumbs.length };
 };
@@ -1345,7 +1439,7 @@ function screen() {
       <div class="kio-kicker">PlateLoop</div>
       <div class="kio-title">Scan your tray.</div>
       <div class="kio-sub">Once before lunch and once after. Every clean tray grows a fruit on the school's Green Tree.</div>
-      <div class="kio-meta"><div><b class="num">${T.trays}</b>trays today</div><div><b class="num">${T.eating}</b>eating now</div><div><b class="num">${pct(PL.zeroRate())}</b>zero leftover</div></div></div>`;
+      <div class="kio-meta"><div><b class="num">${T.trays}</b>trays today</div><div><b class="num">${T.eating}</b>eating now</div><div><b class="num">${pct(PL.zeroRate())}</b>zero leftover</div><div><b class="num">${((T.co2 || 0) / 1000).toFixed(1)} kg</b>CO₂ saved today</div></div></div>`;
     ban = banner(k.bi);
   } else if (k.mode === 'already') {
     main = `${left()}<div class="kio-right"><div class="kio-kicker">All set</div><div class="kio-title">You're done for today, ${esc(st.name)}.</div><div class="kio-sub">You scanned before and after lunch. See you tomorrow!</div></div>`;
@@ -1385,6 +1479,7 @@ function screen() {
     const r = k.result, g = r.game;
     const chips = [`Points <em>+${r.xp}</em>`];
     if (g) { chips.push(`Loopi <em>+${g.hunger} food</em>`); if (g.heart) chips.push(`<em>+1 heart</em>`); }
+    if (r.co2 > 0) chips.push(`CO₂ saved <em>${r.co2} g</em>`);
     if (r.zero) chips.unshift(`<em>+1 fruit</em> on the Green Tree`);
     main = `${left()}<div class="kio-right">
       <div class="kio-bubble">“${esc(r.zero ? 'Zero leftovers! You grew a fruit on the school tree!' : r.line)}”</div>
@@ -1446,7 +1541,7 @@ PL.apps.scanner = {
 </script>
 <script>
 (() => {
-  const APP = 'scanner', FILES = {'model': '1-plateloop-scanner-3d.html', 'scanner': '2-plateloop-kiosk.html', 'kitchen': '3-plateloop-kitchen.html', 'student': '4-loopi-student-app.html'};
+  const APP = 'scanner', FILES = {'model': '1-plateloop-scanner-3d.html', 'scanner': '2-plateloop-kiosk.html', 'kitchen': '3-plateloop-kitchen.html', 'student': '4-loopi-student-app.html', 'care': '5-loopi-care-hospital.html', 'kids': '6-loopi-kids-kindergarten.html'};
   const go = n => { location.href = FILES[n]; };
   PL.open = go;
   document.addEventListener('click', e => {

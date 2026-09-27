@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>PlateLoop Kitchen</title>
+<title>Loopi Care</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Silkscreen&display=swap">
@@ -1331,408 +1331,407 @@ G.wear = (st, item) => {
 
 </script>
 <script>
-/* ---- js/kitchen.js ---- */
-/* PlateLoop Kitchen: every before/after scan arrives here. Today (live), Dishes, Nutrition,
-   Environment (Green Tree dashboard), Plan & order (the plan → order → cook → serve cycle), Report. */
+/* ---- js/health.js ---- */
+/* PlateLoop beyond schools: hospital wards and kindergartens. The same scanner pairs each person by face,
+   scans the tray before and after the meal, and turns the difference into a personal healthcare report:
+   what they ate, their nutrient intake against their own targets, and their eating habits over time.
+   This file holds the menus, the demo people, the meal scan and the report building blocks.
+   Loopi Care (js/care.js) and Loopi Kids (js/kids.js) draw on it. */
 (() => {
 'use strict';
-const { $, $$, pct, fmt1, money, esc, MENU, rng, clamp } = PL;
+const { clamp, rng, esc, pct } = PL;
+const H = PL.health = {};
 
-const HISTORY = (() => { const r = rng(11); return Array.from({ length: 30 }, (_, i) => i < 10 ? .29 + (r() - .5) * .04 : clamp(.29 - (i - 9) * .0065 + (r() - .5) * .03, .12, .35)); })();
-const TREND = { spinach: [.46, +17, 'Spinach Week quest is working: 46% → 63% eaten on quest days.'], kimchi: [.55, +1, 'Serve 25 g by default and let students take more.'], apple: [.88, +1, 'Popular. Keep it.'], rice: [.82, +4, 'More students choose Small since portion sizes started.'], bulgogi: [.94, +2, 'Most popular dish. Keep the portion.'], soup: [.58, -2, 'Cut the default ladle from 200 to 150 ml.'] };
-const TOMORROW = [
-  { id: 'rice', name: 'Rice', std: 180, learned: 148, err: .05, tags: ['grain'], bom: [['Rice (raw)', .42, 2.2]] },
-  { id: 'curry', name: 'Pork & vegetable curry', std: 150, learned: 131, err: .06, tags: ['protein'], bom: [['Pork shoulder', .20, 9.0], ['Potato', .22, 1.6], ['Carrot', .10, 1.8], ['Onion', .14, 1.4], ['Curry roux', .07, 7.0]] },
-  { id: 'soup', name: 'Seaweed soup', std: 200, learned: 122, err: .09, tags: ['soup'], bom: [['Dried seaweed', .012, 30], ['Beef brisket', .03, 18], ['Soy sauce', .02, 3.0]] },
-  { id: 'tofu', name: 'Fried tofu', std: 70, learned: 55, err: .08, tags: ['protein'], bom: [['Firm tofu', .9, 3.2], ['Cooking oil', .05, 2.5]] },
-  { id: 'sprout', name: 'Bean sprout side', std: 50, learned: 29, err: .11, tags: ['veg'], bom: [['Bean sprouts', .95, 2.4], ['Sesame oil', .02, 12]] },
-  { id: 'kimchi', name: 'Kimchi', std: 40, learned: 22, err: .10, tags: ['veg'], bom: [['Kimchi', 1.0, 4.5]] },
-  { id: 'yogurt', name: 'Yogurt', std: 85, learned: 81, err: .03, tags: ['fruit'], bom: [['Yogurt', 1.0, 3.5]] },
-];
-const INVENTORY = { 'Rice (raw)': 60, 'Kimchi': 12, 'Onion': 8, 'Soy sauce': 10, 'Cooking oil': 15, 'Sesame oil': 2 };
-const ENROLLED = 840;
-const MAPE = TOMORROW.reduce((a, d) => a + d.err, 0) / TOMORROW.length;
-const SEED_MIX = { S: 35, M: 84, L: 21 }; // portion sizes of the 140 trays scanned before the demo starts
-
-const ui = { view: 'overview', plan: { att: 812, weather: 'sunny', event: 'normal' }, seen: null };
-let root = null;
-const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
-const NAV = [
-  ['overview', 'Overview', SV('<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>')],
-  ['dishes', 'Dishes', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
-  ['nutrition', 'Nutrition', SV('<path d="M12 21c-4.5-2.5-8-6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 11c0 4-3.5 7.5-8 10Z"/>')],
-  ['environment', 'Environment', SV('<path d="M12 22V12M12 12C8 12 5 9 5 5c4 0 7 3 7 7ZM12 14c3 0 6-2.5 6-6-3 0-6 2.5-6 6Z"/>')],
-  ['carbon', 'Carbon', SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/><path d="M9.5 14.5h5"/>')],
-  ['plan', 'Plan & order', SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>')],
-  ['report', 'Daily report', SV('<path d="M4 5h16M4 10h16M4 15h10M4 20h7"/>')],
-];
-
-function mount(el) {
-  root = el;
-  ui.seen = PL.S.today.feed.length ? PL.S.today.feed[0].t + PL.S.today.feed[0].tray + PL.S.today.feed[0].kind : null;
-  el.innerHTML = `
-  <div class="kit">
-    <aside class="kit-side">
-      <div class="who"><span class="kit-logo" aria-hidden="true"></span><div><b>PlateLoop Kitchen</b><span>Haneul Elementary</span></div></div>
-      ${NAV.map(([id, label, ic]) => `<button data-view="${id}">${ic}${label}</button>`).join('')}
-      <div class="kit-foot"><div id="kit-live"></div><button class="linkish" data-reset style="font-size:13px">Reset demo</button></div>
-    </aside>
-    <main class="kit-main" id="kit-main"></main>
-  </div>`;
-  $$('.kit-side button', el).forEach(b => b.onclick = () => { ui.view = b.dataset.view; render(); scrollTo({ top: 0 }); });
-  render();
-}
-function render() {
-  if (!root) return;
-  $$('.kit-side button', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
-  $('#kit-live', root).innerHTML = `<span class="live"><i></i>Live from the scanner · ${PL.clock()}</span>`;
-  const main = $('#kit-main', root);
-  main.innerHTML = ({ overview, dishes, nutrition, environment, carbon, plan, report })[ui.view]();
-  wire(main);
-}
-
-/* ---------------------------------------------------------------- data helpers */
-const T = () => PL.S.today;
-const dishStats = () => MENU.map(d => { const x = T().dish[d.id]; return { d, served: x.served, left: x.ret, eaten: x.served - x.ret, e: 1 - x.ret / x.served }; });
-function portionMix() {
-  const m = { ...SEED_MIX };
-  T().feed.filter(f => f.kind === 'before').forEach(f => { m[f.portion]++; });
-  const tot = m.S + m.M + m.L;
-  return { m, tot };
-}
-
-/* ---------------------------------------------------------------- Overview */
-function overview() {
-  const t = T(), tot = PL.todayTotals(), good = tot.w < PL.SCHOOL_BASELINE;
-  const kpis = [
-    ['Trays served', (t.trays + t.eating).toLocaleString('en-US'), `${t.eating} eating now`, ''],
-    ['Plate waste', pct(tot.w), `baseline ${pct(PL.SCHOOL_BASELINE)}`, good ? 'good' : ''],
-    ['Food left', `${fmt1(tot.lf / 1000)} kg`, `≈ ${money(tot.val)} of ingredients`, ''],
-    ['Zero leftover', pct(PL.zeroRate()), `${t.zero} clean trays today`, 'good'],
-  ];
-  const key = f => f.t + f.tray + f.kind;
-  const seenIdx = t.feed.findIndex(f => key(f) === ui.seen);
-  const fresh = seenIdx === -1 ? t.feed.length : seenIdx;
-  ui.seen = t.feed.length ? key(t.feed[0]) : null;
-  return `
-  <div class="page-head"><div><h1>Today</h1><p>Friday 25 September · every tray is scanned before and after lunch.</p></div></div>
-  <div class="kpis">${kpis.map(([k, v, s, c]) => `<div class="kpi"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${s}</div></div>`).join('')}</div>
-  <div class="kgrid">
-    <div class="card"><div class="row spread"><h3>Live scans</h3><span class="hint">Tray numbers, not names</span></div>
-      <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}</span></div>`).join('')
-        : `<p class="hint" style="padding:22px 2px">Class 3-2 is about to eat. Scans from the PlateLoop scanner appear here the moment they happen.</p>`}</div></div>
-    <div class="card chart"><h3>Eaten by dish</h3><p class="hint">Share of each dish eaten on finished trays</p>${chartDish()}</div>
-  </div>
-  <div class="card chart"><h3>Plate waste, last 30 school days</h3><p class="hint">Food left ÷ food served, whole school</p>${chartTrend()}</div>`;
-}
-function chartDish() {
-  const W = 520, rowH = 36, top = 6, left = 150, right = 50, rows = dishStats().sort((a, b) => b.e - a.e), H = top + rows.length * rowH + 24, iw = W - left - right;
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Share of each dish eaten">`;
-  [0, .5, 1].forEach(v => { const x = left + v * iw; s += `<line class="gridline" x1="${x}" x2="${x}" y1="${top}" y2="${H - 20}"/><text class="axis" x="${x}" y="${H - 4}" text-anchor="middle">${v * 100}%</text>`; });
-  rows.forEach((r, i) => {
-    const y = top + i * rowH + 8;
-    s += `<text x="${left - 12}" y="${y + 13}" text-anchor="end" style="font:500 13px var(--font);fill:var(--label)">${r.d.name}</text><rect x="${left}" y="${y}" width="${iw}" height="18" rx="9" fill="var(--fill)"/><rect x="${left}" y="${y}" width="${(iw * r.e).toFixed(1)}" height="18" rx="9" fill="${r.e < .6 ? 'var(--orange)' : 'var(--tint)'}"/><text x="${W - right + 10}" y="${y + 13}" style="font:600 13px var(--font);fill:var(--label)">${pct(r.e)}</text>`;
-  });
-  return s + '</svg>';
-}
-function chartTrend() {
-  const W = 1000, H = 230, l = 44, r = 16, t = 14, b = 28, iw = W - l - r, ih = H - t - b, max = .35;
-  const X = i => l + i / (HISTORY.length - 1) * iw, Y = v => t + ih - v / max * ih;
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Plate waste over 30 school days">`;
-  s += `<rect x="${l}" y="${t}" width="${X(9.5) - l}" height="${ih}" rx="8" fill="var(--fill)"/><text class="axis" x="${l + 10}" y="${t + 18}">Before PlateLoop</text>`;
-  [0, .1, .2, .3].forEach(v => { s += `<line class="gridline" x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${l - 8}" y="${Y(v) + 4}" text-anchor="end">${v * 100}%</text>`; });
-  s += `<line x1="${l}" x2="${W - r}" y1="${Y(.15)}" y2="${Y(.15)}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/><text class="axis" x="${X(10.5)}" y="${Y(.15) + 16}" style="fill:var(--orange)">Goal 15%</text>`;
-  const line = HISTORY.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' ');
-  s += `<defs><linearGradient id="tg1" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--tint)" stop-opacity=".25"/><stop offset="1" stop-color="var(--tint)" stop-opacity="0"/></linearGradient></defs>`;
-  s += `<path d="${line} L${X(29)},${Y(0)} L${X(0)},${Y(0)} Z" fill="url(#tg1)"/><path d="${line}" fill="none" stroke="var(--tint)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
-  s += `<circle cx="${X(29)}" cy="${Y(HISTORY[29])}" r="5" fill="var(--tint)" stroke="var(--bg2)" stroke-width="2.5"/><text x="${X(29) - 10}" y="${Y(HISTORY[29]) - 12}" text-anchor="end" style="font:600 13px var(--font);fill:var(--label)">${pct(HISTORY[29])}</text>`;
-  [0, 9, 19, 29].forEach(i => s += `<text class="axis" x="${X(i)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 29 ? 'end' : 'middle'}">Day ${i + 1}</text>`);
-  return s + '</svg>';
-}
-
-/* ---------------------------------------------------------------- Dishes */
-function dishes() {
-  const rows = dishStats(), mix = portionMix();
-  const W = 1000, rowH = 44, top = 8, left = 170, right = 90, maxKg = Math.max(...rows.map(r => r.served)) / 1000, H = top + rows.length * rowH + 26, iw = W - left - right;
-  let chart = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilograms served, eaten and left by dish">`;
-  rows.forEach((r, i) => {
-    const y = top + i * rowH + 10, we = iw * (r.eaten / 1000) / maxKg, wl = iw * (r.left / 1000) / maxKg;
-    chart += `<text x="${left - 14}" y="${y + 15}" text-anchor="end" style="font:500 14px var(--font);fill:var(--label)">${r.d.name}</text>`;
-    chart += `<rect x="${left}" y="${y}" width="${we.toFixed(1)}" height="22" rx="6" fill="var(--tint)"/><rect x="${(left + we + 2).toFixed(1)}" y="${y}" width="${Math.max(0, wl - 2).toFixed(1)}" height="22" rx="6" fill="var(--orange)"/>`;
-    chart += `<text x="${(left + we + wl + 10).toFixed(1)}" y="${y + 15}" style="font:600 13px var(--font);fill:var(--label2)">${fmt1(r.served / 1000)} kg</text>`;
-  });
-  chart += `</svg><div class="mix-key"><span style="--c:var(--tint)">Eaten</span><span style="--c:var(--orange)">Left on trays</span><span>Label = kg served</span></div>`;
-  return `
-  <div class="page-head"><div><h1>Dishes</h1><p>What was served (before scans) against what came back (after scans), dish by dish.</p></div></div>
-  <div class="card chart"><h3>Served, eaten and left today</h3>${chart}</div>
-  <div class="card"><h3>Dish analysis</h3><div class="table-wrap" style="margin-top:8px"><table>
-    <thead><tr><th>Dish</th><th class="r">Served</th><th class="r">Eaten</th><th class="r">Left</th><th class="r">Eaten %</th><th class="r">4-week trend</th><th>Suggestion</th></tr></thead>
-    <tbody>${rows.sort((a, b) => a.e - b.e).map(r => { const [, tr, sug] = TREND[r.d.id]; return `<tr><td><b>${r.d.name}</b></td><td class="r num">${fmt1(r.served / 1000)} kg</td><td class="r num">${fmt1(r.eaten / 1000)} kg</td><td class="r num">${fmt1(r.left / 1000)} kg</td><td class="r"><span class="flag ${r.e < .6 ? 'low' : r.e < .8 ? 'mid' : 'ok'}">${pct(r.e)}</span></td><td class="r num" style="color:${tr > 0 ? 'var(--tint-ink)' : tr < 0 ? 'var(--red)' : 'var(--label3)'}">${tr > 0 ? '▲' : tr < 0 ? '▼' : '–'} ${Math.abs(tr)} pts</td><td style="min-width:220px">${sug}</td></tr>`; }).join('')}</tbody></table></div></div>
-  <div class="kgrid">
-    <div class="card"><h3>Portion sizes served</h3><p class="hint">Measured by the before scan: Small, Regular or Large</p>
-      <div class="mix">${['S', 'M', 'L'].map((p, i) => `<i style="width:${mix.m[p] / mix.tot * 100}%;background:${['var(--teal)', 'var(--tint)', 'var(--orange)'][i]}"></i>`).join('')}</div>
-      <div class="mix-key">${['S', 'M', 'L'].map((p, i) => `<span style="--c:${['var(--teal)', 'var(--tint)', 'var(--orange)'][i]}">${{ S: 'Small', M: 'Regular', L: 'Large' }[p]} ${pct(mix.m[p] / mix.tot)}</span>`).join('')}</div>
-      <p class="hint" style="margin-top:12px">Students who pick Small leave about half as much as those who pick Large.</p></div>
-    <div class="card"><h3>Why two scans matter</h3><p class="hint" style="font-size:14px;margin-top:6px">The before scan gives the exact amount each student was served, so the after scan measures true plate waste, not a guess from standard portions. It also shows which dishes students <b>take</b> but don't <b>eat</b>, like the soup.</p></div>
-  </div>`;
-}
-
-
-/* ---------------------------------------------------------------- Nutrition (Nuvilab-style intake status) */
-function intakeStats() {
-  const done = PL.S.students.filter(s => s.log[0] && s.log[0].n);
-  const recent = PL.S.students.map(s => s.scanned ? s.after.intake : s.log[0].n);
-  const avg = Object.fromEntries(PL.NUTRIENTS.map(([k]) => [k, Math.round(recent.reduce((a, n) => a + n[k], 0) / recent.length)]));
-  const low = PL.S.students.map(s => { const n = s.scanned ? s.after.intake : s.log[0].n; return { s, n, r: n.kcal / PL.TARGET.kcal }; }).filter(x => x.r < .6).sort((a, b) => a.r - b.r);
-  return { avg, low, n: recent.length, done: done.length };
-}
-const zoneBar = (k, v) => {
-  const max = PL.TARGET[k] * 1.6, pos = x => Math.min(100, x / max * 100), st = PL.nStatus(k, v);
-  return `<div class="zbar"><span class="z z1" style="width:${pos(PL.TARGET[k] * .8)}%"></span><span class="z z2" style="left:${pos(PL.TARGET[k] * .8)}%;width:${pos(PL.TARGET[k] * 1.3) - pos(PL.TARGET[k] * .8)}%"></span><i class="${st}" style="width:${pos(v)}%"></i></div>`;
+/* ---------------------------------------------------------------- menus (nutrients per gram; na = sodium mg per gram) */
+const dish = (id, name, g, n, color, edge, group, extra) => ({ id, name, g, n, color, edge, group, ...extra });
+H.WARD_MENU = {
+  breakfast: [
+    dish('h_juk', 'Rice porridge', 300, { kcal: .46, c: .10, p: .012, f: .002, na: 1.1 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_egg', 'Steamed egg', 70, { kcal: 1.3, c: .01, p: .11, f: .09, na: 2.4 }, '#F6D365', '#C9A13B', 'protein'),
+    dish('h_spinach', 'Spinach namul', 40, { kcal: .55, c: .04, p: .03, f: .035, na: 3.5 }, '#3F7D32', '#2A5A22', 'veg'),
+    dish('h_milk', 'Milk', 200, { kcal: .64, c: .05, p: .033, f: .035, na: .4 }, '#FFFFFF', '#C7C7CC', 'dairy'),
+    dish('h_banana', 'Banana', 100, { kcal: .89, c: .23, p: .011, f: .003, na: 0 }, '#F7DC6F', '#C9A13B', 'fruit'),
+  ],
+  lunch: [
+    dish('h_rice', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_fish', 'Grilled mackerel', 100, { kcal: 2.0, c: 0, p: .19, f: .13, na: 1.2 }, '#C98F58', '#8E5E28', 'protein'),
+    dish('h_sprout', 'Bean sprout soup', 200, { kcal: .15, c: .01, p: .012, f: .005, na: 3.0 }, '#EFE6C4', '#BFB28E', 'soup'),
+    dish('h_greens', 'Seasoned greens', 50, { kcal: 1.0, c: .05, p: .03, f: .03, na: 3.2 }, '#5E9E3A', '#3B6E22', 'veg'),
+    dish('h_pear', 'Pear slices', 80, { kcal: .45, c: .11, p: .003, f: .001, na: 0 }, '#F1E6B0', '#C9B45E', 'fruit'),
+  ],
+  dinner: [
+    dish('h_rice2', 'Multigrain rice', 210, { kcal: 1.45, c: .32, p: .03, f: .003, na: 0 }, '#F3EDDA', '#BFB28E', 'grain'),
+    dish('h_chicken', 'Braised chicken and potato', 150, { kcal: 1.5, c: .08, p: .20, f: .06, na: 3.2 }, '#B5652D', '#7A3F17', 'protein'),
+    dish('h_tofu', 'Pan-fried tofu', 80, { kcal: 1.9, c: .03, p: .09, f: .13, na: .2 }, '#F4E7C8', '#C9B48A', 'protein'),
+    dish('h_doenjang', 'Soybean paste soup', 200, { kcal: .4, c: .04, p: .03, f: .015, na: 3.8 }, '#C0843F', '#8E5E28', 'soup'),
+    dish('h_zucchini', 'Stir-fried zucchini', 50, { kcal: .8, c: .04, p: .015, f: .03, na: 2.6 }, '#9CC56B', '#6A9440', 'veg'),
+  ],
 };
-function nutrition() {
-  const { avg, low, n } = intakeStats();
-  const status = { low: ['Low', 'low'], ok: ['Adequate', 'ok'], high: ['Too much', 'mid'] };
-  return `
-  <div class="page-head"><div><h1>Nutrition</h1><p>What students actually ate at lunch, from the difference between the before and after scans, against the school-lunch target.</p></div></div>
-  <div class="card"><div class="row spread"><h3>Average intake per student</h3><span class="hint">Class 3-2 · ${n} students · latest lunch</span></div>
-    <div class="nut-legend"><span class="l1">Low</span><span class="l2">Adequate</span><span class="l3">Too much</span></div>
-    <div class="nut-rows">${PL.NUTRIENTS.map(([k, label, unit]) => { const [t, c] = status[PL.nStatus(k, avg[k])]; return `<div class="nut-row"><b>${label}</b>${zoneBar(k, avg[k])}<span class="num">${avg[k]} ${unit} <small>/ ${PL.TARGET[k]}</small></span><span class="flag ${c}">${t}</span></div>`; }).join('')}</div>
-    <p class="hint" style="margin-top:12px">Targets are per lunch for a grade 3 student (about a third of the daily need). Replace them with your national school-meal standard.</p></div>
-  <div class="kgrid">
-    <div class="card"><div class="row spread"><h3>Students to check on</h3><span class="pill orange">${low.length} flagged</span></div><p class="hint">Ate less than 60% of the calorie target at their last lunch. Visible to the school dietitian and homeroom teacher only.</p>
-      <div class="lowlist">${low.length ? low.slice(0, 8).map(x => `<div><span class="av">${esc(x.s.name[0])}</span><div><b>${esc(x.s.name)} · Class ${x.s.cls}</b><span>${x.n.kcal} kcal · protein ${x.n.p} g</span></div><span class="flag low">${pct(x.r)}</span></div>`).join('') : '<p class="hint" style="padding:12px 0">Nobody below 60% right now.</p>'}</div></div>
-    <div class="card"><h3>Where nutrients are lost</h3><p class="hint">Nutrients served but left on trays today, all finished trays</p>
-      ${(() => { const left = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].ret])); const served = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].served])); const L = PL.nutrientsOf(left), S = PL.nutrientsOf(served);
-        return `<div class="nut-rows" style="margin-top:12px">${PL.NUTRIENTS.map(([k, label, unit]) => `<div class="nut-row lost"><b>${label}</b><div class="zbar"><i class="high" style="width:${L[k] / S[k] * 100}%"></i></div><span class="num">${pct(L[k] / S[k])}</span><span class="hint">${Math.round(L[k] / 1000 * (unit === 'g' ? 1 : 1)).toLocaleString('en-US')}${unit === 'g' ? ' kg' : 'k kcal'}</span></div>`).join('')}</div>`; })()}
-      <p class="hint" style="margin-top:12px">Vegetables carry most of the lost fibre and vitamins. The Spinach Week quest targets this.</p></div>
-  </div>`;
-}
+H.MEALS = [['breakfast', 'Breakfast', '07:50'], ['lunch', 'Lunch', '12:10'], ['dinner', 'Dinner', '17:40']];
+/* each diet sets daily targets and changes what's served (portion multipliers, low-salt cooking) */
+H.DIETS = {
+  regular: { name: 'Regular', target: { kcal: 1900, p: 70, c: 240, f: 55, na: 2300 }, mult: {}, na: 1, note: 'No restrictions.' },
+  diabetic: { name: 'Diabetic', target: { kcal: 1600, p: 70, c: 180, f: 50, na: 2300 }, mult: { h_juk: .8, h_rice: .8, h_rice2: .8, h_pear: .7, h_banana: .6 }, na: 1, note: 'Smaller rice and fruit portions to keep carbs steady.' },
+  lowna: { name: 'Low sodium', target: { kcal: 1800, p: 70, c: 230, f: 55, na: 1500 }, mult: {}, na: .55, note: 'Soups and side dishes are cooked with about half the salt.' },
+  protein: { name: 'High protein', target: { kcal: 2100, p: 110, c: 240, f: 65, na: 2300 }, mult: { h_egg: 1.5, h_fish: 1.4, h_chicken: 1.4, h_tofu: 1.5, h_milk: 1.25 }, na: 1, note: 'Extra egg, fish, chicken, tofu and milk to help healing.' },
+};
+H.KIDS_MENU = [
+  dish('k_rice', 'Rice', 120, { kcal: 1.45, c: .32, p: .03, f: .003 }, '#F3EDDA', '#BFB28E', 'grain', { rainbow: 'white' }),
+  dish('k_bulgogi', 'Beef bulgogi', 50, { kcal: 2.1, c: .08, p: .18, f: .12 }, '#7A4424', '#4F2A15', 'protein', { rainbow: 'brown' }),
+  dish('k_broccoli', 'Broccoli', 30, { kcal: .34, c: .07, p: .028, f: .004 }, '#4C9A2A', '#2F6B18', 'veg', { rainbow: 'green' }),
+  dish('k_corn', 'Corn and egg soup', 150, { kcal: .5, c: .07, p: .025, f: .015 }, '#F4C542', '#C99A1B', 'soup', { rainbow: 'yellow', allergen: 'Egg', safe: 'Corn soup without egg' }),
+  dish('k_tomato', 'Cherry tomatoes', 40, { kcal: .18, c: .04, p: .009, f: .002 }, '#E0453A', '#A52A20', 'veg', { rainbow: 'red' }),
+  dish('k_berry', 'Blueberries', 30, { kcal: .57, c: .14, p: .007, f: .003 }, '#5B4FC4', '#3A3190', 'fruit', { rainbow: 'purple' }),
+];
+H.KIDS_TARGET = { kcal: 360, c: 55, p: 12, f: 10 }; // one kindergarten lunch, ages 3 to 5 (illustrative)
+H.RAINBOW = { red: '#E0453A', yellow: '#F4C542', green: '#4C9A2A', purple: '#5B4FC4', white: '#F3EDDA', brown: '#7A4424' };
+// room crumbs and colours look dishes up by id
+[...Object.values(H.WARD_MENU).flat(), ...H.KIDS_MENU].forEach(d => { PL.DISH[d.id] = d; });
 
-/* ---------------------------------------------------------------- Environment (Nuvilab-style dashboard + Green Tree) */
-function environment() {
-  const e = PL.env(PL.S.term.kg), zr = PL.zeroRate(), week = [...(PL.S.zeroWeek || []), zr];
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], goal = .2, W = 520, H = 220, l = 34, b = 26, t = 10, ih = H - b - t, max = .3, bw = 52;
-  let chart = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Zero-leftover rate this week">`;
-  [0, .1, .2, .3].forEach(v => { const y = t + ih - v / max * ih; chart += `<line class="gridline" x1="${l}" x2="${W - 6}" y1="${y}" y2="${y}"/><text class="axis" x="${l - 6}" y="${y + 4}" text-anchor="end">${v * 100}%</text>`; });
-  week.forEach((v, i) => { const x = l + 20 + i * ((W - l - 40) / 5), h = v / max * ih; chart += `<rect x="${x}" y="${t + ih - h}" width="${bw}" height="${h}" rx="8" fill="${v >= goal ? 'var(--tint)' : 'var(--blue)'}" opacity="${i === 4 ? 1 : .75}"/><text x="${x + bw / 2}" y="${t + ih - h - 6}" text-anchor="middle" style="font:600 12px var(--font);fill:var(--label)">${pct(v)}</text><text class="axis" x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${days[i]}${i === 4 ? ' (live)' : ''}</text>`; });
-  const gy = t + ih - goal / max * ih;
-  chart += `<line x1="${l}" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/><text class="axis" x="${W - 8}" y="${gy - 6}" text-anchor="end" style="fill:var(--orange)">Goal 20%</text></svg>`;
-  return `
-  <div class="page-head"><div><h1>Environment</h1><p>The school's impact, shown on the cafeteria screen and in every student's Loopi app.</p></div></div>
-  <div class="env-hero">
-    <div class="env-tree"><canvas id="env-tree" width="200" height="170" aria-label="School Green Tree"></canvas><div><b class="num">${PL.S.today.zero}</b> fruits today · one for every zero-leftover tray</div></div>
-    <div class="env-big"><div class="k">CO₂ avoided this term</div><div class="v num">${(e.co2 / 1000).toFixed(2)} t</div><div class="s">from ${Math.round(e.kg).toLocaleString('en-US')} kg of food not wasted</div>
-      <div class="env-eq"><div><b class="num">${Math.round(e.trees).toLocaleString('en-US')}</b>pine trees<small>absorbing CO₂ for a year</small></div><div><b class="num">${Math.round(e.km).toLocaleString('en-US')}</b>km not driven<small>by an average car</small></div><div><b class="num">${(PL.S.term.zero || 0).toLocaleString('en-US')}</b>zero-leftover trays<small>this term</small></div></div></div>
-  </div>
-  <div class="kgrid">
-    <div class="card chart"><h3>Zero-leftover rate this week</h3><p class="hint">Share of trays with less than 5% left</p>${chart}</div>
-    <div class="card"><h3>Waste by class this week</h3><p class="hint">Compared with each class's starting level</p>
-      <div class="lb" style="margin-top:12px;box-shadow:none;background:var(--fill)">${PL.classRows().map((r, i) => `<div class="lb-row ${i < 3 ? 'top' + (i + 1) : ''}"><span class="lb-rank">${i + 1}</span><canvas width="40" height="34" data-cls="${r.c.id}"></canvas><div><div class="lb-name">Class ${r.c.id}</div><div class="lb-sub">waste ${pct(r.w)} · started at ${pct(r.c.base)}</div></div><div class="lb-val">${r.red > 0 ? '−' + pct(r.red) : '0%'}</div></div>`).join('')}</div></div>
-  </div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: 2.5 kg CO₂e per kg of food, 6.6 kg CO₂ absorbed per pine tree per year, 0.17 kg CO₂ per car-km. Swap in published factors (e.g. EPA WARM) before quoting.</p>`;
-}
+H.nutrients = (grams, menu) => {
+  const o = { kcal: 0, c: 0, p: 0, f: 0, na: 0 };
+  menu.forEach(d => { const g = grams[d.id] || 0; Object.keys(o).forEach(k => { o[k] += g * (d.n[k] || 0); }); });
+  return Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
+};
 
-/* ---------------------------------------------------------------- Carbon: the whole cafeteria's footprint, toward carbon-neutral operation
-   Illustrative factors (kg CO₂e): per kg of food produced, per kg of food thrown away, and per unit of
-   energy, water and transport. Swap in published factors (e.g. EPA WARM, national grid) before quoting. */
-const EF_FOOD = { rice: 2.7, bulgogi: 27, spinach: 1.2, kimchi: 1.0, apple: .4, soup: 1.4 };
-const EF_DISPOSAL = .58;
-const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .46], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
-const DAYS_PER_MONTH = 20, BEFORE = 1.18, GOAL = .12;
-const CARBON_TREND = [1.16, 1.12, 1.07, 1.05, 1.02, 1];
-function carbonData() {
-  const w = PL.todayTotals().w, meals = ENROLLED * .97 * DAYS_PER_MONTH;
-  const food = MENU.map(d => { const kg = d.g.M / 1000 * meals; return { d, kg, t: kg * EF_FOOD[d.id] / 1000 }; });
-  const foodT = food.reduce((a, x) => a + x.t, 0);
-  const wastedKg = food.reduce((a, x) => a + x.kg * (T().dish[x.d.id].ret / T().dish[x.d.id].served), 0);
-  const disposalT = wastedKg * EF_DISPOSAL / 1000;
-  const ops = OPS.map(([name, what, qty, unit, f]) => ({ name, what, qty, unit, t: qty * f / 1000 }));
-  const opsT = ops.reduce((a, x) => a + x.t, 0);
-  const total = foodT + disposalT + opsT;
-  const hidden = food.reduce((a, x) => a + x.t * (T().dish[x.d.id].ret / T().dish[x.d.id].served), 0);
-  return { w, meals, food, foodT, wastedKg, disposalT, ops, opsT, total, hidden, perMeal: total * 1000 / meals, before: total * BEFORE };
-}
-function carbon() {
-  const c = carbonData(), cut = 1 - c.total / c.before;
-  const parts = [['Ingredients', c.foodT, 'var(--orange)'], ['Food waste', c.disposalT, 'var(--red)'], ['Energy, water and transport', c.opsT, 'var(--blue)']];
-  const beef = c.food.find(x => x.d.id === 'bulgogi');
-  const actions = [
-    ['Cut plate waste from ' + pct(c.w) + ' to 20%', Math.max(0, (c.w - .2) / c.w) * (c.disposalT + c.hidden) * 10, 'Using the dish-by-dish waste data'],
-    ['Swap beef for chicken or tofu once a week', beef.t * .2 * (1 - 6 / 27) * 10, 'Beef is ' + pct(beef.t / c.foodT) + ' of ingredient emissions'],
-    ['Cook to the forecast, not to enrolment', c.foodT * .06 * 10, 'Plan & order already cooks about 6% less'],
-    ['Run dishwashers full and off-peak', c.ops[0].t * .08 * 10, 'About 8% less electricity'],
-  ].sort((a, b) => b[1] - a[1]);
-  const W = 520, Hh = 180, max = 1.25, months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-  let trend = `<svg viewBox="0 0 ${W} ${Hh + 26}" role="img" aria-label="Monthly emissions, April to September">`;
-  CARBON_TREND.forEach((k, i) => { const v = c.total * k, h = k / max * Hh, x = 40 + i * 78; trend += `<rect x="${x}" y="${Hh - h}" width="46" height="${h}" rx="8" fill="var(--tint)" opacity="${i === 5 ? 1 : .6}"/><text x="${x + 23}" y="${Hh - h - 6}" text-anchor="middle" style="font:600 12px var(--font);fill:var(--label)">${v.toFixed(1)}</text><text class="axis" x="${x + 23}" y="${Hh + 18}" text-anchor="middle">${months[i]}</text>`; });
-  const gy = Hh - (BEFORE * (1 - GOAL)) / max * Hh;
-  trend += `<line x1="30" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/></svg>`;
-  return `
-  <div class="page-head"><div><h1>Carbon</h1><p>Every source of the cafeteria's emissions in one place: ingredients, food waste, and the kitchen's energy, water and deliveries.</p></div><button class="btn" id="copy-carbon">Copy monthly report</button></div>
-  <div class="kpis">
-    <div class="kpi"><div class="k">This month</div><div class="v">${c.total.toFixed(1)} t</div><div class="s">CO₂e, all sources</div></div>
-    <div class="kpi"><div class="k">Per meal</div><div class="v">${c.perMeal.toFixed(2)} kg</div><div class="s">${Math.round(c.meals).toLocaleString('en-US')} meals this month</div></div>
-    <div class="kpi good"><div class="k">Vs. before PlateLoop</div><div class="v">−${pct(cut)}</div><div class="s">goal −${pct(GOAL)} this year</div></div>
-    <div class="kpi good"><div class="k">Saved today, live</div><div class="v">${((T().co2 || 0) / 1000).toFixed(1)} kg</div><div class="s">from trays scanned so far</div></div>
-  </div>
-  <div class="kgrid">
-    <div class="card"><h3>Where the emissions come from</h3>
-      <div class="cstack">${parts.map(([n, v, col]) => `<i style="width:${v / c.total * 100}%;background:${col}" title="${n}"></i>`).join('')}</div>
-      <div class="clist">${parts.map(([n, v, col]) => `<div><span class="dot" style="color:${col}"></span><b>${n}</b><span class="num">${v.toFixed(1)} t · ${pct(v / c.total)}</span></div>`).join('')}</div>
-      <p class="hint" style="margin-top:10px">Food thrown away also wastes the ${c.hidden.toFixed(1)} t it took to grow it. That's counted under ingredients.</p></div>
-    <div class="card chart"><h3>Monthly emissions</h3><p class="hint">t CO₂e, all sources · <span style="color:var(--orange)">dashed line: this year's goal</span></p>${trend}</div>
-  </div>
-  <div class="kgrid">
-    <div class="card"><h3>Ingredients</h3><div class="table-wrap"><table><thead><tr><th>Dish</th><th class="r">kg a month</th><th class="r">t CO₂e</th></tr></thead><tbody>${[...c.food].sort((a, b) => b.t - a.t).map(x => `<tr><td>${x.d.name}</td><td class="r num">${Math.round(x.kg).toLocaleString('en-US')}</td><td class="r num">${x.t.toFixed(2)}</td></tr>`).join('')}</tbody></table></div></div>
-    <div class="card"><h3>Operations</h3><div class="table-wrap"><table><thead><tr><th>Source</th><th class="r">Use</th><th class="r">t CO₂e</th></tr></thead><tbody>${c.ops.map(o => `<tr><td>${o.name}<br><small class="muted">${o.what}</small></td><td class="r num">${o.qty.toLocaleString('en-US')} ${o.unit}</td><td class="r num">${o.t.toFixed(2)}</td></tr>`).join('')}<tr><td>Food waste disposal<br><small class="muted">${Math.round(c.wastedKg).toLocaleString('en-US')} kg to the bin</small></td><td class="r num">${EF_DISPOSAL} kg/kg</td><td class="r num">${c.disposalT.toFixed(2)}</td></tr></tbody></table></div></div>
-  </div>
-  <h2 class="section-title">Biggest cuts toward carbon-neutral</h2>
-  <div class="insights">${actions.map(([t, v, s], i) => `<div class="insight"><span class="ic" style="background:${['var(--tint)', 'var(--blue)', 'var(--orange)', 'var(--purple)'][i]}">${SV('<path d="M4 17l6-6 4 4 6-8"/>')}</span><div><b>${t}: −${v.toFixed(1)} t a school year</b><span>${s}</span></div></div>`).join('')}</div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.46 per kWh; gas 2.2 per m³. Replace with published factors before reporting.</p>`;
-}
-function carbonReport() {
-  const c = carbonData();
-  return `Carbon report, September. The cafeteria produced ${c.total.toFixed(1)} t CO₂e this month (${c.perMeal.toFixed(2)} kg per meal): ${c.foodT.toFixed(1)} t from ingredients, ${c.disposalT.toFixed(1)} t from food waste disposal, and ${c.opsT.toFixed(1)} t from energy, water and deliveries. That is ${pct(1 - c.total / c.before)} below the level before PlateLoop, against a goal of ${pct(GOAL)} this year. Plate waste is ${pct(c.w)}; food thrown away also carried ${c.hidden.toFixed(1)} t of ingredient emissions.`;
-}
+/* ---------------------------------------------------------------- demo people */
+const DAYS = ['Sat 19', 'Sun 20', 'Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'];
+H.TODAY = 'Fri 25';
+const PATIENTS = [
+  { id: 'p1', name: 'Kim Minsu', age: 68, room: '7B-12', diet: 'protein', why: 'Recovering from hip surgery', doctor: 'Dr. Yoon (orthopaedics)', app: d => .42 + d * .07, meal: { breakfast: -.15 }, like: { h_spinach: .6, h_greens: .6, h_zucchini: .7 } },
+  { id: 'p2', name: 'Lee Sunhee', age: 74, room: '7B-08', diet: 'diabetic', why: 'Type 2 diabetes', doctor: 'Dr. Kang (endocrinology)', app: () => .82, meal: {}, like: { h_juk: .8, h_rice: .85, h_rice2: .85, h_pear: 1.1 } },
+  { id: 'p3', name: 'Choi Jaeho', age: 57, room: '7B-03', diet: 'lowna', why: 'Heart failure', doctor: 'Dr. Seo (cardiology)', app: () => .84, meal: { dinner: -.08 }, like: { h_sprout: .35, h_doenjang: .3 } },
+  { id: 'p4', name: 'Han Jiyoon', age: 35, room: '7B-15', diet: 'regular', why: 'After appendix surgery', doctor: 'Dr. Lim (general surgery)', app: d => .5 + d * .08, meal: {}, like: { h_milk: .5 } },
+];
+const KIDS = [
+  { id: 'k1', name: 'Yuna', age: 5, allergy: null, baseline: .3, app: .78, like: { k_broccoli: .3, k_berry: 1.2, k_tomato: 1.1 }, note: 'Yuna helped hand out spoons today and tried a whole broccoli floret!' },
+  { id: 'k2', name: 'Doha', age: 4, allergy: 'Egg', baseline: .42, app: .6, like: { k_broccoli: .15, k_tomato: .4, k_rice: 1.3 }, note: 'Doha was a bit tired after outdoor play but finished all the rice.' },
+  { id: 'k3', name: 'Seoah', age: 5, allergy: null, baseline: .18, app: .92, like: {}, note: 'Seoah asked for more blueberries and told the class they are "tiny planets".' },
+  { id: 'k4', name: 'Ian', age: 4, allergy: null, baseline: .35, app: .66, like: { k_bulgogi: .5, k_corn: 1.2 }, note: 'Ian liked the corn soup and practised using chopsticks.' },
+];
 
-/* ---------------------------------------------------------------- Plan & order */
-function forecast() {
-  const p = ui.plan, att = p.att - (p.event === 'trip' ? 138 : 0);
-  const rows = TOMORROW.map(d => {
-    let k = 1;
-    if (p.weather === 'rainy' && d.id === 'soup') k *= 1.10;
-    if (p.weather === 'cold' && d.id === 'soup') k *= 1.15;
-    if (p.weather === 'cold' && d.id === 'yogurt') k *= .92;
-    if (p.event === 'sports' && (d.tags.includes('grain') || d.tags.includes('protein'))) k *= 1.10;
-    return { d, stdKg: ENROLLED * d.std / 1000, newKg: att * d.learned * k * (1 + Math.max(.04, d.err + .01)) / 1000 };
-  });
-  const need = {}, needStd = {};
-  rows.forEach(r => r.d.bom.forEach(([ing, ratio, price]) => { need[ing] = need[ing] || { kg: 0, price }; need[ing].kg += r.newKg * ratio; needStd[ing] = (needStd[ing] || 0) + r.stdKg * ratio; }));
-  let cost = 0, costStd = 0, orderTotal = 0;
-  const orders = Object.entries(need).map(([ing, o]) => { const inv = INVENTORY[ing] || 0, order = Math.max(0, o.kg - inv); cost += o.kg * o.price; costStd += needStd[ing] * o.price; orderTotal += order * o.price; return { ing, kg: o.kg, inv, order, price: o.price }; });
-  return { att, rows, orders, cost, costStd, orderTotal, tStd: rows.reduce((a, r) => a + r.stdKg, 0), tNew: rows.reduce((a, r) => a + r.newKg, 0) };
+function served(menu, diet) {
+  const D = H.DIETS[diet];
+  return Object.fromEntries(menu.map(d => [d.id, Math.round(d.g * (D ? (D.mult[d.id] || 1) : 1))]));
 }
-function plan() {
-  const p = ui.plan;
-  return `
-  <div class="cycle">${[['Plan', 'Predict how much students will eat'], ['Order', 'Buy only what the plan needs'], ['Cook', 'Tune recipes to what students like'], ['Serve', 'Measure it all again tomorrow']].map(([a, b], i) => `<div class="${i < 2 ? 'on' : ''}"><span class="n">${i + 1}</span><b>${a}</b><small>${b}</small></div>`).join('')}</div>
-  <div class="page-head"><div><h1>Plan & order</h1><p>Monday 28 September. Quantities come from what students actually ate, not standard portion × enrolment.</p></div>
-    <div class="trust"><span>Forecast error <b class="num">${(MAPE * 100).toFixed(1)}%</b></span><div class="bar"><i style="width:${(1 - MAPE * 4) * 100}%"></i></div></div></div>
-  <div class="card">
-    <div class="controls">
-      <div><label for="att">Attendance · <span class="num" id="att-v">${p.att} of ${ENROLLED}</span></label><input type="range" id="att" min="600" max="840" step="1" value="${p.att}"></div>
-      <div><label>Weather</label><div class="seg" id="weather">${['sunny', 'rainy', 'cold'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
-      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'Grade 6 field trip (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-    </div>
-    <div id="plan-out">${planOut()}</div>
-  </div>
-  <div class="card"><h3>Cook: recipe tweaks students will eat more of</h3><p class="hint">From 4 weeks of before/after scans</p>
-    <div class="insights" style="margin-top:10px">${[
-      ['var(--tint)', 'Spinach namul with sesame dressing', 'Eaten 64% vs. 52% plain in the class A/B test. Make it the default.'],
-      ['var(--blue)', 'Soup: 150 ml ladle, refills allowed', 'Cuts soup waste from 42% to 24% with no drop in satisfaction.'],
-      ['var(--orange)', 'Kimchi: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
-    ].map(([c, t, d]) => `<div class="insight"><span class="ic" style="background:${c}">${SV('<path d="M5 12l5 5 9-10"/>')}</span><div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div></div>`;
+function wardMenu(meal, diet) {
+  const D = H.DIETS[diet];
+  return H.WARD_MENU[meal].map(d => D.na === 1 ? d : { ...d, n: { ...d.n, na: d.n.na * D.na } });
 }
-function planOut() {
-  const f = forecast(), saved = f.tStd - f.tNew, dollars = f.costStd - f.cost, ap = PL.S.order.approved;
-  return `
-    <div class="table-wrap"><table><thead><tr><th>Dish</th><th class="r">Standard</th><th class="r">Learned</th><th class="r">Standard plan</th><th class="r">PlateLoop plan</th><th class="r">Less</th></tr></thead><tbody>
-      ${f.rows.map(r => `<tr><td><b>${r.d.name}</b></td><td class="r num">${r.d.std} g</td><td class="r num">${r.d.learned} g</td><td class="r num">${fmt1(r.stdKg)} kg</td><td class="r num"><b>${fmt1(r.newKg)} kg</b></td><td class="r num diff">−${fmt1(r.stdKg - r.newKg)} kg</td></tr>`).join('')}
-      <tr><td><b>Total</b></td><td></td><td class="muted">${f.att} students</td><td class="r num"><b>${fmt1(f.tStd)} kg</b></td><td class="r num"><b>${fmt1(f.tNew)} kg</b></td><td class="r num diff">−${fmt1(saved)} kg</td></tr></tbody></table></div>
-    <div class="savings">
-      <div class="save"><div class="k">Less food cooked</div><div class="v">${fmt1(saved)} kg</div><div class="s">vs. standard portion × enrolment</div></div>
-      <div class="save"><div class="k">Ingredients saved</div><div class="v">${money(dollars)}</div><div class="s">≈ ${money(dollars * 180)} over a school year</div></div>
-      <div class="save"><div class="k">Emissions avoided</div><div class="v">${Math.round(saved * PL.CO2_PER_KG)} kg CO₂e</div><div class="s">illustrative factor</div></div>
-    </div>
-    <h3 style="margin-top:22px">Supplier order</h3>
-    <div class="table-wrap" style="margin-top:6px"><table><thead><tr><th>Ingredient</th><th class="r">Needed</th><th class="r">In stock</th><th class="r">Order</th><th class="r">Cost</th></tr></thead><tbody>
-      ${f.orders.map(o => `<tr><td>${o.ing}</td><td class="r num">${fmt1(o.kg)} kg</td><td class="r num">${o.inv ? o.inv + ' kg' : '—'}</td><td class="r num"><b>${o.order > 0 ? fmt1(o.order) + ' kg' : 'none'}</b></td><td class="r num">${o.order > 0 ? money(o.order * o.price) : '—'}</td></tr>`).join('')}
-      <tr><td><b>Total</b></td><td></td><td></td><td></td><td class="r num"><b>${money(f.orderTotal)}</b></td></tr></tbody></table></div>
-    <div class="approve">${ap ? `<span class="pill green">Approved at ${ap.at} · ${money(ap.total)}</span><span class="hint">In a live system this goes to the supplier. Nothing is sent from this demo.</span><button class="btn small ghost" id="unapprove">Undo</button>`
-      : `<button class="btn primary" id="approve">Approve order · ${money(f.orderTotal)}</button><span class="hint">Before the 14:00 supplier cut-off.</span>`}</div>`;
+/** Build one scanned meal: grams served, grams left, what was eaten, nutrients, share left. */
+function mealRecord(menu, sv, frac, extra) {
+  const measured = {}, eaten = {};
+  menu.forEach(d => { const f = clamp(frac[d.id], 0, 1); eaten[d.id] = Math.round(sv[d.id] * f); measured[d.id] = sv[d.id] - eaten[d.id]; });
+  const total = Object.values(sv).reduce((a, b) => a + b, 0), left = Object.values(measured).reduce((a, b) => a + b, 0);
+  return { served: sv, measured, eaten, n: H.nutrients(eaten, menu), w: left / total, total, left, ...extra };
 }
-
-/* ---------------------------------------------------------------- Report */
-function reportData() {
-  const t = T(), tot = PL.todayTotals(), rows = dishStats().sort((a, b) => a.e - b.e), f = forecast(), mix = portionMix();
-  const worst = rows[0], best = rows[rows.length - 1], diff = (PL.SCHOOL_BASELINE - tot.w) * 100;
-  const cls = PL.classRows()[0];
-  const text = [
-    `Today ${t.trays.toLocaleString('en-US')} trays were scanned before and after lunch, and ${t.eating} students are still eating. Plate waste is ${pct(tot.w)}, ${diff >= 0 ? `${diff.toFixed(0)} points below` : `${(-diff).toFixed(0)} points above`} the ${pct(PL.SCHOOL_BASELINE)} baseline, leaving ${fmt1(tot.lf / 1000)} kg of food (about ${money(tot.val)} of ingredients).`,
-    `${best.d.name} was the most eaten dish (${pct(best.e)}). ${worst.d.name} came back the most, with only ${pct(worst.e)} eaten. ${TREND[worst.d.id][2]}`,
-    `Class ${cls.c.id} leads Grade 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
-    `The average student ate ${intakeStats().avg.kcal} kcal and ${intakeStats().avg.p} g of protein at lunch (targets ${PL.TARGET.kcal} kcal and ${PL.TARGET.p} g). ${intakeStats().low.length} students ate less than 60% of their calorie target and are flagged for the dietitian.`,
-    `For Monday, the plan cooks ${fmt1(f.tNew)} kg instead of ${fmt1(f.tStd)} kg, saving about ${money(f.costStd - f.cost)} in ingredients. The supplier order totals ${money(f.orderTotal)}.`,
-  ];
-  return { text, worst, best, f, tot };
+function seedPatient(P) {
+  const r = rng(P.id.charCodeAt(1) * 97);
+  const log = [];
+  DAYS.forEach((day, di) => H.MEALS.forEach(([meal, , t]) => {
+    const menu = wardMenu(meal, P.diet), base = P.app(di) + (P.meal[meal] || 0);
+    const frac = Object.fromEntries(menu.map(d => [d.id, base * (P.like[d.id] || 1) + (r() - .5) * .2]));
+    log.push(mealRecord(menu, served(menu, P.diet), frac, { day, meal, t }));
+  }));
+  // today: breakfast already scanned
+  const menu = wardMenu('breakfast', P.diet), base = P.app(6) + (P.meal.breakfast || 0);
+  log.push(mealRecord(menu, served(menu, P.diet), Object.fromEntries(menu.map(d => [d.id, base * (P.like[d.id] || 1) + (r() - .5) * .15])), { day: H.TODAY, meal: 'breakfast', t: '07:52' }));
+  const { app, meal, like, ...rest } = P;
+  return { ...rest, log };
 }
-function report() {
-  const { text, worst, f } = reportData();
-  const soup = dishStats().find(r => r.d.id === 'soup');
-  const insights = [
-    ['var(--orange)', '<path d="M12 3v12M6 9l6 6 6-6M4 21h16"/>', `Serve less ${worst.d.name.toLowerCase()}`, TREND[worst.d.id][2]],
-    ['var(--blue)', '<path d="M5 12h14M12 5v14"/>', 'Soup: taken, not eaten', `${fmt1(soup.left / 1000)} kg of soup came back today. A 150 ml ladle would cut most of it.`],
-    ['var(--tint)', '<path d="M4 17l6-6 4 4 6-8"/>', 'Spinach Week is working', 'Students tasting spinach for the quest raised the share eaten by 17 points.'],
-    ['var(--purple)', '<path d="M6 3h9l4 4v14H6z"/>', `Order ${money(f.orderTotal)} for Monday`, `${fmt1(f.tStd - f.tNew)} kg less food cooked than the standard plan.`],
-  ];
-  return `
-  <div class="page-head"><div><h1>Daily report</h1><p>Written automatically from today's scans. It updates as trays come in.</p></div><button class="btn" id="copy-report">Copy summary</button></div>
-  <div class="card"><div class="report">${text.map(p => `<p>${p}</p>`).join('')}</div></div>
-  <h2 class="section-title">Suggestions</h2>
-  <div class="insights">${insights.map(([c, ic, t, s]) => `<div class="insight"><span class="ic" style="background:${c}">${SV(ic)}</span><div><b>${esc(t)}</b><span>${esc(s)}</span></div></div>`).join('')}</div>`;
-}
-
-/* ---------------------------------------------------------------- wiring */
-function wireOrder(scope) {
-  const ap = $('#approve', scope); if (ap) ap.onclick = () => { PL.S.order.approved = { at: PL.clock(), total: forecast().orderTotal }; PL.store.save('order'); };
-  const un = $('#unapprove', scope); if (un) un.onclick = () => { PL.S.order.approved = null; PL.store.save('order'); };
-}
-function refreshPlan() { const out = $('#plan-out'); if (!out) return; out.innerHTML = planOut(); wireOrder(out); }
-function wire(main) {
-  const att = $('#att', main);
-  if (att) {
-    att.oninput = e => { ui.plan.att = +e.target.value; $('#att-v').textContent = `${ui.plan.att} of ${ENROLLED}`; refreshPlan(); };
-    $$('#weather button', main).forEach(b => b.onclick = () => { ui.plan.weather = b.dataset.w; $$('#weather button', main).forEach(x => x.setAttribute('aria-pressed', String(x === b))); refreshPlan(); });
-    $('#event', main).onchange = e => { ui.plan.event = e.target.value; refreshPlan(); };
-  }
-  wireOrder(main);
-  PL.paintPets(main);
-  const tree = $('#env-tree', main); if (tree) drawTreeInto(tree, 0);
-  const cc = $('#copy-carbon', main);
-  if (cc) cc.onclick = () => (navigator.clipboard ? navigator.clipboard.writeText(carbonReport()) : Promise.reject()).then(() => PL.toast('Carbon report copied.'), () => PL.toast('Copy is not available here. Select the text instead.'));
-  const cp = $('#copy-report', main);
-  if (cp) cp.onclick = () => {
-    const txt = reportData().text.join('\n\n');
-    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => PL.toast('Summary copied.'), () => PL.toast('Copy isn\'t available here. Select the text instead.'));
+function seedKid(K) {
+  const r = rng(K.id.charCodeAt(1) * 131);
+  const log = ['Mon 21', 'Tue 22', 'Wed 23', 'Thu 24'].map(day => {
+    const frac = Object.fromEntries(H.KIDS_MENU.map(d => [d.id, K.app * (K.like[d.id] || 1) + (r() - .5) * .25]));
+    const rec = mealRecord(H.KIDS_MENU, served(H.KIDS_MENU), frac, { day, portion: 'M' });
+    return { ...rec, pts: 0 };
+  }).reverse();
+  const lowWaste = log.filter(l => l.w < .15).length;
+  return {
+    id: K.id, name: K.name, age: K.age, allergy: K.allergy, note: K.note, cls: 'Sunflower', named: true, baseline: K.baseline,
+    pet: { xp: K.id === 'k2' ? 24 : 120 + Math.round(r() * 150), c: { veg: 3 + Math.round(r() * 6), lowWaste: lowWaste + Math.round(r() * 4), balanced: 2 + Math.round(r() * 4), quests: 0 }, en: 60 + Math.round(r() * 25), nu: 60 + Math.round(r() * 25), jo: 60 + Math.round(r() * 30), streak: 0, quest: 0 },
+    log, messSeed: ['k_broccoli', 'k_rice'],
   };
 }
+function seed() {
+  return { v: CARE_V, patients: PATIENTS.map(seedPatient), kids: KIDS.map(seedKid), me: { patient: 'p1', kid: 'k1' } };
+}
+const KIDPREFS = Object.fromEntries(KIDS.map(k => [k.id, k]));
+const PATPREFS = Object.fromEntries(PATIENTS.map(p => [p.id, p]));
+const CARE_V = 5; // bump when the demo data changes shape
+const ensure = () => { if (!PL.S.care || PL.S.care.v !== CARE_V) PL.S.care = seed(); };
+ensure();
+PL.store.subscribe(ensure);
+H.patient = id => PL.S.care.patients.find(p => p.id === id);
+H.kid = id => PL.S.care.kids.find(k => k.id === id);
 
-function drawTreeInto(cv, t) {
-  const c = cv.getContext('2d'), W = cv.width, H = cv.height, u = 5;
-  c.imageSmoothingEnabled = false;
-  c.fillStyle = '#EAF6EC'; c.fillRect(0, 0, W, H);
-  c.fillStyle = '#CFE8D3'; c.fillRect(0, H - 26, W, 26);
-  c.fillStyle = '#8B5E3C'; c.fillRect(W / 2 - 7, H - 54, 14, 30);
-  const layers = [[H - 56, 38], [H - 78, 30], [H - 98, 22], [H - 114, 13]];
-  layers.forEach(([y, hw], i) => { c.fillStyle = i % 2 ? '#34A853' : '#2E9447'; for (let r = 0; r < 22; r += u) { const w = Math.round(hw * (1 - r / 30)) * 2; c.fillRect(W / 2 - w / 2, y - r, w, u); } });
-  const n = Math.min(PL.S.today.zero, 48); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0; i < n; i++) { const L = layers[i % 4], x = W / 2 + (rnd() - .5) * L[1] * 1.6, y = L[0] - rnd() * 16; c.fillStyle = '#FF3B30'; c.fillRect(Math.round(x / u) * u, Math.round(y / u) * u, u, u); }
+/* ---------------------------------------------------------------- scanning a meal (demo: both scans at once) */
+H.PRESETS = { 'Ate well': .92, 'Ate about half': .5, 'Barely ate': .15 };
+/** The next unscanned meal today for a patient, or null when dinner is done. */
+H.nextMeal = P => { const done = P.log.filter(l => l.day === H.TODAY).map(l => l.meal); const m = H.MEALS.find(([id]) => !done.includes(id)); return m ? m[0] : null; };
+H.scanPatientMeal = (P, preset) => {
+  const meal = H.nextMeal(P); if (!meal) return null;
+  const menu = wardMenu(meal, P.diet), like = PATPREFS[P.id].like, base = H.PRESETS[preset];
+  const frac = Object.fromEntries(menu.map(d => [d.id, base * Math.min(1.08, like[d.id] || 1) + (Math.random() - .5) * .12]));
+  const rec = mealRecord(menu, served(menu, P.diet), frac, { day: H.TODAY, meal, t: H.MEALS.find(m => m[0] === meal)[2] });
+  P.log.push(rec);
+  return rec;
+};
+H.scanKidLunch = (K, preset) => {
+  const like = KIDPREFS[K.id].like, base = H.PRESETS[preset];
+  const frac = Object.fromEntries(H.KIDS_MENU.map(d => [d.id, base * Math.min(1.1, like[d.id] || 1) + (Math.random() - .5) * .15]));
+  const rec = mealRecord(H.KIDS_MENU, served(H.KIDS_MENU), frac, { day: H.TODAY, portion: 'M', pts: 0 });
+  K.log.unshift(rec); K.log = K.log.slice(0, 5);
+  K.scanned = true;
+  if (rec.w < .15) { K.pet.c.lowWaste++; K.pet.streak++; } else K.pet.streak = 0;
+  if (rec.eaten.k_broccoli + rec.eaten.k_tomato > 20) K.pet.c.veg++;
+  K.pet.xp += 20;
+  const game = PL.game.feedLunch(K, { w: rec.w, servedBy: rec.served, measured: rec.measured }, H.KIDS_MENU);
+  return { ...rec, game };
+};
+
+/* ---------------------------------------------------------------- report building blocks */
+/** limit-type nutrients (sodium) are good when under target; the rest are good near target. */
+H.status = (k, v, target) => {
+  const r = v / target;
+  if (k === 'na') return r > 1.1 ? 'high' : 'ok';
+  return r < .75 ? 'low' : r > 1.3 ? 'high' : 'ok';
+};
+H.NAMES = { kcal: ['Energy', 'kcal'], p: ['Protein', 'g'], c: ['Carbs', 'g'], f: ['Fat', 'g'], na: ['Sodium', 'mg'] };
+H.ring = (v, target, sub) => {
+  const r = 42, C = 2 * Math.PI * r, p = Math.min(1, v / target);
+  return `<div class="ring-wrap"><svg viewBox="0 0 110 110" class="ring" aria-hidden="true"><circle cx="55" cy="55" r="${r}" fill="none" stroke="var(--fill2)" stroke-width="11"/><circle cx="55" cy="55" r="${r}" fill="none" stroke="${p < .75 ? 'var(--orange)' : 'var(--tint)'}" stroke-width="11" stroke-linecap="round" stroke-dasharray="${(C * p).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 55 55)"/></svg><div class="ring-in"><b class="num">${v}</b><span>${sub}</span></div></div>`;
+};
+/** One row per nutrient: a zone bar (low / good / a lot, or under / over the limit for sodium). */
+H.nutrientRows = (n, target, keys) => keys.map(k => {
+  const t = target[k], max = t * 1.6, pos = x => Math.min(100, x / max * 100), st = H.status(k, n[k], t);
+  const zones = k === 'na'
+    ? `<span class="z z2" style="left:0;width:${pos(t)}%"></span>`
+    : `<span class="z z1" style="width:${pos(t * .75)}%"></span><span class="z z2" style="left:${pos(t * .75)}%;width:${pos(t * 1.3) - pos(t * .75)}%"></span>`;
+  return `<div class="hrow wide"><span>${H.NAMES[k][0]}</span><div class="zbar">${zones}<i class="${st}" style="width:${pos(n[k])}%"></i></div><b class="num ${st}">${n[k].toLocaleString('en-US')}<small> / ${t.toLocaleString('en-US')} ${H.NAMES[k][1]}</small></b></div>`;
+}).join('');
+/** Bars for a series of days, with a dashed target line. vals are 0..1 of target (or share eaten). */
+H.dayBars = (days, vals, label, goal = 1, max = 1.3) => {
+  const W = 300, Hh = 110, bw = Math.min(26, 220 / days.length);
+  const step = (W - 30) / days.length;
+  let s = `<svg viewBox="0 0 ${W} ${Hh + 18}" role="img" aria-label="${esc(label)}">`;
+  days.forEach((d, i) => { const v = Math.min(max, vals[i]), h = v / max * Hh, x = 22 + i * step; s += `<rect x="${x}" y="${Hh - h}" width="${bw}" height="${h}" rx="5" fill="${vals[i] < goal * .75 ? 'var(--orange)' : 'var(--tint)'}"/><text class="axis" x="${x + bw / 2}" y="${Hh + 14}" text-anchor="middle">${d.slice(0, 3)}</text>`; });
+  const gy = Hh - goal / max * Hh;
+  return s + `<line x1="16" x2="${W - 4}" y1="${gy}" y2="${gy}" stroke="var(--label3)" stroke-width="1" stroke-dasharray="4 4"/></svg>`;
+};
+H.dishRows = (menu, rec) => menu.map(d => {
+  const sv = rec.served[d.id], lf = rec.measured[d.id], ate = sv ? 1 - lf / sv : 1;
+  return `<div class="dish"><i style="background:${d.color};border-color:${d.edge}"></i><span>${esc(d.name)}</span><span class="dbar"><i style="width:${Math.round(ate * 100)}%"></i></span><span class="g-v num">${pct(ate)} eaten</span></div>`;
+}).join('');
+H.face = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16a4 4 0 0 0 5 0"/></svg>`;
+H.wardMenu = wardMenu;
+})();
+
+</script>
+<script>
+/* ---- js/care.js ---- */
+/* Loopi Care: the hospital patient app. Patients sign in at the ward scanner with their face, and every
+   tray is scanned before and after the meal. The app shows what they ate against the targets their care
+   team set for their diet, and builds the weekly healthcare report the doctor and dietitian see.
+   In hospitals the goal flips: plate waste usually means a patient isn't eating enough. */
+(() => {
+'use strict';
+const { $, $$, pct, esc } = PL;
+const H = PL.health;
+
+const ui = { tab: 'today', preset: 'Ate well' };
+let root = null;
+const I = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const ICON = {
+  today: I('<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>'),
+  report: I('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 17v-3M12 17v-6M15 17v-4"/>'),
+  me: I('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>'),
+  check: I('<path d="M5 12.5l4.5 4.5L19 7"/>'),
+  alert: I('<path d="M12 4 2.5 20h19Z"/><path d="M12 10v4M12 17v.5"/>'),
+};
+const TABS = { today: 'Today', report: 'Report', me: 'Me' };
+const me = () => H.patient(PL.S.care.me.patient) || PL.S.care.patients[0];
+const DAYS = () => [...new Set(me().log.map(l => l.day))];
+const sumN = recs => recs.reduce((o, r) => { Object.keys(o).forEach(k => { o[k] += r.n[k] || 0; }); return o; }, { kcal: 0, p: 0, c: 0, f: 0, na: 0 });
+const ate = r => 1 - r.w;
+const mealName = id => H.MEALS.find(m => m[0] === id)[1];
+
+/* ================================================================ frame */
+function mount(el) {
+  root = el;
+  el.innerHTML = `
+  <div class="stu care">
+    <aside class="stu-side">
+      <div class="loopi-brand"><span class="loopi-icon care-icon" aria-hidden="true"><canvas width="44" height="37" data-form="guardian" data-stage="adult"></canvas></span><div><b>Loopi Care</b><span>by PlateLoop · for hospitals</span></div></div>
+      <p class="stu-note">Demo: pick a patient</p>
+      <div class="chips" id="care-who"></div>
+      <div class="demo-box">
+        <label for="care-preset">Next meal on the ward</label>
+        <select id="care-preset">${Object.keys(H.PRESETS).map(p => `<option>${p}</option>`).join('')}</select>
+        <button class="btn primary" id="care-serve"></button>
+      </div>
+      <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
+    </aside>
+    <div class="phone">
+      <header class="phone-top" id="care-top"></header>
+      <div class="phone-body" id="care-body"></div>
+      <nav class="phone-tabs three" role="tablist" aria-label="Loopi Care">${Object.keys(TABS).map(t => `<button role="tab" data-tab="${t}">${ICON[t]}${TABS[t]}</button>`).join('')}</nav>
+    </div>
+  </div>`;
+  $$('.phone-tabs button', el).forEach(b => b.onclick = () => { ui.tab = b.dataset.tab; render(); $('#care-body').scrollTop = 0; });
+  $('#care-preset', el).onchange = e => { ui.preset = e.target.value; };
+  $('#care-serve', el).onclick = () => {
+    const P = me(), rec = H.scanPatientMeal(P, ui.preset);
+    if (!rec) return PL.toast('All of today\'s meals are scanned.');
+    PL.store.save('care');
+    PL.toast(`${mealName(rec.meal)} scanned: ${pct(ate(rec))} eaten, ${rec.n.kcal} kcal.`);
+  };
+  render();
+}
+function render(keep) {
+  if (!root) return;
+  const P = me(), body = $('#care-body', root), y = body.scrollTop;
+  $('#care-who', root).innerHTML = PL.S.care.patients.map(p => `<button class="chip plain" data-pid="${p.id}" aria-pressed="${p.id === P.id}">${esc(p.name)}</button>`).join('');
+  $$('#care-who button', root).forEach(b => b.onclick = () => { PL.S.care.me.patient = b.dataset.pid; PL.store.save('me'); });
+  const next = H.nextMeal(P);
+  $('#care-serve', root).textContent = next ? `Scan ${mealName(next).toLowerCase()} tray` : 'Today is done';
+  $('#care-serve', root).disabled = !next;
+  $('#care-preset', root).value = ui.preset;
+  $('#care-top', root).innerHTML = `<canvas width="40" height="34" data-care-pet></canvas><div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div>`;
+  $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
+  body.innerHTML = ({ today, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
+  paint(0);
+  const send = $('#send-report', body); if (send) send.onclick = () => PL.toast(`Report sent to ${P.doctor} and the ward dietitian (demo, nothing was sent).`);
+  const pr = $('#print-report', body); if (pr) pr.onclick = () => print();
+  if (keep) body.scrollTop = y;
+}
+function companionMood(P) {
+  const last = P.log[P.log.length - 1];
+  return ate(last) >= .75 ? 'joy' : ate(last) >= .5 ? 'happy' : 'meh';
+}
+function paint(t) {
+  const P = me();
+  $$('canvas[data-care-pet]', root).forEach(cv => PL.drawPet(cv, { rows: 30, t, stage: 'adult', form: 'guardian', mood: companionMood(P) }));
+  PL.paintPets(root, t);
 }
 
-PL.apps.kitchen = {
-  title: 'PlateLoop Kitchen',
+/* ================================================================ Today */
+function alertFor(P) {
+  const last3 = P.log.slice(-3), low = last3.filter(r => ate(r) < .5).length;
+  return low >= 2 ? `Under half eaten at ${low} of the last 3 meals. Your nurse has been told, and the dietitian will stop by today.` : '';
+}
+function today(P) {
+  const D = H.DIETS[P.diet], recs = P.log.filter(l => l.day === H.TODAY), tot = sumN(recs), next = H.nextMeal(P);
+  const good = recs.filter(r => ate(r) >= .75).length;
+  const last = recs[recs.length - 1];
+  const line = !last ? 'Good morning! Breakfast is on its way.'
+    : ate(last) >= .75 ? `You ate well at ${mealName(last.meal).toLowerCase()}. That helps you heal.`
+    : ate(last) >= .5 ? `${pct(ate(last))} of ${mealName(last.meal).toLowerCase()} was eaten. Even a little more helps.`
+    : `Not much of ${mealName(last.meal).toLowerCase()} was eaten. Tell your nurse if something doesn't taste right.`;
+  const alert = alertFor(P);
+  return `
+  ${alert ? `<div class="care-alert">${ICON.alert}<span>${alert}</span></div>` : ''}
+  <section class="group companion">
+    <canvas width="96" height="80" data-care-pet></canvas>
+    <div><b>Loopi</b><span>${line}</span>
+      <div class="meal-dots" aria-label="${good} of 3 meals mostly eaten today">${H.MEALS.map(([id]) => { const r = recs.find(x => x.meal === id); return `<i class="${r ? (ate(r) >= .75 ? 'on' : 'part') : ''}"></i>`; }).join('')}<small>${good} of 3 meals eaten well</small></div></div>
+  </section>
+  <h4 class="sec">Today's meals</h4>
+  <section class="group">${H.MEALS.map(([id, name, t]) => {
+    const r = recs.find(x => x.meal === id);
+    return `<div class="step ${r ? 'done' : ''}"><span class="step-n">${r ? ICON.check : '·'}</span><div><b>${name}</b><span>${r ? `${pct(ate(r))} eaten · ${r.n.kcal} kcal · ${r.n.p} g protein · scanned ${r.t}` : id === next ? `Arrives about ${t}` : `Later, about ${t}`}</span></div></div>`;
+  }).join('')}</section>
+  ${last ? `<h4 class="sec">${mealName(last.meal)}, dish by dish</h4><section class="group">${H.dishRows(H.wardMenu(last.meal, P.diet), last)}</section>` : ''}
+  <h4 class="sec">So far today</h4>
+  <section class="group pad">${H.nutrientRows(tot, D.target, ['kcal', 'p', P.diet === 'diabetic' ? 'c' : 'na'])}</section>
+  <p class="foot">Daily targets for a ${D.name.toLowerCase()} diet, set by your care team.</p>`;
+}
+
+/* ================================================================ Report: the healthcare report */
+function findings(P, days, perDay) {
+  const D = H.DIETS[P.diet], T = D.target, out = [];
+  const lowDays = perDay.filter(n => n.kcal < T.kcal * .75).length;
+  if (lowDays >= 3) out.push(['warn', `Energy was under 75% of the target on ${lowDays} of ${days.length} days. That's a malnutrition risk, so a dietitian review is recommended.`]);
+  const a = perDay.slice(0, 3).reduce((s, n) => s + n.kcal, 0) / 3, b = perDay.slice(-4, -1).reduce((s, n) => s + n.kcal, 0) / 3;
+  if (b > a * 1.12) out.push(['good', `Intake is improving: from about ${Math.round(a)} to ${Math.round(b)} kcal a day over the week.`]);
+  else if (b < a * .88) out.push(['warn', `Intake is falling: from about ${Math.round(a)} to ${Math.round(b)} kcal a day over the week.`]);
+  const byMeal = H.MEALS.map(([id, name]) => { const rs = P.log.filter(r => r.meal === id); return [name, rs.reduce((s, r) => s + ate(r), 0) / rs.length]; }).sort((x, y) => x[1] - y[1]);
+  if (byMeal[2][1] - byMeal[0][1] > .12) out.push(['info', `${byMeal[0][0]} is the weakest meal (${pct(byMeal[0][1])} eaten, against ${pct(byMeal[2][1])} at ${byMeal[2][0].toLowerCase()}).`]);
+  const avg = k => perDay.reduce((s, n) => s + n[k], 0) / perDay.length;
+  if (P.diet === 'protein') out.push([avg('p') >= T.p * .9 ? 'good' : 'warn', `Protein averaged ${Math.round(avg('p'))} g a day against a ${T.p} g target.`]);
+  if (P.diet === 'diabetic') out.push([avg('c') <= T.c * 1.1 ? 'good' : 'warn', `Carbs averaged ${Math.round(avg('c'))} g a day, ${avg('c') <= T.c * 1.1 ? 'within' : 'over'} the ${T.c} g target.`]);
+  if (P.diet === 'lowna') out.push([avg('na') <= T.na ? 'good' : 'warn', `Sodium averaged ${Math.round(avg('na')).toLocaleString('en-US')} mg a day, ${avg('na') <= T.na ? 'under' : 'over'} the ${T.na.toLocaleString('en-US')} mg limit.`]);
+  const left = leftMost(P)[0];
+  if (left && left.left > .45) out.push(['info', `${left.name} comes back the most (${pct(left.left)} left on average).${/soup/i.test(left.name) && P.diet === 'lowna' ? ' Low-salt soups often taste bland; herbs, lemon or sesame can help.' : ' Worth asking the kitchen about a swap.'}`]);
+  return out.slice(0, 5);
+}
+function leftMost(P) {
+  const m = {};
+  P.log.forEach(r => Object.keys(r.served).forEach(id => { const d = PL.DISH[id]; const k = d.name; m[k] = m[k] || { name: k, s: 0, l: 0 }; m[k].s += r.served[id]; m[k].l += r.measured[id]; }));
+  return Object.values(m).map(x => ({ name: x.name, left: x.l / x.s })).sort((a, b) => b.left - a.left).slice(0, 3);
+}
+function report(P) {
+  const D = H.DIETS[P.diet], T = D.target, days = DAYS(), full = days.filter(d => P.log.filter(r => r.day === d).length === 3);
+  const perDay = full.map(d => sumN(P.log.filter(r => r.day === d)));
+  const avg = Object.fromEntries(Object.keys(T).map(k => [k, Math.round(perDay.reduce((s, n) => s + n[k], 0) / perDay.length)]));
+  const wellEaten = P.log.filter(r => ate(r) >= .75).length;
+  const tone = { warn: 'var(--orange)', good: 'var(--tint)', info: 'var(--blue)' };
+  return `
+  <section class="group rep-head"><div><b>Nutrition report</b><span>${full[0]} to ${full[full.length - 1]} · ${P.log.length} meals scanned</span></div><span class="pill">${D.name} diet</span></section>
+  <section class="group health-top">
+    ${H.ring(avg.kcal, T.kcal, `kcal a day · target ${T.kcal.toLocaleString('en-US')}`)}
+    <div class="rep-kpis"><div><b class="num">${avg.p} g</b><span>protein a day · target ${T.p} g</span></div><div><b class="num">${wellEaten}/${P.log.length}</b><span>meals mostly eaten (75%+)</span></div></div>
+  </section>
+  <h4 class="sec">What this means</h4>
+  <section class="group">${findings(P, full, perDay).map(([k, t]) => `<div class="finding"><i style="background:${tone[k]}"></i><span>${t}</span></div>`).join('')}</section>
+  <h4 class="sec">Energy each day, share of target</h4>
+  <section class="group chart">${H.dayBars(full, perDay.map(n => n.kcal / T.kcal), 'Energy each day')}</section>
+  <h4 class="sec">Protein each day, share of target</h4>
+  <section class="group chart">${H.dayBars(full, perDay.map(n => n.p / T.p), 'Protein each day')}</section>
+  <h4 class="sec">Average day</h4>
+  <section class="group pad">${H.nutrientRows(avg, T, ['kcal', 'p', 'c', 'f', 'na'])}</section>
+  <h4 class="sec">By meal</h4>
+  <section class="group">${H.MEALS.map(([id, name]) => { const rs = P.log.filter(r => r.meal === id), a = rs.reduce((s, r) => s + ate(r), 0) / rs.length; return `<div class="dish"><i style="background:var(--fill3);border-color:var(--fill3)"></i><span>${name}</span><span class="dbar"><i style="width:${Math.round(a * 100)}%"></i></span><span class="g-v num">${pct(a)} eaten</span></div>`; }).join('')}</section>
+  <h4 class="sec">Left most often</h4>
+  <section class="group">${leftMost(P).map(x => `<div class="g-row two-col"><span>${esc(x.name)}</span><span class="g-v num">${pct(x.left)} left</span></div>`).join('')}</section>
+  <div class="two-btn"><button class="btn primary" id="send-report">Send to care team</button><button class="btn" id="print-report">Print</button></div>
+  <p class="foot">Shared with ${esc(P.doctor)} and the ward dietitian. Measured by the ward scanner before and after every tray; targets are illustrative.</p>`;
+}
+
+/* ================================================================ Me */
+function meTab(P) {
+  const D = H.DIETS[P.diet];
+  return `
+  <section class="group profile"><canvas width="120" height="100" data-care-pet></canvas><div><b>${esc(P.name)}</b><span>${P.age} · Room ${P.room}<br>${esc(P.why)}</span></div></section>
+  <h4 class="sec">Diet</h4>
+  <section class="group">
+    <div class="g-row two-col"><span>${D.name}</span><span class="g-v">${esc(D.note)}</span></div>
+    ${Object.entries(D.target).map(([k, v]) => `<div class="g-row two-col"><span class="g-k">${H.NAMES[k][0]}</span><span class="g-v num">${k === 'na' ? 'under ' : ''}${v.toLocaleString('en-US')} ${H.NAMES[k][1]} a day</span></div>`).join('')}
+  </section>
+  <h4 class="sec">Care team</h4>
+  <section class="group">
+    <div class="g-row two-col"><span>Doctor</span><span class="g-v">${esc(P.doctor)}</span></div>
+    <div class="g-row two-col"><span>Dietitian</span><span class="g-v">Park Eunji, ward 7B</span></div>
+    <div class="g-row two-col"><span>Nurse station</span><span class="g-v">7B, ext. 4172</span></div>
+  </section>
+  <h4 class="sec">Privacy</h4>
+  <section class="group"><div class="switch-row"><span>Face sign-in</span><span class="g-v">On</span></div></section>
+  <p class="foot">The ward scanner keeps a match code made from your face, never a photo. Your report is shared only with your care team, and it's deleted 30 days after you go home.</p>`;
+}
+
+PL.apps.care = {
+  title: 'Loopi Care',
   mount,
   unmount() { root = null; },
-  update() { if (!root) return; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
-  tick(t) { if (root && t % 20 === 0) { const l = $('#kit-live', root); if (l) l.innerHTML = `<span class="live"><i></i>Live from the scanner · ${PL.clock()}</span>`; } },
+  update() { render(true); },
+  tick(t) { if (root) paint(t); },
 };
 })();
 
 </script>
 <script>
 (() => {
-  const APP = 'kitchen', FILES = {'model': '1-plateloop-scanner-3d.html', 'scanner': '2-plateloop-kiosk.html', 'kitchen': '3-plateloop-kitchen.html', 'student': '4-loopi-student-app.html', 'care': '5-loopi-care-hospital.html', 'kids': '6-loopi-kids-kindergarten.html'};
+  const APP = 'care', FILES = {'model': '1-plateloop-scanner-3d.html', 'scanner': '2-plateloop-kiosk.html', 'kitchen': '3-plateloop-kitchen.html', 'student': '4-loopi-student-app.html', 'care': '5-loopi-care-hospital.html', 'kids': '6-loopi-kids-kindergarten.html'};
   const go = n => { location.href = FILES[n]; };
   PL.open = go;
   document.addEventListener('click', e => {
