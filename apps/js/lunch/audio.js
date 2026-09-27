@@ -107,6 +107,33 @@ L.Sound = () => {
     }
     return oc.startRendering();
   }
+  /** The aura: an "aah" choir drifting through A, F#m, D and E with long swells, harp-like bells twinkling
+   *  above and a breath of air, rendered once into a seamless 16-second loop. */
+  async function renderAura() {
+    const sr = 32000, sec = 17, n = sr * sec, oc = new OfflineAudioContext(2, n, sr);
+    const bus = oc.createGain(); bus.gain.value = .8; bus.connect(oc.destination);
+    const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+    const chords = [[57, 64, 69, 73, 76], [54, 61, 66, 69, 73], [50, 57, 62, 66, 69], [52, 59, 64, 68, 71], [57, 64, 69, 73, 76]];
+    chords.forEach((ch, k) => {
+      const t0 = k * 4 - 1;
+      ch.forEach((m, v) => [-6, 6].forEach(cents => {
+        const o = oc.createOscillator(); o.type = 'sawtooth'; o.frequency.value = hz(m); o.detune.value = cents;
+        const vib = oc.createOscillator(), vg = oc.createGain(); vib.frequency.value = 4.4 + v * .15; vg.gain.value = 8; vib.connect(vg).connect(o.detune);
+        const mix = oc.createGain(), st = Math.max(0, t0);
+        [[800, 6, 1], [1150, 8, .45], [2900, 10, .2]].forEach(([f, q, gn]) => { const b = oc.createBiquadFilter(); b.type = 'bandpass'; b.frequency.value = f; b.Q.value = q; const g = oc.createGain(); g.gain.value = gn; o.connect(b).connect(g).connect(mix); });
+        mix.gain.setValueAtTime(0, st); mix.gain.linearRampToValueAtTime(.1, t0 + 2); mix.gain.linearRampToValueAtTime(.1, t0 + 4.5); mix.gain.linearRampToValueAtTime(0, t0 + 6.5);
+        const pan = oc.createStereoPanner(); pan.pan.value = (v - 2) * .25; mix.connect(pan).connect(bus);
+        o.start(st); vib.start(st); o.stop(Math.min(sec, t0 + 6.6)); vib.stop(Math.min(sec, t0 + 6.6));
+      }));
+    });
+    const pluck = (f, when, vol) => { const o = oc.createOscillator(), g = oc.createGain(), pan = oc.createStereoPanner(); o.type = 'triangle'; o.frequency.value = f; pan.pan.value = Math.random() * 1.6 - .8; g.gain.setValueAtTime(0, when); g.gain.linearRampToValueAtTime(vol, when + .005); g.gain.setTargetAtTime(0, when + .01, .7); o.connect(g).connect(pan).connect(bus); o.start(when); o.stop(when + 3.5); };
+    const bells = [81, 85, 88, 93, 97, 100];
+    for (let t = .5; t < sec - 1; t += .35 + Math.random() * .6) pluck(hz(bells[Math.floor(Math.random() * bells.length)]), t, .045);
+    const nb = oc.createBuffer(1, n, sr); { const d = nb.getChannelData(0); for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1; }
+    const air = oc.createBufferSource(), hp = oc.createBiquadFilter(), ag = oc.createGain(); air.buffer = nb; hp.type = 'highpass'; hp.frequency.value = 7000; ag.gain.value = .02; air.connect(hp).connect(ag).connect(bus); air.start();
+    const out = await oc.startRendering();
+    return seamless(out, sr);
+  }
   /** Crossfade the end into the start so the loop point can't click. */
   function seamless(b, N) {
     const len = b.length - N, o = ctx.createBuffer(b.numberOfChannels, len, b.sampleRate);
@@ -124,31 +151,33 @@ L.Sound = () => {
   function beds() {
     // room tone: air, the fans, the building
     const rt = loopSrc(brownBuf), lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 240;
-    const g = ctx.createGain(); g.gain.value = .14; rt.connect(lp).connect(g).connect(flatOut);
+    const g = ctx.createGain(); g.gain.value = .05; rt.connect(lp).connect(g).connect(flatOut);
     // rain on the roof and the field outside, from the open side
     spots.outside.slice(0, 2).forEach(([x, y, z]) => {
       const ns = loopSrc(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 500;
       const lp2 = ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 5200;
-      const lv = ctx.createGain(); lv.gain.value = .1; ns.connect(hp).connect(lp2).connect(lv).connect(panner([x, 3, 9.5], 5, .4));
+      const lv = ctx.createGain(); lv.gain.value = .04; ns.connect(hp).connect(lp2).connect(lv).connect(panner([x, 3, 9.5], 5, .4));
     });
-    { const ns = loopSrc(), bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = .5; const lv = ctx.createGain(); lv.gain.value = .035; ns.connect(bp).connect(lv).connect(panner([0, 4.3, 0], 8, .2)); }
+    { const ns = loopSrc(), bp = ctx.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 900; bp.Q.value = .5; const lv = ctx.createGain(); lv.gain.value = .014; ns.connect(bp).connect(lv).connect(panner([0, 4.3, 0], 8, .2)); }
     // kitchens: a wok's sizzle
     spots.kitchen.forEach(p => {
       const ns = loopSrc(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2400;
       const am = ctx.createGain(); am.gain.value = .6; const lfo = ctx.createOscillator(); lfo.frequency.value = rnd(.15, .3); const lg = ctx.createGain(); lg.gain.value = .35; lfo.connect(lg).connect(am.gain); lfo.start();
-      const lv = ctx.createGain(); lv.gain.value = .045; ns.connect(hp).connect(am).connect(lv).connect(panner(p, 1.2, .8));
+      const lv = ctx.createGain(); lv.gain.value = .022; ns.connect(hp).connect(am).connect(lv).connect(panner(p, 1.2, .8));
     });
     // two ceiling fans nearby
     spots.fans.slice(0, 2).forEach(p => {
       const ns = loopSrc(), lp3 = ctx.createBiquadFilter(); lp3.type = 'lowpass'; lp3.frequency.value = 450;
       const am = ctx.createGain(); am.gain.value = .6; const lfo = ctx.createOscillator(); lfo.frequency.value = rnd(2.6, 3.2); const lg = ctx.createGain(); lg.gain.value = .3; lfo.connect(lg).connect(am.gain); lfo.start();
-      const lv = ctx.createGain(); lv.gain.value = .04; ns.connect(lp3).connect(am).connect(lv).connect(panner(p, 1, .3));
+      const lv = ctx.createGain(); lv.gain.value = .018; ns.connect(lp3).connect(am).connect(lv).connect(panner(p, 1, .3));
     });
-    // a soft, shimmering hum where Disha floats
-    if (spots.shrine) {
-      const pn = panner(spots.shrine, 1.2, 1);
-      [220, 329.6, 440.5].forEach((f, i) => { const o = ctx.createOscillator(), g = ctx.createGain(), lfo = ctx.createOscillator(), lg = ctx.createGain(); o.frequency.value = f; g.gain.value = .018 / (i + 1); lfo.frequency.value = .15 + i * .07; lg.gain.value = .012 / (i + 1); lfo.connect(lg).connect(g.gain); o.connect(g).connect(pn); o.start(); lfo.start(); });
-    }
+    // a celestial aura where Disha floats: a slow choir with twinkling bells, loud up close, gone across the room
+    if (spots.shrine) renderAura().then(buf => {
+      if (!ctx) return;
+      const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true;
+      const pn = panner(spots.shrine, 1.6, .9); pn.distanceModel = 'exponential'; pn.rolloffFactor = 1.6; pn.maxDistance = 40;
+      const g2 = ctx.createGain(); g2.gain.value = 0; s.connect(g2).connect(pn); s.start(); g2.gain.setTargetAtTime(.8, ctx.currentTime, 1.5);
+    }).catch(() => {});
     // a phone playing a song through its tiny speaker
     if (spots.music) renderMusic().then(buf => {
       if (!ctx) return;
@@ -165,7 +194,7 @@ L.Sound = () => {
       spots.crowd.slice(0, 4).forEach(([x, z], i) => {
         const s = ctx.createBufferSource(); s.buffer = buf; s.loop = true; s.playbackRate.value = rnd(.96, 1.04);
         const g2 = ctx.createGain(); g2.gain.value = 0; s.connect(g2).connect(panner([x, 1.2, z], 3, .9));
-        s.start(0, i * 3.3 % buf.duration); loops.push(g2); g2.gain.setTargetAtTime(.55, ctx.currentTime, 1.5);
+        s.start(0, i * 3.3 % buf.duration); loops.push(g2); g2.gain.setTargetAtTime(.3, ctx.currentTime, 1.5);
       });
     }).catch(() => {});
   }
@@ -289,12 +318,12 @@ L.Sound = () => {
     if (!ctx || muted || ctx.state !== 'running') return;
     const every = (k, a, b, fn) => { if (clock[k] === undefined) clock[k] = rnd(a, b); clock[k] -= dt; if (clock[k] <= 0) { clock[k] = rnd(a, b); fn(); } };
     const table = () => { const [x, z] = pick(spots.tables); return [x + rnd(-1.2, 1.2), .8, z + rnd(-.4, .4)]; };
-    if (spots.tables.length) { every('clink', .5, 1.6, () => FX.clink(table())); every('chair', 8, 18, () => FX.chair(table())); }
+    if (spots.tables.length) { every('clink', .9, 2.4, () => FX.clink(table())); every('chair', 8, 18, () => FX.chair(table())); }
     if (spots.ladle) every('ladle', 7, 14, () => FX.ladle(spots.ladle));
     if (spots.till) every('till', 14, 28, () => FX.till(spots.till));
     if (spots.rack) every('tray', 16, 34, () => FX.tray(spots.rack));
     if (spots.outside.length) every('koel', 30, 60, () => { const [x, y, z] = pick(spots.outside); FX.koel([x + rnd(-8, 8), y, z]); });
-    every('thunder', 50, 110, FX.thunder);
+    every('thunder', 80, 160, FX.thunder);
   }
 
   return {
@@ -304,7 +333,7 @@ L.Sound = () => {
     play(name, pos, ...a) { if (ctx && !muted && ctx.state === 'running' && FX[name]) FX[name](pos, ...a); },
     toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .85, ctx.currentTime, .05); return muted; },
     /** Quieter crowd while talking to someone or reading the scanner. */
-    duck(on) { if (ctx) loops.forEach(g => g.gain.setTargetAtTime(on ? .25 : .55, ctx.currentTime, .4)); },
+    duck(on) { if (ctx) loops.forEach(g => g.gain.setTargetAtTime(on ? .14 : .3, ctx.currentTime, .4)); },
     suspend() { if (ctx && ctx.state === 'running') ctx.suspend(); },
     resume() { if (ctx && ctx.state === 'suspended') ctx.resume(); },
     close() { if (ctx) ctx.close(); ctx = null; },
