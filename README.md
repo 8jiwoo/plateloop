@@ -17,7 +17,7 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
 | **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Preschools: an animated Loopi with sounds for children; separate Parents (one child's report) and Teachers (whole class, check-ins, allergies, notes) sections |
 | **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
-| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person, PS1-style 3D game of a school lunch with PlateLoop: tray, face sign-in, scan before, eat, scan after, compost, return. The scans are real and show up in the other apps |
+| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person, PS1-style 3D game of one school lunch with PlateLoop: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the compost module, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
 
@@ -53,7 +53,9 @@ apps/                 source for the eight apps
   js/care.js          Loopi Care (hospital patients)
   js/kids.js          Loopi Kids (kindergartens)
   js/work.js          Loopi Work (office workers: goals, targets, daily pick, weekly report)
-  js/game3d.js        Lunch Rush, the first-person 3D canteen game (three.js, PS1-style rendering)
+  js/game3d.js        Lunch Rush: the lunch, dialogue, scanner close-ups, input (three.js, PS1-style rendering)
+  js/lunch/           Lunch Rush parts: kit (PS1 materials, painted textures), audio (synthesised soundscape),
+                      people (characters), world (the canteen), screen (the scanner's screen)
   vendor/             three.js r128 + GLTFLoader (for offline 3D)
   build.py            builds the standalone files in dist/
 dist/                 the eight standalone apps (generated, committed for convenience)
