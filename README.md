@@ -6,12 +6,11 @@
 
 Built for the EcoLoop sustainability hackathon, set in Singapore: local menus, HPB nutrition guidance (under 2,000 mg sodium a day) and the Singapore grid's emission factor.
 
-People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives six separate apps, plus a 3D game that shows the whole experience:
+People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives five apps, plus a 3D game that shows the whole experience:
 
 | App | File | For |
 |---|---|---|
-| **PlateLoop Scanner** | `dist/1-plateloop-scanner-3d.html` | Product page with the annotated, rotatable 3D scanner |
-| **PlateLoop Kiosk** | `dist/2-plateloop-kiosk.html` | The scanner's screen: face sign-in, before and after scans, nutrition, the school Green Tree |
+| **PlateLoop Prototype** | `dist/1-plateloop-scanner-3d.html` | A full-screen, cinematic 3D scanner: drag to turn, scroll to zoom, tap a glowing light on a part to fly to it and read how it works. The display's panel opens the working **Kiosk** on the scanner's own screen (face sign-in, before and after scans, nutrition, the Green Tree). Add `?kiosk` to open straight into the kiosk. Soft spatial sound with a mute button. |
 | **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
 | **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: a Tamagotchi fed by real lunches, their tray and healthy plate, class and school leaderboards |
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
@@ -38,14 +37,14 @@ People sign in with their face and scan their tray **before** the meal (what was
 python -m http.server 8765
 ```
 
-Then open http://localhost:8765/dist/2-plateloop-kiosk.html and http://localhost:8765/dist/4-loopi-student-app.html.
+Then open http://localhost:8765/dist/1-plateloop-scanner-3d.html?kiosk and http://localhost:8765/dist/4-loopi-student-app.html.
 
-**Development version** (all seven apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
+**Development version** (every app in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
 
 ## Project layout
 
 ```
-apps/                 source for the seven apps
+apps/                 source for the apps
   index.html          dev page with an app switcher
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync
@@ -53,8 +52,8 @@ apps/                 source for the seven apps
   js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, eggs and the Barn, cooking, Healthy Catch, crates, badges)
   js/room.js          Loopi's animated pixel room
   js/health.js        hospital menus, demo people, healthcare report parts
-  js/model.js         PlateLoop Scanner 3D page
-  js/scanner.js       PlateLoop Kiosk
+  js/model.js         PlateLoop Prototype: the explorable 3D scanner (built in three.js), hotspots, sound, kiosk mode
+  js/scanner.js       PlateLoop Kiosk (runs on the scanner's screen inside PlateLoop Prototype)
   js/kitchen.js       PlateLoop Kitchen
   js/student.js       Loopi student app
   js/care.js          Loopi Care (hospital patients)
@@ -64,7 +63,7 @@ apps/                 source for the seven apps
                       people (characters), world (the canteen), screen (the scanner's screen)
   vendor/             three.js r128 + GLTFLoader (for offline 3D)
   build.py            builds the standalone files in dist/
-dist/                 the seven standalone apps (generated, committed for convenience)
+dist/                 the standalone apps (generated, committed for convenience)
 hardware/             Blender scanner: build script, .blend, .glb, renders
 docs/                 project overview (with the system design) and screenshots
 pitch/                the pitch deck (one HTML file)
