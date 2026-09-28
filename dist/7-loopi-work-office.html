@@ -1391,14 +1391,11 @@ body.xp-body{overflow:hidden;padding:0;background:#070908}
 .xp-pnav button{border:0;background:none;color:#C9CFCC;width:32px;height:32px;border-radius:50%;display:grid;place-items:center}
 .xp-pnav button:hover{background:rgba(255,255,255,.08)}
 
-/* hint and sound */
+/* hint */
 .xp-hint{position:absolute;left:50%;bottom:18px;transform:translateX(-50%);font-size:12.5px;letter-spacing:.02em;color:#838B87;z-index:2;pointer-events:none;
   opacity:0;animation:xphint 1.2s ease 2.8s forwards;transition:opacity 1.2s}
 .xp-hint.gone{opacity:0!important;animation:none}
 @keyframes xphint{to{opacity:1}}
-.xp-mute{position:absolute;right:clamp(16px,2.4vw,32px);top:clamp(20px,4vh,40px);z-index:5;width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;
-  color:#C9CFCC;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12);transition:background .2s,color .2s}
-.xp-mute svg{width:18px;height:18px}.xp-mute:hover{background:rgba(255,255,255,.12)}.xp-mute.off{color:#6E7572}
 
 /* kiosk mode: the real kiosk lies exactly on the 3D screen; its demo controls float in a glass panel */
 .xp-kiosk{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity .7s ease}
@@ -1419,7 +1416,7 @@ body.xp-body{overflow:hidden;padding:0;background:#070908}
 .xp-kiosk .kio-drawer select option{background:#1C1E1D;color:#F0F3F1}
 .xp-kiosk .kio-drawer .btn.primary{background:linear-gradient(180deg,#7CFFB5,#3DDC84);color:#04160B}
 .xp-kiosk .kio-note{flex-direction:column;align-items:stretch}
-.xp-kexit{position:absolute;right:clamp(64px,6vw,84px);top:clamp(20px,4vh,40px);pointer-events:auto;border:0;border-radius:99px;padding:9px 16px;font:500 13.5px "Inter",var(--font);color:#E9EDEB;
+.xp-kexit{position:absolute;right:clamp(16px,2.4vw,32px);top:clamp(20px,4vh,40px);pointer-events:auto;border:0;border-radius:99px;padding:9px 16px;font:500 13.5px "Inter",var(--font);color:#E9EDEB;
   background:rgba(255,255,255,.08);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.16)}
 .xp-kexit:hover{background:rgba(255,255,255,.15)}
 
@@ -1429,7 +1426,6 @@ body.xp-body{overflow:hidden;padding:0;background:#070908}
   .xp-panel h2{font-size:26px}
   .xp-hot span{display:none}
   .xp-kiosk .kio-drawer{left:12px;right:12px;top:auto;bottom:12px;transform:none;width:auto;max-height:46vh}
-  .xp-kexit{right:60px}
 }
 @media (prefers-reduced-motion:reduce){.xp-hot i::after{animation:none}.xp-title,.xp-gl,.xp-panel{transition-duration:.01s!important}}
 
