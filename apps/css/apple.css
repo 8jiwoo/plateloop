@@ -1259,7 +1259,7 @@ body[data-app="lunch"]{background:#0B0D10}
 .kio-choice small{font:500 1.45cqw var(--font);color:#6E6E73}
 .kio-choice.primary{background:#34C759;color:#fff}.kio-choice.primary small{color:rgba(255,255,255,.85)}
 .kio-choice:active{transform:scale(.96)}
-.kio-alt{position:absolute;right:3cqw;top:3.2cqw;border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.8cqw 1.6cqw .8cqw 1cqw;font:600 1.45cqw var(--font);display:flex;align-items:center;gap:.7cqw}
+.kio-alt{position:absolute;right:3.2cqw;bottom:25.5%;border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.8cqw 1.6cqw .8cqw 1cqw;font:600 1.45cqw var(--font);display:flex;align-items:center;gap:.7cqw}
 .kio-alt svg{width:2.4cqw;height:2.4cqw}
 .kio-codewrap{grid-column:1/-1;display:grid;grid-template-columns:1.25fr 1fr;gap:4cqw;align-items:center;padding:0 2cqw}
 .kio-codeinfo{display:flex;flex-direction:column;gap:1.1cqw}
@@ -1359,3 +1359,22 @@ body[data-app="lunch"]{background:#0B0D10}
 .ward-acts{display:flex;flex-wrap:wrap;gap:5px;margin-left:37px}
 .ward-acts .btn{font-size:11.5px;padding:5px 9px}
 .ward-done{font-size:12px;color:var(--tint-ink);font-weight:600;margin:6px 2px 2px 39px;animation:fade .4s}
+
+/* ================================================================ Kitchen: needs attention */
+.inbox{margin-bottom:16px}
+.tasks{display:flex;flex-direction:column;margin-top:8px}
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:.5px solid var(--sep);transition:opacity .3s}
+.task:first-child{border-top:0}
+.task b{display:block;font-size:14.5px}.task span{font-size:13px;color:var(--label2);line-height:1.4}
+.task-dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.task[data-tone="blue"]{--c:var(--blue)}.task[data-tone="orange"]{--c:var(--orange)}.task[data-tone="yellow"]{--c:#E8B400}.task[data-tone="red"]{--c:var(--red)}
+.task:not(.done) .task-dot{box-shadow:0 0 0 0 var(--c);animation:taskp 2s ease-out infinite}
+@keyframes taskp{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 50%,transparent)}80%,100%{box-shadow:0 0 0 7px transparent}}
+.task.done{opacity:.62}.task.done .task-dot{background:var(--tint)}
+.task-ok{width:26px;height:26px;border-radius:50%;background:var(--tint-soft);color:var(--tint-ink);display:grid;place-items:center;font-weight:700;animation:pop .4s cubic-bezier(.2,.9,.3,1.3)}
+.task.doing{opacity:.5;transform:translateX(6px);transition:opacity .25s,transform .25s}
+@media (max-width:640px){.task{grid-template-columns:auto 1fr}.task .btn,.task .task-ok{grid-column:2;justify-self:start}}
+/* Kiosk: the kitchen's reminder while trays are still out */
+.kio-remind{position:absolute;left:50%;transform:translateX(-50%);top:1.2cqw;white-space:nowrap;display:flex;align-items:center;gap:1cqw;background:#FFF6D6;color:#5A4300;border-radius:99cqw;padding:.7cqw 1.6cqw .7cqw 1cqw;font-size:1.45cqw;animation:kremind 2.4s ease-in-out infinite}
+.kio-remind svg{width:2.6cqw;height:2.6cqw}
+@keyframes kremind{0%,100%{box-shadow:0 0 0 0 rgba(255,204,0,.5)}50%{box-shadow:0 0 0 .8cqw rgba(255,204,0,0)}}

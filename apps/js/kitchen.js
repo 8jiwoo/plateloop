@@ -84,6 +84,7 @@ function overview() {
   return `
   <div class="page-head"><div><h1>Today</h1><p>Friday 25 September · every tray is scanned before and after lunch.</p></div></div>
   <div class="kpis">${kpis.map(([k, v, s, c]) => `<div class="kpi"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${s}</div></div>`).join('')}</div>
+  ${inbox()}
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Live scans</h3><span class="hint">Tray numbers, not names</span></div>
       <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}</span></div>`).join('')
@@ -91,6 +92,22 @@ function overview() {
     <div class="card chart"><h3>Eaten by dish</h3><p class="hint">Share of each dish eaten on finished trays</p>${chartDish()}</div>
   </div>
   <div class="card chart"><h3>Plate waste, last 30 school days</h3><p class="hint">Food left ÷ food served, whole school</p>${chartTrend()}</div>`;
+}
+/** Needs attention: what the data says to do today, each with a one-tap action. Done items stay, ticked. */
+function tasks() {
+  const t = T(), done = t.tasks || {}, worst = dishStats().sort((a, b) => a.e - b.e)[0], low = intakeStats().low.length, list = [];
+  if (!PL.S.order.approved) list.push({ id: 'order', tone: 'blue', title: 'Approve tomorrow’s supplier order', text: `Planned from what students really eat: ${money(forecast().orderTotal)}. The supplier cut-off is 14:00.`, btn: 'Review order', go: 'plan' });
+  else list.push({ id: 'order', tone: 'blue', title: 'Tomorrow’s order is approved', text: `${money(PL.S.order.approved.total)} at ${PL.S.order.approved.at}.`, done: true });
+  if (worst && worst.e < .7) list.push({ id: 'dish', tone: 'orange', title: `${worst.d.name}: only ${pct(worst.e)} eaten`, text: worst.d.id === 'kailan' ? 'Students ate 64% of the oyster-sauce version in last month’s A/B test. Cook that on Monday.' : `Serve a smaller default scoop and let students ask for more.`, btn: 'Add to Monday’s cook plan', done: done.dish, doneText: 'Added to Monday’s cook plan' });
+  if (t.eating > 0) list.push({ id: 'remind', tone: 'yellow', title: `${t.eating} tray${t.eating > 1 ? 's' : ''} not scanned back yet`, text: 'Without the after scan we can’t tell what was eaten. The scanner screen can remind students at the tray rack.', btn: 'Show a reminder on the scanner', done: done.remind || t.remind, doneText: 'Reminder is showing on the scanner' });
+  if (low) list.push({ id: 'low', tone: 'red', title: `${low} student${low > 1 ? 's' : ''} ate under 60% of the lunch target`, text: 'Tray numbers only. The form teacher sees names if a pattern lasts a week.', btn: 'See nutrition', go: 'nutrition' });
+  return list;
+}
+function inbox() {
+  const list = tasks(), open = list.filter(x => !x.done).length;
+  return `<div class="card inbox"><div class="row spread"><h3>Needs attention</h3><span class="pill ${open ? 'orange' : 'green'}">${open ? `${open} to do` : 'All done'}</span></div>
+    <div class="tasks">${list.map(x => `<div class="task ${x.done ? 'done' : ''}" data-tone="${x.tone}"><i class="task-dot"></i><div><b>${x.done && x.doneText ? x.doneText : x.title}</b><span>${x.text}</span></div>
+      ${x.done ? '<span class="task-ok" aria-label="Done">✓</span>' : `<button class="btn small ${x.go ? '' : 'primary'}" data-task="${x.id}" ${x.go ? `data-go-view="${x.go}"` : ''}>${x.btn}</button>`}</div>`).join('')}</div></div>`;
 }
 function chartDish() {
   const W = 520, rowH = 36, top = 6, left = 150, right = 50, rows = dishStats().sort((a, b) => b.e - a.e), H = top + rows.length * rowH + 24, iw = W - left - right;
@@ -364,6 +381,13 @@ function wire(main) {
     $('#event', main).onchange = e => { ui.plan.event = e.target.value; refreshPlan(); };
   }
   wireOrder(main);
+  $$('[data-task]', main).forEach(b => b.onclick = () => {
+    if (b.dataset.goView) { ui.view = b.dataset.goView; render(); scrollTo({ top: 0 }); return; }
+    const t = T(); t.tasks = { ...(t.tasks || {}), [b.dataset.task]: true };
+    if (b.dataset.task === 'remind') t.remind = true;
+    const row = b.closest('.task'); row.classList.add('doing');
+    setTimeout(() => { PL.store.save('kitchen'); PL.toast(b.dataset.task === 'remind' ? 'The scanner now reminds students to scan their tray back.' : 'Added to Monday’s cook plan.'); }, 280);
+  });
   PL.paintPets(main);
   const tree = $('#env-tree', main); if (tree) drawTreeInto(tree, 0);
   const cc = $('#copy-carbon', main);

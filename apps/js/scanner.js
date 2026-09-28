@@ -185,7 +185,8 @@ function screen() {
       <div class="kio-sub">Once before lunch and once after. Every clean tray grows a fruit on the school's Green Tree.</div>
       <div class="kio-meta"><div><b class="num">${T.trays}</b>trays today</div><div><b class="num">${T.eating}</b>eating now</div><div><b class="num">${pct(PL.zeroRate())}</b>zero leftover</div><div><b class="num">${((T.co2 || 0) / 1000).toFixed(1)} kg</b>CO₂ saved today</div></div></div>`;
     ban = banner(k.bi);
-    extra = `<button class="kio-alt" id="kio-alt">${ICON.keypad}No face scan? Use your number</button>`;
+    extra = `<button class="kio-alt" id="kio-alt">${ICON.keypad}No face scan? Use your number</button>`
+      + (T.remind && T.eating > 0 ? `<div class="kio-remind">${ICON.tray}<span><b>Finished eating?</b> Scan your tray again before the tray rack.</span></div>` : '');
   } else if (k.mode === 'noface') {
     main = `${left()}<div class="kio-right">
       <div class="kio-kicker warn">Face not found</div>
