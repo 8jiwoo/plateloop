@@ -1252,3 +1252,43 @@ body[data-app="lunch"]{background:#0B0D10}
 .pl-shimmer{background:linear-gradient(100deg,var(--fill) 30%,var(--fill2) 50%,var(--fill) 70%);background-size:300% 100%;animation:shimmer 1.3s linear infinite}
 @keyframes shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
 
+/* ================================================================ kiosk: when something goes wrong */
+.kio-kicker.warn{color:#E07A00}
+.kio-choices{display:flex;gap:1.4cqw;margin-top:.6cqw}
+.kio-choice{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:1.8cqw;padding:1.5cqw 2.2cqw;font:700 2.2cqw var(--font-d);text-align:left;display:flex;flex-direction:column;gap:.3cqw;transition:transform .14s,background .15s}
+.kio-choice small{font:500 1.45cqw var(--font);color:#6E6E73}
+.kio-choice.primary{background:#34C759;color:#fff}.kio-choice.primary small{color:rgba(255,255,255,.85)}
+.kio-choice:active{transform:scale(.96)}
+.kio-alt{position:absolute;right:3cqw;top:3.2cqw;border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.8cqw 1.6cqw .8cqw 1cqw;font:600 1.45cqw var(--font);display:flex;align-items:center;gap:.7cqw}
+.kio-alt svg{width:2.4cqw;height:2.4cqw}
+.kio-codewrap{grid-column:1/-1;display:grid;grid-template-columns:1.25fr 1fr;gap:4cqw;align-items:center;padding:0 2cqw}
+.kio-codeinfo{display:flex;flex-direction:column;gap:1.1cqw}
+.kio-codeinfo .kio-title{font-size:4cqw}
+.kio-cls{display:flex;gap:.7cqw;flex-wrap:wrap}
+.kio-cls button{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.6cqw 1.5cqw;font:600 1.6cqw var(--font)}
+.kio-cls button[aria-pressed="true"]{background:#1D1D1F;color:#fff}
+.kio-code{display:flex;align-items:baseline;gap:1.4cqw;font:700 6cqw var(--font-d);letter-spacing:.06em}
+.kio-code span{font-size:3cqw;color:#8E8E93;letter-spacing:0}
+.kio-code b.ph{color:#D1D1D6}
+.kio-code-err{color:#D70015;font:600 1.6cqw var(--font);margin:0}
+.kio-demo-hint{font-size:1.35cqw;color:#8E8E93;margin:0}
+.kio-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:1cqw}
+.kio-keys button{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:1.6cqw;aspect-ratio:1.55;font:600 2.8cqw var(--font-d);transition:transform .1s,background .15s}
+.kio-keys button.ok{background:#34C759;color:#fff;font-size:2.2cqw}
+.kio-keys button.del{background:transparent;font-size:2.4cqw}
+.kio-keys button:active{transform:scale(.9);background:#D1D1D6}
+.kio-keys button.hit{animation:khit .32s ease-out}
+@keyframes khit{0%{transform:scale(.88);background:#C7C7CC}100%{transform:none}}
+.kio-handic{width:12cqw;height:12cqw;color:#E07A00}
+.kio-handic svg{width:100%;height:100%;overflow:visible}
+.a-lift{transform-box:fill-box;transform-origin:center;animation:klift 1.3s ease-in-out infinite}
+@keyframes klift{0%,100%{transform:translateY(0)}50%{transform:translateY(-22%)}}
+.kstep.on .a-lift{animation:klift 1.3s ease-in-out infinite}
+.kio-est{background:#FFF4E0;color:#7A4B00;border-radius:1.4cqw;padding:1cqw 1.4cqw;font-size:1.45cqw;line-height:1.35}
+.kio-edge{margin-top:12px;padding-top:12px;border-top:.5px dashed var(--sep)}
+.kio-drawer .kio-demo.kio-edge{grid-template-columns:1.3fr 1fr 1.2fr}
+.kio-check{display:flex;align-items:center;min-height:36px}
+.switch-line{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--label)!important;margin:0!important;cursor:pointer}
+.switch-line input{width:18px;height:18px;accent-color:var(--tint)}
+@media (max-width:980px){.kio-drawer .kio-demo.kio-edge{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.kio-drawer .kio-demo.kio-edge{grid-template-columns:1fr}}
