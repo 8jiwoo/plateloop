@@ -2807,7 +2807,7 @@ const lerp = (a, b, k) => a + (b - a) * k;
    anchor/normal are in the scanner's own space (metres, y up, front = +z). view is where the camera goes:
    target, azimuth (theta, around y from +z), polar angle (phi, from straight up) and distance. */
 const PARTS = [
-  { id: 'depth', name: 'Depth camera', line: 'Sees every dish in 3D', anchor: [0, 1.585, .045], normal: [0, -.6, .8],
+  { id: 'depth', name: 'Depth camera', line: 'Sees every dish in 3D', anchor: [0, 1.594, .05], normal: [0, -.6, .8],
     view: { target: [0, 1.56, .02], theta: -.42, phi: 1.82, r: 1.23 },
     what: 'Recognises each food on the tray and measures how much of it there is.',
     how: 'A colour camera picks out today’s dishes while two infrared cameras and a dot projector map the height of the food in every compartment, 0.62 m below. Height over each compartment gives volume, and volume gives grams.',
@@ -2855,51 +2855,63 @@ const SCREEN = { w: .2176, h: .136 }; // 10.1″ at 16:10
 
 let root = null, X = null;
 
-/* ================================================================ sound: synthesised, soft, placed left/right */
+/* ================================================================ sound: only air. Every cue is filtered white noise:
+   quick, soft swishes that sweep up or down and move left or right, with no tones and no rumble. */
 function makeAudio() {
   const A = { ctx: null, on: true, air: null };
   try { A.on = localStorage.getItem('plateloop-xp-sound') !== 'off'; } catch (e) {}
+  const VOL = .7;
   const ctx = () => {
     if (A.ctx) return A.ctx;
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
-    const c = A.ctx = new AC(), master = A.master = c.createGain(); master.gain.value = A.on ? .55 : 0; master.connect(c.destination);
-    // a bed of soft air that swells with rotation speed
+    const c = A.ctx = new AC();
+    // master: a gentle top cut and a soft compressor keep every swish smooth and even
+    const master = A.master = c.createGain(); master.gain.value = A.on ? VOL : 0;
+    const top = c.createBiquadFilter(); top.type = 'lowpass'; top.frequency.value = 9000; top.Q.value = .5;
+    const comp = c.createDynamicsCompressor(); comp.threshold.value = -24; comp.ratio.value = 3; comp.attack.value = .003; comp.release.value = .2;
+    master.connect(top).connect(comp).connect(c.destination);
     const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
-    let b = 0; for (let i = 0; i < len; i++) { b = b * .97 + (Math.random() * 2 - 1) * .03; d[i] = b * 3.2; }
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     A.noise = buf;
+    // the air that follows the scanner as you turn it
     const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
-    const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = .7;
-    const g = c.createGain(); g.gain.value = 0; const p = c.createStereoPanner();
-    src.connect(f).connect(g).connect(p).connect(master); src.start();
-    A.air = { f, g, p };
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900; hp.Q.value = .4;
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500; lp.Q.value = .3;
+    const g = c.createGain(); g.gain.value = 0; const pn = c.createStereoPanner();
+    src.connect(hp).connect(lp).connect(g).connect(pn).connect(master); src.start();
+    A.air = { lp, g, pn };
     return c;
   };
   A.wake = () => { const c = ctx(); if (c && c.state === 'suspended') c.resume(); };
-  A.setOn = on => { A.on = on; try { localStorage.setItem('plateloop-xp-sound', on ? 'on' : 'off'); } catch (e) {} if (A.master) A.master.gain.setTargetAtTime(on ? .55 : 0, A.ctx.currentTime, .05); };
+  A.setOn = on => { A.on = on; try { localStorage.setItem('plateloop-xp-sound', on ? 'on' : 'off'); } catch (e) {} if (A.master) A.master.gain.setTargetAtTime(on ? VOL : 0, A.ctx.currentTime, .05); };
   /** rotation: speed 0..1, dir -1..1 */
-  A.rotate = (speed, dir) => { if (!A.air) return; const t = A.ctx.currentTime; A.air.g.gain.setTargetAtTime(Math.min(.22, speed * .9), t, .08); A.air.f.frequency.setTargetAtTime(500 + speed * 1600, t, .1); A.air.p.pan.setTargetAtTime(Math.max(-.8, Math.min(.8, dir)), t, .15); };
-  const tone = (freq, dur, vol, pan = 0, type = 'sine', delay = 0, glide = 0) => {
-    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime + delay;
-    const o = c.createOscillator(), g = c.createGain(), p = c.createStereoPanner();
-    o.type = type; o.frequency.setValueAtTime(freq, t); if (glide) o.frequency.exponentialRampToValueAtTime(freq * glide, t + dur);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    p.pan.value = pan; o.connect(g).connect(p).connect(A.master); o.start(t); o.stop(t + dur + .05);
+  A.rotate = (speed, dir) => {
+    if (!A.air) return; const t = A.ctx.currentTime, k = Math.min(1, speed);
+    A.air.g.gain.setTargetAtTime(k * k * .1, t, .12);
+    A.air.lp.frequency.setTargetAtTime(1500 + k * 5500, t, .12);
+    A.air.pn.pan.setTargetAtTime(Math.max(-.7, Math.min(.7, dir)), t, .2);
   };
-  const whoosh = (dur, vol, pan, up) => {
-    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime;
-    const s = c.createBufferSource(); s.buffer = A.noise; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.4;
-    f.frequency.setValueAtTime(up ? 300 : 1800, t); f.frequency.exponentialRampToValueAtTime(up ? 1900 : 280, t + dur);
-    const g = c.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + dur * .45); g.gain.linearRampToValueAtTime(0, t + dur);
-    const p = c.createStereoPanner(); p.pan.setValueAtTime(-pan, t); p.pan.linearRampToValueAtTime(pan, t + dur);
-    s.connect(f).connect(g).connect(p).connect(A.master); s.start(t, Math.random()); s.stop(t + dur + .05);
+  /** one swish of air: the band sweeps f0 → f1 while it pans p0 → p1; it swells to vol at `at` of its length */
+  const swish = ({ dur, vol, f0, f1, q = .8, p0 = 0, p1 = p0, at = .3, delay = 0 }) => {
+    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime + delay;
+    const s = c.createBufferSource(); s.buffer = A.noise;
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = q;
+    bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 450;
+    const g = c.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * at); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    const pn = c.createStereoPanner(); pn.pan.setValueAtTime(p0, t); pn.pan.linearRampToValueAtTime(p1, t + dur);
+    s.connect(bp).connect(hp).connect(g).connect(pn).connect(A.master); s.start(t, Math.random() * 1.5); s.stop(t + dur + .05);
   };
   let lastZoom = 0;
-  A.zoom = (k, pan) => { const now = performance.now(); if (now - lastZoom < 70) return; lastZoom = now; tone(900 + k * 900, .07, .045, pan, 'sine'); };
-  A.fly = (pan, up = true) => whoosh(1.1, .16, pan, up);
-  A.select = pan => { tone(1318.5, .9, .07, pan); tone(1975.5, 1.1, .045, pan, 'sine', .06); tone(659.3, .6, .04, pan, 'triangle'); };
-  A.close = () => { tone(1174.7, .5, .05, 0); tone(880, .7, .04, 0, 'sine', .07); };
-  A.hover = pan => tone(2637, .05, .018, pan);
-  A.power = () => { tone(220, .9, .06, 0, 'sine', 0, 2); tone(440, 1.2, .04, 0, 'sine', .15, 2); tone(1760, .6, .03, 0, 'sine', .55); };
+  A.zoom = (inward, pan) => { const now = performance.now(); if (now - lastZoom < 90) return; lastZoom = now; swish({ dur: .11, vol: .05, f0: inward ? 2600 : 4200, f1: inward ? 4200 : 2600, q: 1, p0: pan }); };
+  A.fly = (pan, up = true) => {
+    swish({ dur: .8, vol: .16, f0: up ? 700 : 3200, f1: up ? 3200 : 700, q: .7, p0: -pan, p1: pan, at: .4 });
+    swish({ dur: .45, vol: .035, f0: up ? 4500 : 6500, f1: up ? 6500 : 4500, q: 1.2, p0: -pan, p1: pan, delay: .22 });
+  };
+  A.select = pan => { swish({ dur: .22, vol: .1, f0: 1400, f1: 5600, q: 1.1, p0: pan, at: .25 }); swish({ dur: .5, vol: .028, f0: 3600, f1: 2400, q: 1.4, p0: pan, delay: .12 }); };
+  A.close = () => swish({ dur: .3, vol: .07, f0: 4800, f1: 1000, q: 1, at: .2 });
+  A.hover = pan => swish({ dur: .07, vol: .014, f0: 5200, f1: 6400, q: 1.6, p0: pan });
+  A.power = () => { swish({ dur: 1.3, vol: .1, f0: 350, f1: 3400, q: .6, at: .6 }); swish({ dur: .7, vol: .03, f0: 5200, f1: 3800, q: 1.3, delay: .8 }); };
   A.close2 = () => { if (A.ctx) A.ctx.close(); };
   return A;
 }
@@ -2908,8 +2920,8 @@ function makeAudio() {
 function brushed() {
   const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
   x.fillStyle = '#b8bcc0'; x.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 1400; i++) { const y = Math.random() * 256, a = Math.random() * .12; x.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '40,44,48'},${a})`; x.fillRect(0, y, 256, Math.random() * 1.3 + .3); }
-  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 6); return t;
+  for (let i = 0; i < 2600; i++) { const y = Math.random() * 256, a = Math.random() * .045; x.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '40,44,48'},${a})`; x.fillRect(0, y, 256, Math.random() * .8 + .2); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(10, 10); t.anisotropy = 8; return t;
 }
 function makeMats() {
   const BR = brushed();
@@ -3003,25 +3015,31 @@ function buildScanner(M) {
   const FOOD = [[0x3F8B3A, -.133, -.072, .04], [0xD8E6A8, 0, -.072, .034], [0xF2545B, .133, -.072, .036], [0xF3EDDA, -.133, .072, .046], [0x9C5A2E, 0, .072, .04], [0xE8A25C, .133, .072, .042]];
   FOOD.forEach(([c, x, z, r]) => { const m = add(trayG, new THREE.SphereGeometry(r, 24, 14), M.food(c), x, .012, z); m.scale.set(1, .32, .82); });
 
-  /* --- the column and the camera arm --- */
+  /* --- the column and the camera arm: machined, with crisp edges and fine split lines --- */
   const arm = part('arm');
-  add(arm, rbox(.075, .69, .075, .012, .02), M.alu(), 0, 1.265, -.205);
-  add(arm, rbox(.095, .05, .34, .014, .03), M.alu(), 0, 1.622, -.075);
-  add(arm, rbox(.078, .003, .002, .001, .001), M.graphite(), 0, 1.6, -.205 + .04, 0, 0, 0, false);
+  add(arm, rbox(.068, .69, .068, .0025, .007), M.alu(), 0, 1.262, -.205);
+  // a dark gasket where the column meets the arm
+  add(arm, rbox(.072, .004, .072, .001, .008), M.graphite(), 0, 1.599, -.205, 0, 0, 0, false);
+  // the arm: a flat-topped bar, barely softened at the edges
+  add(arm, rbox(.1, .04, .34, .0025, .005), M.alu(), 0, 1.621, -.075);
+  // split lines along both sides, and a flush black glass face at the front
+  [-1, 1].forEach(sx => add(arm, new THREE.BoxGeometry(.0012, .0016, .31), M.graphite(), sx * .0502, 1.621, -.07, 0, 0, 0, false));
+  add(arm, rbox(.092, .032, .002, .0008, .004), M.glass(), 0, 1.621, .0955, 0, 0, 0, false);
 
-  /* --- the depth camera module under the arm --- */
+  /* --- the depth camera module, flush under the arm --- */
   const dep = part('depth');
-  add(dep, rbox(.086, .012, .14, .004, .02), M.glass(), 0, 1.592, .02);
-  [-.03, .03].forEach(z => { add(dep, new THREE.CylinderGeometry(.0105, .0105, .004, 32), M.graphite(), 0, 1.5855, z); add(dep, new THREE.CylinderGeometry(.0068, .0068, .005, 32), M.lens(), 0, 1.5845, z); });
-  add(dep, new THREE.CylinderGeometry(.0125, .0125, .004, 32), M.graphite(), 0, 1.5855, .02 - .02);
-  add(dep, new THREE.CylinderGeometry(.008, .008, .005, 32), M.lens(), 0, 1.5845, 0);
-  const ring = add(dep, new THREE.TorusGeometry(.0145, .0012, 8, 40), M.led(), 0, 1.5852, 0, Math.PI / 2, 0, 0, false); leds.push(ring);
-  [[.022, .055], [-.022, .055]].forEach(([x, z]) => add(dep, new THREE.CylinderGeometry(.0035, .0035, .004, 16), M.led(0x5A1010), x, 1.5855, z));
-  // status strip on the front of the arm
-  const astrip = add(dep, rbox(.05, .004, .003, .0015, .002), M.led(), 0, 1.622, .097, 0, 0, 0, false); leds.push(astrip);
+  add(dep, rbox(.088, .005, .15, .001, .006), M.glass(), 0, 1.5985, .02);
+  const LY = 1.5955; // just below the glass
+  [-.034, .034].forEach(z => { add(dep, new THREE.CylinderGeometry(.0105, .0105, .0015, 40), M.graphite(), 0, LY, z); add(dep, new THREE.CylinderGeometry(.0072, .0072, .002, 40), M.lens(), 0, LY - .0005, z); });
+  add(dep, new THREE.CylinderGeometry(.0125, .0125, .0015, 40), M.graphite(), 0, LY, 0);
+  add(dep, new THREE.CylinderGeometry(.0085, .0085, .002, 40), M.lens(), 0, LY - .0005, 0);
+  const ring = add(dep, new THREE.TorusGeometry(.0142, .0008, 8, 48), M.led(), 0, LY + .0004, 0, Math.PI / 2, 0, 0, false); leds.push(ring);
+  [[.024, .06], [-.024, .06]].forEach(([x, z]) => add(dep, new THREE.CylinderGeometry(.003, .003, .0015, 20), M.led(0x5A1010), x, LY, z));
+  // status line in the black glass face at the front of the arm
+  const astrip = add(dep, new THREE.BoxGeometry(.05, .0022, .001), M.led(), 0, 1.621, .0969, 0, 0, 0, false); leds.push(astrip);
   // the scan beam, shown while scanning
   const beamM = new THREE.MeshBasicMaterial({ color: 0x46FF9A, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-  const beam = new THREE.Mesh(new THREE.ConeGeometry(.3, .63, 4, 1, true), beamM); beam.userData.part = 'beam'; beam.position.set(0, 1.27, .02); beam.rotation.y = Math.PI / 4; beam.scale.set(1, 1, .72); S.add(beam);
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(.3, .63, 4, 1, true), beamM); beam.userData.part = 'beam'; beam.position.set(0, 1.279, .02); beam.rotation.y = Math.PI / 4; beam.scale.set(1, 1, .72); S.add(beam);
 
   /* --- display on its stand, leaning back 15° --- */
   const disp = part('display');
@@ -3170,7 +3188,7 @@ function start(el) {
   const up = e => { const was = ptrs.has(e.pointerId); ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = 0; if (was && e.type === 'pointerup' && moved < 5 && state.focus != null && !C.fly) close(); };
   canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
   const dist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a[0] - b[0], a[1] - b[1]); };
-  const zoomBy = k => { const lo = state.focus != null ? .45 : 1.35, hi = heroR() * 1.45; C.rGoal = Math.max(lo, Math.min(hi, C.rGoal * k)); A.zoom(1 - (C.rGoal - lo) / (hi - lo), 0); };
+  const zoomBy = k => { const lo = state.focus != null ? .45 : 1.35, hi = heroR() * 1.45; C.rGoal = Math.max(lo, Math.min(hi, C.rGoal * k)); A.zoom(k < 1, 0); };
   canvas.addEventListener('wheel', e => { if (C.lock) return; e.preventDefault(); interact(); if (!C.fly) zoomBy(Math.exp(e.deltaY * .0011)); }, { passive: false });
 
   /* ---------------- hotspots and the panel */
@@ -3349,6 +3367,7 @@ function start(el) {
 
   return {
     get kiosk() { return kioskMounted; }, state,
+    look: (v, dur) => flyTo({ target: HERO.target, theta: HERO.theta, phi: HERO.phi, r: heroR(), ...v }, dur), // for testing
     stop() {
       cancelAnimationFrame(raf); ro.disconnect(); removeEventListener('keydown', onKey);
       if (kioskMounted) PL.apps.scanner.unmount();
@@ -3371,6 +3390,7 @@ PL.apps.model = {
   unmount() { if (X) X.stop(); X = null; root = null; document.body.classList.remove('xp-body'); },
   update(kind, fromSelf) { if (X && X.kiosk && PL.apps.scanner.update) PL.apps.scanner.update(kind, fromSelf); },
   tick(t) { if (X && X.kiosk && PL.apps.scanner.tick) PL.apps.scanner.tick(t); },
+  debug: () => X,
 };
 })();
 
