@@ -61,51 +61,63 @@ const SCREEN = { w: .2176, h: .136 }; // 10.1″ at 16:10
 
 let root = null, X = null;
 
-/* ================================================================ sound: synthesised, soft, placed left/right */
+/* ================================================================ sound: only air. Every cue is filtered white noise:
+   quick, soft swishes that sweep up or down and move left or right, with no tones and no rumble. */
 function makeAudio() {
   const A = { ctx: null, on: true, air: null };
   try { A.on = localStorage.getItem('plateloop-xp-sound') !== 'off'; } catch (e) {}
+  const VOL = .7;
   const ctx = () => {
     if (A.ctx) return A.ctx;
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
-    const c = A.ctx = new AC(), master = A.master = c.createGain(); master.gain.value = A.on ? .55 : 0; master.connect(c.destination);
-    // a bed of soft air that swells with rotation speed
+    const c = A.ctx = new AC();
+    // master: a gentle top cut and a soft compressor keep every swish smooth and even
+    const master = A.master = c.createGain(); master.gain.value = A.on ? VOL : 0;
+    const top = c.createBiquadFilter(); top.type = 'lowpass'; top.frequency.value = 9000; top.Q.value = .5;
+    const comp = c.createDynamicsCompressor(); comp.threshold.value = -24; comp.ratio.value = 3; comp.attack.value = .003; comp.release.value = .2;
+    master.connect(top).connect(comp).connect(c.destination);
     const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
-    let b = 0; for (let i = 0; i < len; i++) { b = b * .97 + (Math.random() * 2 - 1) * .03; d[i] = b * 3.2; }
+    for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
     A.noise = buf;
+    // the air that follows the scanner as you turn it
     const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
-    const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = .7;
-    const g = c.createGain(); g.gain.value = 0; const p = c.createStereoPanner();
-    src.connect(f).connect(g).connect(p).connect(master); src.start();
-    A.air = { f, g, p };
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900; hp.Q.value = .4;
+    const lp = c.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 1500; lp.Q.value = .3;
+    const g = c.createGain(); g.gain.value = 0; const pn = c.createStereoPanner();
+    src.connect(hp).connect(lp).connect(g).connect(pn).connect(master); src.start();
+    A.air = { lp, g, pn };
     return c;
   };
   A.wake = () => { const c = ctx(); if (c && c.state === 'suspended') c.resume(); };
-  A.setOn = on => { A.on = on; try { localStorage.setItem('plateloop-xp-sound', on ? 'on' : 'off'); } catch (e) {} if (A.master) A.master.gain.setTargetAtTime(on ? .55 : 0, A.ctx.currentTime, .05); };
+  A.setOn = on => { A.on = on; try { localStorage.setItem('plateloop-xp-sound', on ? 'on' : 'off'); } catch (e) {} if (A.master) A.master.gain.setTargetAtTime(on ? VOL : 0, A.ctx.currentTime, .05); };
   /** rotation: speed 0..1, dir -1..1 */
-  A.rotate = (speed, dir) => { if (!A.air) return; const t = A.ctx.currentTime; A.air.g.gain.setTargetAtTime(Math.min(.22, speed * .9), t, .08); A.air.f.frequency.setTargetAtTime(500 + speed * 1600, t, .1); A.air.p.pan.setTargetAtTime(Math.max(-.8, Math.min(.8, dir)), t, .15); };
-  const tone = (freq, dur, vol, pan = 0, type = 'sine', delay = 0, glide = 0) => {
-    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime + delay;
-    const o = c.createOscillator(), g = c.createGain(), p = c.createStereoPanner();
-    o.type = type; o.frequency.setValueAtTime(freq, t); if (glide) o.frequency.exponentialRampToValueAtTime(freq * glide, t + dur);
-    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
-    p.pan.value = pan; o.connect(g).connect(p).connect(A.master); o.start(t); o.stop(t + dur + .05);
+  A.rotate = (speed, dir) => {
+    if (!A.air) return; const t = A.ctx.currentTime, k = Math.min(1, speed);
+    A.air.g.gain.setTargetAtTime(k * k * .1, t, .12);
+    A.air.lp.frequency.setTargetAtTime(1500 + k * 5500, t, .12);
+    A.air.pn.pan.setTargetAtTime(Math.max(-.7, Math.min(.7, dir)), t, .2);
   };
-  const whoosh = (dur, vol, pan, up) => {
-    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime;
-    const s = c.createBufferSource(); s.buffer = A.noise; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.4;
-    f.frequency.setValueAtTime(up ? 300 : 1800, t); f.frequency.exponentialRampToValueAtTime(up ? 1900 : 280, t + dur);
-    const g = c.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + dur * .45); g.gain.linearRampToValueAtTime(0, t + dur);
-    const p = c.createStereoPanner(); p.pan.setValueAtTime(-pan, t); p.pan.linearRampToValueAtTime(pan, t + dur);
-    s.connect(f).connect(g).connect(p).connect(A.master); s.start(t, Math.random()); s.stop(t + dur + .05);
+  /** one swish of air: the band sweeps f0 → f1 while it pans p0 → p1; it swells to vol at `at` of its length */
+  const swish = ({ dur, vol, f0, f1, q = .8, p0 = 0, p1 = p0, at = .3, delay = 0 }) => {
+    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime + delay;
+    const s = c.createBufferSource(); s.buffer = A.noise;
+    const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = q;
+    bp.frequency.setValueAtTime(f0, t); bp.frequency.exponentialRampToValueAtTime(f1, t + dur);
+    const hp = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 450;
+    const g = c.createGain(); g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + dur * at); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    const pn = c.createStereoPanner(); pn.pan.setValueAtTime(p0, t); pn.pan.linearRampToValueAtTime(p1, t + dur);
+    s.connect(bp).connect(hp).connect(g).connect(pn).connect(A.master); s.start(t, Math.random() * 1.5); s.stop(t + dur + .05);
   };
   let lastZoom = 0;
-  A.zoom = (k, pan) => { const now = performance.now(); if (now - lastZoom < 70) return; lastZoom = now; tone(900 + k * 900, .07, .045, pan, 'sine'); };
-  A.fly = (pan, up = true) => whoosh(1.1, .16, pan, up);
-  A.select = pan => { tone(1318.5, .9, .07, pan); tone(1975.5, 1.1, .045, pan, 'sine', .06); tone(659.3, .6, .04, pan, 'triangle'); };
-  A.close = () => { tone(1174.7, .5, .05, 0); tone(880, .7, .04, 0, 'sine', .07); };
-  A.hover = pan => tone(2637, .05, .018, pan);
-  A.power = () => { tone(220, .9, .06, 0, 'sine', 0, 2); tone(440, 1.2, .04, 0, 'sine', .15, 2); tone(1760, .6, .03, 0, 'sine', .55); };
+  A.zoom = (inward, pan) => { const now = performance.now(); if (now - lastZoom < 90) return; lastZoom = now; swish({ dur: .11, vol: .05, f0: inward ? 2600 : 4200, f1: inward ? 4200 : 2600, q: 1, p0: pan }); };
+  A.fly = (pan, up = true) => {
+    swish({ dur: .8, vol: .16, f0: up ? 700 : 3200, f1: up ? 3200 : 700, q: .7, p0: -pan, p1: pan, at: .4 });
+    swish({ dur: .45, vol: .035, f0: up ? 4500 : 6500, f1: up ? 6500 : 4500, q: 1.2, p0: -pan, p1: pan, delay: .22 });
+  };
+  A.select = pan => { swish({ dur: .22, vol: .1, f0: 1400, f1: 5600, q: 1.1, p0: pan, at: .25 }); swish({ dur: .5, vol: .028, f0: 3600, f1: 2400, q: 1.4, p0: pan, delay: .12 }); };
+  A.close = () => swish({ dur: .3, vol: .07, f0: 4800, f1: 1000, q: 1, at: .2 });
+  A.hover = pan => swish({ dur: .07, vol: .014, f0: 5200, f1: 6400, q: 1.6, p0: pan });
+  A.power = () => { swish({ dur: 1.3, vol: .1, f0: 350, f1: 3400, q: .6, at: .6 }); swish({ dur: .7, vol: .03, f0: 5200, f1: 3800, q: 1.3, delay: .8 }); };
   A.close2 = () => { if (A.ctx) A.ctx.close(); };
   return A;
 }
@@ -376,7 +388,7 @@ function start(el) {
   const up = e => { const was = ptrs.has(e.pointerId); ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = 0; if (was && e.type === 'pointerup' && moved < 5 && state.focus != null && !C.fly) close(); };
   canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
   const dist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a[0] - b[0], a[1] - b[1]); };
-  const zoomBy = k => { const lo = state.focus != null ? .45 : 1.35, hi = heroR() * 1.45; C.rGoal = Math.max(lo, Math.min(hi, C.rGoal * k)); A.zoom(1 - (C.rGoal - lo) / (hi - lo), 0); };
+  const zoomBy = k => { const lo = state.focus != null ? .45 : 1.35, hi = heroR() * 1.45; C.rGoal = Math.max(lo, Math.min(hi, C.rGoal * k)); A.zoom(k < 1, 0); };
   canvas.addEventListener('wheel', e => { if (C.lock) return; e.preventDefault(); interact(); if (!C.fly) zoomBy(Math.exp(e.deltaY * .0011)); }, { passive: false });
 
   /* ---------------- hotspots and the panel */
