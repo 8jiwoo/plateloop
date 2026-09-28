@@ -178,9 +178,10 @@ function mount(el) {
         <label class="check"><input type="checkbox" id="work-eggs"> Took the boiled eggs</label>
         <button class="btn primary" id="work-scan"></button>
       </div>
+      <button class="linkish" id="work-intro" style="font-size:13px;text-align:left">Show the first-run intro</button>
       <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
     </aside>
-    <div class="phone">
+    <div class="phone" id="work-phone">
       <header class="phone-top" id="work-top"></header>
       <div class="phone-body" id="work-body"></div>
       <nav class="phone-tabs three" role="tablist" aria-label="Loopi Work">${Object.keys(TABS).map(t => `<button role="tab" data-tab="${t}">${ICON[t]}${TABS[t]}</button>`).join('')}</nav>
@@ -197,7 +198,25 @@ function mount(el) {
     w.log.push(rec); PL.store.save('work');
     PL.toast(`Tray scanned: ${LINES[line].name}, ${rec.n.kcal} kcal, ${rec.n.p} g protein.`);
   };
+  $('#work-intro', el).onclick = intro;
   render();
+  if (!PL.introSeen('work')) intro();
+}
+/** First run: the idea, pick a goal, then what your employer can and can't see. */
+function intro() {
+  const w = me();
+  PL.onboard($('#work-phone', root), 'work', [
+    { art: PL.V.loopi('happy', 150), title: 'Lunch that fits your goal.', text: 'Scan your tray at the canteen. Loopi Work tells you which line to pick, and after lunch, what was missing.' },
+    { art: PL.V.icon('muscle', 'var(--indigo)'), title: 'What’s your goal?', text: 'You can change it any time on the Goals tab.',
+      body: `<div class="onb-goals">${Object.entries(GOALS).map(([k, G]) => `<label><input type="radio" name="onb-goal" value="${k}" data-pref="goal_${k}" ${k === w.goal ? 'checked' : ''}><span><b>${G.name}</b><small>${G.blurb}</small></span></label>`).join('')}</div>` },
+    { consent: true, art: PL.V.icon('check', 'var(--indigo)'), title: 'Only you see your meals.', cta: 'Start',
+      body: `<ul class="onb-list"><li><b>Your company</b> sees canteen totals only, never names.</li><li><b>Your weekly report</b> stays on your phone unless you share it.</li></ul>
+      <div class="onb-prefs"><label class="onb-pref"><span><b>Share my weekly report</b><small>With the company health programme. Off by default.</small></span><input type="checkbox" role="switch" data-pref="share" ${w.share ? 'checked' : ''}></label>
+      <label class="onb-agree"><input type="checkbox" data-agree> <span>I agree to PlateLoop recording my canteen trays for my own report.</span></label></div>` },
+  ], p => {
+    const g = Object.keys(GOALS).find(k => p['goal_' + k]); if (g) w.goal = g;
+    w.share = !!p.share; ui.line = null; ui.eggs = null; PL.store.save('work');
+  });
 }
 /** The demo's eggs box follows the recommendation until someone changes it. */
 const eggsOn = w => ui.eggs ?? recommend(w)[0].set.some(t => t.id === 'eggs');

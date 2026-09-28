@@ -59,6 +59,7 @@ function mount(el) {
       <div class="loopi-brand"><span class="loopi-icon" aria-hidden="true">${V.loopi('happy', 46)}</span><div><b>Loopi</b><span>by PlateLoop · for teens and uni students</span></div></div>
       <p class="stu-note">Demo: pick a student</p>
       <div class="chips" id="stu-who"></div>
+      <button class="linkish" id="stu-intro" style="font-size:13px;text-align:left">Show the first-run intro</button>
       <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
     </aside>
     <div class="phone" id="phone">
@@ -72,7 +73,24 @@ function mount(el) {
   </div>`;
   $$('.phone-tabs button', el).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.big = false; ui.sheet = null; ui.tab = b.dataset.tab; render(); $('#stu-body').scrollTop = 0; });
   el.onkeydown = e => { if (e.key === 'Escape' && ui.big) { ui.big = false; render(true); } };
+  $('#stu-intro', el).onclick = intro;
   render();
+  if (!PL.introSeen('loopi')) intro();
+}
+/** First run: what Loopi is, how the two scans work, why it rewards the right portion, then the privacy choices. */
+function intro() {
+  const st = me(), step = (ic, t, s) => `<div>${V.icon(ic, 'var(--tint)')}<b>${t}</b><span>${s}</span></div>`;
+  PL.onboard($('#phone', root), 'loopi', [
+    { art: V.loopi('wave', 150), title: 'Meet Loopi.', text: 'Loopi only eats the lunch you really eat. Whatever you finish goes into its bowl, and it grows up with you all year.' },
+    { art: `<div class="onb-steps">${step('smile', 'Look at the camera', 'on the scanner, no card')}${step('scale', 'Place your tray', 'before and after lunch')}${step('check', 'Wait for the chime', 'about two seconds')}</div>`,
+      title: 'Two quick scans.', text: 'Before lunch it sees what you were served. After lunch it sees what’s left. The difference is exactly what you ate.' },
+    { art: V.loopi('cheer', 150), title: 'Take what you’ll finish.', text: 'This isn’t a clean-plate rule. A small plate you finish gives Loopi full energy, and you’re only ever compared with your own usual.' },
+    { consent: true, art: V.icon('check', 'var(--tint)'), title: 'Your data, your choice.', cta: 'Start',
+      body: `<div class="onb-prefs">
+        <label class="onb-pref"><span><b>Sign in with my face</b><small>The scanner keeps a match code, never a photo. Off: type your class and register number instead.</small></span><input type="checkbox" role="switch" data-pref="face" ${st.faceOff ? '' : 'checked'}></label>
+        <label class="onb-pref"><span><b>Show my name on the class board</b><small>Off: you appear as “A classmate”.</small></span><input type="checkbox" role="switch" data-pref="showName" ${st.hideName ? '' : 'checked'}></label>
+        <label class="onb-agree"><input type="checkbox" data-agree> <span>I understand PlateLoop records what I’m served and what I leave, for Loopi, my class and the school kitchen. Tray photos never leave the scanner.</span></label></div>` },
+  ], p => { st.faceOff = !p.face; st.hideName = !p.showName; PL.store.save('optin'); });
 }
 function render(keepScroll) {
   if (!root) return;
@@ -354,7 +372,7 @@ function meTab(st, g) {
     return `<button class="bdg ${got ? '' : 'locked'} ${on ? 'on' : ''}" ${got ? `data-wear="${b.item}"` : 'disabled'} aria-pressed="${on}"><canvas width="72" height="60" data-acc="${b.item}"></canvas><b>${b.name}</b><span>${got ? (on ? 'Wearing' : 'Tap to wear') : b.how}</span></button>`; }).join('')}</div>
   <div class="vcard"><h3>Past lunches</h3><div class="hist2">${st.log.map(l => `<div><i style="--p:${Math.round((1 - l.w) * 100)}"></i><span>${l.day}</span><b class="num">${pct(1 - l.w)} eaten</b><em class="num">+${l.pts}</em></div>`).join('')}</div></div>
   <div class="vtips">
-    <div class="switch-row"><span>Face sign-in</span><span class="g-v">On</span></div>
+    <label class="switch-row"><span>Face sign-in<small class="sw-sub">${st.faceOff ? 'Off: you sign in with your class and register number' : 'On: just look at the scanner'}</small></span><input type="checkbox" role="switch" id="faceopt" ${st.faceOff ? '' : 'checked'}></label>
     <label class="switch-row"><span>Show my name on the class board</span><input type="checkbox" role="switch" id="optin" ${st.hideName ? '' : 'checked'}></label>
   </div>
   <p class="foot">The scanner keeps a match code made from your face, never a photo. It's deleted when you leave the school.</p>`;
@@ -422,6 +440,8 @@ function wire(st) {
   $$('[data-wear]', body).forEach(b => b.onclick = () => act(() => G.wear(me(), b.dataset.wear)));
   const opt = $('#optin', body);
   if (opt) opt.onchange = () => { st.hideName = !opt.checked; PL.store.save('optin'); };
+  const fo = $('#faceopt', body);
+  if (fo) fo.onchange = () => { st.faceOff = !fo.checked; PL.store.save('optin'); PL.toast(st.faceOff ? 'Face sign-in is off. Your match code has been deleted from the scanner.' : 'Face sign-in is on. Look at the scanner next time.'); };
 }
 
 PL.apps.student = {

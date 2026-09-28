@@ -38,9 +38,10 @@ function mount(el) {
         <select id="care-preset">${Object.keys(H.PRESETS).map(p => `<option>${p}</option>`).join('')}</select>
         <button class="btn primary" id="care-serve"></button>
       </div>
+      <button class="linkish" id="care-intro" style="font-size:13px;text-align:left">Show the first-run intro</button>
       <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
     </aside>
-    <div class="phone">
+    <div class="phone" id="care-phone">
       <header class="phone-top" id="care-top"></header>
       <div class="phone-body" id="care-body"></div>
       <nav class="phone-tabs three" role="tablist" aria-label="Loopi Care">${Object.keys(TABS).map(t => `<button role="tab" data-tab="${t}">${ICON[t]}${TABS[t]}</button>`).join('')}</nav>
@@ -54,7 +55,23 @@ function mount(el) {
     PL.store.save('care');
     PL.toast(`${mealName(rec.meal)} scanned: ${pct(ate(rec))} eaten, ${rec.n.kcal} kcal.`);
   };
+  $('#care-intro', el).onclick = intro;
   render();
+  if (!PL.introSeen('care')) intro();
+}
+/** First run, usually done with a nurse at the bedside: what's tracked, the diet, alerts, who sees it, and bigger text. */
+function intro() {
+  const P = me(), D = H.DIETS[P.diet];
+  PL.onboard($('#care-phone', root), 'care', [
+    { art: PL.V.loopi('calm', 150), title: 'We keep an eye on your meals.', text: 'The ward scanner weighs each tray before and after you eat, so your care team knows you’re getting enough, without you writing anything down.' },
+    { art: `<div class="vrings">${PL.V.ring(D.target.kcal * .8, D.target.kcal, 'Energy', 'kcal', 'aim')}${PL.V.ring(D.target.p * .9, D.target.p, 'Protein', 'g', 'aim')}</div>`,
+      title: `Your ${esc(D.name.toLowerCase())} diet.`, text: `Each day aims for ${D.target.kcal.toLocaleString('en-US')} kcal and ${D.target.p} g of protein. You’ll see how close each meal gets.` },
+    { art: PL.V.icon('heart', 'var(--blue)'), title: 'If you’re not hungry, we’ll notice.', text: 'If you leave most of two meals in a row, your nurse gets a gentle alert to check in. It’s about helping you eat enough, not about finishing the plate.' },
+    { consent: true, art: PL.V.icon('check', 'var(--blue)'), title: 'Who can see this.', cta: 'Start',
+      body: `<ul class="onb-list"><li><b>Your nurses</b> see every meal on the ward.</li><li><b>${esc(P.doctor)} and the dietitian</b> get a weekly report.</li><li><b>No one else.</b> It’s deleted 30 days after you go home.</li></ul>
+      <div class="onb-prefs"><label class="onb-pref"><span><b>Larger text</b><small>Easier to read from the bed.</small></span><input type="checkbox" role="switch" data-pref="big" ${P.big ? 'checked' : ''}></label>
+      <label class="onb-agree"><input type="checkbox" data-agree> <span>I agree to share my meal records with my care team.</span></label></div>` },
+  ], p => { P.big = !!p.big; PL.store.save('care'); });
 }
 function render(keep) {
   if (!root) return;
@@ -70,6 +87,9 @@ function render(keep) {
   body.innerHTML = ({ today, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
   const send = $('#send-report', body); if (send) send.onclick = () => PL.toast(`Report sent to ${P.doctor} and the ward dietitian (demo, nothing was sent).`);
   const pr = $('#print-report', body); if (pr) pr.onclick = () => print();
+  $('#care-phone', root).classList.toggle('lg', !!P.big);
+  const big = $('#care-big', body); if (big) big.onchange = () => { P.big = big.checked; PL.store.save('care'); };
+  const cf = $('#care-face', body); if (cf) cf.onchange = () => { P.faceOff = !cf.checked; PL.store.save('care'); };
   if (keep) body.scrollTop = y;
   PL.motion(body, `care:${P.id}:${ui.tab}`);
 }
@@ -167,7 +187,7 @@ function meTab(P) {
     <div class="g-row two-col"><span>Nurse station</span><span class="g-v">7B, ext. 4172</span></div>
   </section>
   <h4 class="sec">Privacy</h4>
-  <section class="group"><div class="switch-row"><span>Face sign-in</span><span class="g-v">On</span></div></section>
+  <section class="group"><label class="switch-row"><span>Larger text</span><input type="checkbox" role="switch" id="care-big" ${P.big ? 'checked' : ''}></label><label class="switch-row"><span>Face sign-in<small class="sw-sub">${P.faceOff ? 'Off: nurses scan your wristband instead' : 'On: the ward scanner knows you'}</small></span><input type="checkbox" role="switch" id="care-face" ${P.faceOff ? '' : 'checked'}></label></section>
   <p class="foot">The ward scanner keeps a match code made from your face, never a photo. Your report is shared only with your care team, and it's deleted 30 days after you go home.</p>`;
 }
 

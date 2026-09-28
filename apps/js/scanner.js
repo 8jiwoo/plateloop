@@ -102,7 +102,7 @@ function prep() {
 const already = () => { k.mode = 'already'; screen(); later(idle, 4000); };
 function tap(useCode) {
   clearTimers(); prep();
-  if (useCode === true || k.face === 'optout') codeEntry();
+  if (useCode === true || k.face === 'optout' || PL.student(k.sid).faceOff) codeEntry();
   else if (k.phase === 'done') already();
   else lookForFace();
 }
@@ -196,9 +196,9 @@ function screen() {
   } else if (k.mode === 'code') {
     const st2 = PL.student(k.sid);
     main = `<div class="kio-codewrap">
-      <div class="kio-codeinfo"><div class="kio-kicker">${k.face === 'optout' ? 'No face scan' : 'Sign in with your number'}</div>
+      <div class="kio-codeinfo"><div class="kio-kicker">${k.face === 'optout' || st2.faceOff ? 'No face scan' : 'Sign in with your number'}</div>
         <div class="kio-title">Your class and register number.</div>
-        <div class="kio-sub">${k.face === 'optout' ? 'You chose not to use face sign-in. Your number works exactly the same.' : 'The same number as on your class list.'}</div>
+        <div class="kio-sub">${k.face === 'optout' || st2.faceOff ? 'You chose not to use face sign-in. Your number works exactly the same.' : 'The same number as on your class list.'}</div>
         <div class="kio-cls">${CLASSES.map(c => `<button data-cls="${c}" aria-pressed="${c === k.codeCls}">${c}</button>`).join('')}</div>
         <div class="kio-code" id="kio-code"></div><p class="kio-code-err" id="kio-code-err" role="alert" hidden></p>
         <p class="kio-demo-hint">Demo: ${esc(st2.name)} is number ${regNo(st2)} in ${esc(st2.cls)}. It types itself, or tap the keys.</p></div>

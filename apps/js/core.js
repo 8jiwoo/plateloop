@@ -501,4 +501,52 @@ PL.icons = {
   loop: '<svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="var(--mint)" stroke-width="4"/><path d="M16 3a13 13 0 0 1 13 13" fill="none" stroke="var(--persim)" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="16" r="5" fill="currentColor"/></svg>',
 };
 PL.backLink = (label = 'All apps') => `<a class="backlink" href="#home">${PL.icons.back}<span>${label}</span></a>`;
+
+/* ------------------------------------------------------------ first-run intro, inside the phone frame.
+   steps: [{ art, title, text, body, cta, consent }]. The explanation steps can be skipped, the consent step can't:
+   'Skip' jumps to it. Inputs with data-pref are handed to done() as { name: value }. Seen once per app. */
+const seenKey = key => 'plateloop-intro-' + key;
+PL.introSeen = key => { try { return localStorage.getItem(seenKey(key)) === '1'; } catch (e) { return false; } };
+PL.introReset = key => { try { localStorage.removeItem(seenKey(key)); } catch (e) {} };
+PL.onboard = (host, key, steps, done) => {
+  if (!host) return;
+  host.querySelectorAll('.onb').forEach(o => o.remove());
+  const el = document.createElement('div'); el.className = 'onb'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Welcome');
+  host.appendChild(el);
+  let i = 0;
+  const consentAt = steps.findIndex(s => s.consent), last = steps.length - 1;
+  const prefs = () => Object.fromEntries([...el.querySelectorAll('[data-pref]')].map(x => [x.dataset.pref, x.type === 'checkbox' ? x.checked : x.value]));
+  const kept = {};
+  const paint = dir => {
+    Object.assign(kept, prefs());
+    const s = steps[i], can = !s.consent || el.dataset.agree === '1';
+    el.innerHTML = `<div class="onb-top">${i ? `<button class="onb-back" data-onb="back" aria-label="Back">${PL.icons.back}</button>` : '<span></span>'}
+      <div class="onb-dots">${steps.map((_, j) => `<i class="${j === i ? 'on' : j < i ? 'past' : ''}"></i>`).join('')}</div>
+      ${i < consentAt ? '<button class="onb-skip" data-onb="skip">Skip</button>' : '<span></span>'}</div>
+      <div class="onb-page"><div class="onb-art">${s.art || ''}</div><h2>${s.title}</h2>${s.text ? `<p>${s.text}</p>` : ''}${s.body || ''}</div>
+      <div class="onb-foot"><button class="btn primary onb-next" data-onb="next" ${can ? '' : 'disabled'}>${s.cta || (i === last ? 'Get started' : 'Continue')}</button></div>`;
+    Object.entries(kept).forEach(([n, v]) => { const x = el.querySelector(`[data-pref="${n}"]`); if (x) { if (x.type === 'checkbox') x.checked = v; else x.value = v; } });
+    const agree = el.querySelector('[data-agree]');
+    if (agree) { agree.checked = el.dataset.agree === '1'; agree.onchange = () => { el.dataset.agree = agree.checked ? '1' : ''; el.querySelector('.onb-next').disabled = !agree.checked; }; }
+    if (dir && el.animate && !PL.reduceMotion) {
+      el.querySelector('.onb-page').animate([{ opacity: 0, transform: `translateX(${dir * 36}px)` }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      const art = el.querySelector('.onb-art'); if (art) art.animate([{ transform: 'scale(.86)' }, { transform: 'scale(1.04)', offset: .7 }, { transform: 'none' }], { duration: 480, easing: 'ease-out' });
+    }
+    const nx = el.querySelector('.onb-next'); if (nx && !nx.disabled) nx.focus({ preventScroll: true });
+  };
+  el.onclick = e => {
+    const b = e.target.closest('[data-onb]'); if (!b) return;
+    const a = b.dataset.onb;
+    if (a === 'back' && i > 0) { i--; paint(-1); }
+    else if (a === 'skip') { i = consentAt >= 0 ? consentAt : last; paint(1); }
+    else if (a === 'next') {
+      if (i < last) { i++; paint(1); return; }
+      Object.assign(kept, prefs());
+      try { localStorage.setItem(seenKey(key), '1'); } catch (err) {}
+      const close = () => { el.remove(); if (done) done(kept); };
+      if (el.animate && !PL.reduceMotion) el.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(1.04)' }], { duration: 260, easing: 'ease-in' }).onfinish = close; else close();
+    }
+  };
+  paint(0);
+};
 })();
