@@ -188,12 +188,21 @@ function buildScanner(M) {
 
   /* --- display on its stand, leaning back 15° --- */
   const disp = part('display');
-  add(disp, new THREE.CylinderGeometry(.013, .016, .2, 24), M.alu(), -.262, 1.02, .12);
-  add(disp, new THREE.CylinderGeometry(.04, .044, .008, 32), M.alu(), -.262, .924, .12);
   // yaw last, so the screen seen straight on is an upright rectangle (the kiosk overlay lines up exactly)
   const head = new THREE.Group(); head.position.set(-.262, 1.2, .14); head.rotation.order = 'YXZ'; head.rotation.set(-.26, .16, 0); disp.add(head);
   add(head, rbox(.245, .164, .016, .005, .012), M.white(), 0, 0, -.004);
   add(head, rbox(.239, .158, .004, .0015, .01), M.glass(), 0, 0, .0045);
+  // the mount: a plate on the back of the display and a hinge knuckle the post plugs into
+  add(head, rbox(.085, .075, .016, .0025, .01), M.alu(), 0, -.022, -.018);
+  add(head, new THREE.CylinderGeometry(.014, .014, .062, 32), M.alu(), 0, -.03, -.028, 0, 0, Math.PI / 2);
+  add(head, new THREE.CylinderGeometry(.0145, .0145, .002, 32), M.graphite(), .032, -.03, -.028, 0, 0, Math.PI / 2, false);
+  add(head, new THREE.CylinderGeometry(.0145, .0145, .002, 32), M.graphite(), -.032, -.03, -.028, 0, 0, Math.PI / 2, false);
+  // the post runs from the deck straight up into the knuckle
+  head.updateMatrixWorld(true);
+  const hinge = head.localToWorld(new THREE.Vector3(0, -.03, -.028)), postH = hinge.y - .924;
+  add(disp, new THREE.CylinderGeometry(.011, .015, postH, 32), M.alu(), hinge.x, .924 + postH / 2, hinge.z);
+  add(disp, new THREE.CylinderGeometry(.04, .044, .008, 40), M.alu(), hinge.x, .924, hinge.z);
+  add(disp, new THREE.CylinderGeometry(.0165, .0165, .016, 32), M.alu(), hinge.x, hinge.y - .02, hinge.z);
   const scr = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN.w, SCREEN.h), new THREE.MeshBasicMaterial({ map: screenTex(), toneMapped: false }));
   scr.position.set(0, -.002, .0068); head.add(scr);
   const glare = new THREE.Mesh(new THREE.PlaneGeometry(.239, .158), new THREE.MeshPhysicalMaterial({ color: 0x000000, transparent: true, opacity: .06, roughness: 0, clearcoat: 1 }));
