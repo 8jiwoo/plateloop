@@ -1638,25 +1638,13 @@ body:has(.kx){background:#000}
 .kx-ambient i:nth-child(2){right:-14vw;top:-20vw;background:#0A84FF;opacity:.12;animation:kxdrift 28s ease-in-out -8s infinite alternate-reverse}
 .kx-ambient i:nth-child(3){left:30vw;top:60vh;background:#64D2FF;opacity:.06;animation:kxdrift 34s ease-in-out -14s infinite alternate}
 @keyframes kxdrift{to{transform:translate(8vw,6vh) scale(1.15)}}
-.kx-bar{position:sticky;top:0;z-index:50;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:16px 28px;transition:padding .35s cubic-bezier(.2,.8,.2,1),background .35s,box-shadow .35s}
+.kx-bar{position:sticky;top:0;z-index:50;display:grid;grid-template-columns:1fr auto;align-items:center;gap:16px;padding:16px 28px;transition:padding .35s cubic-bezier(.2,.8,.2,1),background .35s,box-shadow .35s}
 .kx-bar.scrolled{padding:9px 28px;background:rgba(10,10,12,.7);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);box-shadow:0 .5px 0 var(--sep)}
 .kx-brand{display:flex;align-items:center;gap:10px;min-width:0}
 .kx-brand b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}.kx-brand span{display:block;font-size:12px;color:var(--label3)}
 .kx-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(145deg,#3AE374,#1FA84F);position:relative;flex:none;box-shadow:0 6px 18px -6px rgba(48,209,88,.6)}
 .kx-logo::after{content:"";position:absolute;inset:8px;border:2.5px solid #fff;border-radius:50%;border-right-color:transparent;animation:kxspin 8s linear infinite}
 @keyframes kxspin{to{transform:rotate(360deg)}}
-.kx-nav{position:relative;display:flex;gap:2px;padding:5px;border-radius:99px;background:rgba(44,44,46,.62);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 12px 40px -12px rgba(0,0,0,.8);scrollbar-width:none}
-.kx-nav::-webkit-scrollbar{display:none}
-.kx-thumb{position:absolute;left:0;top:0;border-radius:99px;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.12));box-shadow:inset 0 .5px 0 rgba(255,255,255,.35),0 6px 16px -6px rgba(0,0,0,.6);
-  transition:transform .5s cubic-bezier(.3,1.35,.45,1),width .5s cubic-bezier(.3,1.35,.45,1);pointer-events:none;z-index:0}
-.kx-nav button{position:relative;z-index:1;display:flex;align-items:center;gap:7px;border:0;background:none;padding:8px 15px;border-radius:99px;font:500 13.5px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;color:var(--label2);white-space:nowrap;transition:color .25s}
-.kx-nav button svg{width:17px;height:17px;flex:none;transition:transform .35s cubic-bezier(.3,1.6,.5,1),color .25s}
-.kx-nav button:hover{color:var(--label)}
-.kx-nav button:hover svg{transform:translateY(-2px) scale(1.12)}
-.kx-nav button:active svg{transform:scale(.88)}
-.kx-nav button[aria-current="page"]{color:#fff}
-.kx-nav button[aria-current="page"] svg{color:var(--green);animation:kxpop .5s cubic-bezier(.3,1.6,.5,1)}
-@keyframes kxpop{0%{transform:scale(.6) rotate(-12deg)}100%{transform:none}}
 .kx-bar-r{display:flex;justify-content:flex-end;align-items:center;gap:8px}
 .kx-bar-r .kx-live{height:32px;padding:0 12px;border-radius:99px;background:rgba(44,44,46,.62)}
 .kx-reset{width:32px;height:32px;border:0;border-radius:50%;background:rgba(44,44,46,.62);color:var(--label2);display:grid;place-items:center;transition:transform .5s cubic-bezier(.3,1.4,.5,1),color .2s}
@@ -1672,16 +1660,46 @@ body:has(.kx){background:#000}
   .kx-li:hover,.kx-buy:hover,.kx-waste:hover,.kx-dish:hover,.kx-menu:hover,.kx-row2:hover,.kx-nut:hover,.kx-ins:hover{background:rgba(255,255,255,.03);border-radius:10px}
 }
 
-/* phones: the nav becomes a floating dock at the bottom */
+/* phones */
 @media (max-width:980px){
-  .kx-bar{grid-template-columns:1fr auto;padding:14px 16px}
+  .kx-bar{padding:14px 16px}
   .kx-bar.scrolled{padding:9px 16px;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(10,10,12,.94)} /* a blurred bar would trap the fixed dock inside it */
-  .kx-nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:calc(100vw - 24px);overflow-x:auto;z-index:60}
-  .kx-nav button{flex-direction:column;gap:2px;padding:7px 12px;font-size:10.5px}
-  .kx-nav button svg{width:20px;height:20px}
   .kx .kit-main{padding:8px 14px 110px}
 }
 @media (prefers-reduced-motion:reduce){.kx-ambient i,.kx-logo::after{animation:none}}
+
+
+/* ---- the green dot: one circle at the bottom that fans out into the pages */
+.kx .kit-main{padding-bottom:140px}
+.kx-dock{position:fixed;inset:0;z-index:70;pointer-events:none}
+.kx-scrim{position:absolute;inset:0;background:radial-gradient(90% 60% at 50% 100%,rgba(0,0,0,.72),rgba(0,0,0,.45));backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);opacity:0;transition:opacity .35s}
+.kx-dock.open{pointer-events:auto}
+.kx-dock.open .kx-scrim{opacity:1}
+.kx-orb{--s:64px;position:absolute;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));width:var(--s);height:var(--s);margin-left:calc(var(--s) / -2);border:0;border-radius:50%;pointer-events:auto;cursor:pointer;color:#fff;
+  background:radial-gradient(circle at 35% 30%,#5CF08A,#23B34F 60%,#168A3B);box-shadow:0 12px 30px -8px rgba(35,179,79,.7),0 0 0 6px rgba(48,209,88,.12),inset 0 1px 0 rgba(255,255,255,.35);
+  display:grid;place-items:center;transition:transform .45s cubic-bezier(.3,1.5,.5,1),box-shadow .3s}
+.kx-orb::before{content:"";position:absolute;inset:-6px;border-radius:50%;border:1.5px solid rgba(48,209,88,.5);animation:kxbreath 2.8s ease-in-out infinite;pointer-events:none}
+@keyframes kxbreath{0%,100%{transform:scale(1);opacity:.7}50%{transform:scale(1.14);opacity:0}}
+.kx-orb:hover{transform:scale(1.07)}.kx-orb:active{transform:scale(.92)}
+.kx-orb > span{grid-area:1/1;display:grid;place-items:center;transition:transform .45s cubic-bezier(.3,1.5,.5,1),opacity .25s}
+.kx-orb svg{width:27px;height:27px}
+.kx-orb-x{opacity:0;transform:rotate(-90deg) scale(.5)}
+.kx-dock.open .kx-orb{transform:rotate(0) scale(.94);box-shadow:0 10px 24px -8px rgba(0,0,0,.8),0 0 0 6px rgba(255,255,255,.08);background:radial-gradient(circle at 35% 30%,#5A5A5E,#3A3A3C 60%,#2C2C2E)}
+.kx-dock.open .kx-orb::before{animation:none;opacity:0}
+.kx-dock.open .kx-orb-ic{opacity:0;transform:rotate(90deg) scale(.5)}
+.kx-dock.open .kx-orb-x{opacity:1;transform:none}
+.kx-fan{--r:165px;position:absolute;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px) + 32px);width:0;height:0}
+.kx-fan-b{position:absolute;left:0;top:0;width:78px;margin-left:-39px;margin-top:-30px;border:0;background:none;color:var(--label);display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;pointer-events:none;
+  transform:translate(0,0) scale(.3);opacity:0;transition:transform .5s cubic-bezier(.3,1.45,.5,1) calc(var(--i) * 28ms),opacity .25s calc(var(--i) * 28ms)}
+.kx-dock.open .kx-fan-b{pointer-events:auto;opacity:1;transform:translate(calc(var(--x) * var(--r)),calc(var(--y) * var(--r))) scale(1)}
+.kx-fan-ic{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;background:rgba(58,58,60,.9);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.15),0 10px 24px -10px rgba(0,0,0,.9);transition:transform .25s cubic-bezier(.3,1.5,.5,1),background .2s}
+.kx-fan-ic svg{width:23px;height:23px}
+.kx-fan-l{font-size:12px;font-weight:600;white-space:nowrap;text-shadow:0 1px 6px rgba(0,0,0,.8)}
+.kx-fan-b:hover .kx-fan-ic,.kx-fan-b:focus-visible .kx-fan-ic{transform:scale(1.1);background:rgba(80,80,84,.95)}
+.kx-fan-b:focus-visible{outline:none}
+.kx-fan-b[aria-current="page"] .kx-fan-ic{background:var(--green);color:#fff;box-shadow:0 10px 26px -8px rgba(48,209,88,.8)}
+@media (max-width:520px){.kx-fan{--r:136px}.kx-fan-b{width:70px;margin-left:-35px}.kx-fan-ic{width:48px;height:48px}.kx-fan-l{font-size:11.5px}}
+@media (prefers-reduced-motion:reduce){.kx-orb::before{animation:none}.kx-fan-b{transition-duration:.01s}}
 
 </style>
 </head>
