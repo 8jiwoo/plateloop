@@ -1896,10 +1896,9 @@ V.tip = (icon, tone, title, text) => `<div class="vtip ${tone}">${V.icon(icon, {
    The core: a tray scanned back feeds Loopi the food you ate; a tray with less left than your usual earns
    a heart; full hearts grow Loopi from egg to adult, and a grown Loopi lays an egg (rarity odds shown) that
    hatches a new one while the old one retires to the Barn. Your real leftovers become crumbs to sweep into
-   the compost. Around it: gems, ingredients from the food groups you actually ate, oven cooking in recipe
-   order (burnt or wrong dishes go to the compost; compost-grown ingredients can make golden snacks), the
-   worm farm, recipe cards from the Healthy Catch minigame, and wardrobe crates (earned gems only, odds
-   shown). Hearts only ever come from real trays, so the game can't be won without eating well. */
+   the food waste bin. Around it: gems, ingredients from the food groups you actually ate, oven cooking in
+   recipe order (burnt or wrong dishes are thrown away; now and then a dish comes out golden), recipe cards
+   from the Healthy Catch minigame, and wardrobe crates (earned gems only, odds shown). Hearts only ever come from real trays, so the game can't be won without eating well. */
 (() => {
 'use strict';
 const { MENU } = PL;
@@ -1914,9 +1913,8 @@ G.BALLS_PER_DAY = 5;          // fetch throws that add Joy
 G.PETS_PER_DAY = 5;           // pats that add Joy
 G.PET_GEM = { chance: .25, min: 2, max: 8, cap: 3 };
 G.OVEN_CAP = 4;
-G.SPOIL_CHANCE = .1;          // a correct recipe can still burn; it goes to the compost
-G.GOLDEN_BASE = .2; G.GOLDEN_PER_GROWN = .2; G.GOLDEN_HUNGER = 2;
-G.COMPOST_COST = 15; G.COMPOST_RECOVER = .35; G.WORM_CHANCE = .3;
+G.SPOIL_CHANCE = .1;          // a correct recipe can still burn; it's thrown away
+G.GOLDEN_CHANCE = .15; G.GOLDEN_HUNGER = 2; // a cooked dish sometimes comes out golden
 G.RARITY_BONUS = { common: .4, rare: 1, epic: 1.7, legendary: 2.5 };
 G.MENTOR_BONUS = .1;
 G.EGG_WEIGHTS = { common: 50, rare: 30, epic: 15, legendary: 5 };
@@ -2035,7 +2033,7 @@ G.serveLunch = st => {
   g.mess.push(...p.crumbs);
   return p;
 };
-/** Swept crumbs are your real leftovers: they're composted and counted, but never turned into ingredients. */
+/** Swept crumbs are your real leftovers: they go in the food waste bin and are counted, but never turned into ingredients. */
 G.sweep = (st, dish) => {
   const g = G.ensure(st), i = g.mess.indexOf(dish);
   if (i >= 0) { g.mess.splice(i, 1); g.composted++; }
@@ -2085,9 +2083,8 @@ G.ovenAdd = (st, type) => {
   const seq = g.oven.map(o => o.t), open = G.RECIPES.filter(rc => G.recipeUnlocked(g, rc));
   const match = open.find(rc => rc.seq.length === seq.length && rc.seq.every((x, i) => x === seq[i]));
   if (match) {
-    const grownN = g.oven.filter(o => o.grown).length;
     if (Math.random() < G.SPOIL_CHANCE) { dump(g); return { result: 'spoiled', recipe: match }; }
-    const golden = grownN > 0 && Math.random() < G.GOLDEN_BASE + G.GOLDEN_PER_GROWN * grownN;
+    const golden = Math.random() < G.GOLDEN_CHANCE;
     const snack = { id: 's' + Date.now() + Math.floor(Math.random() * 1e4), recipe: match.id, name: (golden ? 'Golden ' : '') + match.name, hunger: match.hunger + (golden ? G.GOLDEN_HUNGER : 0), golden };
     g.snacks.push(snack); g.oven = []; g.gems += 3;
     return { result: 'cooked', snack };
@@ -2098,17 +2095,6 @@ G.ovenAdd = (st, type) => {
 };
 G.emptyOven = st => { const g = G.ensure(st), n = g.oven.length; dump(g); return n; };
 
-/* ---------------------------------------------------------------- worm farm: kitchen scraps grow back */
-G.compost = st => {
-  const g = G.ensure(st);
-  if (!g.bin.length) return { error: 'The compost bin is empty.' };
-  if (g.gems < G.COMPOST_COST) return { error: `Turning the compost costs ${G.COMPOST_COST} gems.` };
-  g.gems -= G.COMPOST_COST;
-  const worms = Math.random() < G.WORM_CHANCE, got = blank(), n = g.bin.length;
-  g.bin.forEach(t => { if (Math.random() < G.COMPOST_RECOVER || (worms && Math.random() < .5)) { got[t]++; g.grown[t]++; } });
-  g.bin = [];
-  return { got, n, worms };
-};
 G.unlock = (st, key) => {
   const g = G.ensure(st), rc = G.RECIPES.find(x => x.unlock === key);
   if (!rc || g.unlocked[key] || g.cards[key] < rc.cost) return false;
@@ -2190,7 +2176,7 @@ G.drawSprite = (ctx, name, x, y, s) => {
 /* ---- js/room.js ---- */
 /* Loopi's room: a full-colour pixel room. Loopi wanders around, eats the lunch waiting in its bowl, plays
    fetch, gets petted and sleeps when the lights go off. Crumbs on the floor are the student's real
-   leftovers; tapping one (or Sweep) flicks it into the compost bin. The plant grows with clean trays.
+   leftovers; tapping one (or Sweep) flicks it into the food waste bin. The plant grows with clean trays.
    This file only animates and handles taps; game-state changes go back to the app through `hooks`. */
 (() => {
 'use strict';
@@ -2347,9 +2333,9 @@ const Room = PL.Room = {
     for (let k = 0; k <= lv; k++) { const y = 54 - k * 5; R(G1, 146 - (k % 2), y, 4, 2); R(G1, 152, y - 2, 4 + (k % 2), 2); }
     if (lv >= 3) { R('#FF9F0A', 149, 55 - stem, 4, 3); R('#FFD60A', 150, 54 - stem, 2, 1); }
     if (lv >= 4) { R('#FF3B30', 146, 44 - lv, 2, 2); R('#FF3B30', 154, 41 - lv, 2, 2); }
-    // compost bin
-    R('#248A3D', 131, 79, 20, 3); R('#34C759', 132, 82, 18, 17); R('#2EAA52', 132, 94, 18, 5);
-    R('#FFFFFF', 139, 86, 4, 1); R('#FFFFFF', 138, 87, 2, 3); R('#FFFFFF', 141, 88, 3, 2);
+    // food waste bin
+    R('#636366', 131, 79, 20, 3); R('#8E8E93', 132, 82, 18, 17); R('#7C7C80', 132, 94, 18, 5);
+    R('#C7C7CC', 136, 85, 1, 11); R('#C7C7CC', 140, 85, 1, 11); R('#C7C7CC', 144, 85, 1, 11);
     // bowl: today's lunch waits here until Loopi eats it
     const food = this.food || info.plate;
     if (food) {
@@ -2393,7 +2379,7 @@ const Room = PL.Room = {
 /* Loopi, the student app for teens and university students: a Tamagotchi fed by real lunches.
    Loopi (the room: feed it the lunch you ate, sweep up your leftovers, play, grow it up, lay and hatch
    eggs), Lunch (the two scans, your tray, your plate and your week), Kitchen (cook snacks in recipe order,
-   the worm farm, recipe cards, the Healthy Catch minigame), Ranks and Me (badges, history). Wardrobe
+   recipe cards, the Healthy Catch minigame), Ranks and Me (badges, history). Wardrobe
    crates and the Barn open as sheets.
    Rules: js/game.js. Room: js/room.js. Drawings: js/visual.js. */
 (() => {
@@ -2592,7 +2578,7 @@ function lunchTab(st, g) {
     <div class="vcard"><h3>Nutrition</h3><div class="vrings">${V.ring(a.intake.kcal, PL.TARGET.kcal, 'Calories', 'kcal')}${V.ring(a.intake.p, PL.TARGET.p, 'Protein', 'g', 'aim')}${V.ring(a.intake.c, PL.TARGET.c, 'Carbs', 'g')}</div></div>
     <div class="vtips">
       ${a.co2 > 0 ? V.tip('cloud', 'good', `You saved ${a.co2} g of CO₂`, 'Food that isn\'t wasted doesn\'t have to be grown, cooked and thrown away again.') : ''}
-      ${leftG > 20 ? V.tip('recycle', 'info', `${leftG} g went to the compost bin`, 'It shows up as crumbs in Loopi\'s room until you sweep them.') : V.tip('check', 'good', 'Hardly anything left', 'Your tray grew a fruit on the school\'s Green Tree.')}
+      ${leftG > 20 ? V.tip('recycle', 'info', `${leftG} g went into the food waste bin`, 'It shows up as crumbs in Loopi\'s room until you sweep them.') : V.tip('check', 'good', 'Hardly anything left', 'Your tray grew a fruit on the school\'s Green Tree.')}
     </div>`;
   }
   const days = st.log.slice(0, 5).reverse(), tries = Math.min(3, st.pet.quest);
@@ -2601,9 +2587,9 @@ function lunchTab(st, g) {
   return out;
 }
 
-/* ================================================================ Kitchen: cook, compost, recipes, catch */
+/* ================================================================ Kitchen: cook, recipes, catch */
 function kitchenTab(st, g) {
-  const segs = { cook: 'Cook', compost: 'Compost', recipes: 'Recipes', catch: 'Catch' };
+  const segs = { cook: 'Cook', recipes: 'Recipes', catch: 'Catch' };
   const seg = `<div class="seg" id="kseg">${Object.entries(segs).map(([k, v]) => `<button data-k="${k}" aria-pressed="${ui.kseg === k}">${v}</button>`).join('')}</div>`;
   const pantry = (counts, extra, add) => `<div class="pantry">${Object.keys(G.INGREDIENTS).map(t => { const n = counts[t] + (extra ? extra[t] : 0); return `<${add ? 'button' : 'div'} class="pan" ${add ? `data-add="${t}" ${n ? '' : 'disabled'}` : ''}>${ING(t, 34)}<b class="num">${n}</b><small>${G.INGREDIENTS[t].name}${extra && extra[t] ? ` · ${extra[t]} grown` : ''}</small></${add ? 'button' : 'div'}>`; }).join('')}</div>`;
   if (ui.kseg === 'catch') return seg + catchTab(g);
@@ -2612,19 +2598,10 @@ function kitchenTab(st, g) {
     return `${seg}
     <div class="vcard"><h3>Oven <small>add ingredients in a recipe's order</small></h3>
       <div class="oven2">${Array.from({ length: G.OVEN_CAP }, (_, i) => `<div class="slot2">${g.oven[i] ? ING(g.oven[i].t, 36) + (g.oven[i].grown ? '<em>grown</em>' : '') : `<span>${i + 1}</span>`}</div>`).join('')}</div>
-      <p class="oven-msg" role="status">${ui.ovenMsg || 'A wrong order or a burnt dish goes to the compost. Compost-grown ingredients can make a dish golden.'}</p>
+      <p class="oven-msg" role="status">${ui.ovenMsg || 'A wrong order or a burnt dish gets thrown away. Now and then a dish comes out golden.'}</p>
       ${pantry(g.ing, g.grown, true)}
-      ${g.oven.length ? '<button class="btn small ghost" id="empty-oven" style="margin-top:8px">Empty the oven into the compost</button>' : ''}</div>
+      ${g.oven.length ? '<button class="btn small ghost" id="empty-oven" style="margin-top:8px">Empty the oven</button>' : ''}</div>
     <div class="vcard"><h3>Recipes you know</h3><div class="recipes2">${known.map(rc => `<div class="rcp"><span class="seq2">${rc.seq.map((t, i) => `${i ? '<i>›</i>' : ''}${ING(t, 26)}`).join('')}</span><div><b>${rc.name}</b><small>+${rc.hunger} food</small></div></div>`).join('')}</div></div>`;
-  }
-  if (ui.kseg === 'compost') {
-    return `${seg}
-    <div class="vcard"><h3>Worm farm <small>${g.bin.length} kitchen scraps</small></h3>
-      <div class="binbox">${g.bin.length ? g.bin.map(t => ING(t, 28)).join('') : '<span class="hint">Empty. Burnt or wrong dishes end up here.</span>'}</div>
-      <p class="hint" style="margin:10px 0">Turn the compost and the worms grow some scraps back into fresh ingredients. Sometimes extra worms join in and grow even more.</p>
-      <button class="btn primary big" id="compost" ${g.bin.length ? '' : 'disabled'}>Turn the compost · ${GEM} ${G.COMPOST_COST}</button></div>
-    <div class="vcard"><h3>Compost-grown ingredients</h3>${pantry(g.grown)}</div>
-    <p class="foot">Your real lunch leftovers go to the school's compost too (${g.composted} scraps so far), but they never turn into ingredients. Eating your lunch is always the better deal.</p>`;
   }
   return `${seg}
     <div class="vcard"><h3>Recipe book <small>find cards in Healthy Catch</small></h3><div class="recipes2">${G.RECIPES.map(rc => {
@@ -2747,7 +2724,7 @@ function meTab(st, g) {
   <div class="statgrid">
     <div>${V.icon('check', 'var(--tint)')}<b class="num">${st.pet.c.lowWaste}</b><span>clean trays</span></div>
     <div>${V.icon('leaf', '#2B8C43')}<b class="num">${st.pet.c.veg}</b><span>veggie tries</span></div>
-    <div>${V.icon('recycle', '#8E6A3A')}<b class="num">${g.composted}</b><span>scraps composted</span></div>
+    <div>${V.icon('recycle', '#8E6A3A')}<b class="num">${g.composted}</b><span>scraps swept up</span></div>
   </div>
   <h4 class="sec">Badges · ${earned.size} of ${G.BADGES.length} · tap one to dress up Loopi</h4>
   <div class="badge-grid">${G.BADGES.map(b => { const got = earned.has(b.id), on = g.eq === b.item;
@@ -2812,17 +2789,10 @@ function wire(st) {
   $$('#kseg button', body).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.kseg = b.dataset.k; ui.ovenMsg = ''; render(); });
   $$('[data-add]', body).forEach(b => b.onclick = () => {
     const res = act(() => G.ovenAdd(me(), b.dataset.add));
-    ui.ovenMsg = { pending: 'Keep going…', cooked: `Cooked <b>${res.snack ? esc(res.snack.name) : ''}</b>! Feed it to Loopi on the Loopi tab.`, rejected: 'No recipe starts like that. The ingredients went to the compost.', spoiled: `Oh no, the ${res.recipe ? res.recipe.name.toLowerCase() : 'dish'} burnt! It went to the compost.`, none: 'You are out of that ingredient.' }[res.result];
+    ui.ovenMsg = { pending: 'Keep going…', cooked: `Cooked <b>${res.snack ? esc(res.snack.name) : ''}</b>! Feed it to Loopi on the Loopi tab.`, rejected: 'No recipe starts like that. The ingredients were thrown away.', spoiled: `Oh no, the ${res.recipe ? res.recipe.name.toLowerCase() : 'dish'} burnt! It went in the bin.`, none: 'You are out of that ingredient.' }[res.result];
     render(true);
   });
-  const eo = $('#empty-oven', body); if (eo) eo.onclick = () => { act(() => G.emptyOven(me())); ui.ovenMsg = 'The oven is empty. The ingredients went to the compost.'; render(true); };
-  const cp = $('#compost', body);
-  if (cp) cp.onclick = () => {
-    const res = act(() => G.compost(me()));
-    if (res.error) return PL.toast(res.error);
-    const got = Object.entries(res.got).filter(([, n]) => n > 0);
-    modal(res.worms ? 'The worms helped!' : 'Compost turned', `${res.worms ? '<p class="hint center">Extra worms joined in and gave more scraps a second chance.</p>' : ''}<div class="got2">${got.map(([t, n]) => `<div>${ING(t, 28)}<b>+${n} grown ${G.INGREDIENTS[t].name.toLowerCase()}</b></div>`).join('') || '<p class="hint">Nothing grew back this time. The scraps became soil.</p>'}</div>`);
-  };
+  const eo = $('#empty-oven', body); if (eo) eo.onclick = () => { act(() => G.emptyOven(me())); ui.ovenMsg = 'The oven is empty.'; render(true); };
   $$('[data-unlock]', body).forEach(b => b.onclick = () => { if (act(() => G.unlock(me(), b.dataset.unlock))) PL.toast('New recipe unlocked!'); });
   $$('[data-go]', body).forEach(b => b.onclick = () => { ui.tab = b.dataset.go; render(); $('#stu-body').scrollTop = 0; });
   $$('#rank-seg button', body).forEach(b => b.onclick = () => { ui.seg = b.dataset.seg; render(); });
