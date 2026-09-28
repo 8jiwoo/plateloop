@@ -397,7 +397,7 @@ L.animPerson = (P, dt, cam) => {
 
 /** Two students squaring up: a bouncing guard with the odd jab, a punch, flailing through the air, lying
  *  flat, running, a flying spin kick, and landing on your backside. The game moves the root; this sets limbs. */
-const FIGHT = new Set(['fight', 'punch', 'flail', 'lie', 'run', 'kick', 'bump']);
+const FIGHT = new Set(['fight', 'punch', 'flail', 'splay', 'lie', 'run', 'kick', 'bump']);
 function fighter(P, dt) {
   const t = P.t, pose = P.pose, k = pose === 'flail' ? 1 : 1 - Math.exp(-16 * dt);
   const to = (r, x, y, z) => { r.x += (x - r.x) * k; r.y += (y - r.y) * k; r.z += (z - r.z) * k; };
@@ -412,6 +412,7 @@ function fighter(P, dt) {
     leg(P.legR, -.3, -.12, .45); leg(P.legL, .15, .12, .25);
   } else if (pose === 'punch') { hy = .78; hrx = .25; arm(P.armR, -1.6, .05, -.05); arm(P.armL, -.9, -.3, -2.1); leg(P.legR, -.5, -.1, .6); leg(P.legL, .35, .1, .1); }
   else if (pose === 'flail') { const f = t * 18; hy = .84; arm(P.armR, Math.sin(f) * 1.5 - 1, -1.2 + Math.cos(f * 1.3), -1 + Math.sin(f * .7)); arm(P.armL, Math.cos(f) * 1.5 - 1, 1.2 + Math.sin(f * 1.1), -1 + Math.cos(f * .8)); leg(P.legR, Math.sin(f * 1.2) * .9 - .3, -.3, 1 + Math.sin(f) * .6); leg(P.legL, Math.cos(f * 1.1) * .9 - .3, .3, 1 + Math.cos(f) * .6); }
+  else if (pose === 'splay') { hy = .84; arm(P.armR, 0, -1.2, -.2); arm(P.armL, 0, 1.2, -.2); leg(P.legR, .05, -.2, .1); leg(P.legL, .05, .2, .1); }
   else if (pose === 'lie') { hy = .12; hrx = -1.52; arm(P.armR, 0, -1.2, -.2); arm(P.armL, 0, 1.2, -.2); leg(P.legR, .05, -.2, .1); leg(P.legL, .05, .2, .1); }
   else if (pose === 'run') { const ph = t * 14; hy = .82 + .03 * Math.abs(Math.sin(ph)); hrx = .25; arm(P.armR, -Math.sin(ph) * .9, -.1, -1.3); arm(P.armL, Math.sin(ph) * .9, .1, -1.3); leg(P.legR, Math.sin(ph) * .8, 0, .6 + .6 * Math.max(0, -Math.sin(ph))); leg(P.legL, -Math.sin(ph) * .8, 0, .6 + .6 * Math.max(0, Math.sin(ph))); }
   else if (pose === 'kick') {
