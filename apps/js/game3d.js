@@ -328,6 +328,7 @@ function buildPeople() {
     G.shrine = { T, halo, sparks, sp, n, beam };
     W.spots.shrine = G.SFX.spots.shrine = [T.x, 1.6, T.z];
   }
+  buildCat();
   // Priya walks the whole PlateLoop routine in the background
   const priya = G.priya = add(L.person({ name: 'Priya', kind: 'girl', hair: 'long', skin: L.SKINS[4], height: 1.6, watch: true, seed: 77 }), 3.9, -6.9, Math.PI / 2, 'walk');
   priya.carrying = true;
@@ -346,6 +347,57 @@ function buildPeople() {
   [w1, w2].forEach(P => { G.walkers.push(P); talkTarget(P); });
   // standing people you bump into
   G.solidPeople.push(G.rahman, G.tan);
+}
+/** An orange tabby that wanders the back of the canteen, sits for a while, and meows when you pet it. */
+function buildCat() {
+  const fur = L.tex(64, 64, c => { c.fillStyle = '#D9893A'; c.fillRect(0, 0, 64, 64); c.fillStyle = 'rgba(120,60,20,.55)'; for (let y = 2; y < 64; y += 9) c.fillRect(0, y, 64, 3); L.blob(c, 32, 60, 30, 10, '#F4E3C8', .7); });
+  const m = L.lam({ map: fur }), white = L.lam({ color: '#F4E9D8' }), dark = L.lam({ color: '#1A1512' }), pink = L.lam({ color: '#E8A0A0' }), eyeM = L.lam({ color: '#9ACD32', emissive: '#2A3A10' });
+  const R = new THREE.Group(), body = new THREE.Group(); R.add(body);
+  const sph = (sx, sy, sz, mat, x, y, z, p) => { const o = new THREE.Mesh(new THREE.SphereGeometry(1, 10, 8), mat); o.scale.set(sx, sy, sz); o.position.set(x, y, z); p.add(o); return o; };
+  sph(.1, .095, .19, m, 0, .2, 0, body);
+  const head = new THREE.Group(); head.position.set(0, .29, .19); body.add(head);
+  sph(.08, .072, .075, m, 0, 0, 0, head); sph(.042, .03, .03, white, 0, -.02, .062, head);
+  sph(.009, .007, .006, pink, 0, -.008, .088, head);
+  [-1, 1].forEach(s => { sph(.012, .014, .006, eyeM, s * .03, .012, .07, head); sph(.004, .009, .003, dark, s * .03, .012, .076, head);
+    const ear = new THREE.Mesh(new THREE.ConeGeometry(.026, .055, 4), m); ear.position.set(s * .045, .065, -.005); ear.rotation.z = -s * .25; head.add(ear); });
+  const legs = [[-1, 1], [1, 1], [-1, -1], [1, -1]].map(([sx, sz]) => { const g = new THREE.Group(); g.position.set(sx * .055, .16, sz * .12); body.add(g); const l = new THREE.Mesh(new THREE.CylinderGeometry(.021, .017, .16, 6), m); l.position.y = -.08; g.add(l); sph(.022, .012, .026, white, 0, -.158, .008, g); return g; });
+  let seg = new THREE.Group(); seg.position.set(0, .23, -.18); body.add(seg); const tail = [];
+  for (let i = 0; i < 6; i++) { const c = new THREE.Mesh(new THREE.CylinderGeometry(.016 - i * .0015, .018 - i * .0015, .06, 5), m); c.position.y = .03; seg.add(c); tail.push(seg); const nx = new THREE.Group(); nx.position.y = .06; seg.add(nx); seg = nx; }
+  R.position.set(-6, 0, 7.3); G.scene.add(R);
+  const cat = G.cat = { root: R, body, head, legs, tail, name: 'Cat', t: 0, i: 0, wait: 2, sit: 0, pet: 0, talking: false,
+    path: [[-9.4, 7], [-6.6, 7.6], [-3.6, 7.2], [-5.6, 6.35], [-8.2, 6.4]] };
+  addTarget(R, () => (G.busy ? null : 'Pet the cat'), petCat, 2.4);
+}
+function petCat() {
+  const c = G.cat, hp = new THREE.Vector3(); c.head.getWorldPosition(hp);
+  if (!G.SFX.clip('meow', at(hp), 1.2)) play('blip');
+  c.pet = 1.6; c.wait = Math.max(c.wait, 3);
+  chatter(c, 'Meow.', 1800);
+}
+function updateCat(dt) {
+  const c = G.cat, R = c.root; c.t += dt;
+  let walking = false;
+  if (c.pet > 0) c.pet -= dt;
+  else if (c.wait > 0) c.wait -= dt;
+  else {
+    const [tx, tz] = c.path[c.i], dx = tx - R.position.x, dz = tz - R.position.z, d = Math.hypot(dx, dz);
+    if (d < .05) { c.i = (c.i + 1) % c.path.length; c.wait = 2 + Math.random() * 5; }
+    else { const s = Math.min(d, .45 * dt); R.position.x += dx / d * s; R.position.z += dz / d * s; let a = Math.atan2(dx, dz) - R.rotation.y; while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; R.rotation.y += a * Math.min(1, dt * 5); walking = true; }
+  }
+  // walk cycle, or sit down when resting
+  c.sit += ((walking ? 0 : 1) - c.sit) * Math.min(1, dt * 3);
+  const ph = c.t * 9;
+  c.legs.forEach((g, k) => { const front = k < 2, swing = walking ? Math.sin(ph + (k === 0 || k === 3 ? 0 : Math.PI)) * .5 : 0; g.rotation.x = swing + (front ? 0 : -c.sit * 1.2); });
+  c.body.rotation.x = -c.sit * .45; c.body.position.y = -c.sit * .05 + (walking ? Math.abs(Math.sin(ph)) * .01 : 0);
+  // the tail sways, and stands up when it's petted
+  const up = c.pet > 0 ? 1 : 0;
+  c.tail.forEach((s, k) => { s.rotation.x = -(.35 + up * .5) + (k ? .18 : 0) + Math.sin(c.t * 2.2 + k * .6) * (up ? .05 : .12); s.rotation.z = Math.sin(c.t * 1.7 + k * .5) * (up ? .05 : .15); });
+  // look at you when you're near
+  const cam = G.camera.position, hd = new THREE.Vector3(); c.head.getWorldPosition(hd);
+  let yaw = Math.sin(c.t * .4) * .3;
+  if (cam.distanceTo(hd) < 3.5) { let a = Math.atan2(cam.x - hd.x, cam.z - hd.z) - R.rotation.y; while (a > Math.PI) a -= Math.PI * 2; while (a < -Math.PI) a += Math.PI * 2; if (Math.abs(a) < 2) yaw = Math.max(-1, Math.min(1, a)); }
+  c.head.rotation.y += (yaw - c.head.rotation.y) * Math.min(1, dt * 4);
+  c.head.rotation.x = c.sit * .45 + (c.pet > 0 ? -.25 + Math.sin(c.t * 18) * .06 : 0);
 }
 function makeFriends(sid) {
   (G.friends || []).forEach(P => { G.scene.remove(P.root); G.people = G.people.filter(Q => Q !== P); G.targets = G.targets.filter(t => t.person !== P); });
@@ -409,8 +461,12 @@ function loop(now) {
     G.pitch = Math.max(-1.35, Math.min(1.25, G.pitch));
     if (G.mode === 'walk') move(dt); else camera.position.copy(G.seatPos);
     camera.rotation.set(G.pitch, G.yaw, 0);
+    // a wider view during action, and a shake on big impacts
+    G.fovCur = (G.fovCur || 0) + ((G.fovAdd || 0) - (G.fovCur || 0)) * Math.min(1, dt * 3);
+    const fv = G.baseFov + G.fovCur; if (Math.abs(camera.fov - fv) > .05) { camera.fov = fv; camera.updateProjectionMatrix(); }
+    if (G.shake > 0) { camera.position.x += (Math.random() - .5) * G.shake * .14; camera.position.y += (Math.random() - .5) * G.shake * .14; G.shake = Math.max(0, G.shake - dt * 1.6); }
   }
-  G.tweens = G.tweens.filter(tw => { tw.t += dt / tw.dur; const k = Math.min(1, tw.t), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; tw.fn(e); if (k >= 1) { tw.done(); return false; } return true; });
+  G.tweens = G.tweens.filter(tw => { tw.t += dt / tw.dur; const k = Math.min(1, tw.t), e = tw.linear ? k : k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; tw.fn(e); if (k >= 1) { tw.done(); return false; } return true; });
   // life
   const cam = camera.position;
   G.walkers.forEach(P => {
@@ -444,6 +500,7 @@ function loop(now) {
     for (let i = 0; i < s.n; i++) { const a = G.t * (.3 + (i % 5) * .08) + i * 2.4, r = .35 + (i % 7) * .09; s.sp[i * 3] = s.T.x + Math.cos(a) * r; s.sp[i * 3 + 1] = .95 + ((G.t * .25 + i * .137) % 1) * 1.6; s.sp[i * 3 + 2] = s.T.z + Math.sin(a) * r; }
     s.sparks.geometry.attributes.position.needsUpdate = true;
   }
+  if (G.cat) updateCat(dt);
   W.update(dt, G.t, camera);
   G.screen.tick(dt);
   G.tvT -= dt; if (G.tvT < 0) { G.tvT = 3; W.tv.draw(); }
@@ -505,7 +562,7 @@ function updateTarget() {
 
 /* ================================================================ tweens, dialogue, prompts */
 const sleep = ms => new Promise(r => setTimeout(r, ms));
-function tween(dur, fn) { return new Promise(res => G.tweens.push({ t: 0, dur, fn, done: res })); }
+function tween(dur, fn, linear = false) { return new Promise(res => G.tweens.push({ t: 0, dur, fn, done: res, linear })); }
 function objective() { const f = G.friends || []; $('#g3-obj', root).textContent = (OBJ[G.phase] || '').replace('{a}', f[0] ? f[0].name : '').replace('{b}', f[1] ? f[1].name : ''); const b = $('#g3-objbox', root); b.classList.remove('pulse'); void b.offsetWidth; b.classList.add('pulse'); }
 function setPhase(p) { G.phase = p; objective(); $('#g3-hud', root).classList.toggle('eating', p === 'eating'); }
 function msg(text, ms = 3000) { const el = $('#g3-msg', root); if (!el) return; el.innerHTML = text; el.hidden = false; clearTimeout(G.msgT); G.msgT = setTimeout(() => { if (el) el.hidden = true; }, ms); }
@@ -926,39 +983,70 @@ async function brawl() {
     }
     G.faceTarget = A;
     hideSub();
+    // pull the camera's view out and keep both of them in frame
+    const tmp = new THREE.Vector3(), both = { head: { getWorldPosition: v => { A.hips.getWorldPosition(v); B.hips.getWorldPosition(tmp); return v.add(tmp).multiplyScalar(.5).setY(1.05); } } };
+    G.faceTarget = both; G.fovAdd = 24;
     // the punch sends Ryan flying
     B.pose = 'punch'; play('whoosh'); await sleep(170);
-    B.head.getWorldPosition(hp); play('punch', at(hp));
-    A.pose = 'flail';
-    const p0 = A.root.position.clone();
-    await tween(1.15, e => { A.root.position.set(p0.x - 3.4 * e, Math.sin(e * Math.PI) * 1.4, p0.z); A.root.rotation.x = -e * Math.PI * 3; });
+    B.head.getWorldPosition(hp); play('punch', at(hp)); G.shake = .35;
+    await knock(A, 3.4, 1.4, 1.2, 4.5);
     B.pose = 'fight';
-    A.root.rotation.x = 0; A.root.position.y = 0; A.pose = 'lie'; play('thud', [A.root.position.x, .2, A.root.position.z]);
     await sleep(1000);
-    // up again, a run-up, and a flying double spin kick
+    // up again, a run-up, and a flying spin kick
     A.pose = 'fight'; await sleep(450);
-    A.pose = 'run'; const p1 = A.root.position.clone(), p2 = new THREE.Vector3(B.root.position.x - 2.1, 0, p0.z);
+    A.pose = 'run'; const p1 = A.root.position.clone(), p2 = new THREE.Vector3(B.root.position.x - 2.1, 0, A.home.z);
     await tween(.75, e => A.root.position.lerpVectors(p1, p2, e));
     A.pose = 'kick'; A.head.getWorldPosition(hp); if (!G.SFX.clip('fah', at(hp), 1.2)) play('hiya', at(hp));
     // five spins in the air with the legs kicking, landing three hits on Hafiz on the way in
     const y0 = A.root.rotation.y, air = 2.1, b0 = B.root.position.clone();
     const fahLen = G.SFX.clipLength('fah');
-    [.45, .62, .8].forEach((k, i) => setTimeout(() => { if (!G) return; B.head.getWorldPosition(hp); play('punch', at(hp)); play('whoosh'); if (fahLen && fahLen < .9) G.SFX.clip('fah', at(hp), .9); if (i < 2) B.pose = 'punch'; }, k * air * 1000));
+    [.45, .62, .8].forEach((k, i) => setTimeout(() => { if (!G) return; B.head.getWorldPosition(hp); play('punch', at(hp)); play('whoosh'); G.shake = .2; if (fahLen && fahLen < .9) G.SFX.clip('fah', at(hp), .9); if (i < 2) B.pose = 'punch'; }, k * air * 1000));
     await tween(air, e => {
       A.root.position.set(p2.x + 1.35 * e, Math.sin(e * Math.PI) * 1.5, p2.z); A.root.rotation.y = y0 + e * Math.PI * 10;
       if (e > .45) B.root.position.x = b0.x + (e - .45) * .5;
     });
     A.root.rotation.y = y0; A.root.position.y = 0; A.pose = 'fight';
-    B.head.getWorldPosition(hp); play('punch', at(hp));
-    B.pose = 'bump'; const b2 = B.root.position.clone();
-    await tween(.35, e => { B.root.position.x = b2.x + .6 * e; });
+    // the last kick launches Hafiz, just like Ryan
+    B.head.getWorldPosition(hp); play('punch', at(hp)); G.shake = .4;
+    await knock(B, 2.8, 1.1, 1.0, 2.5);
     await sleep(1300);
     // dust off and square up again
-    B.pose = 'fight';
+    A.pose = 'fight'; B.pose = 'fight'; await sleep(400);
     const a1 = A.root.position.clone(), b1 = B.root.position.clone();
     await tween(.9, e => { A.root.position.lerpVectors(a1, A.home, e); B.root.position.lerpVectors(b1, B.home, e); });
+    G.fovAdd = 0;
   });
+  G.fovAdd = 0;
   A.busy = false;
+}
+
+/** Knock someone flying backwards: they tumble end over end around their waist (so they never sink into the
+ *  floor), land flat on their back with a thud, a puff of dust and a camera shake. */
+function knock(P, dist, height, dur, halfTurns) {
+  const H = .84 * P.root.scale.y, p0 = P.root.position.clone(), yaw = P.root.rotation.y, fx = Math.sin(yaw), fz = Math.cos(yaw);
+  let cx = p0.x, cz = p0.z;
+  P.pose = 'flail';
+  return tween(dur, e => {
+    // spread out flat for the landing, so no arm or leg goes through the floor
+    if (e > .78 && P.pose === 'flail') P.pose = 'splay';
+    const th = -e * halfTurns * Math.PI, cy = H * (1 - e) + .2 * e + Math.sin(e * Math.PI) * height;
+    cx = p0.x - fx * dist * e; cz = p0.z - fz * dist * e;
+    P.root.rotation.x = th;
+    P.root.position.set(cx - fx * H * Math.sin(th), cy - H * Math.cos(th), cz - fz * H * Math.sin(th));
+  }, true).then(() => {
+    P.root.rotation.x = 0; P.root.position.set(cx, 0, cz);
+    P.pose = 'lie'; P.hips.rotation.x = -1.52; P.hips.position.y = .12;
+    play('thud', [cx, .2, cz]); G.shake = .6; dust([cx, .12, cz]);
+  });
+}
+function dust(p) {
+  const tex = G.dustTex || (G.dustTex = L.tex(64, 64, c => L.blob(c, 32, 32, 32, 32, '#FFFFFF', 1)));
+  for (let i = 0; i < 9; i++) {
+    const s = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, color: '#CFC7B6', transparent: true, opacity: .5, depthWrite: false }));
+    s.position.set(p[0] + (Math.random() - .5) * .5, p[1], p[2] + (Math.random() - .5) * .5); s.scale.setScalar(.25); G.scene.add(s);
+    const v = new THREE.Vector3((Math.random() - .5) * 1.4, .25 + Math.random() * .4, (Math.random() - .5) * 1.4);
+    tween(1, e => { s.position.addScaledVector(v, .016 * (1 - e)); s.scale.setScalar(.25 + e * .8); s.material.opacity = .5 * (1 - e); }, true).then(() => G.scene.remove(s));
+  }
 }
 
 /** Disha opens her eyes and reads your fortune for the day. */
