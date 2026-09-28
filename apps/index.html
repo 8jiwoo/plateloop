@@ -30,7 +30,6 @@
 <script src="js/kitchen.js"></script>
 <script src="js/student.js"></script>
 <script src="js/care.js"></script>
-<script src="js/kids.js"></script>
 <script src="js/work.js"></script>
 <script src="js/lunch/kit.js"></script>
 <script src="js/lunch/sophie.js"></script>
@@ -43,7 +42,7 @@
 <script src="js/lunch/screen.js"></script>
 <script src="js/game3d.js"></script>
 <script>
-/* Demo router for the eight apps (#model, #scanner, #kitchen, #student, #care, #kids, #work, #lunch) with a floating switcher. */
+/* Demo router for the seven apps (#model, #scanner, #kitchen, #student, #care, #work, #lunch) with a floating switcher. */
 (() => {
   const { $, apps } = PL;
   const root = $('#root');
@@ -62,7 +61,7 @@
   }
   const sw = document.createElement('nav');
   sw.className = 'demo-switch'; sw.setAttribute('aria-label', 'Demo: switch app');
-  sw.innerHTML = [['model', 'Scanner'], ['scanner', 'Kiosk'], ['kitchen', 'Kitchen'], ['student', 'Loopi'], ['care', 'Care'], ['kids', 'Kids'], ['work', 'Work'], ['lunch', 'Game']].map(([id, l]) => `<button data-go="${id}">${l}</button>`).join('');
+  sw.innerHTML = [['model', 'Scanner'], ['scanner', 'Kiosk'], ['kitchen', 'Kitchen'], ['student', 'Loopi'], ['care', 'Care'], ['work', 'Work'], ['lunch', 'Game']].map(([id, l]) => `<button data-go="${id}">${l}</button>`).join('');
   sw.onclick = e => { const b = e.target.closest('[data-go]'); if (b) PL.open(b.dataset.go); };
   document.body.appendChild(sw);
   PL.open = n => { if (location.hash !== '#' + n) { try { history.pushState(null, '', '#' + n); } catch (e) {} } open(n); };

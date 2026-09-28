@@ -2,11 +2,11 @@
 
 **Live demo:** https://8jiwoo.github.io/plateloop/
 
-**An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals, kindergartens or offices.**
+**An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals or offices.**
 
 Built for the EcoLoop sustainability hackathon, set in Singapore: local menus, HPB nutrition guidance (under 2,000 mg sodium a day) and the Singapore grid's emission factor.
 
-People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives seven separate apps, plus a 3D game that shows the whole experience:
+People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives six separate apps, plus a 3D game that shows the whole experience:
 
 | App | File | For |
 |---|---|---|
@@ -15,7 +15,6 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
 | **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: a Tamagotchi fed by real lunches, their tray and healthy plate, class and school leaderboards |
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
-| **Loopi Kids** | `dist/6-loopi-kids-kindergarten.html` | Preschools: an animated Loopi with sounds for children; separate Parents (one child's report) and Teachers (whole class, check-ins, allergies, notes) sections |
 | **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
 | **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person 3D game of one school lunch with PlateLoop, with low-poly characters and a foggy, rainy atmosphere: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the compost module, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
 
@@ -33,32 +32,31 @@ python -m http.server 8765
 
 Then open http://localhost:8765/dist/2-plateloop-kiosk.html and http://localhost:8765/dist/4-loopi-student-app.html.
 
-**Development version** (all eight apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
+**Development version** (all seven apps in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
 
 ## Project layout
 
 ```
-apps/                 source for the eight apps
+apps/                 source for the seven apps
   index.html          dev page with an app switcher
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync
   js/visual.js        Loopi the guide, food drawings, tray, My Healthy Plate, gauges
   js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, eggs and the Barn, cooking, worm farm, Healthy Catch, crates, badges)
   js/room.js          Loopi's animated pixel room
-  js/health.js        hospital and kindergarten menus, demo people, healthcare report parts
+  js/health.js        hospital menus, demo people, healthcare report parts
   js/model.js         PlateLoop Scanner 3D page
   js/scanner.js       PlateLoop Kiosk
   js/kitchen.js       PlateLoop Kitchen
   js/student.js       Loopi student app
   js/care.js          Loopi Care (hospital patients)
-  js/kids.js          Loopi Kids (kindergartens)
   js/work.js          Loopi Work (office workers: goals, targets, daily pick, weekly report)
   js/game3d.js        Lunch Rush: the lunch, dialogue, scanner close-ups, input (three.js, PS1-style rendering)
   js/lunch/           Lunch Rush parts: kit (PS1 materials, painted textures), audio (synthesised soundscape),
                       people (characters), world (the canteen), screen (the scanner's screen)
   vendor/             three.js r128 + GLTFLoader (for offline 3D)
   build.py            builds the standalone files in dist/
-dist/                 the eight standalone apps (generated, committed for convenience)
+dist/                 the seven standalone apps (generated, committed for convenience)
 hardware/             Blender scanner: build script, .blend, .glb, renders
 docs/                 project overview and screenshots
 ```
