@@ -8349,34 +8349,34 @@ async function sophieSings() {
 }
 /** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
-// when each line of the "GG freaking EZ" clip finishes, in seconds: GG freaking EZ, Don't say that, Really?, Freaking easy
-const GGEZ_ENDS = [2.72, 3.95, 6.2];
+// when each line starts in the "GG freaking EZ" clip (seconds), and when the clip ends
+const GGEZ_TIMES = [2.0, 2.72, 3.95, 6.2], GGEZ_END = 7.63;
 async function brawl() {
   const A = G.brawlA, B = G.brawlB, hp = new THREE.Vector3();
-  // the supplied "GG freaking EZ" clip: with GGEZ_ENDS set (when each line finishes, in seconds) it plays
-  // up to the end of each line, pauses, and carries on at the next line; without it, it plays straight through
-  const ends = GGEZ_ENDS;
-  let pi = 0, from = 0, endAt = 0, started = false;
-  const line = (P, rest) => {
-    if (!G.SFX.hasClip('ggez')) return false;
-    if (!ends) { if (started) return true; started = true; P.head.getWorldPosition(hp); return !!G.SFX.clip('ggez', at(hp), 1.1); }
-    if (pi > ends.length) return true;
-    const to = rest || pi >= ends.length ? null : ends[pi];
-    P.head.getWorldPosition(hp);
-    const h = G.SFX.clip('ggez', at(hp), 1.1, from, to, endAt); if (h) endAt = h.end;
-    from = to == null ? 0 : to; pi = rest ? ends.length + 1 : pi + 1;
-    return !!h;
-  };
+  if (A.busy) return;
+  A.busy = true;
   await convo(A, async () => {
-    // each line plays its own part of the recorded clip (or the synthesised jingle if the clip isn't there)
-    if (!line(A)) { A.head.getWorldPosition(hp); play('ggez', at(hp)); }
-    await say(A, 'GG freaking EZ.');
-    G.faceTarget = B; line(B); await say(B, 'Don’t say that.');
-    G.faceTarget = A; line(A); await say(A, 'Really?');
-    if (!line(A)) { A.head.getWorldPosition(hp); play('ez', at(hp)); }
-    await say(A, 'Freaking easy.');
+    const lines = [[A, 'GG freaking EZ.'], [B, 'Don’t say that.'], [A, 'Really?'], [A, 'Freaking easy.']];
+    A.head.getWorldPosition(hp);
+    const h = G.SFX.clip('ggez', at(hp), 1.1);
+    if (h) {
+      // the whole clip plays once; the subtitles follow it, no clicking needed
+      const t0 = performance.now(), wait = s => sleep(Math.max(0, s * 1000 - (performance.now() - t0)));
+      for (let k = 0; k < lines.length; k++) {
+        await wait(GGEZ_TIMES[k]);
+        const [P, text] = lines[k];
+        lines.forEach(([Q]) => { Q.talking = false; });
+        G.faceTarget = P; P.talking = true; showSub(P.name, text, true);
+      }
+      await wait(Math.min(GGEZ_END, h.length) - .15);
+      lines.forEach(([Q]) => { Q.talking = false; });
+    } else {
+      // no clip: the synthesised jingle, and click through the lines
+      play('ggez', at(hp));
+      for (const [P, text] of lines) { G.faceTarget = P; await say(P, text); }
+    }
+    G.faceTarget = A;
     hideSub();
-    line(B, true);
     // the punch sends Ryan flying
     B.pose = 'punch'; play('whoosh'); await sleep(170);
     B.head.getWorldPosition(hp); play('punch', at(hp));
