@@ -1477,7 +1477,6 @@ body:has(.kx){background:#000}
 .kx-w{background:var(--bg2);border-radius:18px;padding:16px 18px 14px;min-width:0}
 .kx-w-h{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:var(--green)}
 .kx-w-h svg{width:16px;height:16px}
-.kx-w:nth-child(3) .kx-w-h{color:var(--orange)}.kx-w:nth-child(4) .kx-w-h{color:#64D2FF}
 .kx-w-n{display:flex;align-items:baseline;gap:3px;margin:12px 0 8px}
 .kx-w-n b{font-size:36px;font-weight:600;letter-spacing:-.03em;line-height:1;font-variant-numeric:tabular-nums}
 .kx-w-n em{font-style:normal;font-size:17px;font-weight:500;color:var(--label3)}
@@ -1542,7 +1541,113 @@ body:has(.kx){background:#000}
   .kx-order-sum{grid-template-columns:1fr}
   .kx-buy{grid-template-columns:1fr 70px 60px}.kx-buy-bar{display:none}
 }
-@media (max-width:520px){.kx-widgets{grid-template-columns:1fr}}
+@media (max-width:520px){.kx-widgets,.kx-widgets.three{grid-template-columns:1fr 1fr;gap:10px}.kx-w{padding:13px 14px}.kx-w-n b{font-size:28px}.kx-w-f .kx-spark{display:none}.kx-head h1{font-size:30px}}
+
+/* ---- shared page components */
+.kx .kx-w-h{color:var(--wc,var(--green))}
+.kx-widgets.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kx-chip{display:inline-flex;align-items:center;gap:6px;height:30px;padding:0 12px;border-radius:99px;background:var(--bg2);font-size:13px;color:var(--label2)}
+.kx-chip svg{width:14px;height:14px;color:var(--green)}
+.kx-card + .kx-card,.kx-duo + .kx-card,.kx-card + .kx-duo,.kx-widgets + .kx-card{margin-top:14px}
+.kx-duo + .kx-duo{margin-top:0}
+.kx-li{display:flex;align-items:center;gap:12px;padding:11px 0}
+.kx-li + .kx-li{border-top:.5px solid var(--sep)}
+.kx-li > div{flex:1;min-width:0}
+.kx-li b{display:block;font-size:14.5px;font-weight:600}.kx-li span{font-size:13px;color:var(--label2);line-height:1.4}
+.kx-li > em{font-style:normal;font-size:14px;font-weight:600;color:var(--label);font-variant-numeric:tabular-nums;white-space:nowrap}
+.kx-li > em.good,.kx-menu-n .good{color:var(--green)}
+.kx-li .food{background:var(--fill);border-radius:10px;padding:3px;flex:none}
+.kx-ic{width:30px;height:30px;border-radius:8px;display:grid;place-items:center;color:#fff;background:var(--c);flex:none}
+.kx-ic svg{width:16px;height:16px}
+.kx-dot{width:10px;height:10px;border-radius:50%;flex:none}
+.kx-bar1{display:block;height:8px;border-radius:99px;background:var(--fill);overflow:hidden}
+.kx-bar1 i{display:block;height:100%;border-radius:99px;transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.kx-bar1.thin{height:6px}
+.kx-note{margin:10px 0 0;font-size:12.5px;color:var(--label3);line-height:1.45}
+.kx-foot{margin:18px 2px 0;font-size:12px;color:var(--label3);line-height:1.5}
+.kx-key i{background:currentColor}
+.kx-empty{display:flex;align-items:center;gap:8px;margin:6px 0;color:var(--green);font-size:14px}.kx-empty svg{width:17px;height:17px}
+.kx-count{min-width:28px;height:28px;padding:0 9px;border-radius:99px;background:var(--orange);color:#000;font-weight:700;font-size:13px;display:grid;place-items:center}
+.kx-tag{font-size:12px;font-weight:600;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.kx-tag.low{background:rgba(255,159,10,.16);color:var(--orange)}.kx-tag.ok{background:rgba(48,209,88,.16);color:var(--green)}.kx-tag.high{background:rgba(255,69,58,.16);color:var(--red)}
+.kx-row2{display:grid;grid-template-columns:150px 1fr 60px 130px;gap:12px;align-items:center;padding:10px 0;font-size:14px}
+.kx-row2 + .kx-row2{border-top:.5px solid var(--sep)}
+.kx-row2 b{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kx-row2 em{font-style:normal;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.kx-row2 > span:last-child{font-size:12.5px;color:var(--label3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ---- purchasing */
+.kx-controls{display:grid;grid-template-columns:1.3fr 1fr 1fr}
+.kx-ctl{padding:14px 16px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.kx-ctl + .kx-ctl{border-left:.5px solid var(--sep)}
+.kx-ctl-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.kx-ctl-t b{font-size:14px;font-weight:600}.kx-ctl-t span{font-size:13px;color:var(--label2);font-variant-numeric:tabular-nums}
+.kx input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:4px;border-radius:99px;background:var(--fill2);outline:none;margin:10px 0}
+.kx input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:pointer}
+.kx input[type=range]::-moz-range-thumb{width:22px;height:22px;border:0;border-radius:50%;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.4);cursor:pointer}
+.kx-seg{display:flex;background:var(--fill);border-radius:9px;padding:2px}
+.kx-seg button{flex:1;border:0;background:none;color:var(--label);font:500 13px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;padding:6px 8px;border-radius:7px;transition:background .2s}
+.kx-seg button[aria-pressed="true"]{background:#636366;box-shadow:0 2px 6px rgba(0,0,0,.3)}
+.kx-select{width:100%;height:34px;border:0;border-radius:9px;background:var(--fill);color:var(--label);font:500 13.5px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;padding:0 10px}
+.kx-menu{display:grid;grid-template-columns:160px 1fr 92px;gap:14px;align-items:center;padding:10px 0}
+.kx-menu + .kx-menu{border-top:.5px solid var(--sep)}
+.kx-menu-t b{display:block;font-size:14.5px;font-weight:600}.kx-menu-t span{font-size:12px;color:var(--label3)}
+.kx-menu-b{display:flex;flex-direction:column;gap:4px}
+.kx-menu-n{text-align:right}.kx-menu-n b{display:block;font-size:14.5px;font-variant-numeric:tabular-nums}.kx-menu-n span{font-size:12px;font-weight:600;font-variant-numeric:tabular-nums}
+.kx-total{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 12px;padding-top:12px;border-top:.5px solid var(--sep)}
+.kx-total span{font-size:14px;color:var(--label2)}.kx-total b{font-size:24px;font-weight:600;letter-spacing:-.02em}
+.kx-approved{display:flex;justify-content:space-between;align-items:center}
+
+/* ---- waste */
+.kx-dish{display:grid;grid-template-columns:190px 1fr 90px 84px;gap:14px;align-items:center;padding:10px 0}
+.kx-dish + .kx-dish{border-top:.5px solid var(--sep)}
+.kx-dish-n{display:flex;align-items:center;gap:10px;min-width:0}.kx-dish-n b{font-size:14.5px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kx-dish-n .food{background:var(--fill);border-radius:10px;padding:3px;flex:none}
+.kx-stackbar{display:flex;gap:2px;height:12px;min-width:30px}
+.kx-stackbar i{display:block;height:100%;border-radius:99px;transition:flex .8s}
+.kx-dish-v{font-size:13px;color:var(--label3);text-align:right}.kx-dish-v b{color:var(--label);font-size:14.5px}
+.kx-trend{display:inline-flex;align-items:center;justify-content:flex-end;gap:2px;font-size:12.5px;font-weight:600;color:var(--label3)}
+.kx-trend svg{width:14px;height:14px}.kx-trend.up{color:var(--green)}.kx-trend.down{color:var(--red)}
+.kx-mix{display:flex;gap:3px;height:14px;margin-bottom:10px}
+.kx-mix i{display:block;height:100%;border-radius:99px}
+.kx-mix.big{height:18px;margin-bottom:12px}
+
+/* ---- nutrition */
+.kx-nut{display:grid;grid-template-columns:110px 1fr 110px 90px;gap:16px;align-items:center;padding:12px 0}
+.kx-nut + .kx-nut{border-top:.5px solid var(--sep)}
+.kx-nut > b{font-size:14.5px;font-weight:600}
+.kx-nut-v{font-size:15px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}.kx-nut-v small{font-size:12px;font-weight:400;color:var(--label3)}
+.kx-nut .kx-tag{justify-self:end}
+.kx-range{position:relative;display:block;height:10px;border-radius:99px;background:var(--fill);overflow:visible}
+.kx-range i{position:absolute;top:0;bottom:0}
+.kx-range .z1{left:0;background:rgba(255,159,10,.3);border-radius:99px 0 0 99px}.kx-range .z2{background:rgba(48,209,88,.32)}.kx-range .z3{background:rgba(255,69,58,.24);border-radius:0 99px 99px 0}
+.kx-range s{position:absolute;top:-4px;width:6px;height:18px;margin-left:-3px;border-radius:3px;background:#fff;box-shadow:0 0 0 2px var(--bg2);transition:left .8s cubic-bezier(.2,.8,.2,1)}
+
+/* ---- carbon: monthly columns */
+.kx-cols{display:grid;grid-template-columns:repeat(6,1fr);gap:0;padding-top:22px}
+.kx-col{display:flex;flex-direction:column;align-items:center;gap:8px}
+.kx-col-b{position:relative;width:100%;height:170px;display:flex;align-items:flex-end;justify-content:center}
+.kx-col i{position:relative;display:block;width:58%;max-width:46px;border-radius:8px 8px 4px 4px;background:rgba(48,209,88,.4);transition:height .8s cubic-bezier(.2,.8,.2,1)}
+.kx-col.now i{background:var(--green)}
+.kx-col em{position:absolute;left:50%;bottom:100%;transform:translate(-50%,-5px);font-style:normal;font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kx-col span{font-size:12px;color:var(--label3)}
+.kx-col-b s{position:absolute;left:0;right:0;border-top:1.5px dashed var(--orange);opacity:.85}
+/* ---- reports */
+.kx-report{display:flex;flex-direction:column}
+.kx-report > div{display:grid;grid-template-columns:96px 1fr;gap:14px;padding:12px 0}
+.kx-report > div + div{border-top:.5px solid var(--sep)}
+.kx-report b{font-size:13px;font-weight:600;color:var(--label3);text-transform:uppercase;letter-spacing:.04em;padding-top:2px}
+.kx-report p{margin:0;font-size:15px;line-height:1.55;color:var(--label)}
+
+@media (max-width:1180px){.kx-widgets.three{grid-template-columns:1fr 1fr 1fr}}
+@media (max-width:900px){
+  .kx-controls{grid-template-columns:1fr}.kx-ctl + .kx-ctl{border-left:0;border-top:.5px solid var(--sep)}
+  .kx-menu{grid-template-columns:1fr 80px}.kx-menu-b{display:none}
+  .kx-dish{grid-template-columns:1fr 80px}.kx-stackbar,.kx-trend{display:none}
+  .kx-nut{grid-template-columns:90px 1fr 80px}.kx-nut .kx-tag{display:none}
+  .kx-row2{grid-template-columns:1fr 60px}.kx-row2 .kx-bar1,.kx-row2 > span:last-child{display:none}
+  .kx-report > div{grid-template-columns:1fr;gap:4px}
+}
 
 </style>
 </head>
@@ -2706,8 +2811,8 @@ function overview() {
   <section class="kx-widgets">
     <div class="kx-w"><div class="kx-w-h">${IC.tray}<span>Trays scanned</span></div><div class="kx-w-n"><b data-live="trays">${trays}</b></div><div class="kx-w-f"><span>${t.eating} eating now</span>${spark([118, 131, 126, 140, 133, 137, trays])}</div></div>
     <div class="kx-w"><div class="kx-w-h">${IC.leaf}<span>Eaten</span></div><div class="kx-w-n"><b data-live="eaten">${Math.round(eaten * 100)}</b><em>%</em></div><div class="kx-w-f"><span>of ${fmt1(tot.sv / 1000)} kg served</span>${spark([.71, .73, .72, .75, .74, .76, eaten], true)}</div></div>
-    <div class="kx-w"><div class="kx-w-h">${IC.bin}<span>Food wasted</span></div><div class="kx-w-n"><b data-live="waste">${fmt1(tot.lf / 1000)}</b><em>kg</em></div><div class="kx-w-f"><span>${money(tot.val)} of ingredients</span>${spark(wasteTrend, tot.w <= last[0])}</div></div>
-    <div class="kx-w"><div class="kx-w-h">${IC.cloud}<span>CO₂ avoided</span></div><div class="kx-w-n"><b data-live="co2">${fmt1(co2)}</b><em>kg</em></div><div class="kx-w-f"><span>vs the usual leftovers</span>${spark([7.1, 8.4, 8.0, 9.2, 10.1, 10.6, co2], true)}</div></div>
+    <div class="kx-w" style="--wc:var(--orange)"><div class="kx-w-h">${IC.bin}<span>Food wasted</span></div><div class="kx-w-n"><b data-live="waste">${fmt1(tot.lf / 1000)}</b><em>kg</em></div><div class="kx-w-f"><span>${money(tot.val)} of ingredients</span>${spark(wasteTrend, tot.w <= last[0])}</div></div>
+    <div class="kx-w" style="--wc:#64D2FF"><div class="kx-w-h">${IC.cloud}<span>CO₂ avoided</span></div><div class="kx-w-n"><b data-live="co2">${fmt1(co2)}</b><em>kg</em></div><div class="kx-w-f"><span>vs the usual leftovers</span>${spark([7.1, 8.4, 8.0, 9.2, 10.1, 10.6, co2], true)}</div></div>
   </section>
 
   <section class="kx-duo">
@@ -2737,16 +2842,6 @@ function overview() {
   </section>`;
 }
 
-function chartDish() {
-  const W = 520, rowH = 36, top = 6, left = 150, right = 50, rows = dishStats().sort((a, b) => b.e - a.e), H = top + rows.length * rowH + 24, iw = W - left - right;
-  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Share of each dish eaten">`;
-  [0, .5, 1].forEach(v => { const x = left + v * iw; s += `<line class="gridline" x1="${x}" x2="${x}" y1="${top}" y2="${H - 20}"/><text class="axis" x="${x}" y="${H - 4}" text-anchor="middle">${v * 100}%</text>`; });
-  rows.forEach((r, i) => {
-    const y = top + i * rowH + 8;
-    s += `<text x="${left - 12}" y="${y + 13}" text-anchor="end" style="font:500 13px var(--font);fill:var(--label)">${r.d.name}</text><rect x="${left}" y="${y}" width="${iw}" height="18" rx="9" fill="var(--fill)"/><rect x="${left}" y="${y}" width="${(iw * r.e).toFixed(1)}" height="18" rx="9" fill="${r.e < .6 ? 'var(--orange)' : 'var(--tint)'}"/><text x="${W - right + 10}" y="${y + 13}" style="font:600 13px var(--font);fill:var(--label)">${pct(r.e)}</text>`;
-  });
-  return s + '</svg>';
-}
 function chartTrend() {
   const W = 640, H = 250, l = 44, r = 16, t = 14, b = 28, iw = W - l - r, ih = H - t - b, max = .35;
   const X = i => l + i / (HISTORY.length - 1) * iw, Y = v => t + ih - v / max * ih;
@@ -2762,35 +2857,77 @@ function chartTrend() {
   return s + '</svg>';
 }
 
-/* ---------------------------------------------------------------- Dishes */
-function dishes() {
-  const rows = dishStats(), mix = portionMix();
-  const W = 1000, rowH = 44, top = 8, left = 170, right = 90, maxKg = Math.max(...rows.map(r => r.served)) / 1000, H = top + rows.length * rowH + 26, iw = W - left - right;
-  let chart = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Kilograms served, eaten and left by dish">`;
-  rows.forEach((r, i) => {
-    const y = top + i * rowH + 10, we = iw * (r.eaten / 1000) / maxKg, wl = iw * (r.left / 1000) / maxKg;
-    chart += `<text x="${left - 14}" y="${y + 15}" text-anchor="end" style="font:500 14px var(--font);fill:var(--label)">${r.d.name}</text>`;
-    chart += `<rect x="${left}" y="${y}" width="${we.toFixed(1)}" height="22" rx="6" fill="var(--tint)"/><rect x="${(left + we + 2).toFixed(1)}" y="${y}" width="${Math.max(0, wl - 2).toFixed(1)}" height="22" rx="6" fill="var(--orange)"/>`;
-    chart += `<text x="${(left + we + wl + 10).toFixed(1)}" y="${y + 15}" style="font:600 13px var(--font);fill:var(--label2)">${fmt1(r.served / 1000)} kg</text>`;
-  });
-  chart += `</svg><div class="mix-key"><span style="--c:var(--tint)">Eaten</span><span style="--c:var(--orange)">Left on trays</span><span>Label = kg served</span></div>`;
-  return `
-  <div class="page-head"><div><h1>Dishes</h1><p>What was served (before scans) against what came back (after scans), dish by dish.</p></div></div>
-  <div class="card chart"><h3>Served, eaten and left today</h3>${chart}</div>
-  <div class="card"><h3>Dish analysis</h3><div class="table-wrap" style="margin-top:8px"><table>
-    <thead><tr><th>Dish</th><th class="r">Served</th><th class="r">Eaten</th><th class="r">Left</th><th class="r">Eaten %</th><th class="r">4-week trend</th><th>Suggestion</th></tr></thead>
-    <tbody>${rows.sort((a, b) => a.e - b.e).map(r => { const [, tr, sug] = TREND[r.d.id]; return `<tr><td><b>${r.d.name}</b></td><td class="r num">${fmt1(r.served / 1000)} kg</td><td class="r num">${fmt1(r.eaten / 1000)} kg</td><td class="r num">${fmt1(r.left / 1000)} kg</td><td class="r"><span class="flag ${r.e < .6 ? 'low' : r.e < .8 ? 'mid' : 'ok'}">${pct(r.e)}</span></td><td class="r num" style="color:${tr > 0 ? 'var(--tint-ink)' : tr < 0 ? 'var(--red)' : 'var(--label3)'}">${tr > 0 ? '▲' : tr < 0 ? '▼' : '–'} ${Math.abs(tr)} pts</td><td style="min-width:220px">${sug}</td></tr>`; }).join('')}</tbody></table></div></div>
-  <div class="kgrid">
-    <div class="card"><h3>Portion sizes served</h3><p class="hint">Measured by the before scan: Small, Regular or Large</p>
-      <div class="mix">${['S', 'M', 'L'].map((p, i) => `<i style="width:${mix.m[p] / mix.tot * 100}%;background:${['var(--teal)', 'var(--tint)', 'var(--orange)'][i]}"></i>`).join('')}</div>
-      <div class="mix-key">${['S', 'M', 'L'].map((p, i) => `<span style="--c:${['var(--teal)', 'var(--tint)', 'var(--orange)'][i]}">${{ S: 'Small', M: 'Regular', L: 'Large' }[p]} ${pct(mix.m[p] / mix.tot)}</span>`).join('')}</div>
-      <p class="hint" style="margin-top:12px">Students who pick Small leave about half as much as those who pick Large.</p></div>
-    <div class="card"><h3>Why two scans matter</h3><p class="hint" style="font-size:14px;margin-top:6px">The before scan gives the exact amount each student was served, so the after scan measures true plate waste, not a guess from standard portions. It also shows which dishes students <b>take</b> but don't <b>eat</b>, like the soup.</p></div>
-  </div>`;
+/* ================================================================ shared pieces, so every page looks the same */
+const head = (eyebrow, title, right = '') => `<header class="kx-head"><div><p class="kx-date">${eyebrow}</p><h1>${title}</h1></div>${right}</header>`;
+const widget = (icon, color, label, value, unit, foot, extra = '') => `<div class="kx-w" style="--wc:${color}"><div class="kx-w-h">${icon}<span>${label}</span></div><div class="kx-w-n"><b>${value}</b>${unit ? `<em>${unit}</em>` : ''}</div><div class="kx-w-f"><span>${foot}</span>${extra}</div></div>`;
+const card = (title, sub, body, link = '', cls = '') => `<div class="kx-card ${cls}"><div class="kx-card-h"><div><h2>${title}</h2>${sub ? `<p>${sub}</p>` : ''}</div>${link}</div>${body}</div>`;
+const goLink = (view, label) => `<button class="kx-link" data-go="${view}">${label}${IC.chev}</button>`;
+const bar = (frac, color) => `<span class="kx-bar1"><i style="width:${(clamp(frac, 0, 1) * 100).toFixed(1)}%;background:${color}"></i></span>`;
+const GREEN = 'var(--green)', ORANGE = 'var(--orange)', BLUE = 'var(--blue)', RED = 'var(--red)', CYAN = '#64D2FF', PURPLE = '#BF5AF2', GREY = '#8E8E93';
+
+/* ================================================================ Purchasing: tomorrow's order from what people really eat */
+function plan() {
+  const p = ui.plan;
+  return `${head('Monday 28 September', 'Purchasing', `<span class="kx-chip">${IC.spark}Forecast error ${(MAPE * 100).toFixed(1)}%</span>`)}
+  <section class="kx-group kx-controls">
+    <div class="kx-ctl"><div class="kx-ctl-t"><b>Attendance</b><span id="att-v">${p.att} of ${ENROLLED}</span></div><input type="range" id="att" min="600" max="840" step="1" value="${p.att}" aria-label="Attendance"></div>
+    <div class="kx-ctl"><div class="kx-ctl-t"><b>Weather</b></div><div class="kx-seg" id="weather">${['sunny', 'rainy', 'hot'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
+    <div class="kx-ctl"><div class="kx-ctl-t"><b>School calendar</b></div><select id="event" class="kx-select">${[['normal', 'Normal day'], ['trip', 'Sec 4 learning journey (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
+  </section>
+  <div id="plan-out">${planOut()}</div>
+  ${card('Recipe tweaks that cut waste', 'From four weeks of before and after scans', `<div class="kx-list">${[
+    [GREEN, IC.leaf, 'Kailan with oyster sauce', 'Eaten 64% vs 52% plain in the class A/B test. Make it the default.'],
+    [BLUE, IC.tray, 'Soup: 150 ml ladle, refills allowed', 'Cuts soup waste from 42% to 24% with no drop in satisfaction.'],
+    [ORANGE, IC.bin, 'Cabbage: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
+  ].map(([c, ic, t, s]) => `<div class="kx-li"><span class="kx-ic" style="--c:${c}">${ic}</span><div><b>${t}</b><span>${s}</span></div></div>`).join('')}</div>`)}`;
+}
+function planOut() {
+  const f = forecast(), saved = f.tStd - f.tNew, dollars = f.costStd - f.cost, ap = PL.S.order.approved;
+  const maxStd = Math.max(...f.rows.map(r => r.stdKg)), maxKg = Math.max(...f.orders.map(o => o.kg), 1);
+  return `<section class="kx-widgets three">
+    ${widget(IC.cart, BLUE, 'To buy', money(f.orderTotal), '', `${f.orders.filter(o => o.order > 0).length} ingredients`)}
+    ${widget(IC.spark, GREEN, 'Saved vs standard plan', money(dollars), '', `about ${money(dollars * 180)} a school year`)}
+    ${widget(IC.leaf, CYAN, 'Less food cooked', fmt1(saved), 'kg', `${Math.round(saved * PL.CO2_PER_KG)} kg CO₂e avoided`)}
+  </section>
+  <section class="kx-duo">
+    ${card('Tomorrow’s menu', `${f.att} diners · standard portion × enrolment vs what people eat`, `<div class="kx-list">${f.rows.map(r => `<div class="kx-menu"><div class="kx-menu-t"><b>${esc(r.d.name)}</b><span>${r.d.learned} g eaten of ${r.d.std} g</span></div>
+      <div class="kx-menu-b"><span class="kx-bar1 thin"><i style="width:${(r.stdKg / maxStd * 100).toFixed(1)}%;background:#48484A"></i></span><span class="kx-bar1 thin"><i style="width:${(r.newKg / maxStd * 100).toFixed(1)}%;background:${BLUE}"></i></span></div>
+      <div class="kx-menu-n"><b>${fmt1(r.newKg)} kg</b><span class="good">−${fmt1(r.stdKg - r.newKg)}</span></div></div>`).join('')}</div>
+      <div class="kx-key"><span><i style="background:#48484A"></i>Standard plan</span><span><i style="background:${BLUE}"></i>PlateLoop plan</span></div>`)}
+    ${card('Shopping list', 'Needed tomorrow, minus what’s in stock', `<div class="kx-list">${f.orders.map(o => `<div class="kx-buy"><span class="kx-buy-n">${esc(o.ing)}</span><span class="kx-buy-bar"><i class="need" style="width:${(o.kg / maxKg * 100).toFixed(1)}%"></i><i class="stock" style="width:${(Math.min(o.inv, o.kg) / maxKg * 100).toFixed(1)}%"></i></span><b>${o.order > 0 ? fmt1(o.order) + ' kg' : '—'}</b><em>${o.order > 0 ? money(o.order * o.price) : 'in stock'}</em></div>`).join('')}</div>
+      <div class="kx-key"><span><i class="stock"></i>In stock</span><span><i class="need"></i>Needed</span></div>
+      <div class="kx-total"><span>Total</span><b>${money(f.orderTotal)}</b></div>
+      ${ap ? `<div class="kx-approved"><span class="kx-ok">${IC.check}Approved at ${ap.at}</span><button class="kx-btn" id="unapprove">Undo</button></div><p class="kx-note">In a live system this goes to the supplier. Nothing is sent from this demo.</p>`
+        : `<button class="kx-btn prim wide" id="approve">Approve order · ${money(f.orderTotal)}</button><p class="kx-note">Supplier cut-off 14:00.</p>`}`)}
+  </section>`;
 }
 
+/* ================================================================ Waste: what comes back, dish by dish */
+function dishes() {
+  const rows = dishStats(), mix = portionMix(), tot = PL.todayTotals(), maxKg = Math.max(...rows.map(r => r.served));
+  const byWaste = [...rows].sort((a, b) => a.e - b.e);
+  return `${head('Today', 'Waste')}
+  <section class="kx-widgets">
+    ${widget(IC.bin, ORANGE, 'Left on trays', fmt1(tot.lf / 1000), 'kg', `${money(tot.val)} of ingredients`)}
+    ${widget(IC.spark, tot.w < PL.SCHOOL_BASELINE ? GREEN : ORANGE, 'Plate waste', Math.round(tot.w * 100), '%', `baseline ${pct(PL.SCHOOL_BASELINE)}`)}
+    ${widget(IC.leaf, GREEN, 'Eaten', fmt1((tot.sv - tot.lf) / 1000), 'kg', `of ${fmt1(tot.sv / 1000)} kg served`)}
+    ${widget(IC.check, CYAN, 'Clean trays', Math.round(PL.zeroRate() * 100), '%', `${T().zero} with zero leftovers`)}
+  </section>
+  ${card('Served, eaten and left', 'Before scans against after scans, today', `<div class="kx-list">${byWaste.map(r => { const [, tr] = TREND[r.d.id];
+    return `<div class="kx-dish"><span class="kx-dish-n">${PL.V.food(r.d, 28)}<b>${esc(r.d.name)}</b></span>
+      <span class="kx-stackbar" style="width:${(r.served / maxKg * 100).toFixed(1)}%"><i style="flex:${r.eaten};background:${GREEN}"></i><i style="flex:${r.left};background:${ORANGE}"></i></span>
+      <span class="kx-dish-v"><b>${pct(r.e)}</b> eaten</span><span class="kx-trend ${tr > 0 ? 'up' : tr < 0 ? 'down' : ''}">${tr > 0 ? IC.up : tr < 0 ? IC.down : ''}${tr ? Math.abs(tr) + ' pts' : 'steady'}</span></div>`; }).join('')}</div>
+    <div class="kx-key"><span><i style="background:${GREEN}"></i>Eaten</span><span><i style="background:${ORANGE}"></i>Left on trays</span><span>Bar length = kg served · trend over 4 weeks</span></div>`)}
+  <section class="kx-duo">
+    ${card('Plate waste', 'Last 30 school days, whole school', chartTrend())}
+    ${card('Portion sizes', 'Measured by the before scan', `<div class="kx-mix">${['S', 'M', 'L'].map((q, i) => `<i style="flex:${mix.m[q]};background:${[CYAN, GREEN, ORANGE][i]}"></i>`).join('')}</div>
+      <div class="kx-list">${['S', 'M', 'L'].map((q, i) => `<div class="kx-li"><span class="kx-dot" style="background:${[CYAN, GREEN, ORANGE][i]}"></span><div><b>${{ S: 'Small', M: 'Regular', L: 'Large' }[q]}</b></div><em>${pct(mix.m[q] / mix.tot)}</em></div>`).join('')}</div>
+      <p class="kx-note">People who take Small leave about half as much as those who take Large.</p>`)}
+  </section>
+  ${card('What to change', 'One suggestion per dish, least finished first', `<div class="kx-list">${byWaste.map(r => `<div class="kx-li">${PL.V.food(r.d, 30)}<div><b>${esc(r.d.name)}</b><span>${esc(TREND[r.d.id][2])}</span></div><em>${pct(r.e)}</em></div>`).join('')}</div>`)}`;
+}
 
-/* ---------------------------------------------------------------- Nutrition (Nuvilab-style intake status) */
+/* ================================================================ Nutrition: what people ate, against the lunch target */
 function intakeStats() {
   const done = PL.S.students.filter(s => s.log[0] && s.log[0].n);
   const recent = PL.S.students.map(s => s.scanned ? s.after.intake : s.log[0].n);
@@ -2798,30 +2935,27 @@ function intakeStats() {
   const low = PL.S.students.map(s => { const n = s.scanned ? s.after.intake : s.log[0].n; return { s, n, r: n.kcal / PL.TARGET.kcal }; }).filter(x => x.r < .6).sort((a, b) => a.r - b.r);
   return { avg, low, n: recent.length, done: done.length };
 }
-const zoneBar = (k, v) => {
-  const max = PL.TARGET[k] * 1.6, pos = x => Math.min(100, x / max * 100), st = PL.nStatus(k, v);
-  return `<div class="zbar"><span class="z z1" style="width:${pos(PL.TARGET[k] * .8)}%"></span><span class="z z2" style="left:${pos(PL.TARGET[k] * .8)}%;width:${pos(PL.TARGET[k] * 1.3) - pos(PL.TARGET[k] * .8)}%"></span><i class="${st}" style="width:${pos(v)}%"></i></div>`;
+/** A range bar: the low / adequate / too-much zones and a marker for the value. */
+const range = (k, v) => {
+  const max = PL.TARGET[k] * 1.6, pos = x => clamp(x / max, 0, 1) * 100, st = PL.nStatus(k, v);
+  return `<span class="kx-range"><i class="z1" style="width:${pos(PL.TARGET[k] * .8)}%"></i><i class="z2" style="left:${pos(PL.TARGET[k] * .8)}%;width:${pos(PL.TARGET[k] * 1.3) - pos(PL.TARGET[k] * .8)}%"></i><i class="z3" style="left:${pos(PL.TARGET[k] * 1.3)}%;right:0"></i><s class="${st}" style="left:${pos(v)}%"></s></span>`;
 };
 function nutrition() {
-  const { avg, low, n } = intakeStats();
-  const status = { low: ['Low', 'low'], ok: ['Adequate', 'ok'], high: ['Too much', 'mid'] };
-  return `
-  <div class="page-head"><div><h1>Nutrition</h1><p>What students actually ate at lunch, from the difference between the before and after scans, against the school-lunch target.</p></div></div>
-  <div class="card"><div class="row spread"><h3>Average intake per student</h3><span class="hint">Class 3B · ${n} students · latest lunch</span></div>
-    <div class="nut-legend"><span class="l1">Low</span><span class="l2">Adequate</span><span class="l3">Too much</span></div>
-    <div class="nut-rows">${PL.NUTRIENTS.map(([k, label, unit]) => { const [t, c] = status[PL.nStatus(k, avg[k])]; return `<div class="nut-row"><b>${label}</b>${zoneBar(k, avg[k])}<span class="num">${avg[k]} ${unit} <small>/ ${PL.TARGET[k]}</small></span><span class="flag ${c}">${t}</span></div>`; }).join('')}</div>
-    <p class="hint" style="margin-top:12px">Targets are per lunch for a Secondary 3 student (about a third of the daily need). Replace them with the Health Promotion Board's school meal guidelines.</p></div>
-  <div class="kgrid">
-    <div class="card"><div class="row spread"><h3>Students to check on</h3><span class="pill orange">${low.length} flagged</span></div><p class="hint">Ate less than 60% of the calorie target at their last lunch. Visible to the school dietitian and homeroom teacher only.</p>
-      <div class="lowlist">${low.length ? low.slice(0, 8).map(x => `<div><span class="av">${esc(x.s.name[0])}</span><div><b>${esc(x.s.name)} · Class ${x.s.cls}</b><span>${x.n.kcal} kcal · protein ${x.n.p} g</span></div><span class="flag low">${pct(x.r)}</span></div>`).join('') : '<p class="hint" style="padding:12px 0">Nobody below 60% right now.</p>'}</div></div>
-    <div class="card"><h3>Where nutrients are lost</h3><p class="hint">Nutrients served but left on trays today, all finished trays</p>
-      ${(() => { const left = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].ret])); const served = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].served])); const L = PL.nutrientsOf(left), S = PL.nutrientsOf(served);
-        return `<div class="nut-rows" style="margin-top:12px">${PL.NUTRIENTS.map(([k, label, unit]) => `<div class="nut-row lost"><b>${label}</b><div class="zbar"><i class="high" style="width:${L[k] / S[k] * 100}%"></i></div><span class="num">${pct(L[k] / S[k])}</span><span class="hint">${Math.round(L[k] / 1000 * (unit === 'g' ? 1 : 1)).toLocaleString('en-US')}${unit === 'g' ? ' kg' : 'k kcal'}</span></div>`).join('')}</div>`; })()}
-      <p class="hint" style="margin-top:12px">Vegetables carry most of the lost fibre and vitamins. The Kailan Week quest targets this.</p></div>
-  </div>`;
+  const { avg, low, n } = intakeStats(), word = { low: 'Low', ok: 'Adequate', high: 'Too much' };
+  const left = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].ret])), served = Object.fromEntries(MENU.map(d => [d.id, T().dish[d.id].served]));
+  const L = PL.nutrientsOf(left), S = PL.nutrientsOf(served), maxLost = Math.max(...PL.NUTRIENTS.map(([k]) => L[k] / S[k]));
+  return `${head('Latest lunch', 'Nutrition')}
+  ${card('Average intake per student', `Class 3B · ${n} students · target per lunch for Secondary 3`, `<div class="kx-list">${PL.NUTRIENTS.map(([k, label, unit]) => { const st = PL.nStatus(k, avg[k]);
+    return `<div class="kx-nut"><b>${label}</b>${range(k, avg[k])}<span class="kx-nut-v">${avg[k]}${unit === 'g' ? ' g' : ''}<small> / ${PL.TARGET[k]}</small></span><span class="kx-tag ${st}">${word[st]}</span></div>`; }).join('')}</div>
+    <div class="kx-key"><span><i style="background:rgba(255,159,10,.45)"></i>Low</span><span><i style="background:rgba(48,209,88,.45)"></i>Adequate</span><span><i style="background:rgba(255,69,58,.4)"></i>Too much</span></div>`)}
+  <section class="kx-duo">
+    ${card('People to check on', 'Under 60% of the calorie target at their last lunch. Only the dietitian and form teacher see names.', low.length ? `<div class="kx-list">${low.slice(0, 7).map(x => `<div class="kx-li">${PL.V.avatar(x.s, 32)}<div><b>${esc(x.s.name)} · ${x.s.cls}</b><span>${x.n.kcal} kcal · ${x.n.p} g protein</span></div><span class="kx-tag low">${pct(x.r)}</span></div>`).join('')}</div>` : `<p class="kx-empty">${IC.check}Nobody under 60% right now.</p>`, `<span class="kx-count">${low.length}</span>`)}
+    ${card('Nutrients left on trays', 'Served but not eaten today, all finished trays', `<div class="kx-list">${PL.NUTRIENTS.map(([k, label, unit]) => `<div class="kx-row2"><b>${label}</b>${bar(L[k] / S[k] / maxLost, ORANGE)}<em>${pct(L[k] / S[k])}</em><span>${unit === 'g' ? fmt1(L[k] / 1000) + ' kg' : Math.round(L[k] / 1000).toLocaleString('en-US') + 'k kcal'}</span></div>`).join('')}</div>
+      <p class="kx-note">Vegetables carry most of the lost fibre and vitamins. The Kailan Week quest targets this.</p>`)}
+  </section>`;
 }
 
-/* ---------------------------------------------------------------- Environment (Nuvilab-style dashboard + Green Tree) */
+/* ================================================================ Carbon: the canteen's whole footprint */
 const EF_FOOD = { rice: 2.7, chicken: 6.1, kailan: 1.2, cabbage: .6, melon: .5, soup: 1.8 };
 const EF_DISPOSAL = .58;
 const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .41], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
@@ -2841,48 +2975,40 @@ function carbonData() {
 }
 function carbon() {
   const c = carbonData(), cut = 1 - c.total / c.before;
-  const parts = [['Ingredients', c.foodT, 'var(--orange)'], ['Food waste', c.disposalT, 'var(--red)'], ['Energy, water and transport', c.opsT, 'var(--blue)']];
+  const parts = [['Ingredients', c.foodT, ORANGE], ['Food waste', c.disposalT, RED], ['Energy, water and transport', c.opsT, BLUE]];
   const meat = c.food.find(x => x.d.id === 'chicken');
   const actions = [
     ['Cut plate waste from ' + pct(c.w) + ' to 20%', Math.max(0, (c.w - .2) / c.w) * (c.disposalT + c.hidden) * 10, 'Using the dish-by-dish waste data'],
     ['Go meat-free with tofu one day a week', meat.t * .2 * (1 - 3 / 6.1) * 10, 'Chicken is ' + pct(meat.t / c.foodT) + ' of ingredient emissions'],
-    ['Cook to the forecast, not to enrolment', c.foodT * .06 * 10, 'Plan & order already cooks about 6% less'],
+    ['Cook to the forecast, not to enrolment', c.foodT * .06 * 10, 'Purchasing already plans about 6% less food'],
     ['Run dishwashers full and off-peak', c.ops[0].t * .08 * 10, 'About 8% less electricity'],
   ].sort((a, b) => b[1] - a[1]);
-  const W = 520, Hh = 180, max = 1.25, months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'];
-  let trend = `<svg viewBox="0 0 ${W} ${Hh + 26}" role="img" aria-label="Monthly emissions, April to September">`;
-  CARBON_TREND.forEach((k, i) => { const v = c.total * k, h = k / max * Hh, x = 40 + i * 78; trend += `<rect x="${x}" y="${Hh - h}" width="46" height="${h}" rx="8" fill="var(--tint)" opacity="${i === 5 ? 1 : .6}"/><text x="${x + 23}" y="${Hh - h - 6}" text-anchor="middle" style="font:600 12px var(--font);fill:var(--label)">${v.toFixed(1)}</text><text class="axis" x="${x + 23}" y="${Hh + 18}" text-anchor="middle">${months[i]}</text>`; });
-  const gy = Hh - (BEFORE * (1 - GOAL)) / max * Hh;
-  trend += `<line x1="30" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/></svg>`;
-  return `
-  <div class="page-head"><div><h1>Carbon</h1><p>Every source of the canteen's emissions in one place: ingredients, food waste, and the kitchen's energy, water and deliveries.</p></div><button class="btn" id="copy-carbon">Copy monthly report</button></div>
-  <div class="kpis">
-    <div class="kpi"><div class="k">This month</div><div class="v">${c.total.toFixed(1)} t</div><div class="s">CO₂e, all sources</div></div>
-    <div class="kpi"><div class="k">Per meal</div><div class="v">${c.perMeal.toFixed(2)} kg</div><div class="s">${Math.round(c.meals).toLocaleString('en-US')} meals this month</div></div>
-    <div class="kpi good"><div class="k">Vs. before PlateLoop</div><div class="v">−${pct(cut)}</div><div class="s">goal −${pct(GOAL)} this year</div></div>
-    <div class="kpi good"><div class="k">Saved today, live</div><div class="v">${((T().co2 || 0) / 1000).toFixed(1)} kg</div><div class="s">from trays scanned so far</div></div>
-  </div>
-  <div class="kgrid">
-    <div class="card"><h3>Where the emissions come from</h3>
-      <div class="cstack">${parts.map(([n, v, col]) => `<i style="width:${v / c.total * 100}%;background:${col}" title="${n}"></i>`).join('')}</div>
-      <div class="clist">${parts.map(([n, v, col]) => `<div><span class="dot" style="color:${col}"></span><b>${n}</b><span class="num">${v.toFixed(1)} t · ${pct(v / c.total)}</span></div>`).join('')}</div>
-      <p class="hint" style="margin-top:10px">Food thrown away also wastes the ${c.hidden.toFixed(1)} t it took to grow it. That's counted under ingredients.</p></div>
-    <div class="card chart"><h3>Monthly emissions</h3><p class="hint">t CO₂e, all sources · <span style="color:var(--orange)">dashed line: this year's goal</span></p>${trend}</div>
-  </div>
-  <div class="kgrid">
-    <div class="card"><h3>Ingredients</h3><div class="table-wrap"><table><thead><tr><th>Dish</th><th class="r">kg a month</th><th class="r">t CO₂e</th></tr></thead><tbody>${[...c.food].sort((a, b) => b.t - a.t).map(x => `<tr><td>${x.d.name}</td><td class="r num">${Math.round(x.kg).toLocaleString('en-US')}</td><td class="r num">${x.t.toFixed(2)}</td></tr>`).join('')}</tbody></table></div></div>
-    <div class="card"><h3>Operations</h3><div class="table-wrap"><table><thead><tr><th>Source</th><th class="r">Use</th><th class="r">t CO₂e</th></tr></thead><tbody>${c.ops.map(o => `<tr><td>${o.name}<br><small class="muted">${o.what}</small></td><td class="r num">${o.qty.toLocaleString('en-US')} ${o.unit}</td><td class="r num">${o.t.toFixed(2)}</td></tr>`).join('')}<tr><td>Food waste disposal<br><small class="muted">${Math.round(c.wastedKg).toLocaleString('en-US')} kg to the bin</small></td><td class="r num">${EF_DISPOSAL} kg/kg</td><td class="r num">${c.disposalT.toFixed(2)}</td></tr></tbody></table></div></div>
-  </div>
-  <h2 class="section-title">Biggest cuts toward carbon-neutral</h2>
-  <div class="insights">${actions.map(([t, v, s], i) => `<div class="insight"><span class="ic" style="background:${['var(--tint)', 'var(--blue)', 'var(--orange)', 'var(--purple)'][i]}">${SV('<path d="M4 17l6-6 4 4 6-8"/>')}</span><div><b>${t}: −${v.toFixed(1)} t a school year</b><span>${s}</span></div></div>`).join('')}</div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.41 per kWh (Singapore grid); gas 2.2 per m³. Replace with published factors before reporting.</p>`;
+  const months = ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'], maxT = c.total * 1.25, goalT = c.before * (1 - GOAL);
+  const src = [...c.food.map(x => [x.d.name, x.t, 'ingredient']), ...c.ops.map(o => [o.name, o.t, o.what]), ['Food waste disposal', c.disposalT, `${Math.round(c.wastedKg).toLocaleString('en-US')} kg to the bin`]].sort((a, b) => b[1] - a[1]), maxS = src[0][1];
+  return `${head('September', 'Carbon', '<button class="kx-btn" id="copy-carbon">Copy monthly report</button>')}
+  <section class="kx-widgets">
+    ${widget(IC.cloud, CYAN, 'This month', c.total.toFixed(1), 't', 'CO₂e, all sources')}
+    ${widget(IC.tray, BLUE, 'Per meal', c.perMeal.toFixed(2), 'kg', `${Math.round(c.meals).toLocaleString('en-US')} meals`)}
+    ${widget(IC.down, GREEN, 'Vs before PlateLoop', '−' + Math.round(cut * 100), '%', `goal −${pct(GOAL)} this year`)}
+    ${widget(IC.leaf, GREEN, 'Saved today', ((T().co2 || 0) / 1000).toFixed(1), 'kg', 'live, from trays scanned')}
+  </section>
+  <section class="kx-duo">
+    ${card('Where it comes from', `Food thrown away also wastes the ${c.hidden.toFixed(1)} t it took to grow it`, `<div class="kx-mix big">${parts.map(([, v, col]) => `<i style="flex:${v};background:${col}"></i>`).join('')}</div>
+      <div class="kx-list">${parts.map(([nm, v, col]) => `<div class="kx-li"><span class="kx-dot" style="background:${col}"></span><div><b>${nm}</b></div><em>${v.toFixed(1)} t · ${pct(v / c.total)}</em></div>`).join('')}</div>`)}
+    ${card('Monthly emissions', 't CO₂e, all sources · dashed line is this year’s goal', `<div class="kx-cols">${CARBON_TREND.map((k, i) => `<div class="kx-col${i === 5 ? ' now' : ''}"><div class="kx-col-b"><i style="height:${(c.total * k / maxT * 100).toFixed(1)}%"><em>${(c.total * k).toFixed(1)}</em></i><s style="bottom:${(goalT / maxT * 100).toFixed(1)}%"></s></div><span>${months[i]}</span></div>`).join('')}</div>`)}
+  </section>
+  <section class="kx-duo">
+    ${card('Biggest cuts toward carbon-neutral', 'Tonnes CO₂e a school year', `<div class="kx-list">${actions.map(([t2, v, s], i) => `<div class="kx-li"><span class="kx-ic" style="--c:${[GREEN, BLUE, ORANGE, PURPLE][i]}">${IC.down}</span><div><b>${t2}</b><span>${s}</span></div><em class="good">−${v.toFixed(1)} t</em></div>`).join('')}</div>`)}
+    ${card('Every source', 'This month', `<div class="kx-list">${src.map(([nm, t2, what]) => `<div class="kx-row2"><b>${esc(nm)}</b>${bar(t2 / maxS, what === 'ingredient' ? ORANGE : nm.startsWith('Food waste') ? RED : BLUE)}<em>${t2.toFixed(2)} t</em><span>${esc(what)}</span></div>`).join('')}</div>`)}
+  </section>
+  <p class="kx-foot">Illustrative factors: ${Object.entries(EF_FOOD).map(([k, v]) => `${PL.DISH[k].name.toLowerCase()} ${v}`).join(', ')} kg CO₂e per kg; disposal ${EF_DISPOSAL}; electricity 0.41 per kWh (Singapore grid); gas 2.2 per m³. Replace with published factors before reporting.</p>`;
 }
 function carbonReport() {
   const c = carbonData();
   return `Carbon report, September. The canteen produced ${c.total.toFixed(1)} t CO₂e this month (${c.perMeal.toFixed(2)} kg per meal): ${c.foodT.toFixed(1)} t from ingredients, ${c.disposalT.toFixed(1)} t from food waste disposal, and ${c.opsT.toFixed(1)} t from energy, water and deliveries. That is ${pct(1 - c.total / c.before)} below the level before PlateLoop, against a goal of ${pct(GOAL)} this year. Plate waste is ${pct(c.w)}; food thrown away also carried ${c.hidden.toFixed(1)} t of ingredient emissions.`;
 }
 
-/* ---------------------------------------------------------------- Plan & order */
+/* ================================================================ the forecast behind Purchasing */
 function forecast() {
   const p = ui.plan, att = p.att - (p.event === 'trip' ? 138 : 0);
   const rows = TOMORROW.map(d => {
@@ -2899,74 +3025,41 @@ function forecast() {
   const orders = Object.entries(need).map(([ing, o]) => { const inv = INVENTORY[ing] || 0, order = Math.max(0, o.kg - inv); cost += o.kg * o.price; costStd += needStd[ing] * o.price; orderTotal += order * o.price; return { ing, kg: o.kg, inv, order, price: o.price }; });
   return { att, rows, orders, cost, costStd, orderTotal, tStd: rows.reduce((a, r) => a + r.stdKg, 0), tNew: rows.reduce((a, r) => a + r.newKg, 0) };
 }
-function plan() {
-  const p = ui.plan;
-  return `
-  <div class="cycle">${[['Plan', 'Predict how much students will eat'], ['Order', 'Buy only what the plan needs'], ['Cook', 'Tune recipes to what students like'], ['Serve', 'Measure it all again tomorrow']].map(([a, b], i) => `<div class="${i < 2 ? 'on' : ''}"><span class="n">${i + 1}</span><b>${a}</b><small>${b}</small></div>`).join('')}</div>
-  <div class="page-head"><div><h1>Purchasing</h1><p>Monday 28 September. Quantities come from what students actually ate, not standard portion × enrolment.</p></div>
-    <div class="trust"><span>Forecast error <b class="num">${(MAPE * 100).toFixed(1)}%</b></span><div class="bar"><i style="width:${(1 - MAPE * 4) * 100}%"></i></div></div></div>
-  <div class="card">
-    <div class="controls">
-      <div><label for="att">Attendance · <span class="num" id="att-v">${p.att} of ${ENROLLED}</span></label><input type="range" id="att" min="600" max="840" step="1" value="${p.att}"></div>
-      <div><label>Weather</label><div class="seg" id="weather">${['sunny', 'rainy', 'hot'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
-      <div><label for="event">School calendar</label><select id="event">${[['normal', 'Normal day'], ['trip', 'Sec 4 learning journey (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
-    </div>
-    <div id="plan-out">${planOut()}</div>
-  </div>
-  <div class="card"><h3>Cook: recipe tweaks students will eat more of</h3><p class="hint">From 4 weeks of before/after scans</p>
-    <div class="insights" style="margin-top:10px">${[
-      ['var(--tint)', 'Kailan with oyster sauce', 'Eaten 64% vs. 52% plain in the class A/B test. Make it the default.'],
-      ['var(--blue)', 'Soup: 150 ml ladle, refills allowed', 'Cuts soup waste from 42% to 24% with no drop in satisfaction.'],
-      ['var(--orange)', 'Cabbage: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
-    ].map(([c, t, d]) => `<div class="insight"><span class="ic" style="background:${c}">${SV('<path d="M5 12l5 5 9-10"/>')}</span><div><b>${t}</b><span>${d}</span></div></div>`).join('')}</div></div>`;
-}
-function planOut() {
-  const f = forecast(), saved = f.tStd - f.tNew, dollars = f.costStd - f.cost, ap = PL.S.order.approved;
-  return `
-    <div class="table-wrap"><table><thead><tr><th>Dish</th><th class="r">Standard</th><th class="r">Learned</th><th class="r">Standard plan</th><th class="r">PlateLoop plan</th><th class="r">Less</th></tr></thead><tbody>
-      ${f.rows.map(r => `<tr><td><b>${r.d.name}</b></td><td class="r num">${r.d.std} g</td><td class="r num">${r.d.learned} g</td><td class="r num">${fmt1(r.stdKg)} kg</td><td class="r num"><b>${fmt1(r.newKg)} kg</b></td><td class="r num diff">−${fmt1(r.stdKg - r.newKg)} kg</td></tr>`).join('')}
-      <tr><td><b>Total</b></td><td></td><td class="muted">${f.att} students</td><td class="r num"><b>${fmt1(f.tStd)} kg</b></td><td class="r num"><b>${fmt1(f.tNew)} kg</b></td><td class="r num diff">−${fmt1(saved)} kg</td></tr></tbody></table></div>
-    <div class="savings">
-      <div class="save"><div class="k">Less food cooked</div><div class="v">${fmt1(saved)} kg</div><div class="s">vs. standard portion × enrolment</div></div>
-      <div class="save"><div class="k">Ingredients saved</div><div class="v">${money(dollars)}</div><div class="s">≈ ${money(dollars * 180)} over a school year</div></div>
-      <div class="save"><div class="k">Emissions avoided</div><div class="v">${Math.round(saved * PL.CO2_PER_KG)} kg CO₂e</div><div class="s">illustrative factor</div></div>
-    </div>
-    <h3 style="margin-top:22px">Supplier order</h3>
-    <div class="table-wrap" style="margin-top:6px"><table><thead><tr><th>Ingredient</th><th class="r">Needed</th><th class="r">In stock</th><th class="r">Order</th><th class="r">Cost</th></tr></thead><tbody>
-      ${f.orders.map(o => `<tr><td>${o.ing}</td><td class="r num">${fmt1(o.kg)} kg</td><td class="r num">${o.inv ? o.inv + ' kg' : '—'}</td><td class="r num"><b>${o.order > 0 ? fmt1(o.order) + ' kg' : 'none'}</b></td><td class="r num">${o.order > 0 ? money(o.order * o.price) : '—'}</td></tr>`).join('')}
-      <tr><td><b>Total</b></td><td></td><td></td><td></td><td class="r num"><b>${money(f.orderTotal)}</b></td></tr></tbody></table></div>
-    <div class="approve">${ap ? `<span class="pill green">Approved at ${ap.at} · ${money(ap.total)}</span><span class="hint">In a live system this goes to the supplier. Nothing is sent from this demo.</span><button class="btn small ghost" id="unapprove">Undo</button>`
-      : `<button class="btn primary" id="approve">Approve order · ${money(f.orderTotal)}</button><span class="hint">Before the 14:00 supplier cut-off.</span>`}</div>`;
-}
 
-/* ---------------------------------------------------------------- Report */
+/* ================================================================ Reports: written from today's scans */
 function reportData() {
   const t = T(), tot = PL.todayTotals(), rows = dishStats().sort((a, b) => a.e - b.e), f = forecast(), mix = portionMix();
   const worst = rows[0], best = rows[rows.length - 1], diff = (PL.SCHOOL_BASELINE - tot.w) * 100;
-  const cls = PL.classRows()[0];
+  const cls = PL.classRows()[0], is = intakeStats();
   const text = [
-    `Today ${t.trays.toLocaleString('en-US')} trays were scanned before and after lunch, and ${t.eating} students are still eating. Plate waste is ${pct(tot.w)}, ${diff >= 0 ? `${diff.toFixed(0)} points below` : `${(-diff).toFixed(0)} points above`} the ${pct(PL.SCHOOL_BASELINE)} baseline, leaving ${fmt1(tot.lf / 1000)} kg of food (about ${money(tot.val)} of ingredients).`,
-    `${best.d.name} was the most eaten dish (${pct(best.e)}). ${worst.d.name} came back the most, with only ${pct(worst.e)} eaten. ${TREND[worst.d.id][2]}`,
-    `Class ${cls.c.id} leads Secondary 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, growing ${t.zero} fruits on the Green Tree, and ${pct(mix.m.S / mix.tot)} were Small portions.`,
-    `The average student ate ${intakeStats().avg.kcal} kcal and ${intakeStats().avg.p} g of protein at lunch (targets ${PL.TARGET.kcal} kcal and ${PL.TARGET.p} g). ${intakeStats().low.length} students ate less than 60% of their calorie target and are flagged for the dietitian.`,
-    `For Monday, the plan cooks ${fmt1(f.tNew)} kg instead of ${fmt1(f.tStd)} kg, saving about ${money(f.costStd - f.cost)} in ingredients. The supplier order totals ${money(f.orderTotal)}.`,
+    ['Today', `${t.trays.toLocaleString('en-US')} trays were scanned before and after lunch, and ${t.eating} people are still eating. Plate waste is ${pct(tot.w)}, ${diff >= 0 ? `${diff.toFixed(0)} points below` : `${(-diff).toFixed(0)} points above`} the ${pct(PL.SCHOOL_BASELINE)} baseline, leaving ${fmt1(tot.lf / 1000)} kg of food (about ${money(tot.val)} of ingredients).`],
+    ['Dishes', `${best.d.name} was the most eaten dish (${pct(best.e)}). ${worst.d.name} came back the most, with only ${pct(worst.e)} eaten. ${TREND[worst.d.id][2]}`],
+    ['People', `Class ${cls.c.id} leads Secondary 3 with ${pct(cls.red)} less waste than when it started. ${pct(PL.zeroRate())} of trays had zero leftovers, and ${pct(mix.m.S / mix.tot)} were Small portions.`],
+    ['Nutrition', `The average student ate ${is.avg.kcal} kcal and ${is.avg.p} g of protein at lunch (targets ${PL.TARGET.kcal} kcal and ${PL.TARGET.p} g). ${is.low.length} ate less than 60% of their calorie target and are flagged for the dietitian.`],
+    ['Tomorrow', `The plan cooks ${fmt1(f.tNew)} kg instead of ${fmt1(f.tStd)} kg, saving about ${money(f.costStd - f.cost)} in ingredients. The supplier order totals ${money(f.orderTotal)}.`],
   ];
   return { text, worst, best, f, tot };
 }
 function report() {
-  const { text, worst, f } = reportData();
+  const { text, worst, f, tot } = reportData();
   const soup = dishStats().find(r => r.d.id === 'soup');
-  const insights = [
-    ['var(--orange)', '<path d="M12 3v12M6 9l6 6 6-6M4 21h16"/>', `Serve less ${worst.d.name.toLowerCase()}`, TREND[worst.d.id][2]],
-    ['var(--blue)', '<path d="M5 12h14M12 5v14"/>', 'Soup: taken, not eaten', `${fmt1(soup.left / 1000)} kg of soup came back today. A 150 ml ladle would cut most of it.`],
-    ['var(--tint)', '<path d="M4 17l6-6 4 4 6-8"/>', 'Kailan Week is working', 'Students tasting kailan for the quest raised the share eaten by 17 points.'],
-    ['var(--purple)', '<path d="M6 3h9l4 4v14H6z"/>', `Order ${money(f.orderTotal)} for Monday`, `${fmt1(f.tStd - f.tNew)} kg less food cooked than the standard plan.`],
+  const tips = [
+    [ORANGE, IC.down, `Serve less ${worst.d.name.toLowerCase()}`, TREND[worst.d.id][2]],
+    [BLUE, IC.tray, 'Soup is taken, not eaten', `${fmt1(soup.left / 1000)} kg of soup came back today. A 150 ml ladle would cut most of it.`],
+    [GREEN, IC.leaf, 'Kailan Week is working', 'Tasting kailan for the quest raised the share eaten by 17 points.'],
+    [PURPLE, IC.cart, `Order ${money(f.orderTotal)} for Monday`, `${fmt1(f.tStd - f.tNew)} kg less food cooked than the standard plan.`],
   ];
-  return `
-  <div class="page-head"><div><h1>Daily report</h1><p>Written automatically from today's scans. It updates as trays come in.</p></div><button class="btn" id="copy-report">Copy summary</button></div>
-  <div class="card"><div class="report">${text.map(p => `<p>${p}</p>`).join('')}</div></div>
-  <h2 class="section-title">Suggestions</h2>
-  <div class="insights">${insights.map(([c, ic, t, s]) => `<div class="insight"><span class="ic" style="background:${c}">${SV(ic)}</span><div><b>${esc(t)}</b><span>${esc(s)}</span></div></div>`).join('')}</div>`;
+  return `${head('Friday 25 September', 'Daily report', '<button class="kx-btn" id="copy-report">Copy summary</button>')}
+  <section class="kx-widgets">
+    ${widget(IC.tray, GREEN, 'Trays', T().trays + T().eating, '', 'scanned today')}
+    ${widget(IC.bin, ORANGE, 'Plate waste', Math.round(tot.w * 100), '%', `${fmt1(tot.lf / 1000)} kg left`)}
+    ${widget(IC.cart, BLUE, 'Tomorrow’s order', money(f.orderTotal), '', PL.S.order.approved ? 'approved' : 'waiting for approval')}
+    ${widget(IC.cloud, CYAN, 'CO₂ avoided', ((T().co2 || 0) / 1000).toFixed(1), 'kg', 'today')}
+  </section>
+  <section class="kx-duo">
+    ${card('Summary', 'Written automatically, updates as trays come in', `<div class="kx-report">${text.map(([h, p]) => `<div><b>${h}</b><p>${p}</p></div>`).join('')}</div>`)}
+    ${card('Suggestions', '', `<div class="kx-list">${tips.map(([c, ic, t2, s]) => `<div class="kx-li"><span class="kx-ic" style="--c:${c}">${ic}</span><div><b>${esc(t2)}</b><span>${esc(s)}</span></div></div>`).join('')}</div>`)}
+  </section>`;
 }
 
 /* ---------------------------------------------------------------- wiring */
