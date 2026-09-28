@@ -7,6 +7,9 @@
 'use strict';
 const L = PL.L3;
 
+// overall game volume (0 to 1)
+const VOLUME = .45;
+
 L.Sound = () => {
   let ctx = null, master, dry, verbIn, noiseBuf, brownBuf, flatOut, muted = false;
   const spots = { tables: [], crowd: [], kitchen: [], ladle: null, till: null, rack: null, fans: [], outside: [] };
@@ -21,7 +24,7 @@ L.Sound = () => {
     const A = window.AudioContext || window.webkitAudioContext; if (!A) return;
     ctx = new A({ latencyHint: 'playback' });
     const comp = ctx.createDynamicsCompressor(); comp.threshold.value = -20; comp.knee.value = 12; comp.ratio.value = 3; comp.connect(ctx.destination);
-    master = ctx.createGain(); master.gain.value = muted ? 0 : .85; master.connect(comp);
+    master = ctx.createGain(); master.gain.value = muted ? 0 : VOLUME; master.connect(comp);
     dry = ctx.createGain(); dry.connect(master);
     const conv = ctx.createConvolver(); conv.buffer = impulse(2.8, 2.6);
     verbIn = ctx.createGain(); verbIn.gain.value = .3; const verbOut = ctx.createGain(); verbOut.gain.value = .5;
@@ -384,7 +387,7 @@ L.Sound = () => {
     spots, start, listen, tick, sing, clip, phrases,
     hasClip: name => !!clips[name], clipLength: name => clips[name] ? clips[name].duration : 0,
     play(name, pos, ...a) { if (ctx && !muted && ctx.state === 'running' && FX[name]) FX[name](pos, ...a); },
-    toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : .85, ctx.currentTime, .05); return muted; },
+    toggle() { muted = !muted; if (master) master.gain.setTargetAtTime(muted ? 0 : VOLUME, ctx.currentTime, .05); return muted; },
     /** Quieter crowd while talking to someone or reading the scanner. */
     duck(on) { if (ctx) loops.forEach(g => g.gain.setTargetAtTime(on ? .14 : .3, ctx.currentTime, .4)); },
     suspend() { if (ctx && ctx.state === 'running') ctx.suspend(); },
