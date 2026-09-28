@@ -1,248 +1,581 @@
-/* Scanner 3D: the annotated PlateLoop Scanner, one station that scans every tray before and after lunch. */
+/* PlateLoop Prototype: the scanner as a product launch. One full-screen, explorable 3D scanner with glowing
+   hotspots on the hardware. Picking one flies the camera to that part, lights it and fades the rest, and a glass
+   panel explains it. The display's panel opens the real PlateLoop Kiosk, running on the scanner's own screen.
+   This replaces the old product page and the separate Kiosk app. */
 (() => {
 'use strict';
-const { $, $$, clamp, esc } = PL;
+const { $, $$, esc } = PL;
+const TAU = Math.PI * 2;
+const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+const lerp = (a, b, k) => a + (b - a) * k;
 
-/* Anchors are in Blender coordinates (metres, Z up, front = −Y) from build_scanner.py; glTF is Y up. */
+/* ================================================================ the parts you can explore
+   anchor/normal are in the scanner's own space (metres, y up, front = +z). view is where the camera goes:
+   target, azimuth (theta, around y from +z), polar angle (phi, from straight up) and distance. */
 const PARTS = [
-  { p: [0.08, -0.10, 1.49], t: 'Depth camera', s: 'Photographs the tray from 0.62 m above', d: 'A colour camera identifies each dish, and two infrared cameras measure how high the food sits in every compartment. That gives the volume of each food, which becomes grams. It runs twice per tray: before lunch and after.', spec: 'RGB-D · 1280 × 720 depth' },
-  { p: [0.08, -0.185, 1.55], t: 'Status light', s: 'Shows when to put the tray down and pick it up', d: 'Soft green means ready. A slow pulse means scanning, so hold still. Two quick blinks mean done.', spec: 'LED strip' },
-  { p: [0.08, 0.175, 1.30], t: 'Camera arm', s: 'Holds the camera straight over the tray', d: 'Looking straight down means compartment walls never hide food. The cables run inside the aluminium column.', spec: 'Top at 1.58 m' },
-  { p: [-0.28, 0.035, 1.16], t: 'Screen', s: 'Instructions and results', d: 'Runs PlateLoop Kiosk. An animated banner shows the steps, then the student sees grams, calories and nutrients, Loopi\'s reaction and their points.', spec: '10.1" touchscreen · 1.15 m high' },
-  { p: [-0.276, 0.055, 1.285], t: 'Face camera', s: 'The only way students sign in', d: 'Students just look up at the screen. An infrared face camera recognises them in under a second, even in a dim canteen, so there are no cards to lose and no phones needed. It opens the tray before lunch and closes it after. It keeps a match code, never a photo.', spec: 'IR + RGB · under 1 s · on-device' },
-  { p: [0.31, -0.19, 0.88], t: 'Weighing platform', s: 'Checks the camera with a scale', d: 'Four load cells weigh the whole tray. If the camera and the scale disagree by more than 10%, the tray is scanned again.', spec: '0–5 kg · ±2 g' },
-  { p: [0.08, -0.04, 0.92], t: 'Tray', s: 'Scanned full, then scanned again', d: 'Before: what was served. After: what is left. Eaten = before − after, per dish. The menu is known in advance, so the AI only chooses among today\'s dishes.', spec: 'Standard 6-compartment tray' },
-  { p: [0.585, -0.01, 0.87], t: 'Food waste bin', s: 'Scraps go here after the second scan', d: 'The bin weighs scraps in bulk for the food waste report. The Kitchen app shows how full it is.', spec: '60 L' },
-  { p: [-0.05, -0.235, 0.35], t: 'On-device AI', s: 'Works offline, and photos never leave', d: 'The vision model runs inside the cabinet in about 1.4 s per scan. Face matching happens here too. Only numbers (grams per dish and a student number) are sent to the Kitchen and Student apps.', spec: 'Edge AI module' },
+  { id: 'depth', name: 'Depth camera', line: 'Sees every dish in 3D', anchor: [0, 1.585, .045], normal: [0, -.6, .8],
+    view: { target: [0, 1.56, .02], theta: -.42, phi: 1.82, r: 1.23 },
+    what: 'Recognises each food on the tray and measures how much of it there is.',
+    how: 'A colour camera picks out today’s dishes while two infrared cameras and a dot projector map the height of the food in every compartment, 0.62 m below. Height over each compartment gives volume, and volume gives grams.',
+    why: 'Looking straight down, no compartment wall hides food. Because the menu is known, the AI only chooses between a handful of dishes, so it’s quick and accurate.',
+    spec: 'RGB-D · 1280 × 720 depth · 0.62 m above the tray' },
+  { id: 'face', name: 'Face camera', line: 'Sign in by looking up', from: 'faceLens', anchor: [-.262, 1.285, .126], normal: [0, .2, 1],
+    view: { target: [-.262, 1.27, .15], theta: -.12, phi: 1.42, r: 1.07 },
+    what: 'Knows whose tray it is, hands-free, before and after lunch.',
+    how: 'An infrared camera and two IR emitters see faces even in a dim canteen. The chip inside turns a face into a match code and compares it in under a second. The small green light shows when it’s looking.',
+    why: 'No cards to lose and no phones in a lunch queue. No photo is ever stored, only the match code, and it never leaves the scanner. Anyone who opts out types their register number instead.',
+    spec: 'IR + RGB · under 1 s · on-device only' },
+  { id: 'display', name: 'Touch display', line: 'Guides every scan', from: 'screenCorner', anchor: [-.2, 1.15, .15], normal: [0, .26, 1],
+    view: { target: [-.262, 1.2, .14], theta: -.26, phi: 1.36, r: 1.37 },
+    what: 'Shows the three steps, then what you ate, your nutrition and the CO₂ your tray saved.',
+    how: 'A 10.1-inch touchscreen runs PlateLoop Kiosk. It leans back 15° toward someone holding a tray, and has a number keypad for anyone who doesn’t use face sign-in.',
+    why: 'Instant feedback turns a chore into a moment: students see the effect of leaving less, right there at the tray rack.',
+    spec: '10.1″ · 1280 × 800 · leans back 15°', action: 'Try the kiosk' },
+  { id: 'platform', name: 'Weighing platform', line: 'Checks the camera', anchor: [.215, .934, .17], normal: [0, 1, .5],
+    view: { target: [.02, .94, .05], theta: .28, phi: .92, r: 1.62 },
+    what: 'Weighs the whole tray, before and after lunch.',
+    how: 'Four load cells under the aluminium plate measure to ±2 g. The scanner waits for the weight to settle, so a hand still resting on the tray never gets recorded.',
+    why: 'Two independent measurements of the same tray. If the camera and the scale disagree by more than 10%, the scanner simply scans again.',
+    spec: '0–5 kg · ±2 g · 4 load cells' },
+  { id: 'led', name: 'Status light', line: 'Tells you when', anchor: [.2, .872, .263], normal: [0, 0, 1],
+    view: { target: [0, .85, .2], theta: .08, phi: 1.5, r: 1.43 },
+    what: 'A thin light bar that shows what the scanner is doing.',
+    how: 'Steady green means ready. A slow pulse means scanning, so hold still. Two quick blinks and a chime mean done.',
+    why: 'In a noisy lunch queue, a light you can catch from the corner of your eye keeps the line moving at about two seconds a tray.',
+    spec: 'Diffused LED · 3 states' },
+  { id: 'ai', name: 'Edge AI and cooling', line: 'Thinks on the device', anchor: [-.322, .36, .05], normal: [-1, 0, 0],
+    view: { target: [-.3, .44, 0], theta: -1.1, phi: 1.42, r: 1.76 },
+    what: 'The computer inside the cabinet that runs the vision and face models.',
+    how: 'An edge AI module processes each scan in about 1.4 seconds, cooled by quiet vents along the side. If the Wi-Fi drops, results wait in a queue and sync when it’s back.',
+    why: 'Photos never leave the scanner: only grams per dish and a tray number are sent. And it keeps scanning when the network doesn’t.',
+    spec: 'Edge AI module · offline queue · one socket' },
+  { id: 'bin', name: 'Food waste bin', line: 'Weighs what’s left over', anchor: [.51, .872, .09], normal: [0, 1, .4],
+    view: { target: [.51, .78, .05], theta: .45, phi: 1.12, r: 1.76 },
+    what: 'Where scraps go after the second scan.',
+    how: 'A load cell under the 60-litre bin weighs scraps as they drop in, and the fill bar on the front lights up as it fills. The Kitchen app sees the level live.',
+    why: 'The kitchen gets total food waste for every lunch without anyone weighing bins by hand, and knows when to empty it before it overflows.',
+    spec: '60 L · load cell · fill sensor' },
 ];
-const DIMS = [
-  { a: [-0.62, -0.25, 0], b: [-0.62, -0.25, 1.58], label: '1.58 m' },
-  { a: [-0.40, -0.40, 0], b: [0.765, -0.40, 0], label: '1.17 m' },
-  { a: [0.30, -0.10, 0.885], b: [0.30, -0.10, 1.49], label: '0.62 m' },
-];
-const SPECS = [['Footprint', '1.17 × 0.46 m'], ['Scans', 'Before and after lunch'], ['Measures', 'Dish, grams, kcal, carbs, protein, fat'], ['Sign-in', 'Face only, on-device'], ['Scan time', '≈ 1.4 s'], ['Power', 'One socket'], ['Network', 'Wi-Fi or Ethernet'], ['Parts', '≈ S$1,900 (estimate)']];
+const HERO = { target: [.12, .86, 0], theta: -.36, phi: 1.3 };
+const SCREEN = { w: .2176, h: .136 }; // 10.1″ at 16:10
 
-const q = new URLSearchParams(location.search);
-const IDI = b => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${b}</svg>`;
-const ID_ICONS = {
-  lock: IDI('<rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3M12 15v2"/>'),
-  fast: IDI('<path d="M13 3 5 13.5h6L10 21l8-10.5h-6Z"/>'),
-  face: IDI('<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2"/><path d="M9 9.5v1M15 9.5v1M12 9.5v3.5h-1M9.5 16a4 4 0 0 0 5 0"/>'),
-};
-const ui = { sel: null, labels: true, dims: true };
-let root = null, viewer = null;
+let root = null, X = null;
 
+/* ================================================================ sound: synthesised, soft, placed left/right */
+function makeAudio() {
+  const A = { ctx: null, on: true, air: null };
+  try { A.on = localStorage.getItem('plateloop-xp-sound') !== 'off'; } catch (e) {}
+  const ctx = () => {
+    if (A.ctx) return A.ctx;
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+    const c = A.ctx = new AC(), master = A.master = c.createGain(); master.gain.value = A.on ? .55 : 0; master.connect(c.destination);
+    // a bed of soft air that swells with rotation speed
+    const len = c.sampleRate * 2, buf = c.createBuffer(1, len, c.sampleRate), d = buf.getChannelData(0);
+    let b = 0; for (let i = 0; i < len; i++) { b = b * .97 + (Math.random() * 2 - 1) * .03; d[i] = b * 3.2; }
+    A.noise = buf;
+    const src = c.createBufferSource(); src.buffer = buf; src.loop = true;
+    const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 700; f.Q.value = .7;
+    const g = c.createGain(); g.gain.value = 0; const p = c.createStereoPanner();
+    src.connect(f).connect(g).connect(p).connect(master); src.start();
+    A.air = { f, g, p };
+    return c;
+  };
+  A.wake = () => { const c = ctx(); if (c && c.state === 'suspended') c.resume(); };
+  A.setOn = on => { A.on = on; try { localStorage.setItem('plateloop-xp-sound', on ? 'on' : 'off'); } catch (e) {} if (A.master) A.master.gain.setTargetAtTime(on ? .55 : 0, A.ctx.currentTime, .05); };
+  /** rotation: speed 0..1, dir -1..1 */
+  A.rotate = (speed, dir) => { if (!A.air) return; const t = A.ctx.currentTime; A.air.g.gain.setTargetAtTime(Math.min(.22, speed * .9), t, .08); A.air.f.frequency.setTargetAtTime(500 + speed * 1600, t, .1); A.air.p.pan.setTargetAtTime(Math.max(-.8, Math.min(.8, dir)), t, .15); };
+  const tone = (freq, dur, vol, pan = 0, type = 'sine', delay = 0, glide = 0) => {
+    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime + delay;
+    const o = c.createOscillator(), g = c.createGain(), p = c.createStereoPanner();
+    o.type = type; o.frequency.setValueAtTime(freq, t); if (glide) o.frequency.exponentialRampToValueAtTime(freq * glide, t + dur);
+    g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + .012); g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    p.pan.value = pan; o.connect(g).connect(p).connect(A.master); o.start(t); o.stop(t + dur + .05);
+  };
+  const whoosh = (dur, vol, pan, up) => {
+    const c = A.ctx; if (!c || !A.on) return; const t = c.currentTime;
+    const s = c.createBufferSource(); s.buffer = A.noise; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.Q.value = 1.4;
+    f.frequency.setValueAtTime(up ? 300 : 1800, t); f.frequency.exponentialRampToValueAtTime(up ? 1900 : 280, t + dur);
+    const g = c.createGain(); g.gain.setValueAtTime(0, t); g.gain.linearRampToValueAtTime(vol, t + dur * .45); g.gain.linearRampToValueAtTime(0, t + dur);
+    const p = c.createStereoPanner(); p.pan.setValueAtTime(-pan, t); p.pan.linearRampToValueAtTime(pan, t + dur);
+    s.connect(f).connect(g).connect(p).connect(A.master); s.start(t, Math.random()); s.stop(t + dur + .05);
+  };
+  let lastZoom = 0;
+  A.zoom = (k, pan) => { const now = performance.now(); if (now - lastZoom < 70) return; lastZoom = now; tone(900 + k * 900, .07, .045, pan, 'sine'); };
+  A.fly = (pan, up = true) => whoosh(1.1, .16, pan, up);
+  A.select = pan => { tone(1318.5, .9, .07, pan); tone(1975.5, 1.1, .045, pan, 'sine', .06); tone(659.3, .6, .04, pan, 'triangle'); };
+  A.close = () => { tone(1174.7, .5, .05, 0); tone(880, .7, .04, 0, 'sine', .07); };
+  A.hover = pan => tone(2637, .05, .018, pan);
+  A.power = () => { tone(220, .9, .06, 0, 'sine', 0, 2); tone(440, 1.2, .04, 0, 'sine', .15, 2); tone(1760, .6, .03, 0, 'sine', .55); };
+  A.close2 = () => { if (A.ctx) A.ctx.close(); };
+  return A;
+}
+
+/* ================================================================ materials and shapes */
+function brushed() {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
+  x.fillStyle = '#b8bcc0'; x.fillRect(0, 0, 256, 256);
+  for (let i = 0; i < 1400; i++) { const y = Math.random() * 256, a = Math.random() * .12; x.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '40,44,48'},${a})`; x.fillRect(0, y, 256, Math.random() * 1.3 + .3); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 6); return t;
+}
+function makeMats() {
+  const BR = brushed();
+  return {
+    white: () => new THREE.MeshPhysicalMaterial({ color: 0xF0F0ED, roughness: .5, metalness: 0, clearcoat: .22, clearcoatRoughness: .45 }),
+    alu: () => new THREE.MeshStandardMaterial({ color: 0xE6E9EC, roughness: .34, metalness: .7, map: BR, roughnessMap: BR, envMapIntensity: 1.5 }),
+    glass: () => new THREE.MeshPhysicalMaterial({ color: 0x08090A, roughness: .07, metalness: .15, clearcoat: 1, clearcoatRoughness: .02 }),
+    graphite: () => new THREE.MeshStandardMaterial({ color: 0x1C1E20, roughness: .62, metalness: .25 }),
+    groove: () => new THREE.MeshStandardMaterial({ color: 0x8C8F90, roughness: .9 }),
+    tray: () => new THREE.MeshPhysicalMaterial({ color: 0xE9ECEA, roughness: .38, clearcoat: .5, clearcoatRoughness: .2 }),
+    led: (c = 0x4DFFA0) => new THREE.MeshBasicMaterial({ color: c, toneMapped: false }),
+    lens: () => new THREE.MeshPhysicalMaterial({ color: 0x0B1422, roughness: .02, metalness: .6, clearcoat: 1 }),
+    food: c => new THREE.MeshPhysicalMaterial({ color: c, roughness: .55, clearcoat: .25 }),
+  };
+}
+/** A box with rounded edges (r) and rounder vertical corners (rc), centred on the origin. */
+function rbox(w, h, d, r = .01, rc = r * 2) {
+  const b = Math.max(0, Math.min(r, w / 2 - .0005, h / 2 - .0005, d / 2 - .0005));
+  const iw = w - 2 * b, ih = h - 2 * b, c = Math.max(0, Math.min(rc, iw / 2 - .0002, ih / 2 - .0002)), x = -iw / 2, y = -ih / 2, s = new THREE.Shape();
+  s.moveTo(x + c, y); s.lineTo(x + iw - c, y); s.quadraticCurveTo(x + iw, y, x + iw, y + c); s.lineTo(x + iw, y + ih - c);
+  s.quadraticCurveTo(x + iw, y + ih, x + iw - c, y + ih); s.lineTo(x + c, y + ih); s.quadraticCurveTo(x, y + ih, x, y + ih - c); s.lineTo(x, y + c); s.quadraticCurveTo(x, y, x + c, y);
+  const g = new THREE.ExtrudeGeometry(s, { depth: Math.max(.0002, d - 2 * b), bevelEnabled: b > 0, bevelThickness: b, bevelSize: b, bevelSegments: 5, curveSegments: 8 });
+  g.center(); return g;
+}
+const glowTex = (() => { let t = null; return () => { if (t) return t; const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), g = x.createRadialGradient(64, 64, 0, 64, 64, 64); g.addColorStop(0, 'rgba(255,255,255,1)'); g.addColorStop(.35, 'rgba(255,255,255,.35)'); g.addColorStop(1, 'rgba(255,255,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 128, 128); return (t = new THREE.CanvasTexture(c)); }; })();
+
+/** The screen's resting picture (the real kiosk takes over in kiosk mode). */
+function screenTex() {
+  const c = document.createElement('canvas'); c.width = 1280; c.height = 800; const x = c.getContext('2d');
+  x.fillStyle = '#FFFFFF'; x.fillRect(0, 0, 1280, 800);
+  x.fillStyle = '#8E8E93'; x.font = '600 22px Inter, system-ui, sans-serif'; x.fillText('11:48', 40, 48); x.textAlign = 'right'; x.fillText('●  Connected to Kitchen', 1240, 48); x.textAlign = 'left';
+  // the Green Tree
+  x.fillStyle = '#EAF6EC'; x.beginPath(); x.roundRect ? x.roundRect(90, 150, 330, 300, 34) : x.rect(90, 150, 330, 300); x.fill();
+  x.fillStyle = '#8B5E3C'; x.fillRect(243, 360, 24, 60);
+  [[340, 70], [300, 56], [262, 40], [228, 24]].forEach(([y, w], i) => { x.fillStyle = i % 2 ? '#34A853' : '#2E9447'; x.beginPath(); x.moveTo(255 - w * 2, y + 24); x.lineTo(255, y - 44); x.lineTo(255 + w * 2, y + 24); x.fill(); });
+  x.fillStyle = '#FF3B30'; [[220, 330], [290, 310], [250, 270], [230, 230], [285, 250]].forEach(([a, b]) => x.fillRect(a, b, 12, 12));
+  x.fillStyle = '#34C759'; x.font = '600 26px Inter, system-ui, sans-serif'; x.fillText('PlateLoop', 520, 200);
+  x.fillStyle = '#1D1D1F'; x.font = '700 76px Inter, system-ui, sans-serif'; x.fillText('Scan your tray.', 516, 290);
+  x.fillStyle = '#6E6E73'; x.font = '400 28px Inter, system-ui, sans-serif'; x.fillText('Once before lunch and once after.', 520, 350); x.fillText('Every clean tray grows a fruit.', 520, 390);
+  x.fillStyle = '#F5F5F7'; x.beginPath(); x.roundRect ? x.roundRect(40, 590, 1200, 170, 30) : x.rect(40, 590, 1200, 170); x.fill();
+  ['Look at the camera', 'Place your tray', 'Wait for the chime'].forEach((s, i) => {
+    const ox = 60 + i * 395; x.fillStyle = i === 0 ? '#FFFFFF' : 'rgba(0,0,0,0)'; x.beginPath(); x.roundRect ? x.roundRect(ox, 608, 375, 134, 22) : x.rect(ox, 608, 375, 134); x.fill();
+    x.fillStyle = i === 0 ? '#34C759' : '#FFFFFF'; x.beginPath(); x.roundRect ? x.roundRect(ox + 20, 636, 78, 78, 18) : x.rect(ox + 20, 636, 78, 78); x.fill();
+    x.fillStyle = i === 0 ? '#1D1D1F' : '#8E8E93'; x.font = `${i === 0 ? 700 : 600} 28px Inter, system-ui, sans-serif`; x.fillText(s, ox + 116, 686);
+  });
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; t.anisotropy = 8; return t;
+}
+function labelTex(text, size, color, w = 512, h = 96, weight = 600) {
+  const c = document.createElement('canvas'); c.width = w; c.height = h; const x = c.getContext('2d');
+  x.fillStyle = color; x.font = `${weight} ${size}px Inter, system-ui, sans-serif`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.letterSpacing = '2px'; x.fillText(text, w / 2, h / 2);
+  const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding; return t;
+}
+
+/* ================================================================ the scanner, part by part */
+function buildScanner(M) {
+  const S = new THREE.Group(), groups = {}, leds = [];
+  const part = id => { const g = new THREE.Group(); g.userData.part = id; S.add(g); groups[id] = g; return g; };
+  const add = (g, geo, mat, x, y, z, rx = 0, ry = 0, rz = 0, shadow = true) => { const m = new THREE.Mesh(geo, mat); m.position.set(x, y, z); m.rotation.set(rx, ry, rz); m.castShadow = shadow; m.receiveShadow = true; g.add(m); return m; };
+  const body = part('body');
+
+  /* --- cabinet: 0.64 × 0.86 × 0.52 on a recessed plinth --- */
+  add(body, rbox(.6, .05, .48, .008, .03), M.graphite(), 0, .025, 0);
+  add(body, rbox(.64, .86, .52, .02, .045), M.white(), 0, .48, 0);
+  // the door: four thin grooves, and the etched logo
+  const gr = M.groove();
+  [[0, .815, .5, .003], [0, .145, .5, .003]].forEach(([x, y, w, h]) => add(body, new THREE.BoxGeometry(w, h, .002), gr, x, y, .2605, 0, 0, 0, false));
+  [[-.25, .48], [.25, .48]].forEach(([x, y]) => add(body, new THREE.BoxGeometry(.003, .67, .002), gr, x, y, .2605, 0, 0, 0, false));
+  const logo = new THREE.Mesh(new THREE.PlaneGeometry(.2, .0375), new THREE.MeshStandardMaterial({ map: labelTex('PlateLoop', 58, '#A9ACAD', 512, 96, 600), transparent: true, roughness: .6 }));
+  logo.position.set(0, .3, .2615); body.add(logo);
+  // rear vents
+  for (let i = 0; i < 9; i++) add(body, rbox(.36, .008, .004, .0015, .003), M.graphite(), 0, .2 + i * .028, -.2605, 0, 0, 0, false);
+  // black glass deck on top
+  add(body, rbox(.61, .014, .49, .004, .03), M.glass(), 0, .913, 0);
+
+  /* --- status light bar, just under the deck --- */
+  const led = part('led');
+  const bar = add(led, rbox(.5, .006, .004, .002, .003), M.led(), 0, .872, .2612, 0, 0, 0, false); leds.push(bar);
+  const halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex(), color: 0x3DFF8E, transparent: true, opacity: .55, depthWrite: false, blending: THREE.AdditiveBlending }));
+  halo.scale.set(.62, .07, 1); halo.position.set(0, .872, .268); led.add(halo); leds.push(halo);
+
+  /* --- weighing platform, the tray and today's lunch --- */
+  const plat = part('platform');
+  add(plat, rbox(.47, .012, .35, .003, .02), M.alu(), 0, .927, .02);
+  [[-.2, -.13], [.2, -.13], [-.2, .17], [.2, .17]].forEach(([x, z]) => add(plat, new THREE.CylinderGeometry(.006, .006, .003, 16), M.graphite(), x, .9345, z, 0, 0, 0, false));
+  const trayG = new THREE.Group(); trayG.position.set(0, .936, .02); plat.add(trayG);
+  add(trayG, rbox(.4, .012, .29, .004, .02), M.tray(), 0, .006, 0);
+  const tm = M.tray();
+  [[-.2, 0, .004, .29], [.2, 0, .004, .29]].forEach(([x, z, w, d]) => add(trayG, new THREE.BoxGeometry(w, .024, d), tm, x, .018, z, 0, 0, 0, false));
+  [[0, -.145, .4, .004], [0, .145, .4, .004], [0, 0, .4, .004]].forEach(([x, z, w, d]) => add(trayG, new THREE.BoxGeometry(w, .024, d), tm, x, .018, z, 0, 0, 0, false));
+  [-.0667, .0667].forEach(x => add(trayG, new THREE.BoxGeometry(.004, .024, .29), tm, x, .018, 0, 0, 0, 0, false));
+  const FOOD = [[0x3F8B3A, -.133, -.072, .04], [0xD8E6A8, 0, -.072, .034], [0xF2545B, .133, -.072, .036], [0xF3EDDA, -.133, .072, .046], [0x9C5A2E, 0, .072, .04], [0xE8A25C, .133, .072, .042]];
+  FOOD.forEach(([c, x, z, r]) => { const m = add(trayG, new THREE.SphereGeometry(r, 24, 14), M.food(c), x, .012, z); m.scale.set(1, .32, .82); });
+
+  /* --- the column and the camera arm --- */
+  const arm = part('arm');
+  add(arm, rbox(.075, .69, .075, .012, .02), M.alu(), 0, 1.265, -.205);
+  add(arm, rbox(.095, .05, .34, .014, .03), M.alu(), 0, 1.622, -.075);
+  add(arm, rbox(.078, .003, .002, .001, .001), M.graphite(), 0, 1.6, -.205 + .04, 0, 0, 0, false);
+
+  /* --- the depth camera module under the arm --- */
+  const dep = part('depth');
+  add(dep, rbox(.086, .012, .14, .004, .02), M.glass(), 0, 1.592, .02);
+  [-.03, .03].forEach(z => { add(dep, new THREE.CylinderGeometry(.0105, .0105, .004, 32), M.graphite(), 0, 1.5855, z); add(dep, new THREE.CylinderGeometry(.0068, .0068, .005, 32), M.lens(), 0, 1.5845, z); });
+  add(dep, new THREE.CylinderGeometry(.0125, .0125, .004, 32), M.graphite(), 0, 1.5855, .02 - .02);
+  add(dep, new THREE.CylinderGeometry(.008, .008, .005, 32), M.lens(), 0, 1.5845, 0);
+  const ring = add(dep, new THREE.TorusGeometry(.0145, .0012, 8, 40), M.led(), 0, 1.5852, 0, Math.PI / 2, 0, 0, false); leds.push(ring);
+  [[.022, .055], [-.022, .055]].forEach(([x, z]) => add(dep, new THREE.CylinderGeometry(.0035, .0035, .004, 16), M.led(0x5A1010), x, 1.5855, z));
+  // status strip on the front of the arm
+  const astrip = add(dep, rbox(.05, .004, .003, .0015, .002), M.led(), 0, 1.622, .097, 0, 0, 0, false); leds.push(astrip);
+  // the scan beam, shown while scanning
+  const beamM = new THREE.MeshBasicMaterial({ color: 0x46FF9A, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(.3, .63, 4, 1, true), beamM); beam.userData.part = 'beam'; beam.position.set(0, 1.27, .02); beam.rotation.y = Math.PI / 4; beam.scale.set(1, 1, .72); S.add(beam);
+
+  /* --- display on its stand, leaning back 15° --- */
+  const disp = part('display');
+  add(disp, new THREE.CylinderGeometry(.013, .016, .2, 24), M.alu(), -.262, 1.02, .12);
+  add(disp, new THREE.CylinderGeometry(.04, .044, .008, 32), M.alu(), -.262, .924, .12);
+  // yaw last, so the screen seen straight on is an upright rectangle (the kiosk overlay lines up exactly)
+  const head = new THREE.Group(); head.position.set(-.262, 1.2, .14); head.rotation.order = 'YXZ'; head.rotation.set(-.26, .16, 0); disp.add(head);
+  add(head, rbox(.245, .164, .016, .005, .012), M.white(), 0, 0, -.004);
+  add(head, rbox(.239, .158, .004, .0015, .01), M.glass(), 0, 0, .0045);
+  const scr = new THREE.Mesh(new THREE.PlaneGeometry(SCREEN.w, SCREEN.h), new THREE.MeshBasicMaterial({ map: screenTex(), toneMapped: false }));
+  scr.position.set(0, -.002, .0068); head.add(scr);
+  const glare = new THREE.Mesh(new THREE.PlaneGeometry(.239, .158), new THREE.MeshPhysicalMaterial({ color: 0x000000, transparent: true, opacity: .06, roughness: 0, clearcoat: 1 }));
+  glare.position.set(0, 0, .0071); head.add(glare);
+
+  /* --- the face camera bar on top of the display --- */
+  const face = part('face');
+  const fbar = new THREE.Group(); head.add(fbar); fbar.position.set(0, .088, .0);
+  // parent the bar to the display head, but keep it in the 'face' part for highlighting
+  const fb = add(fbar, rbox(.1, .017, .018, .005, .008), M.glass(), 0, 0, 0);
+  const fl1 = add(fbar, new THREE.CylinderGeometry(.0045, .0045, .003, 24), M.lens(), 0, 0, .0095, Math.PI / 2);
+  const fl2 = add(fbar, new THREE.CylinderGeometry(.0022, .0022, .003, 16), M.led(0x611515), -.024, 0, .0093, Math.PI / 2);
+  const fl3 = add(fbar, new THREE.CylinderGeometry(.0022, .0022, .003, 16), M.led(0x611515), .024, 0, .0093, Math.PI / 2);
+  const fled = add(fbar, new THREE.SphereGeometry(.0013, 10, 8), M.led(), .036, 0, .0095); leds.push(fled);
+  [fb, fl1, fl2, fl3, fled].forEach(m => { m.userData.part = 'face'; });
+  // where the hotspots for these two sit: the lens, and the screen's lower-right corner
+  const corner = new THREE.Object3D(); corner.position.set(SCREEN.w / 2 - .018, -SCREEN.h / 2 + .012, .008); head.add(corner);
+
+  /* --- side vents over the AI module --- */
+  const ai = part('ai');
+  for (let i = 0; i < 12; i++) add(ai, rbox(.004, .007, .28, .0015, .003), M.graphite(), -.3215, .22 + i * .024, .02, 0, 0, 0, false);
+  const aiLed = add(ai, new THREE.SphereGeometry(.003, 12, 8), M.led(), -.3222, .54, .15); leds.push(aiLed);
+
+  /* --- food waste bin --- */
+  const bin = part('bin');
+  add(bin, rbox(.32, .05, .42, .008, .03), M.graphite(), .51, .025, 0);
+  add(bin, rbox(.34, .8, .44, .02, .045), M.white(), .51, .45, 0);
+  add(bin, rbox(.33, .014, .43, .004, .035), M.glass(), .51, .857, 0);
+  add(bin, new THREE.TorusGeometry(.098, .007, 16, 64), M.alu(), .51, .865, .02, Math.PI / 2);
+  add(bin, new THREE.CylinderGeometry(.094, .094, .004, 48), new THREE.MeshStandardMaterial({ color: 0x050606, roughness: .9 }), .51, .862, .02);
+  const blabel = new THREE.Mesh(new THREE.PlaneGeometry(.14, .026), new THREE.MeshStandardMaterial({ map: labelTex('FOOD WASTE', 44, '#A9ACAD', 512, 96, 600), transparent: true, roughness: .6 }));
+  blabel.position.set(.51, .3, .2205); bin.add(blabel);
+  // fill bar: five little lights, three on
+  for (let i = 0; i < 5; i++) { const m = add(bin, rbox(.03, .005, .003, .0015, .002), i < 3 ? M.led() : M.graphite(), .51 - .07 + i * .035, .8, .2208, 0, 0, 0, false); if (i < 3) leds.push(m); }
+  [[0, .815, .28], [0, .145, .28]].forEach(([, y, w]) => add(bin, new THREE.BoxGeometry(w, .003, .002), M.groove(), .51, y, .2205, 0, 0, 0, false));
+
+  beam.userData.skip = true;
+  return { S, groups, leds, beam, screen: scr, head, marks: { faceLens: fl1, screenCorner: corner } };
+}
+
+/* ================================================================ the studio: reflections, floor, lights */
+function studio(renderer, scene) {
+  const s = new THREE.Scene();
+  s.add(new THREE.Mesh(new THREE.BoxGeometry(24, 14, 24), new THREE.MeshBasicMaterial({ color: new THREE.Color(.05, .055, .06), side: THREE.BackSide })));
+  const panel = (w, h, x, y, z, rx, ry, k, tint = [1, 1, 1]) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(k * tint[0], k * tint[1], k * tint[2]), side: THREE.DoubleSide })); m.position.set(x, y, z); m.rotation.set(rx, ry, 0); s.add(m); };
+  panel(9, 4, 0, 6.9, 1, Math.PI / 2, 0, 3.4);             // big softbox overhead
+  panel(3, 7, -11.9, 2.5, 2, 0, Math.PI / 2, 2.4);          // tall strip, left
+  panel(3, 7, 11.9, 2.5, -3, 0, -Math.PI / 2, 1.3);         // tall strip, right
+  panel(10, 1.2, 0, 1.2, -11.9, 0, 0, 1.0);                 // low strip behind
+  panel(2, 5, 7, 2, 11.9, 0, Math.PI, 1.6);                 // fill, front right
+  panel(12, .6, 0, -.2, 11.9, 0, Math.PI, .45, [.4, 1, .65]); // a faint emerald floor bounce
+  const pm = new THREE.PMREMGenerator(renderer), rt = pm.fromScene(s, .025); pm.dispose();
+  scene.environment = rt.texture;
+
+  const key = new THREE.DirectionalLight(0xFFFFFF, 1.35); key.position.set(1.6, 4.2, 2.6); key.castShadow = true;
+  key.shadow.mapSize.set(2048, 2048); Object.assign(key.shadow.camera, { left: -1.3, right: 1.6, top: 2, bottom: -1, near: .5, far: 9 }); key.shadow.bias = -.0004; key.shadow.normalBias = .01; key.shadow.radius = 5;
+  key.target.position.set(.15, .6, 0); scene.add(key, key.target);
+  const rim = new THREE.DirectionalLight(0xDDE8FF, .55); rim.position.set(-2.5, 2.2, -2.8); scene.add(rim);
+  scene.add(new THREE.HemisphereLight(0xFFFFFF, 0x1A1D1C, .18));
+  const focus = new THREE.PointLight(0xFFFFFF, 0, 1.1, 1.6); scene.add(focus);
+
+  // floor: soft shadows, a pool of light and an emerald wash from the status bar
+  const floor = new THREE.Mesh(new THREE.CircleGeometry(4, 64), new THREE.ShadowMaterial({ opacity: .42 })); floor.rotation.x = -Math.PI / 2; floor.receiveShadow = true; scene.add(floor);
+  const pool = new THREE.Mesh(new THREE.CircleGeometry(1.6, 64), new THREE.MeshBasicMaterial({ map: glowTex(), color: 0x2B302E, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }));
+  pool.rotation.x = -Math.PI / 2; pool.position.set(.2, .001, .1); scene.add(pool);
+  const wash = new THREE.Mesh(new THREE.PlaneGeometry(1.1, .5), new THREE.MeshBasicMaterial({ map: glowTex(), color: 0x1FA85A, transparent: true, opacity: .42, depthWrite: false, blending: THREE.AdditiveBlending }));
+  wash.rotation.x = -Math.PI / 2; wash.position.set(0, .002, .36); scene.add(wash);
+  const ao = new THREE.Mesh(new THREE.PlaneGeometry(1.35, .78), new THREE.MeshBasicMaterial({ map: glowTex(), color: 0x000000, transparent: true, opacity: .75, depthWrite: false }));
+  ao.rotation.x = -Math.PI / 2; ao.position.set(.25, .003, 0); scene.add(ao);
+  return { focus, wash, env: rt };
+}
+
+/* ================================================================ mount */
 function mount(el) {
   root = el;
+  document.body.classList.add('xp-body');
   el.innerHTML = `
-  <nav class="prod-nav" aria-label="PlateLoop Scanner"><div class="prod-in">
-    <span class="prod-name">PlateLoop Scanner</span>
-    <div class="prod-links"><button data-jump="hwx-main">Overview</button><button data-jump="measures">What it measures</button><button data-jump="how">How it works</button><button data-jump="renders">Gallery</button></div>
-  </div></nav>
-  <div class="hwx">
-    <div class="prod-hero">
-      <div class="eyebrow" style="color:var(--tint-ink)">For canteens in Singapore</div>
-      <h1>One scanner.<br>Two scans. Zero guesswork.</h1>
-      <p>Students scan their tray before lunch and again after. The difference is exactly what they ate, dish by dish, and it goes straight to the kitchen and to each student's Loopi.</p>
-    </div>
-    <div class="row spread" style="margin-top:6px"><h2 class="section-title" style="margin:0">Explore the scanner</h2><div class="row" style="gap:18px"><label class="tog"><input type="checkbox" id="hwx-labels" checked> Labels</label><label class="tog"><input type="checkbox" id="hwx-dims" checked> Dimensions</label></div></div>
-    <div class="hwx-main" id="hwx-main">
-      <div class="hwx-stage">
-        <div class="viewer" id="viewer"><canvas id="gl"></canvas><div class="hwx-over" id="hwx-over"></div><div class="vmsg" id="vmsg">Loading 3D model…</div><div class="vhint">Drag to rotate · Scroll to zoom · Click a number</div></div>
-        <div class="hwx-detail" id="hwx-detail"></div>
-      </div>
-      <aside class="card hwx-side" id="hwx-side"></aside>
-    </div>
-    <h2 class="section-title" id="measures">What every scan measures</h2>
-    <div class="measures">
-      <div><b>6 dishes</b><span>identified per tray, from today's menu</span></div>
-      <div><b>± 2 g</b><span>per tray, checked by the scale</span></div>
-      <div><b>kcal</b><span>calories eaten, per student</span></div>
-      <div><b>C · P · F</b><span>carbs, protein and fat</span></div>
-      <div><b>% left</b><span>plate waste for every dish</span></div>
-    </div>
-    <h2 class="section-title">Sign in with your face</h2>
-    <div class="ids">
-      <div><span class="idic">${ID_ICONS.face}</span><b>Hands-free</b><span>Look up at the screen with your tray in both hands. No card to lose, no phone needed.</span></div>
-      <div><span class="idic">${ID_ICONS.fast}</span><b>Under a second</b><span>Fast enough for a lunch line, and the infrared camera works in a dim canteen.</span></div>
-      <div><span class="idic">${ID_ICONS.lock}</span><b>Private</b><span>The scanner keeps a match code, never a photo, and it never leaves the scanner.</span></div>
-    </div>
-    <h2 class="section-title" id="how">How a tray is scanned</h2>
-    <div class="flow">
-      <div><span class="n">1</span><b>Before lunch</b>Look at the camera and set down your full tray. The scanner records what you were served.</div>
-      <div><span class="n">2</span><b>Eat</b>Enjoy lunch. Loopi's tip on the screen suggests one dish to try.</div>
-      <div><span class="n">3</span><b>After lunch</b>Look at the camera again and set down the tray. The scanner measures what's left.</div>
-      <div><span class="n">4</span><b>Results</b>Eaten = before − after. The kitchen sees the data, and your Loopi gets fed.</div>
-    </div>
-    <h2 class="section-title">Gallery</h2>
-    <div class="renders" id="renders">
-      <figure><img src="render_scanner_hero.png" alt="PlateLoop Scanner, full view" loading="lazy"><figcaption>The PlateLoop Scanner with its food waste bin</figcaption></figure>
-      <figure><img src="render_scanner_detail.png" alt="Close-up of the screen, face camera and tray platform" loading="lazy"><figcaption>Screen, face camera and tray platform</figcaption></figure>
-    </div>
+  <div class="xp" id="xp">
+    <canvas class="xp-gl" id="xp-gl" aria-label="The PlateLoop scanner in 3D. Drag to turn it, scroll to zoom, and pick a glowing light to learn about each part."></canvas>
+    <h1 class="xp-title"><b>PlateLoop</b> <span>Prototype</span></h1>
+    <div class="xp-hots" id="xp-hots">${PARTS.map((p, i) => `<button class="xp-hot" data-part="${i}" aria-label="${esc(p.name)}"><i></i><span>${esc(p.name)}</span></button>`).join('')}</div>
+    <aside class="xp-panel" id="xp-panel" role="dialog" aria-labelledby="xp-pname" hidden></aside>
+    <div class="xp-hint" id="xp-hint">Drag to turn · Scroll to zoom · Tap a light</div>
+    <button class="xp-mute" id="xp-mute" aria-label="Mute sound"></button>
+    <div class="xp-kiosk" id="xp-kiosk" hidden><div id="xp-kroot"></div><div class="xp-kglass" aria-hidden="true"></div><button class="xp-kexit" id="xp-kexit">Close kiosk</button></div>
   </div>`;
-  PL.$$('[data-jump]', el).forEach(b => b.onclick = () => { const t = document.getElementById(b.dataset.jump); if (t) t.scrollIntoView({ behavior: PL.reduceMotion ? 'auto' : 'smooth', block: 'start' }); });
-  $('#hwx-labels', el).onchange = e => { ui.labels = e.target.checked; $('#hwx-over', el).classList.toggle('nolabels', !ui.labels); };
-  $('#hwx-dims', el).onchange = e => { ui.dims = e.target.checked; if (viewer) viewer.showDims(ui.dims); };
-  side();
-  viewer = initViewer();
-}
-function side() {
-  $('#hwx-side', root).innerHTML = `<h3 style="font-size:20px;font-weight:700">Parts</h3>
-    <ol class="parts">${PARTS.map((p, i) => `<li><button data-i="${i}" aria-pressed="${ui.sel === i}"><span class="pn">${i + 1}</span><span><b>${esc(p.t)}</b><small>${esc(p.s)}</small></span></button></li>`).join('')}</ol>
-    <dl class="kspec">${SPECS.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
-  $$('.parts button', root).forEach(b => b.onclick = () => select(+b.dataset.i));
-  detail();
-}
-function select(i) {
-  ui.sel = ui.sel === i ? null : i;
-  $$('.parts button', root).forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.i === ui.sel)));
-  $$('.hwx-over .hot, .hwx-over .tag', root).forEach(h => h.classList.toggle('on', +h.dataset.i === ui.sel));
-  detail();
-}
-function detail() {
-  const el = $('#hwx-detail', root);
-  if (ui.sel == null) { el.innerHTML = `<p class="hint" style="font-size:14px">Click a number on the model or a part in the list to see what it does.</p>`; return; }
-  const p = PARTS[ui.sel];
-  el.innerHTML = `<div class="row" style="gap:14px;align-items:flex-start;flex-wrap:nowrap"><span class="pn big">${ui.sel + 1}</span><div style="flex:1"><h3 style="font-size:18px">${esc(p.t)}</h3><p style="margin-top:4px;color:var(--label2);font-size:15px">${esc(p.d)}</p><span class="pill green" style="margin-top:10px">${esc(p.spec)}</span></div></div>`;
+  if (!window.THREE) { $('#xp-hint', el).textContent = '3D needs WebGL, which isn’t available here.'; return; }
+  X = start(el);
 }
 
-const toThree = ([x, y, z]) => new THREE.Vector3(x, z, -y);
-
-/** When 3D can't run (no WebGL, a locked-down viewer), show the studio render in its place. */
-function fallback(note) {
-  const box = $('#viewer', root), msg = $('#vmsg', root);
-  if (!box) return;
-  box.classList.add('still');
-  $('#hwx-over', root).innerHTML = '';
-  msg.hidden = false;
-  msg.innerHTML = `<img src="render_scanner_hero.png" alt="PlateLoop Scanner"><span class="still-note">${note}</span>`;
-}
-function initViewer() {
-  const msg = $('#vmsg', root);
-  if (!window.THREE || !THREE.GLTFLoader) { fallback('Studio render: the 3D viewer isn\'t available here.'); return null; }
-  const canvas = $('#gl', root), box = $('#viewer', root), over = $('#hwx-over', root);
+function start(el) {
+  const canvas = $('#xp-gl', el), stage = $('#xp', el), A = makeAudio(), M = makeMats();
   let renderer;
-  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, preserveDrawingBuffer: true }); }
-  catch (e) { fallback('Studio render: this viewer doesn\'t support 3D. Open the file in Chrome, Edge or Safari to rotate it.'); return null; }
-  renderer.setPixelRatio(Math.min(2, devicePixelRatio));
-  renderer.outputEncoding = THREE.sRGBEncoding;
-  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(30, 1, .02, 40);
-  scene.add(new THREE.HemisphereLight(0xffffff, 0xb8bcc4, 1.05));
-  const key = new THREE.DirectionalLight(0xffffff, 1.0); key.position.set(-2, 4, 3); scene.add(key);
-  const fill = new THREE.DirectionalLight(0xffffff, .5); fill.position.set(3, 2, -2); scene.add(fill);
-  const disc = new THREE.Mesh(new THREE.CircleGeometry(1.6, 64), new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: .035 }));
-  disc.rotation.x = -Math.PI / 2; scene.add(disc);
-  const screenCanvas = document.createElement('canvas'); screenCanvas.width = 288; screenCanvas.height = 186;
-  const screenTex = new THREE.CanvasTexture(screenCanvas); screenTex.flipY = false; screenTex.encoding = THREE.sRGBEncoding;
-  const loader = new THREE.GLTFLoader(), ray = new THREE.Raycaster();
-  let model = null, alive = true, raf = 0, st = 0, frame = 0, dimGroup = null, hots = [], dimLabels = [];
-  const orbit = { theta: -.6, phi: 1.13, r: 3, target: new THREE.Vector3(0, .8, 0), auto: !q.has('still') };
-  const place = () => { const { theta, phi, r, target } = orbit; cam.position.set(target.x + r * Math.sin(phi) * Math.sin(theta), target.y + r * Math.cos(phi), target.z + r * Math.sin(phi) * Math.cos(theta)); cam.lookAt(target); };
-  // the live screen shows the same instruction banner as the Scanner screen app
-  function paintScreen() {
-    const c = screenCanvas.getContext('2d'), W = screenCanvas.width, H = screenCanvas.height, k = Math.floor(st / 6) % 3;
-    c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, H);
-    c.fillStyle = '#1D1D1F'; c.font = '700 22px -apple-system, "Segoe UI", sans-serif'; c.fillText('Scan your tray', 16, 40);
-    c.fillStyle = '#8E8E93'; c.font = '13px -apple-system, "Segoe UI", sans-serif'; c.fillText('Before lunch and after lunch', 16, 60);
-    ['Look up', 'Place tray', 'Done'].forEach((s, i) => {
-      const x = 12 + i * 90, on = i === k;
-      c.fillStyle = on ? '#34C759' : '#F2F2F7'; c.beginPath(); c.roundRect ? c.roundRect(x, 110, 82, 60, 12) : c.rect(x, 110, 82, 60); c.fill();
-      c.fillStyle = on ? '#FFFFFF' : '#8E8E93'; c.font = '600 13px -apple-system, "Segoe UI", sans-serif'; c.fillText(`${i + 1}  ${s}`, x + 10, 146);
-    });
-    const pet = document.createElement('canvas'); pet.width = 72; pet.height = 60;
-    const s0 = PL.student(PL.S.me) || PL.S.students[0];
-    PL.drawPet(pet, { rows: 30, t: st, ...PL.petOf(s0), mood: 'joy' });
-    c.imageSmoothingEnabled = false; c.drawImage(pet, W - 84, 12, 72, 60);
-    screenTex.needsUpdate = true; st++;
-  }
-  function buildOverlay() {
-    over.innerHTML = `<svg class="leaders" aria-hidden="true"></svg>`
-      + PARTS.map((p, i) => `<button class="hot ${ui.sel === i ? 'on' : ''}" data-i="${i}" aria-label="${esc(p.t)}"><span class="pn">${i + 1}</span></button><button class="tag ${ui.sel === i ? 'on' : ''}" data-i="${i}" tabindex="-1"><span class="pn">${i + 1}</span>${esc(p.t)}</button>`).join('')
-      + DIMS.map((d, i) => `<span class="dimlabel" data-d="${i}">${d.label}</span>`).join('');
-    over.classList.toggle('nolabels', !ui.labels);
-    const tags = [...over.querySelectorAll('.tag')];
-    hots = [...over.querySelectorAll('.hot')].map((el, i) => ({ el, tag: tags[i], v: toThree(PARTS[i].p) }));
-    dimLabels = [...over.querySelectorAll('.dimlabel')].map((el, i) => ({ el, v: toThree(DIMS[i].a).add(toThree(DIMS[i].b)).multiplyScalar(.5) }));
-    [...hots.map(h => h.el), ...tags].forEach(el => el.onclick = e => { e.stopPropagation(); select(+el.dataset.i); });
-    if (dimGroup) scene.remove(dimGroup);
-    dimGroup = new THREE.Group();
-    const col = new THREE.Color(getComputedStyle(document.documentElement).getPropertyValue('--label3').trim() || '#8E8E93');
-    DIMS.forEach(d => {
-      const a = toThree(d.a), b = toThree(d.b), dir = b.clone().sub(a).normalize();
-      const tick = (Math.abs(dir.y) > .9 ? new THREE.Vector3(1, 0, 0) : new THREE.Vector3(0, 1, 0)).multiplyScalar(.035);
-      const geo = new THREE.BufferGeometry().setFromPoints([a, b, a.clone().add(tick), a.clone().sub(tick), b.clone().add(tick), b.clone().sub(tick)]);
-      const seg = new THREE.LineSegments(geo, d === DIMS[2] ? new THREE.LineDashedMaterial({ color: col, dashSize: .025, gapSize: .018 }) : new THREE.LineBasicMaterial({ color: col }));
-      if (d === DIMS[2]) seg.computeLineDistances();
-      dimGroup.add(seg);
-    });
-    dimGroup.visible = ui.dims;
-    dimLabels.forEach(l => l.el.hidden = !ui.dims);
-    scene.add(dimGroup);
-  }
-  function project() {
-    const W = box.clientWidth, H = box.clientHeight, meshes = [];
-    if (model) model.traverse(o => { if (o.isMesh) meshes.push(o); });
-    const check = frame % 6 === 0;
-    const pts = hots.map(h => {
-      const s = h.v.clone().project(cam), x = (s.x + 1) / 2 * W, y = (1 - s.y) / 2 * H;
-      h.el.style.transform = `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px)`;
-      if (check) { const dir = h.v.clone().sub(cam.position), dist = dir.length(); ray.set(cam.position, dir.normalize()); const hit = ray.intersectObjects(meshes, false)[0]; h.behind = !!hit && hit.distance < dist - .03; h.el.classList.toggle('behind', h.behind); }
-      return { h, x, y };
-    });
-    const gap = 30, pad = 14, top = 16, bottom = H - 16, mid = pts.reduce((a, p) => a + p.x, 0) / (pts.length || 1);
-    let d = '';
-    [pts.filter(p => p.x < mid), pts.filter(p => p.x >= mid)].forEach((side, si) => {
-      side.sort((a, b) => a.y - b.y);
-      let prev = -Infinity; side.forEach(p => { p.ly = Math.max(p.y, prev + gap, top); prev = p.ly; });
-      let next = bottom; for (let i = side.length - 1; i >= 0; i--) { side[i].ly = Math.min(side[i].ly, next); next = side[i].ly - gap; }
-      side.forEach(p => {
-        const tw = p.h.tag.offsetWidth || 120, lx = si === 0 ? pad : W - pad - tw;
-        p.h.tag.style.transform = `translate(${lx.toFixed(1)}px, ${(p.ly - 13).toFixed(1)}px)`;
-        p.h.tag.classList.toggle('behind', !!p.h.behind);
-        const ex = si === 0 ? lx + tw : lx, elbow = si === 0 ? ex + 18 : ex - 18;
-        d += `M${ex.toFixed(1)} ${p.ly.toFixed(1)}H${elbow.toFixed(1)}L${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
-      });
-    });
-    const leaders = over.querySelector('.leaders'); if (leaders) leaders.innerHTML = `<path d="${d}"/>`;
-    dimLabels.forEach(l => { const s = l.v.clone().project(cam); l.el.style.transform = `translate(${((s.x + 1) / 2 * W).toFixed(1)}px, ${((1 - s.y) / 2 * H).toFixed(1)}px)`; });
-  }
-  function onModel(g) {
-    g.scene.traverse(o => {
-      if (!o.isMesh) return;
-      if (/ReturnScreen/.test(o.name)) { o.material = new THREE.MeshBasicMaterial({ map: screenTex }); return; }
-      if (o.material && o.material.metalness > .5) { o.material.metalness = .35; o.material.roughness = .35; }
-    });
-    model = g.scene; scene.add(model);
-    const b = new THREE.Box3().setFromObject(model), c = b.getCenter(new THREE.Vector3()), sz = b.getSize(new THREE.Vector3());
-    orbit.target.copy(c); orbit.r = Math.max(sz.x, sz.y, sz.z) * 2.3; orbit.min = orbit.r * .3; orbit.max = orbit.r * 1.8;
-    disc.scale.setScalar(Math.max(sz.x, sz.z) * .55);
-    msg.hidden = true; buildOverlay(); place();
-  }
-  const embedded = document.getElementById('model-scanner');
-  const fail = () => { alive = false; cancelAnimationFrame(raf); fallback('Studio render: the 3D model couldn\'t load in this viewer. Open the file in Chrome, Edge or Safari to rotate it.'); };
-  try { if (embedded) loader.parse(embedded.textContent, '', onModel, fail); else loader.load('scanner.gltf.json', onModel, undefined, fail); } catch (e) { fail(); }
-  let drag = null;
-  box.addEventListener('pointerdown', e => { if (e.target.closest('.hot,.tag')) return; drag = { x: e.clientX, y: e.clientY }; orbit.auto = false; box.setPointerCapture(e.pointerId); box.style.cursor = 'grabbing'; });
-  box.addEventListener('pointermove', e => { if (!drag) return; orbit.theta -= (e.clientX - drag.x) * .008; orbit.phi = clamp(orbit.phi - (e.clientY - drag.y) * .006, .25, 1.5); drag = { x: e.clientX, y: e.clientY }; place(); });
-  const end = () => { drag = null; box.style.cursor = ''; };
-  box.addEventListener('pointerup', end); box.addEventListener('pointercancel', end);
-  box.addEventListener('wheel', e => { e.preventDefault(); orbit.r = clamp(orbit.r * (1 + Math.sign(e.deltaY) * .08), orbit.min || .5, orbit.max || 8); place(); }, { passive: false });
-  const resize = () => { const w = box.clientWidth, h = box.clientHeight; if (!w) return; renderer.setSize(w, h, false); cam.aspect = w / h; cam.updateProjectionMatrix(); };
-  const ro = new ResizeObserver(resize); ro.observe(box); resize();
-  const loop = () => {
-    if (!alive) return;
-    raf = requestAnimationFrame(loop); frame++;
-    if (orbit.auto && !PL.reduceMotion) { orbit.theta += .002; place(); }
-    if (frame % 20 === 0) paintScreen();
-    renderer.render(scene, cam); project();
+  try { renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: 'high-performance' }); }
+  catch (e) { $('#xp-hint', el).textContent = '3D needs WebGL, which isn’t available here.'; return null; }
+  renderer.setClearColor(0x000000, 0);
+  renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap; renderer.physicallyCorrectLights = false;
+  const scene = new THREE.Scene(), cam = new THREE.PerspectiveCamera(28, 1, .03, 40);
+  const ST = studio(renderer, scene), SC = buildScanner(M);
+  scene.add(SC.S);
+
+  // every mesh keeps its own material so parts can fade independently
+  const meshes = []; SC.S.traverse(m => { if (m.isMesh || m.isSprite) { m.userData.part = m.userData.part || partOf(m); meshes.push(m); if (m.material) m.userData.base = { opacity: m.material.opacity, transparent: m.material.transparent, depthWrite: m.material.depthWrite }; } });
+  function partOf(m) { let o = m; while (o && !o.userData.part) o = o.parent; return o ? o.userData.part : 'body'; }
+
+  /* ---------------- camera rig: orbit with inertia, smooth zoom, cinematic flights */
+  const C = { target: new THREE.Vector3(...HERO.target), theta: HERO.theta, phi: HERO.phi, r: 4, rGoal: 4, vt: 0, vp: 0, shiftX: 0, shiftY: 0, fly: null, idle: 0, lock: false };
+  const heroR = () => { const vf = Math.tan(cam.fov * Math.PI / 360), a = cam.aspect; return Math.max(.84 / .83 / vf, .6 / .9 / (vf * a)); };
+  const place = () => {
+    const sp = Math.sin(C.phi);
+    cam.position.set(C.target.x + C.r * sp * Math.sin(C.theta), C.target.y + C.r * Math.cos(C.phi), C.target.z + C.r * sp * Math.cos(C.theta));
+    cam.lookAt(C.target);
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    if (Math.abs(C.shiftX) > .0005 || Math.abs(C.shiftY) > .0005) cam.setViewOffset(w, h, -C.shiftX * w, -C.shiftY * h, w, h); else cam.clearViewOffset();
   };
-  paintScreen(); loop();
-  return { showDims(on) { if (dimGroup) dimGroup.visible = on; dimLabels.forEach(l => l.el.hidden = !on); }, destroy() { alive = false; cancelAnimationFrame(raf); ro.disconnect(); renderer.dispose(); } };
+  const wrap = a => { while (a > Math.PI) a -= TAU; while (a < -Math.PI) a += TAU; return a; };
+  function flyTo(v, dur = 1.5, shift = [0, 0]) {
+    const from = { t: C.target.clone(), theta: C.theta, phi: C.phi, r: C.r, sx: C.shiftX, sy: C.shiftY };
+    const to = { t: new THREE.Vector3(...v.target), theta: from.theta + wrap(v.theta - from.theta), phi: v.phi, r: v.r, sx: shift[0], sy: shift[1] };
+    C.vt = C.vp = 0;
+    return new Promise(res => { C.fly = { from, to, t: 0, dur: PL.reduceMotion ? .01 : dur, res }; });
+  }
+  const heroView = () => ({ target: HERO.target, theta: HERO.theta, phi: HERO.phi, r: heroR() });
+
+  /* ---------------- input */
+  const ptrs = new Map(); let pinch = 0, lastX = 0, lastY = 0, moved = 0;
+  const interact = () => { C.idle = 0; A.wake(); hint(); };
+  canvas.addEventListener('pointerdown', e => { if (C.lock) return; canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, [e.clientX, e.clientY]); lastX = e.clientX; lastY = e.clientY; moved = 0; interact(); if (ptrs.size === 2) pinch = dist(); });
+  canvas.addEventListener('pointermove', e => {
+    if (!ptrs.has(e.pointerId) || C.lock || C.fly) return;
+    ptrs.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ptrs.size === 2) { const d = dist(); if (pinch) zoomBy(pinch / d); pinch = d; return; }
+    const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY; moved += Math.abs(dx) + Math.abs(dy);
+    C.vt = -dx * .0055; C.vp = -dy * .0042; C.theta += C.vt; C.phi += C.vp; interact();
+  });
+  const up = e => { const was = ptrs.has(e.pointerId); ptrs.delete(e.pointerId); if (ptrs.size < 2) pinch = 0; if (was && e.type === 'pointerup' && moved < 5 && state.focus != null && !C.fly) close(); };
+  canvas.addEventListener('pointerup', up); canvas.addEventListener('pointercancel', up);
+  const dist = () => { const [a, b] = [...ptrs.values()]; return Math.hypot(a[0] - b[0], a[1] - b[1]); };
+  const zoomBy = k => { const lo = state.focus != null ? .45 : 1.35, hi = heroR() * 1.45; C.rGoal = Math.max(lo, Math.min(hi, C.rGoal * k)); A.zoom(1 - (C.rGoal - lo) / (hi - lo), 0); };
+  canvas.addEventListener('wheel', e => { if (C.lock) return; e.preventDefault(); interact(); if (!C.fly) zoomBy(Math.exp(e.deltaY * .0011)); }, { passive: false });
+
+  /* ---------------- hotspots and the panel */
+  const hots = $$('.xp-hot', el), panel = $('#xp-panel', el);
+  SC.S.updateMatrixWorld(true);
+  const anchors = PARTS.map(p => { const v = new THREE.Vector3(...p.anchor); if (p.from && SC.marks[p.from]) SC.S.worldToLocal(SC.marks[p.from].getWorldPosition(v)); return v; });
+  const headN = new THREE.Vector3(0, 0, 1).transformDirection(SC.head.matrixWorld);
+  const normals = PARTS.map(p => p.from ? headN.clone() : new THREE.Vector3(...p.normal).normalize());
+  const state = { focus: null, fade: 0, kiosk: false, t: 0 };
+  hots.forEach(b => {
+    b.onclick = e => { e.stopPropagation(); interact(); open(+b.dataset.part); };
+    b.onmouseenter = () => A.hover(panOf(b));
+  });
+  const panOf = elx => { const r = elx.getBoundingClientRect(); return Math.max(-.8, Math.min(.8, ((r.left + r.width / 2) / innerWidth - .5) * 1.6)); };
+  const narrow = () => innerWidth < 760;
+  function open(i) {
+    const p = PARTS[i]; if (!p) return;
+    const was = state.focus; state.focus = i;
+    renderPanel(i);
+    panel.hidden = false; panel.classList.remove('in'); void panel.offsetWidth; panel.classList.add('in');
+    A.select(panOf(hots[i])); if (was !== i) A.fly(was == null ? .3 : .15);
+    const v = { ...p.view }, r = narrow() ? v.r * 1.25 : v.r;
+    flyTo({ ...v, r }, was == null ? 1.6 : 1.25, narrow() ? [0, -.18] : [-.16, 0]);
+    C.rGoal = r;
+  }
+  function close(silent) {
+    if (state.focus == null) return;
+    state.focus = null; panel.classList.remove('in'); setTimeout(() => { if (state.focus == null) panel.hidden = true; }, 380);
+    if (!silent) { A.close(); A.fly(-.3, false); }
+    flyTo(heroView(), 1.5, [0, 0]); C.rGoal = heroR();
+  }
+  function renderPanel(i) {
+    const p = PARTS[i];
+    panel.innerHTML = `<button class="xp-x" id="xp-x" aria-label="Close">${IC.x}</button>
+      <div class="xp-pk">${String(i + 1).padStart(2, '0')} · ${esc(p.line)}</div>
+      <h2 id="xp-pname">${esc(p.name)}</h2>
+      <dl><dt>What it does</dt><dd>${esc(p.what)}</dd><dt>How it works</dt><dd>${esc(p.how)}</dd><dt>Why it scans better</dt><dd>${esc(p.why)}</dd></dl>
+      <div class="xp-spec">${esc(p.spec)}</div>
+      ${p.action ? `<button class="xp-cta" id="xp-cta">${esc(p.action)}<span>→</span></button>` : ''}
+      <div class="xp-pnav"><button data-step="-1" aria-label="Previous part">${IC.l}</button><span>${i + 1} / ${PARTS.length}</span><button data-step="1" aria-label="Next part">${IC.r}</button></div>`;
+    $('#xp-x', panel).onclick = () => close();
+    $$('[data-step]', panel).forEach(b => b.onclick = () => open((i + +b.dataset.step + PARTS.length) % PARTS.length));
+    const cta = $('#xp-cta', panel); if (cta) cta.onclick = () => enterKiosk();
+  }
+
+  /* ---------------- kiosk mode: the real PlateLoop Kiosk on the scanner's own screen */
+  const kbox = $('#xp-kiosk', el), kroot = $('#xp-kroot', el);
+  let kioskMounted = false;
+  const screenCorners = [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([x, y]) => new THREE.Vector3(x * SCREEN.w / 2, y * SCREEN.h / 2 - .002, .0068));
+  const SN = new THREE.Vector3(), SP = new THREE.Vector3(), V = new THREE.Vector3();
+  function screenView() {
+    SC.head.updateWorldMatrix(true, false);
+    SC.head.getWorldPosition(SP); SN.set(0, 0, 1).transformDirection(SC.head.matrixWorld);
+    const vf = Math.tan(cam.fov * Math.PI / 360), fillH = narrow() ? .36 : .6, fillW = narrow() ? .94 : .56;
+    const r = Math.max(SCREEN.h / 2 / fillH / vf, SCREEN.w / 2 / fillW / (vf * cam.aspect));
+    return { target: SP.toArray(), theta: Math.atan2(SN.x, SN.z), phi: Math.acos(Math.max(-1, Math.min(1, SN.y))), r };
+  }
+  async function enterKiosk() {
+    if (state.kiosk) return;
+    state.kiosk = true; C.lock = true; A.power();
+    state.focus = null; panel.classList.remove('in'); setTimeout(() => { if (state.focus == null) panel.hidden = true; }, 380);
+    stage.classList.add('kiosk-on');
+    await flyTo(screenView(), 1.7, narrow() ? [0, -.22] : [.15, 0]);
+    if (!state.kiosk) return;
+    if (!kioskMounted) { PL.apps.scanner.mount(kroot); kioskMounted = true; const d = $('.kio-drawer', kroot); if (d && narrow()) d.open = false; }
+    kbox.hidden = false; requestAnimationFrame(() => kbox.classList.add('in'));
+  }
+  function exitKiosk() {
+    if (!state.kiosk) return;
+    state.kiosk = false; kbox.classList.remove('in'); stage.classList.remove('kiosk-on');
+    setTimeout(() => { if (!state.kiosk) kbox.hidden = true; }, 420);
+    A.close(); A.fly(-.2, false);
+    flyTo(heroView(), 1.6, [0, 0]).then(() => { C.lock = false; }); C.rGoal = heroR();
+  }
+  $('#xp-kexit', el).onclick = exitKiosk;
+  function trackScreen() {
+    const w = canvas.clientWidth, h = canvas.clientHeight; let x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9;
+    screenCorners.forEach(c => { V.copy(c).applyMatrix4(SC.screen.matrixWorld).project(cam); const x = (V.x * .5 + .5) * w, y = (-V.y * .5 + .5) * h; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); });
+    kbox.style.setProperty('--kx', x0 + 'px'); kbox.style.setProperty('--ky', y0 + 'px'); kbox.style.setProperty('--kw', (x1 - x0) + 'px'); kbox.style.setProperty('--kh', (y1 - y0) + 'px');
+  }
+
+  /* ---------------- sound toggle, hint, keys */
+  const mute = $('#xp-mute', el);
+  const paintMute = () => { mute.innerHTML = A.on ? IC.sound : IC.muted; mute.setAttribute('aria-label', A.on ? 'Mute sound' : 'Turn sound on'); mute.classList.toggle('off', !A.on); };
+  mute.onclick = () => { A.wake(); A.setOn(!A.on); paintMute(); }; paintMute();
+  let hinted = false; const hint = () => { if (hinted) return; hinted = true; $('#xp-hint', el).classList.add('gone'); };
+  setTimeout(hint, 7000);
+  const onKey = e => {
+    if (e.target.closest && e.target.closest('input,select,textarea')) return;
+    if (e.key === 'Escape') { if (state.kiosk) exitKiosk(); else close(); }
+    else if (state.focus != null && (e.key === 'ArrowRight' || e.key === 'ArrowLeft')) open((state.focus + (e.key === 'ArrowRight' ? 1 : -1) + PARTS.length) % PARTS.length);
+  };
+  addEventListener('keydown', onKey);
+
+  /* ---------------- size */
+  const resize = () => {
+    const w = stage.clientWidth || innerWidth, h = stage.clientHeight || innerHeight;
+    renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2)); renderer.setSize(w, h, false);
+    cam.aspect = w / h; cam.updateProjectionMatrix();
+    if (!C.fly && state.focus == null && !state.kiosk) { C.rGoal = Math.min(C.rGoal, heroR() * 1.45); }
+    if (state.kiosk && !C.fly) { const v = screenView(); C.r = C.rGoal = v.r; }
+  };
+  const ro = new ResizeObserver(resize); ro.observe(stage); resize();
+
+  /* ---------------- intro: the camera glides in from low and far, the title fades up */
+  C.r = heroR() * 1.9; C.phi = 1.52; C.theta = HERO.theta - .9; C.rGoal = heroR();
+  flyTo(heroView(), PL.reduceMotion ? .01 : 3.2).then(() => { if (/[?&]kiosk\b/.test(location.search)) enterKiosk(); });
+  requestAnimationFrame(() => stage.classList.add('ready'));
+
+  /* ---------------- the loop */
+  let last = performance.now(), raf = 0, beamT = 5;
+  const cp = new THREE.Vector3(), camDir = new THREE.Vector3();
+  function frame(now) {
+    const dt = Math.min(.05, (now - last) / 1000); last = now; state.t += dt; C.idle += dt;
+    // camera
+    if (C.fly) {
+      const F = C.fly; F.t += dt / F.dur; const k = ease(Math.min(1, F.t));
+      C.target.lerpVectors(F.from.t, F.to.t, k); C.theta = lerp(F.from.theta, F.to.theta, k); C.phi = lerp(F.from.phi, F.to.phi, k);
+      // a gentle arc: pull back a little in the middle of a flight
+      C.r = lerp(F.from.r, F.to.r, k) * (1 + Math.sin(k * Math.PI) * .12);
+      C.shiftX = lerp(F.from.sx, F.to.sx, k); C.shiftY = lerp(F.from.sy, F.to.sy, k);
+      if (F.t >= 1) { C.fly = null; C.rGoal = C.r = F.to.r; F.res(); }
+      A.rotate(Math.sin(k * Math.PI) * .25, (F.to.theta - F.from.theta) > 0 ? .5 : -.5);
+    } else if (!C.lock) {
+      const damp = Math.pow(.9, dt * 60);
+      if (!ptrs.size) { C.theta += C.vt; C.phi += C.vp; C.vt *= damp; C.vp *= damp; }
+      // when nobody touches it for a while, it turns very slowly on its own
+      if (C.idle > 6 && state.focus == null && !PL.reduceMotion) C.theta += dt * .045 * Math.min(1, (C.idle - 6) / 3);
+      C.phi = Math.max(.42, Math.min(1.62, C.phi));
+      C.r += (C.rGoal - C.r) * (1 - Math.pow(.001, dt));
+      A.rotate(Math.min(1, Math.hypot(C.vt, C.vp) * 22), C.vt > 0 ? -.6 : .6);
+    } else A.rotate(0, 0);
+    place();
+
+    // the scanner floats, very slightly; it holds still for the kiosk
+    const fl = state.kiosk ? 0 : 1; SC.S.userData.fl = lerp(SC.S.userData.fl ?? 1, fl, 1 - Math.pow(.02, dt));
+    SC.S.position.y = Math.sin(state.t * .8) * .006 * SC.S.userData.fl; SC.S.rotation.y = Math.sin(state.t * .35) * .006 * SC.S.userData.fl;
+
+    // lights: the status bar breathes, and a scan beam passes over the tray every few seconds
+
+    // focus: the chosen part lights up and everything else fades back
+    state.fade = lerp(state.fade, state.focus != null ? 1 : 0, 1 - Math.pow(.004, dt));
+    const fid = state.focus != null ? PARTS[state.focus].id : null;
+    meshes.forEach(m => {
+      const mat = m.material; if (!mat || !m.userData.base || m.userData.skip) return;
+      const mine = fid && m.userData.part === fid, base = m.userData.base;
+      const target = mine || !fid ? base.opacity : base.opacity * (1 - .68 * state.fade);
+      const faded = target < base.opacity - .01;
+      if (faded !== !!m.userData.faded) { m.userData.faded = faded; mat.transparent = faded || base.transparent; mat.depthWrite = faded ? false : base.depthWrite; mat.needsUpdate = true; }
+      m.userData.k = (mine || !fid) ? 1 : 1 - .68 * state.fade;
+      if (!m.isSprite) mat.opacity = target;
+      if (mat.emissive) mat.emissive.setRGB(mine ? .03 * state.fade : 0, mine ? .11 * state.fade : 0, mine ? .06 * state.fade : 0);
+    });
+    if (fid) { const a = anchors[state.focus]; cp.copy(a).applyMatrix4(SC.S.matrixWorld).addScaledVector(normals[state.focus], .18); ST.focus.position.copy(cp); }
+    ST.focus.intensity = lerp(ST.focus.intensity, fid ? 1.4 : 0, 1 - Math.pow(.01, dt));
+    const pulse = .75 + .25 * Math.sin(state.t * 2.2);
+    SC.leds.forEach(l => { if (l.isSprite) l.material.opacity = .45 * pulse * (l.userData.k ?? 1); });
+    beamT -= dt; if (beamT < 0) beamT = 7; const b = beamT > 5.8 ? Math.sin((7 - beamT) / 1.2 * Math.PI) : 0;
+    SC.beam.material.opacity = b * .09 * (1 - state.fade) * (state.kiosk ? 0 : 1); ST.wash.material.opacity = (.32 + .12 * pulse) * (1 - .6 * state.fade);
+
+    renderer.render(scene, cam);
+
+    // hotspots follow the product; they hide round the back, behind a panel, and in kiosk mode
+    const w = canvas.clientWidth, h = canvas.clientHeight; cam.getWorldDirection(camDir);
+    hots.forEach((btn, i) => {
+      cp.copy(anchors[i]).applyMatrix4(SC.S.matrixWorld);
+      const toCam = cam.position.clone().sub(cp).normalize(), facing = normals[i].dot(toCam);
+      const p = cp.project(cam), on = p.z < 1 && facing > .08 && !state.kiosk && (state.focus == null || state.focus === i) && !C.fly;
+      btn.style.transform = `translate(${(p.x * .5 + .5) * w}px,${(-p.y * .5 + .5) * h}px)`;
+      btn.classList.toggle('show', on); btn.classList.toggle('sel', state.focus === i);
+    });
+    if (state.kiosk) trackScreen();
+    raf = requestAnimationFrame(frame);
+  }
+  raf = requestAnimationFrame(frame);
+
+  return {
+    get kiosk() { return kioskMounted; }, state,
+    stop() {
+      cancelAnimationFrame(raf); ro.disconnect(); removeEventListener('keydown', onKey);
+      if (kioskMounted) PL.apps.scanner.unmount();
+      renderer.dispose(); ST.env.dispose(); A.close2();
+    },
+  };
 }
+
+const IC = {
+  x: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>',
+  l: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  r: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  sound: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4Z" fill="currentColor"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+  muted: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4Z" fill="currentColor"/><path d="M16 9.5l5 5M21 9.5l-5 5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>',
+};
 
 PL.apps.model = {
-  title: 'Scanner 3D',
+  title: 'PlateLoop Prototype',
   mount,
-  unmount() { if (viewer) viewer.destroy(); viewer = null; root = null; },
+  unmount() { if (X) X.stop(); X = null; root = null; document.body.classList.remove('xp-body'); },
+  update(kind, fromSelf) { if (X && X.kiosk && PL.apps.scanner.update) PL.apps.scanner.update(kind, fromSelf); },
+  tick(t) { if (X && X.kiosk && PL.apps.scanner.tick) PL.apps.scanner.tick(t); },
 };
 })();
