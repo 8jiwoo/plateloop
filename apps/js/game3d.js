@@ -310,6 +310,21 @@ function buildPeople() {
     const B = G.brawlB = add(L.person({ name: 'Hafiz', kind: 'boy', hair: 'crop', skin: L.SKINS[3], height: 1.72, watch: false, smooth: true, seed: 902 }), 7.5, 7.35, -Math.PI / 2, 'fight');
     [A, B].forEach(P => { P.root.rotation.order = 'YXZ'; P.prompt = 'What\u2019s going on?'; P.noTurn = true; P.home = P.root.position.clone(); talkTarget(P); G.solidPeople.push(P); });
   }
+  // Akshaya hangs upside down from a web over the walkway, Spider-Man style
+  if (L.FACES && L.FACES.akshaya) {
+    const P = G.akshaya = add(L.person({ name: 'Akshaya', kind: 'spider', face: 'akshaya', girl: true, hair: 'short', hairHang: true, hairCol: '#121010', capTilt: -.72, height: 1.6, watch: false, smooth: true, seed: 1207 }), 1.2, -4.9, 0, 'hang');
+    P.root.position.y = 3.25; P.noTurn = true; P.prompt = 'Talk to Akshaya';
+    const anchor = new THREE.Vector3(1.2, 4.2, -4.9);
+    const web = new THREE.Mesh(new THREE.CylinderGeometry(.008, .008, 1, 5), L.basic({ color: '#F2F2EE' })); G.scene.add(web);
+    const splat = new THREE.Mesh(new THREE.CircleGeometry(.4, 20), new THREE.MeshBasicMaterial({ transparent: true, depthWrite: false, map: L.tex(128, 128, c => {
+      c.strokeStyle = 'rgba(250,250,246,.85)'; c.lineWidth = 1.6;
+      for (let i = 0; i < 12; i++) { const a = i / 12 * Math.PI * 2; c.beginPath(); c.moveTo(64, 64); c.lineTo(64 + Math.cos(a) * 62, 64 + Math.sin(a) * 62); c.stroke(); }
+      for (let r = 10; r < 62; r += 11) { c.beginPath(); for (let i = 0; i <= 12; i++) { const a = i / 12 * Math.PI * 2, b = (i - .5) / 12 * Math.PI * 2; if (!i) c.moveTo(64 + Math.cos(a) * r, 64 + Math.sin(a) * r); else c.quadraticCurveTo(64 + Math.cos(b) * r * .86, 64 + Math.sin(b) * r * .86, 64 + Math.cos(a) * r, 64 + Math.sin(a) * r); } c.stroke(); }
+    }) }));
+    splat.rotation.x = Math.PI / 2; splat.position.set(anchor.x, 4.185, anchor.z); G.scene.add(splat);
+    G.spidey = { P, anchor, web, len: 4.2 - 3.25, yaw: 0, spin: 0, swing: 0, dance: false };
+    talkTarget(P); G.solidPeople.push(P);
+  }
   // Disha floats cross-legged above a table in a beam of light, and tells fortunes
   if (G.dishaTable) {
     const T = G.dishaTable, di = G.disha = add(L.person({ name: 'Disha', kind: 'girl', bottom: 'shorts', face: 'disha', hair: 'long', hairCol: '#140F0E', capTilt: -.85, height: 1.58, watch: false, smooth: true, seed: 808 }), T.x, T.z, 0, 'pray');
@@ -347,6 +362,26 @@ function buildPeople() {
   [w1, w2].forEach(P => { G.walkers.push(P); talkTarget(P); });
   // standing people you bump into
   G.solidPeople.push(G.rahman, G.tan);
+}
+/** Akshaya on her web: she turns to face you as you come near, sways a little, and spins and swings
+ *  when she dances. The web is fixed to the ceiling; she hangs from it by her feet. */
+const qSway = new THREE.Quaternion(), qBody = new THREE.Quaternion(), eSway = new THREE.Euler(), eBody = new THREE.Euler(0, 0, 0, 'YXZ');
+function updateSpidey(dt) {
+  const S = G.spidey, P = S.P, t = G.t, cam = G.camera.position, A = S.anchor;
+  if (S.dance) S.yaw += dt * 4.2;
+  else if (G.talkingTo === P || Math.hypot(cam.x - A.x, cam.z - A.z) < 6) {
+    let d = Math.atan2(cam.x - A.x, cam.z - A.z) - S.yaw;
+    while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2;
+    S.yaw += d * Math.min(1, dt * (G.talkingTo === P ? 3 : 1.4));
+  }
+  S.swing += ((S.dance ? .2 : 0) - S.swing) * Math.min(1, dt * 1.5);
+  eSway.set(Math.sin(t * 1.1) * .03 + Math.sin(t * 3.1) * S.swing, 0, Math.cos(t * .8) * .025 + Math.cos(t * 3.1) * S.swing * .7);
+  qSway.setFromEuler(eSway);
+  qBody.setFromEuler(eBody.set(Math.PI, S.yaw + Math.PI, 0));
+  P.root.quaternion.multiplyQuaternions(qSway, qBody);
+  P.root.position.set(0, -S.len, 0).applyQuaternion(qSway).add(A);
+  S.web.quaternion.copy(qSway); S.web.scale.y = S.len;
+  S.web.position.set(0, -S.len / 2, 0).applyQuaternion(qSway).add(A);
 }
 /** An orange tabby that wanders the back of the canteen, sits for a while, and meows when you pet it. */
 function buildCat() {
@@ -501,6 +536,7 @@ function loop(now) {
     s.sparks.geometry.attributes.position.needsUpdate = true;
   }
   if (G.cat) updateCat(dt);
+  if (G.spidey) updateSpidey(dt);
   W.update(dt, G.t, camera);
   G.screen.tick(dt);
   G.tvT -= dt; if (G.tvT < 0) { G.tvT = 3; W.tv.draw(); }
@@ -908,6 +944,7 @@ async function talk(P) {
   if (P === G.rahman) return rahmanTalk();
   if (P === G.sophie) return sophieSings();
   if (P === G.disha) return dishaFortune();
+  if (P === G.akshaya) return akshayaSwings();
   if (P === G.brawlA || P === G.brawlB) return brawl();
   const f = first(), ph = G.phase;
   if (P.friend) {
@@ -952,6 +989,33 @@ async function sophieSings() {
     S.talking = false; S.singing = false;
     await say(S, 'Thanks for listening! Back to practice.');
   });
+}
+/** Akshaya says hello from her web, then spins and swings to her Spider-Man song if you ask. */
+async function akshayaSwings() {
+  const S = G.spidey, P = S.P, hp = new THREE.Vector3();
+  if (S.busy) return;
+  S.busy = true;
+  let song = null;
+  try {
+    await convo(P, async () => {
+      P.pose = 'hangwave';
+      await say(P, G.phase === 'done' ? 'You again! Tray returned? Good. Everything looks cleaner from up here.' : 'Oh, hey! Don’t mind me. I’m just hanging around.');
+      await say(P, 'The view is great from up here. I can see everyone who hasn’t finished their kailan.');
+      const pick = await ask(P, 'Want to see my move?', ['Go on then!', 'Maybe later']);
+      if (pick !== 0) { await say(P, 'Suit yourself. I’ll be here. Obviously.'); return; }
+      P.pose = 'hanggroove'; P.head.getWorldPosition(hp);
+      song = G.SFX.clip('spidey', at(hp), 1.15);
+      if (!song) play('celestial', at(hp));
+      S.dance = true; showSub(P.name, '♪ ♪ ♪', true); P.talking = true;
+      await sleep((song ? song.length : 4) * 1000);
+      S.dance = false; P.talking = false; song = null; P.pose = 'hangwave';
+      await sleep(600);
+      await say(P, 'Ta-da! Please don’t tell the teachers I’m up here.');
+    });
+  } finally {
+    if (song) song.stop();
+    S.dance = false; S.busy = false; P.pose = 'hang';
+  }
 }
 /** Azri gloats, Hafiz objects, Azri doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
