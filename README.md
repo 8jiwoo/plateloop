@@ -1,6 +1,6 @@
 # PlateLoop
 
-**Live demo:** https://8jiwoo.github.io/plateloop/
+**Live demo:** https://8jiwoo.github.io/plateloop/ · **Pitch deck:** https://8jiwoo.github.io/plateloop/pitch/
 
 **An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals or offices.**
 
@@ -19,6 +19,14 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person 3D game of one school lunch with PlateLoop, with low-poly characters and a foggy, rainy atmosphere: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the food waste bin, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
+
+## Pitch deck
+
+`pitch/index.html` is the judges' deck: 24 slides that follow design thinking (Empathise → Define → Ideate → Prototype → Test), then impact, business model, competition and the ask. The prototype slides embed the real apps live, the impact slide is a savings calculator, and the last slide has a QR code to the demo.
+
+- **← →** or click the arrows to move, **N** for speaker notes, **F** for full screen. Add `#12` to the URL to open a slide.
+- Print to PDF from the browser for a static copy (one slide per page).
+- Statistics on slides 2 and 7 cite NEA, UNEP, SFA and MSE; check the latest figures before presenting. Personas are built from observation; swap in quotes from your own interviews if you have them.
 
 ## Run it
 
@@ -58,7 +66,8 @@ apps/                 source for the seven apps
   build.py            builds the standalone files in dist/
 dist/                 the seven standalone apps (generated, committed for convenience)
 hardware/             Blender scanner: build script, .blend, .glb, renders
-docs/                 project overview and screenshots
+docs/                 project overview (with the system design) and screenshots
+pitch/                the pitch deck (one HTML file)
 ```
 
 ## Rebuild the standalone apps
