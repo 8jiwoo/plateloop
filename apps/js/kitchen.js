@@ -49,25 +49,20 @@ function mount(el) {
   el.innerHTML = `
   <div class="kit kx">
     <div class="kx-ambient" aria-hidden="true"><i></i><i></i><i></i></div>
-    <header class="kx-bar" id="kx-bar">
-      <div class="kx-brand"><span class="kx-logo" aria-hidden="true"></span><div><b>PlateLoop</b><span>Kitchen</span></div></div>
-      <div class="kx-bar-r"><div id="kit-live"></div><button class="kx-reset" data-reset title="Reset the demo">${SV('<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5"/>')}</button></div>
-    </header>
     <main class="kit-main" id="kit-main"></main>
+    <footer class="kx-footer"><span class="kx-mark" aria-hidden="true"></span>PlateLoop Kitchen · ${PL.SCHOOL} · two scanners<button class="kx-link" data-reset>Reset demo</button></footer>
+    <div class="kx-fade" aria-hidden="true"></div>
     <div class="kx-dock" id="kx-dock">
       <div class="kx-scrim" data-dock-close></div>
       <nav class="kx-fan" aria-label="Kitchen pages">${NAV.map(([id, label, ic], i) => { const a = Math.PI * .9 - i / (NAV.length - 1) * Math.PI * .8;
         return `<button class="kx-fan-b" data-view="${id}" style="--i:${i};--x:${Math.cos(a).toFixed(3)};--y:${(-Math.sin(a)).toFixed(3)}" tabindex="-1"><span class="kx-fan-ic">${ic}</span><span class="kx-fan-l">${label}</span></button>`; }).join('')}</nav>
+      <span class="kx-cap" id="kx-cap" aria-live="polite"></span>
       <button class="kx-orb" id="kx-dot" aria-expanded="false" aria-label="Pages"><span class="kx-orb-ic" id="kx-dot-ic"></span><span class="kx-orb-x">${SV('<path d="M6 6l12 12M18 6 6 18"/>')}</span></button>
     </div>
   </div>`;
   $$('.kx-fan-b', el).forEach(b => b.onclick = () => { dock(false); go(b.dataset.view); });
   $('#kx-dot', el).onclick = () => dock(!ui.dock);
   $('[data-dock-close]', el).onclick = () => dock(false);
-  // the bar turns to glass and tightens once the page scrolls
-  const bar = $('#kx-bar', el);
-  ui.onScroll = () => bar.classList.toggle('scrolled', scrollY > 8);
-  addEventListener('scroll', ui.onScroll, { passive: true });
   // 1–6 jump between pages
   ui.onKey = e => { if (e.key === 'Escape' && ui.dock) return dock(false); if (e.target.closest && e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return; const n = +e.key; if (n >= 1 && n <= NAV.length) { dock(false); go(NAV[n - 1][0]); } };
   addEventListener('keydown', ui.onKey);
@@ -96,8 +91,7 @@ function render(force) {
   if (!root) return;
   $$('.kx-fan-b', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   const cur = NAV.find(n => n[0] === ui.view), dotIc = $('#kx-dot-ic', root);
-  if (dotIc && dotIc.dataset.view !== ui.view) { dotIc.innerHTML = cur[2]; dotIc.dataset.view = ui.view; $('#kx-dot', root).setAttribute('aria-label', `Pages, now on ${cur[1]}`); if (dotIc.animate && !PL.reduceMotion) dotIc.animate([{ transform: 'scale(.4) rotate(-40deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.3,1.5,.5,1)' }); }
-  $('#kit-live', root).innerHTML = liveChip();
+  if (dotIc && dotIc.dataset.view !== ui.view) { dotIc.innerHTML = cur[2]; dotIc.dataset.view = ui.view; $('#kx-dot', root).setAttribute('aria-label', `Pages, now on ${cur[1]}`); const cap = $('#kx-cap', root); if (cap && ui.capped) { cap.textContent = cur[1]; cap.classList.remove('show'); void cap.offsetWidth; cap.classList.add('show'); } ui.capped = true; if (dotIc.animate && !PL.reduceMotion) dotIc.animate([{ transform: 'scale(.4) rotate(-40deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.3,1.5,.5,1)' }); }
   const main = $('#kit-main', root), html = VIEWS()[ui.view]();
   if (!force && main.dataset.view === ui.view && ui.view === 'overview') { const tmp = document.createElement('div'); tmp.innerHTML = html; morph(main, tmp); }
   else {
@@ -162,7 +156,7 @@ function overview() {
   const maxKg = Math.max(...top.map(o => o.kg), 1);
   const ins = stats.slice(0, 3).map(r => ({ d: r.d, e: r.e, tip: TREND[r.d.id] ? TREND[r.d.id][2] : '' }));
   return `
-  <header class="kx-head"><div><p class="kx-date">Friday 25 September</p><h1>Overview</h1></div></header>
+  ${head('Friday 25 September', 'Overview')}
 
   ${todo.length ? `<section class="kx-group kx-todo" aria-label="To do">${todo.map(x => `<div class="kx-row"><span class="kx-ic" data-tone="${x.tone}">${x.icon}</span><div class="kx-row-t"><b>${x.t}</b><span>${x.s}</span></div>${x.btn ? `<button class="kx-btn ${x.tone === 'blue' ? 'prim' : ''}" data-todo="${x.id}" ${x.go ? `data-go="${x.go}"` : ''}>${x.btn}</button>` : ''}</div>`).join('')}</section>` : ''}
 
@@ -216,7 +210,7 @@ function chartTrend() {
 }
 
 /* ================================================================ shared pieces, so every page looks the same */
-const head = (eyebrow, title, right = '') => `<header class="kx-head"><div><p class="kx-date">${eyebrow}</p><h1>${title}</h1></div>${right}</header>`;
+const head = (eyebrow, title, right = '') => `<header class="kx-head"><div><p class="kx-date"><span class="kx-mark" aria-hidden="true"></span><span>PlateLoop Kitchen</span><i>·</i><span>${eyebrow}</span></p><h1>${title}</h1></div><div class="kx-head-r">${right}${liveChip()}</div></header>`;
 const widget = (icon, color, label, value, unit, foot, extra = '') => `<div class="kx-w" style="--wc:${color}"><div class="kx-w-h">${icon}<span>${label}</span></div><div class="kx-w-n"><b>${value}</b>${unit ? `<em>${unit}</em>` : ''}</div><div class="kx-w-f"><span>${foot}</span>${extra}</div></div>`;
 const card = (title, sub, body, link = '', cls = '') => `<div class="kx-card ${cls}"><div class="kx-card-h"><div><h2>${title}</h2>${sub ? `<p>${sub}</p>` : ''}</div>${link}</div>${body}</div>`;
 const goLink = (view, label) => `<button class="kx-link" data-go="${view}">${label}${IC.chev}</button>`;
@@ -453,7 +447,7 @@ function wire(main) {
 PL.apps.kitchen = {
   title: 'PlateLoop Kitchen',
   mount,
-  unmount() { removeEventListener('scroll', ui.onScroll); removeEventListener('keydown', ui.onKey); ui.dock = false; root = null; },
+  unmount() { removeEventListener('keydown', ui.onKey); ui.dock = false; root = null; },
   update() { if (!root) return; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); if (ui.view !== 'overview') scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
   tick(t) { if (root && t % 20 === 0) $$('.kx-live', root).forEach(l => { l.outerHTML = liveChip(); }); },
 };
