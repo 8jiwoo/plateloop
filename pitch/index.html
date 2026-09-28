@@ -1,0 +1,917 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlateLoop Pitch</title>
+<meta name="description" content="PlateLoop pitch deck: an AI food scanner that measures what is served, eaten and left, told through design thinking.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* ================================================================ tokens */
+:root{
+  --paper:#F3F4F1; --card:#FFFFFF; --ink:#101512; --ink2:#565E58; --ink3:#8A918C; --line:rgba(16,21,18,.1);
+  --green:#1E9E4A; --green2:#34C759; --mint:#E3F5E7; --orange:#D9730D; --orange-soft:#FDEEDC; --red:#D93A2B; --blue:#1B6BD1; --blue-soft:#E4EEFB; --indigo:#5046C8; --indigo-soft:#ECEBFB;
+  --night:#0B100D; --night2:#151C18; --night-ink:#F2F5F1; --night-ink2:#A6B0A9; --glow:#3DDC73;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#050806;overflow:hidden;font-family:var(--font);-webkit-font-smoothing:antialiased;color:var(--ink)}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* ================================================================ stage: a 1600×900 canvas scaled to fit */
+.viewport{position:fixed;inset:0;display:grid;place-items:center}
+.stage{width:1600px;height:900px;position:relative;transform-origin:center;flex:none}
+.slide{position:absolute;inset:0;background:var(--paper);border-radius:6px;overflow:hidden;padding:84px 100px 70px;display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;transform:translateX(40px) scale(.985);transition:opacity .55s cubic-bezier(.2,.8,.2,1),transform .55s cubic-bezier(.2,.8,.2,1),visibility 0s .55s}
+.slide.past{transform:translateX(-40px) scale(.985)}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .55s cubic-bezier(.2,.8,.2,1),transform .55s cubic-bezier(.2,.8,.2,1),visibility 0s}
+.slide.dark{background:radial-gradient(120% 90% at 80% 10%,#15251B,var(--night) 60%);color:var(--night-ink)}
+.notes{display:none}
+
+/* entrance animations: anything with data-a animates when its slide opens; --d delays it */
+[data-a]{opacity:0}
+.slide.on [data-a]{animation:rise .8s cubic-bezier(.2,.8,.2,1) var(--d,0s) both}
+.slide.on [data-a="left"]{animation-name:fromleft}
+.slide.on [data-a="right"]{animation-name:fromright}
+.slide.on [data-a="pop"]{animation:pop .7s cubic-bezier(.2,.9,.3,1.25) var(--d,0s) both}
+.slide.on [data-a="fade"]{animation-name:fadein;animation-duration:1.2s}
+.slide.on [data-a="grow"]{animation:grow 1s cubic-bezier(.2,.8,.2,1) var(--d,0s) both;transform-origin:left center}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes fromleft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes fromright{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes grow{from{opacity:1;transform:scaleX(0)}to{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* ================================================================ type */
+.eyebrow{font-size:17px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:14px}
+.dark .eyebrow{color:var(--glow)}
+h1,h2,h3{margin:0;letter-spacing:-.035em;line-height:1.02}
+h1{font-size:112px;font-weight:800}
+h2{font-size:64px;font-weight:800;max-width:1250px}
+h3{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.lede{font-size:28px;line-height:1.35;color:var(--ink2);max-width:1080px;margin-top:20px;letter-spacing:-.01em}
+.dark .lede{color:var(--night-ink2)}
+.small{font-size:19px;color:var(--ink2);line-height:1.45}
+.dark .small{color:var(--night-ink2)}
+.src{position:absolute;left:100px;bottom:34px;font-size:14px;color:var(--ink3)}
+.dark .src{color:#6F7A73}
+.g{color:var(--green)}.dark .g{color:var(--glow)}
+.o{color:var(--orange)}
+.hl{background:linear-gradient(transparent 62%,rgba(52,199,89,.28) 62%);padding:0 4px}
+.mid{margin-top:auto!important;margin-bottom:auto!important}
+.body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.row{display:flex;gap:28px}
+.grid{display:grid;gap:22px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}.g6{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--card);border-radius:26px;padding:28px 30px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 20px 40px -28px rgba(0,0,0,.25)}
+.dark .card{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.card p{margin:8px 0 0;font-size:19px;line-height:1.45;color:var(--ink2)}
+.dark .card p{color:var(--night-ink2)}
+.tag{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:600;padding:7px 14px;border-radius:99px;background:var(--mint);color:var(--green)}
+
+/* ================================================================ chrome: phase tracker, counter, progress, nav */
+.phase{position:absolute;top:34px;right:100px;display:flex;gap:6px;z-index:5}
+.phase span{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:6px 12px;border-radius:99px;color:var(--ink3);background:rgba(16,21,18,.05);transition:background .4s,color .4s}
+.phase span.on{background:var(--green);color:#fff}
+.phase span.done{color:var(--green)}
+.dark .phase span{background:rgba(255,255,255,.07);color:#77837B}.dark .phase span.on{background:var(--glow);color:#06200F}.dark .phase span.done{color:var(--glow)}
+.brandmark{position:absolute;top:36px;left:100px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em;z-index:5}
+.brandmark i{width:22px;height:22px;border-radius:7px;background:conic-gradient(from 200deg,var(--green2),#9BE5AE,var(--green2))}
+.num-badge{position:absolute;right:100px;bottom:30px;font-size:15px;font-weight:600;color:var(--ink3);font-variant-numeric:tabular-nums}
+.dark .num-badge{color:#6F7A73}
+.progress{position:fixed;left:0;top:0;height:3px;background:var(--glow);z-index:20;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.nav{position:fixed;left:50%;transform:translateX(-50%);top:12px;z-index:20;display:flex;gap:6px;opacity:.35;transition:opacity .25s}
+.nav:hover,.nav:focus-within{opacity:1}
+.nav button{border:0;background:rgba(255,255,255,.12);color:#fff;width:40px;height:40px;border-radius:12px;backdrop-filter:blur(10px);font-size:18px;display:grid;place-items:center}
+.nav button:hover{background:rgba(255,255,255,.22)}
+.help{position:fixed;left:18px;bottom:18px;z-index:20;color:rgba(255,255,255,.4);font-size:12.5px;transition:opacity .4s}
+.notes-panel{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(10,14,12,.94);color:#E9EEEA;padding:18px 28px 22px;font-size:17px;line-height:1.55;max-height:38vh;overflow:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);backdrop-filter:blur(16px)}
+.notes-panel.open{transform:none}
+.notes-panel b{color:var(--glow);font-size:13px;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px}
+
+/* ================================================================ slide parts */
+.loopi-svg .lp-body{animation:lpbob 3.2s ease-in-out infinite;transform-origin:60px 120px}
+.loopi-svg .lp-eye{animation:lpblink 5.5s infinite;transform-box:fill-box;transform-origin:center}
+.loopi-svg .lp-wave{animation:lpwave 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+@keyframes lpbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lpblink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes lpwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+
+/* 1 title */
+.title-wrap{display:grid;grid-template-columns:1fr 760px;align-items:center;gap:40px;flex:1}
+.title-wrap h1{font-size:150px;letter-spacing:-.05em}
+.title-wrap .tagline{font-size:42px;font-weight:700;letter-spacing:-.03em;margin-top:14px;line-height:1.1}
+.title-art{position:relative;height:640px;border-radius:40px;overflow:hidden;background:#EEF0EE}
+.title-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:54% 42%;transform:scale(1.1)}
+.title-art .loopi-svg{position:absolute;left:26px;bottom:14px;animation:floaty 4s ease-in-out infinite;filter:drop-shadow(0 16px 24px rgba(0,0,0,.25))}
+.meta-line{margin-top:44px;display:flex;gap:12px;flex-wrap:wrap}
+.meta-line span{font-size:17px;font-weight:600;color:var(--night-ink2);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:8px 16px}
+
+/* 2 hook */
+.bigstat{font-size:190px;font-weight:800;letter-spacing:-.06em;line-height:.9;color:var(--glow);font-variant-numeric:tabular-nums}
+.bigstat small{display:block;font-size:52px;letter-spacing:-.03em;color:var(--night-ink);line-height:1;margin-top:12px}
+.hook-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:60px;align-items:end;flex:1}
+.hook-side{display:flex;flex-direction:column;gap:18px}
+.hook-side .card{padding:24px 28px}
+.hook-side b{font-size:52px;font-weight:800;letter-spacing:-.04em;display:block;line-height:1;color:#fff}
+
+/* 3 process */
+.process{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;margin:auto 0;position:relative}
+.process::before{content:"";position:absolute;left:52px;right:52px;top:52px;height:4px;background:var(--line);border-radius:4px}
+.process .line{position:absolute;left:52px;top:52px;height:4px;width:calc(100% - 104px);background:var(--green);border-radius:4px;transform-origin:left}
+.step{position:relative;text-align:left}
+.step .dot{width:108px;height:108px;border-radius:32px;background:var(--card);display:grid;place-items:center;box-shadow:0 12px 30px -18px rgba(0,0,0,.4);position:relative;z-index:1;margin-bottom:22px}
+.step .dot svg{width:52px;height:52px;color:var(--green)}
+.step h3{font-size:36px}
+.step p{font-size:21px;color:var(--ink2);line-height:1.45;margin:10px 0 0}
+
+/* 4 personas */
+.persona{display:flex;flex-direction:column;gap:6px;padding:26px 26px 24px}
+.persona .who{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.persona .av{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:22px;color:#fff;flex:none}
+.persona .who b{font-size:23px;letter-spacing:-.02em;display:block}
+.persona .who span{font-size:15px;color:var(--ink3)}
+.persona .need,.persona .pain{font-size:17.5px;line-height:1.45;color:var(--ink2);padding:12px 14px;border-radius:14px}
+.persona .need{background:var(--mint)}.persona .pain{background:var(--orange-soft)}
+.persona .need b,.persona .pain b{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.persona .need b{color:var(--green)}.persona .pain b{color:var(--orange)}
+.persona q{font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1.35;margin:4px 0 8px;quotes:"“" "”"}
+
+/* 5 journey map */
+.jmap{position:relative;margin-top:30px;flex:1;display:flex;flex-direction:column}
+.jmap .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.jmap .stage-c{background:var(--card);border-radius:20px;padding:20px 22px;box-shadow:0 12px 30px -24px rgba(0,0,0,.35)}
+.jmap .stage-c b{font-size:22px;display:block;letter-spacing:-.02em}
+.jmap .stage-c span{font-size:16.5px;color:var(--ink2);line-height:1.4;display:block;margin-top:6px}
+.jmap svg.curve{width:100%;height:320px;margin-top:16px;overflow:visible}
+.curve .path{fill:none;stroke:var(--orange);stroke-width:5;stroke-linecap:round;stroke-dasharray:1600;stroke-dashoffset:1600}
+.slide.on .curve .path{animation:draw 2.2s cubic-bezier(.4,.1,.2,1) .5s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.curve .axis{stroke:var(--line);stroke-width:2;stroke-dasharray:4 8}
+.curve text{font:600 15px var(--font);fill:var(--ink3)}
+.curve .pt{fill:var(--card);stroke:var(--orange);stroke-width:4}
+.curve .pain-t{font:700 18px var(--font);fill:var(--orange)}
+.curve .ok-t{font:600 17px var(--font);fill:var(--green)}
+
+/* 6 define */
+.pov{font-size:50px;font-weight:700;letter-spacing:-.03em;line-height:1.15;max-width:1300px}
+.pov .who{color:var(--green)}
+.hmw{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px}
+.hmw .card{border-top:6px solid var(--green)}
+.hmw .card b{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--green);display:block;margin-bottom:8px}
+.hmw .card div{font-size:24px;font-weight:600;letter-spacing:-.015em;line-height:1.3}
+
+/* 7 why now */
+.stat3 .card .big{font-size:100px;font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--orange);margin:6px 0 8px}
+.stat3 .card h3{font-size:24px}
+
+/* 8 ideate table */
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;background:var(--card);border-radius:24px;overflow:hidden;box-shadow:0 20px 40px -30px rgba(0,0,0,.3)}
+.cmp th,.cmp td{padding:17px 20px;text-align:center;font-size:19px;border-bottom:1px solid var(--line)}
+.cmp th{font-size:14.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);background:#FAFBF9}
+.cmp td:first-child,.cmp th:first-child{text-align:left}
+.cmp td:first-child b{display:block;font-size:20px}
+.cmp td:first-child span{font-size:15px;color:var(--ink3)}
+.cmp tr:last-child td{border-bottom:0;background:var(--mint)}
+.cmp .y,.cmp .n,.cmp .m{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;font-weight:800;font-size:18px}
+.cmp .y{background:var(--green);color:#fff}.cmp .n{background:#EFE9E4;color:#B39B8A}.cmp .m{background:#FFF1D6;color:#B07A00}
+.slide.on .cmp tbody tr{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+.slide.on .cmp tbody tr:nth-child(2){animation-delay:.1s}.slide.on .cmp tbody tr:nth-child(3){animation-delay:.2s}.slide.on .cmp tbody tr:nth-child(4){animation-delay:.3s}.slide.on .cmp tbody tr:nth-child(5){animation-delay:.55s}
+
+/* 9 equation */
+.eqn{display:flex;align-items:center;justify-content:center;gap:34px;margin-top:40px}
+.eqn .term{background:rgba(255,255,255,.06);border-radius:34px;padding:34px 44px;text-align:center;min-width:330px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.eqn .term.res{background:var(--glow);color:#05200E;box-shadow:0 30px 80px -30px rgba(61,220,115,.7)}
+.eqn .term b{font-size:108px;font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.eqn .term b small{font-size:46px}
+.eqn .term > span{display:block;font-size:22px;font-weight:600;margin-top:10px;color:var(--night-ink2)}
+.eqn .term.res > span{color:#0A4A22}
+.eqn .op{font-size:90px;font-weight:300;color:var(--night-ink2)}
+.eq-foot{display:flex;justify-content:center;gap:14px;margin-top:46px;flex-wrap:wrap}
+.eq-foot span{font-size:19px;font-weight:600;padding:10px 20px;border-radius:99px;background:rgba(255,255,255,.07);color:var(--night-ink)}
+
+/* 10 hardware */
+.hw{display:grid;grid-template-columns:1fr 520px;gap:40px;flex:1;min-height:0;margin-top:20px}
+.hw-art{position:relative;border-radius:30px;overflow:hidden;background:#EEF0EE;aspect-ratio:16/11;align-self:center;width:100%}
+.hw-art img,.hw-art iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
+.hw-art .callout{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:var(--green);color:#fff;font-weight:800;display:grid;place-items:center;font-size:18px;box-shadow:0 0 0 6px rgba(30,158,74,.22)}
+.slide.on .hw-art .callout{animation:pop .6s cubic-bezier(.2,.9,.3,1.3) var(--d) both,ping 2.4s ease-out calc(var(--d) + .6s) infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(30,158,74,.45)}70%,100%{box-shadow:0 0 0 18px rgba(30,158,74,0)}}
+.hw-list{display:flex;flex-direction:column;gap:12px;justify-content:center}
+.hw-list div{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:start;background:var(--card);border-radius:18px;padding:14px 18px}
+.hw-list i{width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;font-style:normal;font-weight:800;display:grid;place-items:center}
+.hw-list b{font-size:20px;display:block}.hw-list span{font-size:15.5px;color:var(--ink2);line-height:1.4}
+.btn3d{position:absolute;right:18px;bottom:18px;border:0;background:rgba(16,21,18,.85);color:#fff;font-weight:600;font-size:16px;padding:10px 16px;border-radius:99px;z-index:2}
+
+/* 11 architecture */
+.arch{display:grid;grid-template-columns:1fr 70px 1fr 110px 1fr 70px 1fr;margin-top:40px;align-items:stretch}
+.arch .col{display:flex;flex-direction:column;gap:12px}
+.arch h4{margin:0 0 4px;font-size:14px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+.arch .n{background:var(--card);border-radius:18px;padding:15px 18px;font-size:20px;font-weight:700;letter-spacing:-.01em;box-shadow:0 10px 24px -20px rgba(0,0,0,.4)}
+.arch .n small{display:block;font-weight:500;font-size:14.5px;color:var(--ink2);margin-top:3px;line-height:1.35}
+.arch .n.core{background:var(--green);color:#fff}.arch .n.core small{color:rgba(255,255,255,.88)}
+.arch .ar{position:relative;display:flex;align-items:center;justify-content:center}
+.arch .ar::before{content:"";position:absolute;left:8px;right:12px;top:50%;height:4px;margin-top:-2px;background:radial-gradient(circle,var(--green) 2px,transparent 2.4px) 0 50%/12px 4px repeat-x;animation:flowx .8s linear infinite}
+.arch .ar::after{content:"";position:absolute;right:2px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:11px solid var(--green)}
+.arch .ar span{position:absolute;top:calc(50% + 16px);font-size:14px;font-weight:600;color:var(--ink2);text-align:center;line-height:1.3}
+@keyframes flowx{to{background-position:12px 50%}}
+.arch-foot{display:flex;gap:14px;margin-top:34px}
+.arch-foot .pill{font-size:17px}
+
+/* 12–17 live demos */
+.demo{display:grid;grid-template-columns:470px 1fr;gap:44px;flex:1;min-height:0;margin-top:18px}
+.demo-text{display:flex;flex-direction:column;justify-content:center;gap:16px}
+.demo-text ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.demo-text li{font-size:20px;line-height:1.4;color:var(--ink2);padding-left:34px;position:relative}
+.demo-text li::before{content:"";position:absolute;left:0;top:5px;width:20px;height:20px;border-radius:50%;background:var(--mint);box-shadow:inset 0 0 0 6px var(--green)}
+.demo-text li b{color:var(--ink)}
+.dark .demo-text li{color:var(--night-ink2)}.dark .demo-text li::before{background:rgba(61,220,115,.15);box-shadow:inset 0 0 0 6px var(--glow)}
+.demo-kpis{display:flex;gap:14px;margin-top:6px}
+.demo-kpis div{background:var(--card);border-radius:18px;padding:14px 18px;flex:1}
+.demo-kpis b{font-size:40px;font-weight:800;letter-spacing:-.04em;display:block;line-height:1;color:var(--green)}
+.demo-kpis span{font-size:14.5px;color:var(--ink2)}
+.device{position:relative;border-radius:26px;overflow:hidden;background:#000;box-shadow:0 0 0 10px #1B201D,0 40px 80px -40px rgba(0,0,0,.6);align-self:center;width:100%;aspect-ratio:var(--ar,1.6)}
+.device.tall{height:660px;width:auto;justify-self:center}
+.device iframe{position:absolute;left:0;top:0;border:0;width:var(--vw,1280px);height:var(--vh,800px);transform-origin:0 0;background:#000}
+.device .ph{position:absolute;inset:0;z-index:1;display:grid;place-items:center;color:#8A958D;font-size:18px;text-align:center;background:radial-gradient(80% 70% at 50% 40%,#1D2A22,#0B100D)}
+.device .ph button{margin-top:14px;border:0;background:var(--glow);color:#05200E;font-weight:700;font-size:19px;padding:14px 26px;border-radius:99px}
+.live-tag{position:absolute;left:14px;bottom:14px;z-index:2;background:rgba(0,0,0,.6);color:#fff;font-size:13px;font-weight:700;letter-spacing:.05em;padding:6px 11px 6px 26px;border-radius:99px;pointer-events:none}
+.live-tag::before{content:"";position:absolute;left:11px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#FF453A;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.open-full{position:absolute;right:14px;bottom:14px;z-index:2;background:rgba(0,0,0,.6);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:99px;text-decoration:none}
+.loop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.loop span{background:var(--card);border-radius:99px;padding:8px 14px;font-size:16px;font-weight:600}
+.loop em{font-style:normal;color:var(--green);font-weight:800}
+
+/* 18 test: before → after */
+.iters{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px}
+.iter{background:var(--card);border-radius:24px;padding:28px 28px;display:flex;flex-direction:column;gap:10px}
+.iter .was{font-size:19px;color:var(--ink2);line-height:1.4;padding-left:26px;position:relative}
+.iter .was::before{content:"✕";position:absolute;left:0;top:0;color:var(--orange);font-weight:800}
+.iter .now{font-size:20.5px;font-weight:600;line-height:1.4;padding-left:26px;position:relative}
+.iter .now::before{content:"✓";position:absolute;left:0;top:0;color:var(--green);font-weight:800}
+.iter h3{font-size:26px}
+
+/* 19 privacy */
+.priv{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.priv .card{display:flex;flex-direction:column;gap:6px}
+.priv .ic{width:62px;height:62px;border-radius:18px;background:var(--mint);display:grid;place-items:center;margin-bottom:10px}
+.priv .ic svg{width:32px;height:32px;color:var(--green)}
+
+/* 20 impact calculator */
+.calc{display:grid;grid-template-columns:520px 1fr;gap:40px;margin-top:34px;flex:1;min-height:0}
+.calc .inputs{background:var(--card);border-radius:26px;padding:28px 30px;display:flex;flex-direction:column;gap:24px}
+.calc label{display:block;font-size:16px;font-weight:600;color:var(--ink2);margin-bottom:10px}
+.calc label b{float:right;color:var(--ink);font-size:20px;font-variant-numeric:tabular-nums}
+.calc input[type=range]{width:100%;accent-color:var(--green);height:28px}
+.calc .outs{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-content:center}
+.calc .out{background:var(--card);border-radius:26px;padding:26px 28px}
+.calc .out b{font-size:64px;font-weight:800;letter-spacing:-.05em;line-height:1;display:block;font-variant-numeric:tabular-nums}
+.calc .out span{font-size:17px;color:var(--ink2);display:block;margin-top:8px}
+.calc .out.hero{grid-column:1/-1;background:var(--green);color:#fff}
+.calc .out.hero span{color:rgba(255,255,255,.85)}
+.calc .out.hero b{font-size:96px}
+.calc .note{font-size:14px;color:var(--ink3);line-height:1.4}
+
+/* 21 business */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:40px}
+.tier{background:var(--card);border-radius:26px;padding:28px 30px;display:flex;flex-direction:column;gap:6px;position:relative}
+.tier.best{box-shadow:0 0 0 3px var(--green),0 30px 60px -36px rgba(30,158,74,.6)}
+.tier .price{font-size:58px;font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0}
+.tier .price small{font-size:20px;font-weight:600;color:var(--ink3);letter-spacing:0}
+.tier ul{margin:10px 0 0;padding-left:20px;font-size:17.5px;line-height:1.6;color:var(--ink2)}
+.tier .badge{position:absolute;top:-14px;right:24px;background:var(--green);color:#fff;font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px;letter-spacing:.04em;text-transform:uppercase}
+.biz-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:22px}
+.biz-foot div{font-size:18px;color:var(--ink2);line-height:1.45}
+.biz-foot b{display:block;color:var(--ink);font-size:20px;margin-bottom:2px}
+
+/* 22 competition 2×2 */
+.pos{display:grid;grid-template-columns:720px 1fr;gap:50px;margin-top:26px;flex:1;min-height:0;align-items:center}
+.quad{position:relative;height:560px;border-radius:26px;background:var(--card);overflow:hidden}
+.quad::before,.quad::after{content:"";position:absolute;background:var(--line)}
+.quad::before{left:50%;top:40px;bottom:40px;width:2px}
+.quad::after{top:50%;left:40px;right:40px;height:2px}
+.quad .ax{position:absolute;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+.quad .dotc{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.quad .dotc i{width:26px;height:26px;border-radius:50%;background:#C9CFCB}
+.quad .dotc b{font-size:18px}.quad .dotc span{font-size:13.5px;color:var(--ink3);max-width:170px;line-height:1.3}
+.quad .dotc.us i{width:44px;height:44px;background:var(--green);box-shadow:0 0 0 10px rgba(30,158,74,.18)}
+.quad .dotc.us b{font-size:24px;color:var(--green)}
+.slide.on .quad .dotc.us i{animation:ping 2.2s ease-out 1s infinite}
+.diff{display:flex;flex-direction:column;gap:14px}
+.diff div{background:var(--card);border-radius:18px;padding:16px 20px;font-size:18px;line-height:1.4;color:var(--ink2)}
+.diff b{color:var(--ink);display:block;font-size:20px}
+
+/* 23 roadmap */
+.road{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:22px;margin:auto 0}
+.road::before{content:"";position:absolute;left:0;right:0;top:22px;height:4px;background:var(--line);border-radius:4px}
+.road .fill{position:absolute;left:0;top:22px;height:4px;width:20%;background:var(--green);border-radius:4px;transform-origin:left}
+.road .m{position:relative;padding-top:60px}
+.road .m::before{content:"";position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 4px var(--line)}
+.road .m.now::before{background:var(--green);box-shadow:0 0 0 8px rgba(30,158,74,.2)}
+.road .m small{font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green)}
+.road .m b{display:block;font-size:29px;letter-spacing:-.02em;margin:4px 0 6px}
+.road .m span{font-size:19.5px;color:var(--ink2);line-height:1.45;display:block}
+.ask{background:var(--night);color:var(--night-ink);border-radius:28px;padding:30px 36px;display:flex;align-items:center;justify-content:space-between;gap:30px}
+.ask b{font-size:36px;letter-spacing:-.03em;line-height:1.15}
+.ask span{font-size:19px;color:var(--night-ink2);max-width:520px;line-height:1.45}
+
+/* 24 close */
+.close{display:grid;grid-template-columns:1fr 360px;gap:60px;align-items:center;flex:1}
+.close h2{font-size:96px}
+.qr{background:#fff;border-radius:28px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--ink)}
+.qr #qr{width:300px;height:300px;display:grid;place-items:center}
+.qr #qr svg,.qr #qr img{width:300px;height:300px}
+.qr span{font-size:16px;font-weight:600;text-align:center}
+.links{display:flex;flex-direction:column;gap:10px;margin-top:36px}
+.links a{color:var(--night-ink);font-size:22px;font-weight:600;text-decoration:none;display:flex;gap:12px;align-items:center}
+.links a i{font-style:normal;color:var(--glow)}
+
+/* phones: the stage still scales; keep the chrome out of the way */
+@media (max-width:700px){.help{display:none}}
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  .viewport{position:static;display:block}
+  .stage{transform:none!important;width:1600px;height:auto}
+  .slide{position:relative;opacity:1;visibility:visible;transform:none;page-break-after:always;height:900px;border-radius:0}
+  [data-a]{opacity:1!important;animation:none!important}
+  .nav,.help,.progress,.notes-panel{display:none}
+  @page{size:1600px 900px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;transition-duration:.01s!important}}
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="viewport"><div class="stage" id="stage">
+
+<!-- ============================================================ 1 TITLE -->
+<section class="slide dark" data-title="PlateLoop">
+  <div class="title-wrap">
+    <div>
+      <div class="eyebrow" data-a>EcoLoop Hackathon · Singapore</div>
+      <h1 data-a style="--d:.1s">PlateLoop</h1>
+      <div class="tagline" data-a style="--d:.25s">Know what’s eaten.<br><span class="g">Waste less.</span></div>
+      <p class="lede" data-a style="--d:.4s">An AI food scanner that measures what is served, eaten and left, so canteens cook the right amount, and everyone who eats gets their own nutrition report.</p>
+      <div class="meta-line" data-a style="--d:.55s"><span>Scanner</span><span>Kiosk</span><span>Kitchen</span><span>Loopi</span><span>Loopi Care</span><span>Loopi Work</span><span>Lunch Rush 3D</span></div>
+    </div>
+    <div class="title-art" data-a="pop" style="--d:.2s"><img src="../apps/render_scanner_hero.png" alt="The PlateLoop scanner"><svg class="loopi-svg" width="190" height="205" viewBox="0 0 120 130" role="img" aria-label="Loopi"> <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/> <g class="lp-body"> <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/> <path class="" d="M26 82q-9 7-10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/><path class="lp-wave" d="M94 76q13-6 14-22" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/> <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/> <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/> <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/> <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/> <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/> <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/> <g class="lp-eye"><ellipse cx="47" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="47" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="48.6" cy="65.6" r="1.4" fill="#fff"/></g><g class="lp-eye"><ellipse cx="73" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="73" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="74.6" cy="65.6" r="1.4" fill="#fff"/></g><path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/> </g></svg></div>
+  </div>
+  <aside class="notes">Hi, we’re team PlateLoop. In one sentence: PlateLoop is an AI food scanner that measures what people are served and what they leave, so canteens cook the right amount and waste less. Today we’ll walk you through how we got there using design thinking, show you the working prototype live, and end with the business case and what we’d like from you.</aside>
+</section>
+
+<!-- ============================================================ 2 HOOK -->
+<section class="slide dark" data-title="The problem in numbers">
+  <div class="body">
+    <div class="eyebrow" data-a>Why this matters</div>
+    <div class="hook-grid">
+      <div>
+        <div class="bigstat" data-a style="--d:.1s"><span class="count" data-to="755000" data-fmt="comma">755,000</span><small> tonnes</small></div>
+        <p class="lede" data-a style="--d:.3s">of food was thrown away in Singapore in 2023. <span style="color:#fff;font-weight:700">Only about 18% of it was recycled.</span> The rest was burnt, and the ash goes to Semakau, our only landfill.</p>
+      </div>
+      <div class="hook-side">
+        <div class="card" data-a="right" style="--d:.45s"><b><span class="count" data-to="28">28</span>%</b><p>of the world’s food waste comes from food service: canteens, restaurants and caterers.</p></div>
+        <div class="card" data-a="right" style="--d:.6s"><b>8–10%</b><p>of global greenhouse gas emissions come from food that is lost or wasted.</p></div>
+      </div>
+    </div>
+  </div>
+  <div class="src">Sources: NEA waste statistics 2023; UNEP Food Waste Index Report 2024. Check the latest figures before presenting.</div>
+  <aside class="notes">Singapore threw away about 755,000 tonnes of food in 2023, and only around 18% was recycled. Worldwide, about 28% of food waste comes from food service, which is exactly the canteens and caterers we’re targeting, and food waste is 8 to 10% of global emissions. So this isn’t a small problem, and a lot of it happens in places where one kitchen feeds hundreds of people every day.</aside>
+</section>
+
+<!-- ============================================================ 3 PROCESS -->
+<section class="slide" data-title="How we worked">
+  <div class="eyebrow" data-a>Our process</div>
+  <h2 data-a style="--d:.1s">We used design thinking, from lunch queue to prototype.</h2>
+  <div class="process">
+    <div class="line" data-a="grow" style="--d:.4s"></div>
+    <div class="step" data-a style="--d:.3s"><div class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></div><h3>Empathise</h3><p>Watched how lunch really runs and mapped four people it affects.</p></div>
+    <div class="step" data-a style="--d:.45s"><div class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/></svg></div><h3>Define</h3><p>One problem statement and three “how might we” questions.</p></div>
+    <div class="step" data-a style="--d:.6s"><div class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-4 10.5c.7.7 1 1.5 1 2.5h6c0-1 .3-1.8 1-2.5A6 6 0 0 0 12 3Z"/></svg></div><h3>Ideate</h3><p>Compared five ways to measure what people eat.</p></div>
+    <div class="step" data-a style="--d:.75s"><div class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4Z"/></svg></div><h3>Prototype</h3><p>A 3D scanner, six working apps and a 3D game of one lunch.</p></div>
+    <div class="step" data-a style="--d:.9s"><div class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6M10 3v6L4 19a1.5 1.5 0 0 0 1.3 2h13.4a1.5 1.5 0 0 0 1.3-2L14 9V3"/><path d="M7 15h10"/></svg></div><h3>Test</h3><p>Walked every step, found where it breaks, and fixed it.</p></div>
+  </div>
+  <aside class="notes">We followed design thinking. First we tried to understand the people involved in a school lunch. Then we narrowed it down to one clear problem. We compared several ideas, built a full prototype, and then tested it step by step and changed it where it broke. The tracker in the top right shows where we are in the story.</aside>
+</section>
+
+<!-- ============================================================ 4 PERSONAS -->
+<section class="slide" data-title="Who we designed for" data-phase="0">
+  <div class="eyebrow" data-a>Empathise · the people at lunch</div>
+  <h2 data-a style="--d:.1s">Four people, four different problems with the same tray.</h2>
+  <div class="grid g4 mid">
+    <div class="card persona" data-a style="--d:.2s"><div class="who"><span class="av" style="background:#34C759">WL</span><div><b>Wei Ling, 15</b><span>Secondary 3 student</span></div></div>
+      <q>I get the same big scoop as everyone, and I’m told to finish it.</q>
+      <div class="need"><b>Needs</b>To take the amount she’ll actually eat, without being judged.</div>
+      <div class="pain"><b>Pain</b>Clean-plate pressure. Leftovers feel like failure.</div></div>
+    <div class="card persona" data-a style="--d:.32s"><div class="who"><span class="av" style="background:#FF9F0A">ML</span><div><b>Mrs Lim, 52</b><span>Canteen operator</span></div></div>
+      <q>I cook by feel. Some days half the kailan comes back.</q>
+      <div class="need"><b>Needs</b>To know how much to cook and order for tomorrow.</div>
+      <div class="pain"><b>Pain</b>Rising food prices, and no data on what gets eaten.</div></div>
+    <div class="card persona" data-a style="--d:.44s"><div class="who"><span class="av" style="background:#0A84FF">NA</span><div><b>Nurse Aisha, 34</b><span>Ward 7B</span></div></div>
+      <q>By the time we notice a patient isn’t eating, it’s been days.</q>
+      <div class="need"><b>Needs</b>An early warning when a patient leaves their meals.</div>
+      <div class="pain"><b>Pain</b>Meal charts filled in by hand, if at all.</div></div>
+    <div class="card persona" data-a style="--d:.56s"><div class="who"><span class="av" style="background:#5E5CE6">MT</span><div><b>Marcus, 29</b><span>Office worker</span></div></div>
+      <q>I’m trying to build muscle, but I have no idea what the canteen gives me.</q>
+      <div class="need"><b>Needs</b>To know what to pick, and what his lunch was missing.</div>
+      <div class="pain"><b>Pain</b>Calorie apps mean typing every meal by hand.</div></div>
+  </div>
+  <div class="src">Personas built from our observations of canteen lunches. Replace the quotes with lines from your own interviews if you have them.</div>
+  <aside class="notes">We started by looking at who is actually affected by one canteen tray. There’s the student, who gets a standard scoop and feels pressure to finish it. There’s the canteen operator, who cooks by experience with no data. In hospitals, there’s the nurse who often finds out too late that a patient hasn’t been eating. And in offices, there’s the worker with a health goal who has no idea what’s on his plate. Same tray, four very different needs.</aside>
+</section>
+
+<!-- ============================================================ 5 JOURNEY MAP -->
+<section class="slide" data-title="A canteen lunch today" data-phase="0">
+  <div class="eyebrow" data-a>Empathise · journey map</div>
+  <h2 data-a style="--d:.1s">Today, the data disappears into the bin.</h2>
+  <div class="jmap">
+    <div class="stages">
+      <div class="stage-c" data-a style="--d:.2s"><b>Cook</b><span>Standard portion × headcount.</span></div>
+      <div class="stage-c" data-a style="--d:.3s"><b>Serve</b><span>Same scoop for everyone.</span></div>
+      <div class="stage-c" data-a style="--d:.4s"><b>Eat</b><span>Some finish, some barely start.</span></div>
+      <div class="stage-c" data-a style="--d:.5s"><b>Throw away</b><span>Everything into one bin.</span></div>
+      <div class="stage-c" data-a style="--d:.6s"><b>Plan tomorrow</b><span>Guess again. Same amount.</span></div>
+    </div>
+    <svg class="curve" viewBox="0 0 1400 320" preserveAspectRatio="none" aria-hidden="true">
+      <line class="axis" x1="0" y1="150" x2="1400" y2="150"/>
+      <text x="0" y="22">happy</text><text x="0" y="316">frustrated</text>
+      <path class="path" d="M134 80 C 270 70, 330 100, 417 118 S 600 70, 700 82 S 900 250, 983 245 S 1180 265, 1266 232"/>
+      <circle class="pt" cx="134" cy="80" r="11"/><circle class="pt" cx="417" cy="118" r="11"/><circle class="pt" cx="700" cy="82" r="11"/><circle class="pt" cx="983" cy="245" r="11"/><circle class="pt" cx="1266" cy="232" r="11"/>
+      <text class="pain-t" x="983" y="292" text-anchor="middle">Nobody knows who left what</text>
+      <text class="pain-t" x="1266" y="278" text-anchor="middle">Overproduce again</text>
+      <text class="ok-t" x="134" y="50" text-anchor="middle">Hot food, ready</text>
+      <text class="ok-t" x="700" y="52" text-anchor="middle">Lunch with friends</text>
+    </svg>
+  </div>
+  <aside class="notes">This is a normal lunch today. The kitchen cooks the standard portion times headcount, everyone gets the same scoop, and after lunch all the leftovers go into one bin. The key insight is here in the dip: once food hits the bin, nobody knows which dish came back or who left it. So tomorrow, the kitchen guesses again, and the cycle repeats.</aside>
+</section>
+
+<!-- ============================================================ 6 DEFINE -->
+<section class="slide" data-title="The problem we chose" data-phase="1">
+  <div class="eyebrow" data-a>Define · point of view</div>
+  <div class="body">
+    <div class="pov" data-a style="--d:.1s"><span class="who">Canteen managers</span> need to know what people actually eat, dish by dish, because they plan for <span class="hl">headcount</span>, not appetite, and the difference ends up in the bin.</div>
+    <div class="hmw">
+      <div class="card" data-a style="--d:.35s"><b>How might we</b><div>measure what each person eats without slowing down a lunch queue?</div></div>
+      <div class="card" data-a style="--d:.5s"><b>How might we</b><div>make taking the right portion rewarding, without forcing anyone to overeat?</div></div>
+      <div class="card" data-a style="--d:.65s"><b>How might we</b><div>turn today’s leftovers into tomorrow’s order automatically?</div></div>
+    </div>
+  </div>
+  <aside class="notes">From all that, we wrote one point of view: canteen managers need to know what people actually eat, dish by dish, because they plan for headcount instead of appetite. That gave us three “how might we” questions. Measure without slowing the queue. Reward the right portion instead of the clean plate. And turn leftovers into tomorrow’s order automatically. Everything we built answers one of these three.</aside>
+</section>
+
+<!-- ============================================================ 7 WHY NOW -->
+<section class="slide" data-title="Why now" data-phase="1">
+  <div class="eyebrow" data-a>Define · why now</div>
+  <h2 data-a style="--d:.1s">Canteens are squeezed from three sides.</h2>
+  <div class="grid g3 stat3 mid">
+    <div class="card" data-a style="--d:.25s"><div class="tag" style="color:var(--orange)">Planet</div><div class="big">~9%</div><h3>of emissions</h3><p>Food waste is one of the biggest single sources of greenhouse gas.</p></div>
+    <div class="card" data-a style="--d:.4s"><div class="tag" style="color:var(--orange)">Cost</div><div class="big">Rising</div><h3>food prices</h3><p>Ingredient costs go up every year, and Singapore imports over 90% of its food.</p></div>
+    <div class="card" data-a style="--d:.55s"><div class="tag" style="color:var(--orange)">Rules</div><div class="big">2024</div><h3>new obligations</h3><p>Large premises now have to separate their food waste, and the Zero Waste Masterplan aims for 30% less waste to landfill by 2030.</p></div>
+  </div>
+  <div class="src">Sources: UNEP; Singapore Food Agency; Resource Sustainability Act; Zero Waste Masterplan (MSE).</div>
+  <aside class="notes">Why now? Canteens are squeezed from three sides. Food waste is about 9% of emissions. Ingredient prices keep rising, and Singapore imports over 90% of its food. And regulation is tightening: large premises now have to separate food waste, and the national target is 30% less waste to landfill by 2030. So operators need to cut waste and cost at the same time, and they need data to do it.</aside>
+</section>
+
+<!-- ============================================================ 8 IDEATE -->
+<section class="slide" data-title="Ideas we compared" data-phase="2">
+  <div class="eyebrow" data-a>Ideate · five ways to measure</div>
+  <h2 data-a style="--d:.1s">Only one idea answered all three questions.</h2>
+  <table class="cmp mid" data-a style="--d:.2s">
+    <thead><tr><th>Idea</th><th>Per dish</th><th>Per person</th><th>No extra effort</th><th>Before and after</th><th>Keeps the queue moving</th></tr></thead>
+    <tbody>
+      <tr><td><b>Weigh the waste bin</b><span>what kitchens do today</span></td><td><i class="n">✕</i></td><td><i class="n">✕</i></td><td><i class="y">✓</i></td><td><i class="n">✕</i></td><td><i class="y">✓</i></td></tr>
+      <tr><td><b>Surveys after lunch</b><span>ask what people liked</span></td><td><i class="m">~</i></td><td><i class="m">~</i></td><td><i class="n">✕</i></td><td><i class="n">✕</i></td><td><i class="m">~</i></td></tr>
+      <tr><td><b>Photo app on your phone</b><span>snap your own plate</span></td><td><i class="y">✓</i></td><td><i class="y">✓</i></td><td><i class="n">✕</i></td><td><i class="m">~</i></td><td><i class="n">✕</i></td></tr>
+      <tr><td><b>Pre-order your lunch</b><span>cook to orders</span></td><td><i class="y">✓</i></td><td><i class="y">✓</i></td><td><i class="n">✕</i></td><td><i class="n">✕</i></td><td><i class="y">✓</i></td></tr>
+      <tr><td><b>PlateLoop tray scan</b><span>face sign-in, scan before and after</span></td><td><i class="y">✓</i></td><td><i class="y">✓</i></td><td><i class="y">✓</i></td><td><i class="y">✓</i></td><td><i class="y">✓</i></td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">We compared five ideas. Weighing the bin is what kitchens do today, but it can’t tell you which dish or which person. Surveys are slow and people forget. A phone photo app works, but nobody will photograph every lunch. Pre-ordering helps cooking but doesn’t measure leftovers. A two-second tray scan before and after lunch, with face sign-in, was the only idea that ticked every box, including not slowing the queue.</aside>
+</section>
+
+<!-- ============================================================ 9 THE IDEA -->
+<section class="slide dark" data-title="One scanner, two scans" data-phase="2">
+  <div class="body" style="align-items:center;text-align:center">
+    <div class="eyebrow" data-a>The idea</div>
+    <h2 data-a style="--d:.1s;max-width:none">One scanner. Two scans.</h2>
+    <div class="eqn">
+      <div class="term" data-a="pop" style="--d:.35s"><b><span class="count" data-to="620">620</span><small> g</small></b><span>served · scanned before</span></div>
+      <div class="op" data-a="fade" style="--d:.6s">−</div>
+      <div class="term" data-a="pop" style="--d:.75s"><b><span class="count" data-to="95">95</span><small> g</small></b><span>left · scanned after</span></div>
+      <div class="op" data-a="fade" style="--d:1s">=</div>
+      <div class="term res" data-a="pop" style="--d:1.15s"><b><span class="count" data-to="525">525</span><small> g</small></b><span>eaten, dish by dish</span></div>
+    </div>
+    <div class="eq-foot" data-a style="--d:1.5s"><span>About 2 seconds per scan</span><span>Sign in by face, no card</span><span>Per person · per dish · every meal</span></div>
+  </div>
+  <aside class="notes">So here’s the core idea. You scan your tray before lunch, which tells us what you were served. You scan it again after, which tells us what’s left. Served minus left equals exactly what you ate, dish by dish. Each scan takes about two seconds, and you sign in just by looking at the camera. No cards, nothing to type.</aside>
+</section>
+
+<!-- ============================================================ 10 HARDWARE -->
+<section class="slide" data-title="The scanner" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · hardware</div>
+  <h2 data-a style="--d:.1s">The PlateLoop Scanner</h2>
+  <div class="hw">
+    <div class="hw-art" data-a="pop" style="--d:.2s" id="hw-art">
+      <img src="../apps/render_scanner_hero.png" alt="PlateLoop scanner render with numbered parts">
+      <span class="callout" style="left:45.5%;top:14%;--d:.6s">1</span>
+      <span class="callout" style="left:38.8%;top:24.5%;--d:.75s">2</span>
+      <span class="callout" style="left:42%;top:33%;--d:.9s">3</span>
+      <span class="callout" style="left:52%;top:47%;--d:1.05s">4</span>
+      <span class="callout" style="left:64.5%;top:50%;--d:1.2s">5</span>
+      <button class="btn3d" id="btn3d">Rotate it in 3D ↻</button>
+    </div>
+    <div class="hw-list">
+      <div data-a="right" style="--d:.6s"><i>1</i><p style="margin:0"><b>Depth camera</b><span>0.62 m above the tray. Finds each dish and measures its volume.</span></p></div>
+      <div data-a="right" style="--d:.75s"><i>2</i><p style="margin:0"><b>Face camera</b><span>Signs you in by matching a code on the device, never a stored photo.</span></p></div>
+      <div data-a="right" style="--d:.9s"><i>3</i><p style="margin:0"><b>10.1″ screen</b><span>Shows the steps, your result and what you ate.</span></p></div>
+      <div data-a="right" style="--d:1.05s"><i>4</i><p style="margin:0"><b>Weighing platform</b><span>Checks the camera’s estimate against real grams.</span></p></div>
+      <div data-a="right" style="--d:1.2s"><i>5</i><p style="margin:0"><b>Food waste bin</b><span>Weighs the scraps too, so the kitchen sees the whole picture.</span></p></div>
+    </div>
+  </div>
+  <aside class="notes">This is the scanner we designed and modelled in Blender. A depth camera above the tray finds each dish and its volume, and a scale underneath double-checks the weight. There’s a face camera for sign-in that stores a match code, not a photo. The screen guides you, and the food waste bin beside it weighs the scraps as well. You can rotate the real 3D model right here.</aside>
+</section>
+
+<!-- ============================================================ 11 ARCHITECTURE -->
+<section class="slide" data-title="How the system works" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · system</div>
+  <h2 data-a style="--d:.1s">Heavy work on the device. Only numbers leave it.</h2>
+  <div class="arch">
+    <div class="col" data-a style="--d:.2s"><h4>Sensors</h4><div class="n">Face camera<small>match code only</small></div><div class="n">Depth camera<small>which food, how much</small></div><div class="n">Load cell<small>checks the camera</small></div></div>
+    <div class="ar" data-a="fade" style="--d:.45s"></div>
+    <div class="col" data-a style="--d:.5s"><h4>On the scanner</h4><div class="n core">On-device AI<small>dishes and grams in ~2 s</small></div><div class="n">Kiosk screen<small>instant result</small></div><div class="n">Offline queue<small>never stops scanning</small></div></div>
+    <div class="ar" data-a="fade" style="--d:.75s"><span>grams per dish<br>+ tray number</span></div>
+    <div class="col" data-a style="--d:.8s"><h4>PlateLoop cloud</h4><div class="n core">Before − after<small>eaten per person, per dish</small></div><div class="n">Forecasts<small>attendance, weather, events</small></div><div class="n">Nutrition and CO₂<small>My Healthy Plate, carbon ledger</small></div></div>
+    <div class="ar" data-a="fade" style="--d:1.05s"></div>
+    <div class="col" data-a style="--d:1.1s"><h4>Apps</h4><div class="n">Kitchen<small>managers</small></div><div class="n">Loopi<small>students</small></div><div class="n">Loopi Care<small>patients, nurses</small></div><div class="n">Loopi Work<small>office workers</small></div></div>
+  </div>
+  <div class="arch-foot" data-a style="--d:1.3s"><span class="pill">No photos leave the scanner</span><span class="pill">Kitchens see tray numbers, not names</span><span class="pill">One set of numbers feeds every app</span></div>
+  <aside class="notes">Here’s how the system fits together. All the heavy AI runs on the scanner itself, so it keeps working even if the Wi-Fi drops. What goes to the cloud is just grams per dish and a tray number, never a photo. In the cloud we subtract after from before, forecast tomorrow, and work out nutrition and carbon. Then every app reads from that same set of numbers.</aside>
+</section>
+
+<!-- ============================================================ 12 KIOSK LIVE -->
+<section class="slide" data-title="Kiosk, live" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · on the scanner screen</div>
+  <div class="demo">
+    <div class="demo-text">
+      <h2 data-a style="--d:.1s;font-size:56px">The Kiosk</h2>
+      <ul>
+        <li data-a style="--d:.25s"><b>Three steps</b>, taught by an animated banner: look, place, wait for the chime.</li>
+        <li data-a style="--d:.35s"><b>Instant feedback:</b> what you ate, your nutrition and the CO₂ your tray saved.</li>
+        <li data-a style="--d:.45s"><b>Every failure has a way out:</b> face not found, a hand on the tray, a skipped scan.</li>
+        <li data-a style="--d:.55s"><b>Every clean tray</b> grows a fruit on the school’s Green Tree.</li>
+      </ul>
+    </div>
+    <div class="device" data-a="pop" style="--d:.2s;--ar:1.52;--vw:1280px;--vh:842px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/2-plateloop-kiosk.html" target="_blank" rel="noopener">Open ↗</a><iframe data-src="../dist/2-plateloop-kiosk.html" title="PlateLoop Kiosk, live demo"></iframe></div>
+  </div>
+  <aside class="notes">This is the real Kiosk running live. Let me pick a student and walk up. It recognises her face, she places her tray, and in about two seconds she gets her result. What we’re proud of is that every failure has a way out. If the camera can’t find her face, she can type her class and register number. If her hand is still on the tray, it waits and measures again. You can try all of these from the demo controls.</aside>
+</section>
+
+<!-- ============================================================ 13 KITCHEN LIVE -->
+<section class="slide" data-title="Kitchen, live" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · for the kitchen</div>
+  <div class="demo">
+    <div class="demo-text">
+      <h2 data-a style="--d:.1s;font-size:56px">PlateLoop Kitchen</h2>
+      <div class="demo-kpis" data-a style="--d:.25s"><div><b>up to 30%</b><span>lower food material cost</span></div><div><b>up to 42%</b><span>less plate waste</span></div></div>
+      <ul>
+        <li data-a style="--d:.35s"><b>Needs attention:</b> one-tap actions, from approving the order to reminding students to scan back.</li>
+        <li data-a style="--d:.45s"><b>Plan and order</b> from learned portions, attendance, weather and school events.</li>
+        <li data-a style="--d:.55s"><b>Carbon management</b> for the whole canteen, toward carbon-neutral.</li>
+      </ul>
+    </div>
+    <div class="device" data-a="pop" style="--d:.2s;--ar:1.6;--vw:1280px;--vh:800px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/3-plateloop-kitchen.html" target="_blank" rel="noopener">Open ↗</a><iframe data-src="../dist/3-plateloop-kitchen.html" title="PlateLoop Kitchen, live demo"></iframe></div>
+  </div>
+  <aside class="notes">Every scan lands here, live, in PlateLoop Kitchen. The manager sees plate waste by dish, and a Needs attention list tells them what to do today. For example, kailan is only half eaten, so cook the oyster-sauce version that did better in testing. The plan and order page uses what students really ate to size tomorrow’s order. That’s where the up to 30% saving on ingredients comes from.</aside>
+</section>
+
+<!-- ============================================================ 14 LOOPI LIVE -->
+<section class="slide" data-title="Loopi, live" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · for students</div>
+  <div class="demo">
+    <div class="demo-text">
+      <h2 data-a style="--d:.1s;font-size:56px">Loopi</h2>
+      <p class="small" data-a style="--d:.2s">A Tamagotchi that only eats the lunch you really ate.</p>
+      <div class="loop" data-a style="--d:.3s"><span>Eat lunch</span><em>→</em><span>Food in Loopi’s bowl</span><em>→</em><span>Hearts</span><em>→</em><span>Loopi grows</span></div>
+      <ul>
+        <li data-a style="--d:.4s"><b>Rewards the right portion,</b> not a clean plate: you’re compared with your own usual.</li>
+        <li data-a style="--d:.5s"><b>Leftovers become crumbs</b> to sweep up. Wasting food never pays.</li>
+        <li data-a style="--d:.6s"><b>Classes compete</b> on who wastes least. Names only if you opt in.</li>
+      </ul>
+    </div>
+    <div class="device tall" data-a="pop" style="--d:.2s;--ar:1.03;--vw:900px;--vh:874px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/4-loopi-student-app.html" target="_blank" rel="noopener">Open ↗</a><iframe data-src="../dist/4-loopi-student-app.html" title="Loopi, live demo"></iframe></div>
+  </div>
+  <aside class="notes">For students, we made Loopi, a virtual pet that only eats the lunch you actually ate. Whatever you finish goes into its bowl, and leftovers become crumbs you have to sweep up. Importantly, it rewards the right portion, not a clean plate. A small plate you finish gives full energy, and you’re only compared with your own usual. On first use, it asks for consent and lets you turn off face sign-in or hide your name.</aside>
+</section>
+
+<!-- ============================================================ 15 CARE LIVE -->
+<section class="slide" data-title="Loopi Care, live" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · for hospitals</div>
+  <div class="demo">
+    <div class="demo-text">
+      <h2 data-a style="--d:.1s;font-size:56px">Loopi Care</h2>
+      <p class="small" data-a style="--d:.2s">In hospitals the goal flips: food left on a tray usually means a patient isn’t eating enough.</p>
+      <ul>
+        <li data-a style="--d:.3s"><b>Intake against the prescribed diet:</b> high protein, diabetic or low sodium.</li>
+        <li data-a style="--d:.4s"><b>Nurse station alert</b> after two poor meals, with one-tap actions the patient can see.</li>
+        <li data-a style="--d:.5s"><b>Weekly report</b> for the doctor and dietitian. Larger text for patients.</li>
+      </ul>
+    </div>
+    <div class="device tall" data-a="pop" style="--d:.2s;--ar:1.03;--vw:900px;--vh:874px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/5-loopi-care-hospital.html" target="_blank" rel="noopener">Open ↗</a><iframe data-src="../dist/5-loopi-care-hospital.html" title="Loopi Care, live demo"></iframe></div>
+  </div>
+  <aside class="notes">The same scanner works on a hospital ward, but the goal flips. Here, food left on the tray is a warning sign. Loopi Care tracks each patient against their prescribed diet. If they leave most of two meals, the nurse station gets an alert. The nurse can check in, bring a supplement drink or call the dietitian, and the patient sees that on their phone. The doctor gets a weekly report.</aside>
+</section>
+
+<!-- ============================================================ 16 WORK LIVE -->
+<section class="slide" data-title="Loopi Work, live" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · for offices</div>
+  <div class="demo">
+    <div class="demo-text">
+      <h2 data-a style="--d:.1s;font-size:56px">Loopi Work</h2>
+      <p class="small" data-a style="--d:.2s">Personal targets from your goal, height, weight and activity.</p>
+      <ul>
+        <li data-a style="--d:.3s"><b>A daily pick</b> from the canteen that fits your goal, with small tweaks.</li>
+        <li data-a style="--d:.4s"><b>Feedback after lunch:</b> “Not enough protein: 21 of 31 g.”</li>
+        <li data-a style="--d:.5s"><b>Private by default.</b> Your employer only sees anonymous totals.</li>
+      </ul>
+    </div>
+    <div class="device tall" data-a="pop" style="--d:.2s;--ar:1.03;--vw:900px;--vh:874px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/7-loopi-work-office.html" target="_blank" rel="noopener">Open ↗</a><iframe data-src="../dist/7-loopi-work-office.html" title="Loopi Work, live demo"></iframe></div>
+  </div>
+  <aside class="notes">In offices, Loopi Work turns a health goal into personal lunch targets. Say Marcus wants to build muscle. It recommends which canteen line to pick today, and after the scan it tells him what was missing, like not enough protein. It’s private by default: the company only sees anonymous canteen totals unless he chooses to share his report.</aside>
+</section>
+
+<!-- ============================================================ 17 LUNCH RUSH -->
+<section class="slide dark" data-title="Lunch Rush 3D" data-phase="3">
+  <div class="eyebrow" data-a>Prototype · the whole experience</div>
+  <div class="demo">
+    <div class="demo-text">
+      <h2 data-a style="--d:.1s;font-size:56px">Lunch Rush</h2>
+      <p class="small" data-a style="--d:.2s">A first-person 3D game of one lunch break in a Singapore school canteen.</p>
+      <ul>
+        <li data-a style="--d:.3s"><b style="color:#fff">Take a tray, choose your portion,</b> scan at the real scanner model and read its screen up close.</li>
+        <li data-a style="--d:.4s"><b style="color:#fff">Eat with friends,</b> scan again, scrape into the food waste bin and return the tray.</li>
+        <li data-a style="--d:.5s"><b style="color:#fff">It’s real:</b> your scans show up in the Kiosk, Kitchen and Loopi.</li>
+      </ul>
+    </div>
+    <div class="device" data-a="pop" style="--d:.2s;--ar:1.6;--vw:1280px;--vh:800px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/8-plateloop-lunch-rush-3d.html" target="_blank" rel="noopener">Open ↗</a>
+      <div class="ph" id="rush-ph"><div>A 2.5 MB 3D game with sound.<br><button id="rush-go">Start Lunch Rush</button></div></div>
+      <iframe data-src="../dist/8-plateloop-lunch-rush-3d.html" data-manual title="Lunch Rush, live demo"></iframe></div>
+  </div>
+  <aside class="notes">To show the whole experience from a student’s point of view, we built Lunch Rush, a 3D game of one lunch break. You take a tray, ask the auntie for less rice, scan at the real scanner model, eat with friends, then scan again and return your tray. The scans go through the same code as the Kiosk, so they really appear in the other apps. It’s also a fun way for schools to teach the routine before launch.</aside>
+</section>
+
+<!-- ============================================================ 18 TEST -->
+<section class="slide" data-title="What testing taught us" data-phase="4">
+  <div class="eyebrow" data-a>Test · what broke, and what we changed</div>
+  <h2 data-a style="--d:.1s">We walked through every step until it broke.</h2>
+  <div class="iters mid">
+    <div class="iter" data-a style="--d:.2s"><h3>Face not recognised</h3><div class="was">Masks and backlight left students stuck at the scanner.</div><div class="now">“Try again” or type your class and register number.</div></div>
+    <div class="iter" data-a style="--d:.3s"><h3>Hand on the tray</h3><div class="was">The scale recorded a wrong weight.</div><div class="now">It waits until the weight is steady, then measures again.</div></div>
+    <div class="iter" data-a style="--d:.4s"><h3>Forgot to scan back</h3><div class="was">Trays with no after scan meant missing data.</div><div class="now">The Kitchen can put a reminder on the scanner in one tap.</div></div>
+    <div class="iter" data-a style="--d:.5s"><h3>Clean-plate pressure</h3><div class="was">A “finish everything” score pushed students to overeat.</div><div class="now">Compare with your own usual; a small plate finished scores full marks.</div></div>
+    <div class="iter" data-a style="--d:.6s"><h3>Nobody acted on alerts</h3><div class="was">A hospital alert with no next step.</div><div class="now">Nurse station with actions: check in, supplement drink, dietitian.</div></div>
+    <div class="iter" data-a style="--d:.7s"><h3>Privacy worries</h3><div class="was">“Is it taking photos of me?”</div><div class="now">Consent on day one, face sign-in can be switched off, no photos leave.</div></div>
+  </div>
+  <aside class="notes">Then we tested. We walked through every step of the prototype, looking for where a real person would get stuck. Six things broke, and each became a feature. If the face isn’t recognised, you can type your number. If your hand is still on the tray, it waits and measures again. Forgotten after scans become a one-tap reminder. We replaced any clean-plate scoring with comparing you to your own usual. Alerts now have next steps. And we added consent and a way to switch off face sign-in.</aside>
+</section>
+
+<!-- ============================================================ 19 PRIVACY -->
+<section class="slide" data-title="Trust by design" data-phase="4">
+  <div class="eyebrow" data-a>Test · trust</div>
+  <h2 data-a style="--d:.1s">Built so people are happy to use it.</h2>
+  <div class="priv mid">
+    <div class="card" data-a style="--d:.2s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="3"/><circle cx="12" cy="13.5" r="3.5"/><path d="M8 7l1.5-3h5L16 7"/><path d="M3 3l18 18"/></svg></div><h3>No photos leave the scanner</h3><p>Faces become a match code on the device. Only grams per dish and a tray number are sent.</p></div>
+    <div class="card" data-a style="--d:.32s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg></div><h3>Trays, not names</h3><p>Kitchen staff work with tray numbers. Names appear only for a care reason, like a nurse.</p></div>
+    <div class="card" data-a style="--d:.44s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12l2 2 4-4"/><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6Z"/></svg></div><h3>Consent and control</h3><p>Every app starts with what’s recorded and who sees it. Face sign-in and leaderboard names can be switched off.</p></div>
+    <div class="card" data-a style="--d:.56s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div><h3>Deleted on time</h3><p>Hospital data 30 days after discharge; school data when a student leaves.</p></div>
+    <div class="card" data-a style="--d:.68s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-7-11a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 6.5-7 11-7 11Z"/></svg></div><h3>Kind by default</h3><p>Loopi never dies, there’s no shop, and hospital alerts are about care, not blame.</p></div>
+    <div class="card" data-a style="--d:.8s"><div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/></svg></div><h3>Honest numbers</h3><p>Estimates are labelled as estimates, on the student’s screen and in the Kitchen feed.</p></div>
+  </div>
+  <aside class="notes">Because this involves faces and food, trust matters. No photos ever leave the scanner. Kitchens see tray numbers, not names. Every app opens with consent, and you can switch off face sign-in or hide your name. Data is deleted on a schedule. The game is designed to be kind. And whenever a number is an estimate, we say so.</aside>
+</section>
+
+<!-- ============================================================ 20 IMPACT -->
+<section class="slide" data-title="Impact calculator">
+  <div class="eyebrow" data-a>Impact</div>
+  <h2 data-a style="--d:.1s">It pays for itself. Try your own canteen.</h2>
+  <div class="calc">
+    <div class="inputs" data-a="left" style="--d:.2s">
+      <div><label for="c-meals">Meals a day <b id="c-meals-v">800</b></label><input type="range" id="c-meals" min="200" max="3000" step="50" value="800"></div>
+      <div><label for="c-cost">Ingredient cost per meal <b id="c-cost-v">S$2.50</b></label><input type="range" id="c-cost" min="1" max="6" step=".1" value="2.5"></div>
+      <div><label for="c-waste">Food wasted today <b id="c-waste-v">25%</b></label><input type="range" id="c-waste" min="10" max="40" step="1" value="25"></div>
+      <div><label for="c-cut">Waste PlateLoop cuts <b id="c-cut-v">30%</b></label><input type="range" id="c-cut" min="10" max="50" step="1" value="30"></div>
+      <p class="note">Illustrative: 190 school days, 0.5 kg of food per meal, 2.5 kg CO₂e per kg of food, Pro plan at S$470 a month. Validate in a pilot.</p>
+    </div>
+    <div class="outs">
+      <div class="out hero" data-a style="--d:.35s"><b id="c-save">S$28,500</b><span>ingredients saved a year</span></div>
+      <div class="out" data-a style="--d:.5s"><b id="c-roi">5.1×</b><span>return on the Pro plan</span></div>
+      <div class="out" data-a style="--d:.6s"><b id="c-co2">14.3 t</b><span>CO₂e avoided a year</span></div>
+      <div class="out" data-a style="--d:.7s"><b id="c-food">5.7 t</b><span>less food thrown away a year</span></div>
+      <div class="out" data-a style="--d:.8s"><b id="c-pay">2.4 mo</b><span>to pay back a year of Pro</span></div>
+    </div>
+  </div>
+  <aside class="notes">Here’s the business case, and you can change the numbers yourself. A school serving 800 meals a day, at about 2.50 in ingredients per meal, with a quarter of the food wasted. If PlateLoop cuts that waste by 30%, the school saves around 28,000 dollars a year against about 5,600 for our Pro plan. That’s about five times the cost, plus 14 tonnes of CO₂ avoided. These are illustrative numbers, and the pilot is how we’ll prove them.</aside>
+</section>
+
+<!-- ============================================================ 21 BUSINESS -->
+<section class="slide" data-title="Business model">
+  <div class="eyebrow" data-a>Business model</div>
+  <h2 data-a style="--d:.1s">A subscription that costs less than the waste it saves.</h2>
+  <div class="tiers" style="margin-top:auto">
+    <div class="tier" data-a style="--d:.2s"><div class="tag">Basic</div><div class="price">S$200<small> / site / month</small></div><ul><li>Scanner leased, no upfront cost</li><li>Kiosk and the Kitchen dashboard</li><li>Waste by dish and daily report</li></ul></div>
+    <div class="tier best" data-a style="--d:.35s"><span class="badge">Most sites</span><div class="tag">Pro</div><div class="price">S$470<small> / site / month</small></div><ul><li>Everything in Basic</li><li>Forecasts, plan and supplier orders</li><li>Carbon management and reporting</li></ul></div>
+    <div class="tier" data-a style="--d:.5s"><div class="tag">Programmes</div><div class="price">+ add-on<small> per site</small></div><ul><li>Loopi for schools and universities</li><li>Loopi Care for hospital wards</li><li>Loopi Work for office canteens</li></ul></div>
+  </div>
+  <div class="biz-foot" style="margin-bottom:auto">
+    <div data-a style="--d:.6s"><b>Customers</b>Contract caterers first: one deal covers many canteens. Then hospitals and corporate canteens.</div>
+    <div data-a style="--d:.7s"><b>Channels</b>Pilot schools, caterer partnerships and social media from the pilots.</div>
+    <div data-a style="--d:.8s"><b>Why they stay</b>Savings show up on every monthly report, and the data gets better the longer it runs.</div>
+  </div>
+  <div class="src">Prices are illustrative.</div>
+  <aside class="notes">The scanner is leased inside a monthly subscription, so there’s no upfront cost. Basic covers the Kiosk and Kitchen dashboard. Pro adds forecasting, ordering and carbon management. The Loopi programmes are add-ons for each sector. We’ll sell to contract caterers first, because one deal brings many canteens, and the savings appear on every monthly report, which is why customers stay.</aside>
+</section>
+
+<!-- ============================================================ 22 COMPETITION -->
+<section class="slide" data-title="Where we fit">
+  <div class="eyebrow" data-a>Competition</div>
+  <h2 data-a style="--d:.1s">Others weigh the bin. We measure the person.</h2>
+  <div class="pos">
+    <div class="quad" data-a="pop" style="--d:.2s">
+      <span class="ax" style="left:50%;top:14px;transform:translateX(-50%)">Measures what’s eaten</span>
+      <span class="ax" style="left:50%;bottom:14px;transform:translateX(-50%)">Measures waste only</span>
+      <span class="ax" style="left:16px;top:50%;transform:translateY(-50%) rotate(-90deg);transform-origin:left top;margin-top:60px">Kitchen level</span>
+      <span class="ax" style="right:16px;top:50%;transform:translateY(-50%) rotate(90deg);transform-origin:right top;margin-top:-60px">Per person</span>
+      <div class="dotc" style="left:25%;top:72%"><i></i><b>Bin trackers</b><span>kitchen waste bins with scales or cameras (e.g. Winnow, Leanpath)</span></div>
+      <div class="dotc" style="left:30%;top:36%"><i></i><b>Surveys and audits</b><span>occasional, manual</span></div>
+      <div class="dotc" style="left:68%;top:34%"><i></i><b>Tray scanners</b><span>school intake scanners (e.g. Nuvilab, Korea)</span></div>
+      <div class="dotc us" style="left:78%;top:18%"><i></i><b>PlateLoop</b></div>
+    </div>
+    <div class="diff">
+      <div data-a="right" style="--d:.4s"><b>Before and after, per person</b>Not just what’s thrown away, but what each person actually ate.</div>
+      <div data-a="right" style="--d:.52s"><b>One scanner, three sectors</b>Schools, hospitals and offices, each with an app made for them.</div>
+      <div data-a="right" style="--d:.64s"><b>Built for Singapore</b>My Healthy Plate, HPB sodium limits and local menus.</div>
+      <div data-a="right" style="--d:.76s"><b>Waste, cost and carbon together</b>The Kitchen turns scans into orders and a carbon ledger.</div>
+    </div>
+  </div>
+  <aside class="notes">Most food waste products today weigh the bin in the kitchen. They tell you how much was thrown away, but not what each person ate. Tray scanners exist in Korean schools, which shows the idea works. PlateLoop measures before and after for each person, works across schools, hospitals and offices, is built around Singapore’s nutrition guidance, and ties waste, cost and carbon together in one dashboard.</aside>
+</section>
+
+<!-- ============================================================ 23 ROADMAP + ASK -->
+<section class="slide" data-title="Roadmap and ask">
+  <div class="eyebrow" data-a>What’s next</div>
+  <h2 data-a style="--d:.1s">From one canteen to every tray.</h2>
+  <div class="road">
+    <div class="fill" data-a="grow" style="--d:.5s"></div>
+    <div class="m now" data-a style="--d:.2s"><small>Now</small><b>Prototype</b><span>Scanner design, six apps and the Lunch Rush game.</span></div>
+    <div class="m" data-a style="--d:.35s"><small>Next term</small><b>School pilot</b><span>One canteen, one term. Prove the waste and cost numbers.</span></div>
+    <div class="m" data-a style="--d:.5s"><small>Year 1</small><b>Caterer partner</b><span>Roll out across one caterer’s school canteens.</span></div>
+    <div class="m" data-a style="--d:.65s"><small>Year 2</small><b>Hospitals and offices</b><span>Loopi Care on a ward, Loopi Work in a corporate canteen.</span></div>
+    <div class="m" data-a style="--d:.8s"><small>Later</small><b>Everyone</b><span>A personal app: photograph a meal before and after, anywhere.</span></div>
+  </div>
+  <div class="ask" data-a style="--d:1s"><b>Our ask: one school canteen<br>to pilot for one term.</b><span>We’ll bring the scanner and the apps, and share every number with the school and the canteen operator.</span></div>
+  <aside class="notes">Our next step is a pilot: one school canteen for one term, to prove the waste and cost numbers with real data. Then we partner with a caterer to roll out across their schools, and bring Loopi Care and Loopi Work to a hospital ward and an office canteen. Longer term, a personal app lets anyone photograph a meal before and after. So our ask today is simple: help us find one school canteen to pilot with.</aside>
+</section>
+
+<!-- ============================================================ 24 CLOSE -->
+<section class="slide dark" data-title="Thank you">
+  <div class="close">
+    <div>
+      <div class="eyebrow" data-a>Thank you</div>
+      <h2 data-a style="--d:.1s">Less waste.<br>Lower costs.<br><span class="g">Healthier people.</span></h2>
+      <div class="links" data-a style="--d:.35s">
+        <a href="../" target="_blank" rel="noopener"><i>→</i>Try every app: 8jiwoo.github.io/plateloop</a>
+        <a href="../dist/8-plateloop-lunch-rush-3d.html" target="_blank" rel="noopener"><i>→</i>Play Lunch Rush</a>
+        <a href="https://github.com/8jiwoo/plateloop" target="_blank" rel="noopener"><i>→</i>Code on GitHub</a>
+      </div>
+    </div>
+    <div class="qr" data-a="pop" style="--d:.3s"><div id="qr" aria-label="QR code for the live demo"></div><span>Scan to try the demo<br>on your phone</span></div>
+  </div>
+  <aside class="notes">That’s PlateLoop: less waste, lower costs and healthier people. Everything you saw today is live. Scan the QR code to try the apps on your phone, or play Lunch Rush. Thank you, and we’d love to take your questions.</aside>
+</section>
+
+</div></div>
+
+<div class="nav" aria-label="Slide controls"><button id="prev" aria-label="Previous slide">←</button><button id="notes-btn" aria-label="Speaker notes">N</button><button id="fs" aria-label="Full screen">⤢</button><button id="next" aria-label="Next slide">→</button></div>
+<div class="help" id="help">← → to move · N notes · F full screen</div>
+<div class="notes-panel" id="notes" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const slides = [...document.querySelectorAll('.slide')];
+  const PHASES = ['Empathise', 'Define', 'Ideate', 'Prototype', 'Test'];
+  let cur = -1;
+
+  // chrome on every slide: brand, design-thinking tracker (where it applies) and the slide number
+  slides.forEach((s, i) => {
+    if (i > 0) s.insertAdjacentHTML('afterbegin', '<div class="brandmark"><i></i>PlateLoop</div>');
+    if (s.dataset.phase !== undefined) {
+      const p = +s.dataset.phase;
+      s.insertAdjacentHTML('afterbegin', `<div class="phase">${PHASES.map((n, j) => `<span class="${j === p ? 'on' : j < p ? 'done' : ''}">${n}</span>`).join('')}</div>`);
+    }
+    s.insertAdjacentHTML('beforeend', `<div class="num-badge">${i + 1} / ${slides.length}</div>`);
+  });
+
+  // fit the 1600×900 stage to the window
+  const fit = () => { const k = Math.min(innerWidth / 1600, innerHeight / 900); stage.style.transform = `scale(${k})`; };
+  addEventListener('resize', fit); fit();
+
+  // live embeds: scale each app to its frame, and load it the first time its slide opens
+  const sizeFrames = s => s.querySelectorAll('.device').forEach(d => {
+    const f = d.querySelector('iframe'); if (!f) return;
+    const vw = parseFloat(getComputedStyle(d).getPropertyValue('--vw')) || 1280;
+    f.style.transform = `scale(${d.clientWidth / vw})`;
+  });
+  const load = s => s.querySelectorAll('iframe[data-src]:not([data-manual])').forEach(f => { if (!f.src) f.src = f.dataset.src; });
+
+  // numbers count up when their slide opens
+  const fmt = (v, el) => el.dataset.fmt === 'comma' ? Math.round(v).toLocaleString('en-US') : String(Math.round(v));
+  const countUp = s => s.querySelectorAll('.count').forEach(el => {
+    const to = +el.dataset.to, t0 = performance.now() + 300, dur = 1400;
+    const f = now => { const k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 4); el.textContent = fmt(to * e, el); if (k < 1) requestAnimationFrame(f); };
+    el.textContent = fmt(0, el); requestAnimationFrame(f);
+    setTimeout(() => { el.textContent = fmt(to, el); }, 2000);
+  });
+
+  const notes = document.getElementById('notes');
+  function go(i, push = true) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    if (i === cur) return;
+    slides.forEach((s, j) => { s.classList.toggle('on', j === i); s.classList.toggle('past', j < i); s.setAttribute('aria-hidden', String(j !== i)); });
+    cur = i;
+    const s = slides[i];
+    // restart the entrance animations each time a slide opens
+    s.querySelectorAll('[data-a], .cmp tbody tr, .curve .path').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+    load(s); sizeFrames(s); countUp(s);
+    document.getElementById('progress').style.width = `${(i + 1) / slides.length * 100}%`;
+    const n = s.querySelector('.notes');
+    notes.innerHTML = `<b>Speaker notes · ${i + 1}. ${s.dataset.title || ''}</b>${n ? n.innerHTML : ''}`;
+    document.title = `${s.dataset.title || 'PlateLoop'} · PlateLoop Pitch`;
+    if (push) history.replaceState(null, '', '#' + (i + 1));
+    // warm up the next slide's embeds so they're ready
+    if (slides[i + 1]) setTimeout(() => load(slides[i + 1]), 900);
+  }
+  const next = () => go(cur + 1), prev = () => go(cur - 1);
+  addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input,select,textarea')) return;
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); next(); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') go(0); else if (e.key === 'End') go(slides.length - 1);
+    else if (e.key === 'n' || e.key === 'N') notes.classList.toggle('open');
+    else if (e.key === 'f' || e.key === 'F') toggleFs();
+  });
+  const toggleFs = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); };
+  document.getElementById('next').onclick = next; document.getElementById('prev').onclick = prev;
+  document.getElementById('fs').onclick = toggleFs;
+  document.getElementById('notes-btn').onclick = () => notes.classList.toggle('open');
+  // swipe on touch screens
+  let tx = null; addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', e => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) dx < 0 ? next() : prev(); tx = null; });
+  setTimeout(() => { const h = document.getElementById('help'); if (h) h.style.opacity = 0; }, 6000);
+  addEventListener('resize', () => sizeFrames(slides[cur]));
+
+  // hardware: swap the render for the rotatable 3D scanner
+  document.getElementById('btn3d').onclick = () => {
+    const art = document.getElementById('hw-art');
+    art.querySelectorAll('.callout, img').forEach(x => x.remove());
+    art.insertAdjacentHTML('afterbegin', '<iframe src="../dist/1-plateloop-scanner-3d.html" title="PlateLoop scanner in 3D" style="width:166%;height:166%;transform:scale(.6);transform-origin:0 0"></iframe>');
+    document.getElementById('btn3d').remove();
+    // jump straight to the rotatable model on the product page
+    const f = art.querySelector('iframe');
+    f.onload = () => { try { const w = f.contentWindow, h = [...w.document.querySelectorAll('h2,h3,b,div')].find(x => /^Explore the scanner/.test(x.textContent.trim())); if (h) w.scrollTo(0, h.getBoundingClientRect().top + w.scrollY - 12); } catch (e) {} };
+  };
+  // Lunch Rush only starts when asked (it has sound)
+  document.getElementById('rush-go').onclick = () => {
+    const f = document.querySelector('iframe[data-manual]'); f.src = f.dataset.src; document.getElementById('rush-ph').remove(); sizeFrames(slides[cur]);
+  };
+
+  // impact calculator
+  const $ = id => document.getElementById(id), money = v => 'S$' + Math.round(v).toLocaleString('en-US');
+  const calc = () => {
+    const meals = +$('c-meals').value, cost = +$('c-cost').value, waste = +$('c-waste').value / 100, cut = +$('c-cut').value / 100, days = 190, plan = 470 * 12;
+    const saved = meals * days * cost * waste * cut, food = meals * days * .5 * waste * cut / 1000;
+    $('c-meals-v').textContent = meals.toLocaleString('en-US'); $('c-cost-v').textContent = 'S$' + cost.toFixed(2);
+    $('c-waste-v').textContent = Math.round(waste * 100) + '%'; $('c-cut-v').textContent = Math.round(cut * 100) + '%';
+    $('c-save').textContent = money(saved); $('c-roi').textContent = (saved / plan).toFixed(1) + '×';
+    $('c-co2').textContent = (food * 2.5).toFixed(1) + ' t'; $('c-food').textContent = food.toFixed(1) + ' t';
+    $('c-pay').textContent = saved > 0 ? (plan / (saved / 12)).toFixed(1) + ' mo' : '—';
+  };
+  ['c-meals', 'c-cost', 'c-waste', 'c-cut'].forEach(id => $(id).oninput = calc); calc();
+
+  // QR code for the live demo (falls back to the link if the library can't load)
+  const url = 'https://8jiwoo.github.io/plateloop/';
+  try { const q = qrcode(0, 'M'); q.addData(url); q.make(); $('qr').innerHTML = q.createSvgTag({ cellSize: 8, margin: 0 }); }
+  catch (e) { $('qr').textContent = url; }
+
+  go(Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1), false);
+})();
+</script>
+</body>
+</html>
