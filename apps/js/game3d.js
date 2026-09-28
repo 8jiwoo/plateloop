@@ -1,7 +1,7 @@
 /* Lunch Rush: one school lunch with PlateLoop, first person, PS1-style.
    Take a tray, order at the Healthy Set Meal stall (Mrs Lim asks how much of each dish), scan the full
    tray at the PlateLoop station (the camera moves in so you can read the scanner's screen), sit with your
-   friends and eat bite by bite, scan again, scrape the leftovers into the scanner's compost module and put
+   friends and eat bite by bite, scan again, scrape the leftovers into the scanner's food waste bin and put
    the tray on the return rack. People talk to you, react, and go about their lunch; a classmate walks the
    whole routine in the background. The scans are real (PL.scanBefore / PL.scanAfter), so the Kiosk,
    Kitchen and Loopi apps update too.
@@ -23,7 +23,7 @@ const OBJ = {
   findSeat: '{a} and {b} kept a seat for you. Sit down to eat',
   eating: 'Eat your lunch: click the food to take a bite',
   scanAfter: 'Scan your tray again at the PlateLoop station',
-  compost: 'Scrape your leftovers into the compost bin on the scanner',
+  compost: 'Scrape your leftovers into the food waste bin on the scanner',
   returnTray: 'Put your tray on the return rack',
   done: 'Lunch done. Talk to people, or press Esc for the menu',
 };
@@ -155,7 +155,7 @@ function setupScanner(model) {
       if (/FaceRing|BinRing|ArmLight|StatusLine/.test(o.name)) S.leds.push(o);
       if (/FaceRing/.test(o.name)) S.faceRing = o; if (/BinRing/.test(o.name)) S.binRing = o;
     });
-    // the model's origin is between the cabinet and the compost module; it faces +z
+    // the model's origin is between the cabinet and the food waste bin; it faces +z
     st.add(model);
   } else {
     // fallback if the model can't load: a simple scanner with the same layout
@@ -183,11 +183,11 @@ function setupScanner(model) {
   const beam = S.beam = new THREE.Mesh(new THREE.ConeGeometry(.24, .58, 4, 1, true), new THREE.MeshBasicMaterial({ color: '#34C759', transparent: true, opacity: .13, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
   beam.rotation.y = Math.PI / 4; beam.position.copy(st.worldToLocal(S.camHead.clone())).add(new THREE.Vector3(0, -.3, -.02)); beam.visible = false; st.add(beam);
   S.line = new THREE.Mesh(new THREE.BoxGeometry(.4, .004, .3), new THREE.MeshBasicMaterial({ color: '#7CFF9A', transparent: true, opacity: .7 })); S.line.visible = false; st.add(S.line);
-  // interactions on the scanner: screen, compost module
+  // interactions on the scanner: screen, food waste bin
   addTarget(st, () => {
     if (G.busy) return null;
     if ((G.phase === 'scanBefore' || G.phase === 'scanAfter') && G.hasTray) return 'Use the PlateLoop scanner';
-    if (G.phase === 'compost') return 'Scrape your leftovers into the compost';
+    if (G.phase === 'compost') return 'Scrape your leftovers into the food waste bin';
     return 'Look closely at the scanner';
   }, () => {
     if (G.phase === 'scanBefore' || G.phase === 'scanAfter') return scanFlow(G.phase === 'scanBefore');
@@ -628,7 +628,7 @@ function barks() {
   if (G.phase === 'scanBefore' && near(G.rahman, 3)) once('rahman1', 25, () => chatter(G.rahman, 'Tray here first. Look at the camera, then put it on the scale.'));
   if (G.phase === 'findSeat' && G.friends && near(G.friends[0], 4.5)) once('friends1', 30, () => { const F = G.friends[0]; F.pose = 'wave'; setTimeout(() => { if (G && F) F.pose = 'sit'; }, 2400); chatter(F, `${first()}! Over here, we saved you a seat.`); });
   if (G.phase === 'getTray' && near(G.auntie, 3.2)) once('auntie1', 30, () => chatter(G.auntie, 'Please take a tray from the stack first.'));
-  if (G.phase === 'compost' && near(G.tan, 3)) once('tan1', 25, () => chatter(G.tan, 'Scrape your leftovers into the compost first. It\'s the white bin beside the scanner.'));
+  if (G.phase === 'compost' && near(G.tan, 3)) once('tan1', 25, () => chatter(G.tan, 'Scrape your leftovers into the food waste bin first. It\'s the white bin beside the scanner.'));
   if (G.phase === 'scanAfter' && near(G.rahman, 3)) once('rahman2', 25, () => chatter(G.rahman, 'Done eating? Scan it again, same as before.'));
 }
 const first = () => (G.student ? G.student.name.split(' ')[0] : '');
@@ -772,7 +772,7 @@ async function compostFlow() {
   const over = S.hole.clone().add(new THREE.Vector3(.25, .2, .04));
   await trayToWorld(over, new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, .5)), .6);
   play('scrape', at(S.hole));
-  // leftovers slide off into the compost
+  // leftovers slide off into the food waste bin
   const bits = [];
   Object.values(G.tray.dishes).forEach(g => g.traverse(o => { if (o.isMesh && o.visible && o.userData.dish && (!o.parent || o.parent.visible)) bits.push(o); }));
   bits.forEach(o => G.scene.attach(o));
@@ -787,7 +787,7 @@ async function compostFlow() {
   G.pos.copy(G.W.stationStand).add(new THREE.Vector3(.6, 0, 0)); G.yaw = -.4; G.pitch = -.1;
   await unfocus(.6);
   G.busy = false; G.scanBusy = false; SFX().duck(false); setPhase('returnTray');
-  msg(`${Math.round(r.left)} g of leftovers composted. It goes to the school garden.`, 3600);
+  msg(`${Math.round(r.left)} g of leftovers went in the food waste bin. It's weighed for the kitchen's waste report.`, 3600);
 }
 async function returnFlow() {
   const R = G.W.rack;
@@ -841,7 +841,7 @@ function friendLines() {
     [b, `Yesterday ${others[0] || 'someone'} left half the rice. The screen went orange.`],
     [a, 'Did you see? It even shows how much CO₂ you saved.'],
     [b, 'The rice is quite good today.'],
-    [a, 'After this we scan again, compost, and return the trays.'],
+    [a, 'After this we scan again, empty our trays, and return them.'],
   ];
 }
 function friendChat(dt) {
@@ -883,7 +883,7 @@ async function standUp() {
   G.pos.set(spot.x, EYE, t.z + spot.side * 1.28); G.yaw = spot.side > 0 ? 0 : Math.PI; G.pitch = -.05;
   G.mode = 'focus'; await unfocus(.5);
   G.busy = false; setPhase('scanAfter');
-  if (G.friends && t === G.friendTable) setTimeout(() => G && chatter(G.friends[0], 'Go and scan, then compost and return your tray. See you in class!'), 400);
+  if (G.friends && t === G.friendTable) setTimeout(() => G && chatter(G.friends[0], 'Go and scan, then empty and return your tray. See you in class!'), 400);
 }
 
 /* ---------------------------------------------------------------- Priya shows the routine in the background */
@@ -916,12 +916,12 @@ async function talk(P) {
       if (ph === 'getTray' || ph === 'order' || ph === 'scanBefore') await say(P, P === a ? `${f}! Get your food and scan it first. We\'re keeping your seat.` : 'We left a tissue packet on your seat.');
       else if (ph === 'findSeat') await say(P, 'Sit down, we saved this one for you.');
       else if (ph === 'done') await say(P, 'See you in class!');
-      else await say(P, 'Go and scan your tray, then compost and return it. See you later!');
+      else await say(P, 'Go and scan your tray, then empty and return it. See you later!');
     });
   }
   const script = {
     'Mrs Lim': () => ph === 'getTray' ? ['Take a tray from the stack first, then I\'ll serve you.'] : ph === 'done' ? ['It\'s curry chicken tomorrow. Come early!'] : ['Take your time and enjoy it.'],
-    'Mr Tan': () => ph === 'returnTray' ? ['Your tray goes on this rack. Just slide it in.'] : ph === 'compost' ? ['Scrape your leftovers into the compost first. It\'s the white bin beside the scanner.'] : ph === 'done' ? ['The bins used to be full every day. Now there\'s much less waste.'] : [`Good afternoon, ${f}. Bring your tray back here after you eat.`, 'Scrape the leftovers into the compost first, then put the tray on the rack.'],
+    'Mr Tan': () => ph === 'returnTray' ? ['Your tray goes on this rack. Just slide it in.'] : ph === 'compost' ? ['Scrape your leftovers into the food waste bin first. It\'s the white bin beside the scanner.'] : ph === 'done' ? ['The bins used to be full every day. Now there\'s much less waste.'] : [`Good afternoon, ${f}. Bring your tray back here after you eat.`, 'Scrape the leftovers into the compost first, then put the tray on the rack.'],
     'Mr Ong': () => [G.scannedBefore ? 'Would you like an iced Milo? Have your lunch first.' : 'Drinks later. Scan your tray first, the teacher is watching.'],
     'Mrs Chua': () => ['Sorry, the noodles have sold out today. The healthy set is still available.'],
     'Mdm Rosnah': () => ['Nasi lemak tomorrow. Come early!'],
@@ -1057,7 +1057,7 @@ const FORTUNES = [
   'Your Loopi dreams of you. Feed it well and it will grow.',
   'The tray you return clean returns kindness to you.',
   'Take less, and you will find you have more.',
-  'A small act at the compost bin will grow into a garden.',
+  'Every scrap in the food waste bin tells the kitchen something. Leave less today.',
   'Today’s test will be kinder than you fear.',
   'The next person you smile at needed it more than you know.',
   'Luck is hiding in the kailan. Eat it.',
@@ -1089,18 +1089,18 @@ async function dishaFortune() {
   });
 }
 function genericLine(P) {
-  const pool = ['The kailan is actually good today.', 'Remember to scan before you eat, or it won\'t count.', 'My Loopi evolved yesterday!', 'Lunch break always feels too short.', 'I take less rice now. I can always go back for more.', 'The compost goes to the school garden, you know.', 'Did you see the class league? 3E is catching up.', 'The noodle queue is so long today.', 'I finished everything today. The screen went green!', 'Don\'t forget to scrape your tray before you return it.'];
+  const pool = ['The kailan is actually good today.', 'Remember to scan before you eat, or it won\'t count.', 'My Loopi evolved yesterday!', 'Lunch break always feels too short.', 'I take less rice now. I can always go back for more.', 'The kitchen checks the food waste bin every day, you know.', 'Did you see the class league? 3E is catching up.', 'The noodle queue is so long today.', 'I finished everything today. The screen went green!', 'Don\'t forget to scrape your tray before you return it.'];
   return pool[L.hash(P.name) % pool.length];
 }
 async function rahmanTalk() {
   const R = G.rahman, f = first(), ph = G.phase;
   await convo(R, async () => {
-    const open = { getTray: `Hello, ${f}. Get your food first, then come here to scan.`, order: 'Get your food first, then come here to scan.', scanBefore: 'You have your tray. Look into the camera on top of the screen, put your tray on the scale, and wait for the beep.', findSeat: 'Go and eat first. Come back and scan when you\'re done.', eating: 'Go and eat first.', scanAfter: 'Done eating? Scan it again here, then scrape and return the tray.', compost: 'The compost bin is the white box on the right of the scanner. Scrape everything in.', returnTray: 'Tray goes on the rack. Mr Tan will take it from there.', done: `Well done, ${f}. 3B gets league points for every clean tray.` }[ph];
+    const open = { getTray: `Hello, ${f}. Get your food first, then come here to scan.`, order: 'Get your food first, then come here to scan.', scanBefore: 'You have your tray. Look into the camera on top of the screen, put your tray on the scale, and wait for the beep.', findSeat: 'Go and eat first. Come back and scan when you\'re done.', eating: 'Go and eat first.', scanAfter: 'Done eating? Scan it again here, then scrape and return the tray.', compost: 'The food waste bin is the white box on the right of the scanner. Scrape everything in.', returnTray: 'Tray goes on the rack. Mr Tan will take it from there.', done: `Well done, ${f}. 3B gets league points for every clean tray.` }[ph];
     let i = await ask(R, open, ['How does the scanner work?', 'Why do we scan our trays?', 'Where do the leftovers go?', 'OK, thanks!']);
     while (i >= 0 && i < 3) {
       if (i === 0) { await say(R, 'The camera on the arm sees your food in 3D, and the scale checks the weight. It measures your tray before and after lunch.'); await say(R, 'It knows you from your face, so there\'s nothing to tap or carry. And the photo never leaves the machine.'); }
       if (i === 1) { await say(R, 'So the kitchen knows what we really eat. They cook the right amount, waste less food and save money.'); await say(R, 'And every tray shows how much CO₂ you saved. It adds up for the whole school.'); }
-      if (i === 2) { await say(R, 'Into the compost module on the scanner. The compost goes to our school garden. Maybe it will grow next term\'s kailan!'); }
+      if (i === 2) { await say(R, 'Into the food waste bin on the scanner. It weighs everything, so the kitchen can see exactly what gets thrown away and cook less of it.'); }
       i = await ask(R, 'Anything else?', ['How does the scanner work?', 'Why do we scan our trays?', 'Where do the leftovers go?', 'No, thanks!']);
     }
   });

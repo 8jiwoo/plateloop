@@ -1,6 +1,6 @@
 /* The PlateLoop scanner's screen in Lunch Rush, drawn live onto the real 3D model's screen.
    States follow the kiosk: idle (how to use + today's numbers), face sign-in, hello, scanning (depth camera
-   and scale), the saved tray, the after-lunch result, compost, composted, clean tray, goodbye. */
+   and scale), the saved tray, the after-lunch result, the food waste bin, clean tray, goodbye. */
 (() => {
 'use strict';
 const L = PL.L3;
@@ -54,7 +54,7 @@ L.Screen = () => {
         });
         rr(12, 198, W - 24, 50, 10, '#E7F6EA');
         txt('After lunch: scan again, scrape leftovers into', W / 2, 219, 12.5, '#1E6B34', 'bold', 'center');
-        txt('the compost on the right, then return your tray.', W / 2, 237, 12.5, '#1E6B34', 'bold', 'center');
+        txt('the food waste bin on the right, then return your tray.', W / 2, 237, 12.5, '#1E6B34', 'bold', 'center');
       } else {
         const T = PL.S.today, tt = PL.todayTotals();
         txt('Today at Harbourlight', W / 2, 62, 20, INK, 'bold', 'center');
@@ -120,24 +120,24 @@ L.Screen = () => {
       L.loopi(c, 30, 236, 24, r.w > .35 ? 'sad' : 'happy'); txt(`“${(r.line || '').slice(0, 58)}”`, 50, 240, 11.5, INK, 'normal');
     },
     compost() {
-      header('Compost');
-      txt('Scrape your leftovers', 18, 70, 22); txt('into the compost', 18, 96, 22);
+      header('Food waste');
+      txt('Scrape your leftovers', 18, 70, 22); txt('into the food waste bin', 18, 96, 22);
       txt(`${data.left || 0} g left on your tray`, 18, 124, 13, GREY, 'normal');
       const b = (Math.sin(t * 5) + 1) * 5; c.fillStyle = GREEN; c.beginPath(); c.moveTo(330 + b, 54); c.lineTo(378 + b, 84); c.lineTo(330 + b, 114); c.closePath(); c.fill(); c.fillRect(290 + b, 72, 42, 24);
-      rr(18, 150, W - 36, 80, 12, '#F2F2F7'); txt('Compost bin', 32, 176, 13); rr(32, 188, 240, 14, 7, '#E5E5EA'); rr(32, 188, 240 * (data.fill || .6), 14, 7, '#8D6E4A');
-      txt(Math.round((data.fill || .6) * 100) + '% full', 290, 200, 12, GREY, 'bold'); txt('It becomes soil for the school garden.', 32, 220, 11.5, GREY, 'normal');
+      rr(18, 150, W - 36, 80, 12, '#F2F2F7'); txt('Food waste bin', 32, 176, 13); rr(32, 188, 240, 14, 7, '#E5E5EA'); rr(32, 188, 240 * (data.fill || .6), 14, 7, '#8E8E93');
+      txt(Math.round((data.fill || .6) * 100) + '% full', 290, 200, 12, GREY, 'bold'); txt('Weighed for the kitchen\'s food waste report.', 32, 220, 11.5, GREY, 'normal');
     },
     composted() {
       header('Thank you');
-      c.fillStyle = '#8D6E4A'; c.beginPath(); c.ellipse(70, 112, 36, 12, 0, 0, TAU); c.fill();
-      c.strokeStyle = '#34C759'; c.lineWidth = 4; c.beginPath(); c.moveTo(70, 108); c.lineTo(70, 76); c.stroke();
-      c.fillStyle = '#34C759'; c.beginPath(); c.ellipse(58, 76, 12, 6, -.5, 0, TAU); c.ellipse(82, 70, 12, 6, .5, 0, TAU); c.fill();
-      txt(`${data.left || 0} g composted`, 124, 86, 22); txt('It becomes soil for the school garden.', 124, 108, 12.5, GREY, 'normal');
+      // a simple bin
+      rr(46, 70, 48, 58, 6, '#8E8E93'); rr(40, 62, 60, 10, 4, '#6E6E73'); rr(62, 56, 16, 7, 3, '#6E6E73');
+      c.strokeStyle = 'rgba(255,255,255,.5)'; c.lineWidth = 3; [58, 70, 82].forEach(x => { c.beginPath(); c.moveTo(x, 80); c.lineTo(x, 120); c.stroke(); });
+      txt(`${data.left || 0} g in the bin`, 124, 86, 22); txt('Weighed for the kitchen\'s food waste report.', 124, 108, 12.5, GREY, 'normal');
       rr(16, 160, W - 32, 64, 14, '#E7F6EA'); txt('Now return your tray on the rack →', W / 2, 198, 16, '#1E6B34', 'bold', 'center');
     },
     clean() {
       header('Clean tray');
-      L.loopi(c, 70, 110, 70); txt('Clean tray!', 130, 96, 26, GREEN); txt('Nothing to compost.', 130, 122, 14, GREY, 'normal');
+      L.loopi(c, 70, 110, 70); txt('Clean tray!', 130, 96, 26, GREEN); txt('Nothing to throw away.', 130, 122, 14, GREY, 'normal');
       rr(16, 170, W - 32, 60, 14, '#E7F6EA'); txt('Return your tray on the rack →', W / 2, 206, 16, '#1E6B34', 'bold', 'center');
     },
     bye() { header(); L.loopi(c, W / 2, 110, 80); txt(`See you tomorrow, ${name1()}!`, W / 2, 196, 20, INK, 'bold', 'center'); },

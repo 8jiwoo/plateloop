@@ -1,8 +1,8 @@
 /* Lunch Rush world: a Singapore secondary-school canteen, painted textures with baked light and grit.
    North: four stalls (Drinks, Noodles, the Healthy Set Meal we use, Malay food). North-east corner: the
    PlateLoop station, where the scanner sits on the flow between the serving line and the dining area, with
-   floor lanes, a how-to standee, a live stats screen and the tray return rack right beside its compost
-   module. Middle: long tables with benches, pillars, ceiling fans. West: sinks, water cooler, notice board.
+   floor lanes, a how-to standee, a live stats screen and the tray return rack right beside its food
+   waste bin. Middle: long tables with benches, pillars, ceiling fans. West: sinks, water cooler, notice board.
    South: open to a covered walkway, the school field, trees and a school block, with sun coming in. */
 (() => {
 'use strict';
@@ -241,7 +241,7 @@ L.buildWorld = scene => {
     const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2FA24E'); g.addColorStop(1, '#1E7A38'); c.fillStyle = g; c.fillRect(0, 0, W, H);
     c.fillStyle = 'rgba(255,255,255,.08)'; for (let i = 0; i < 9; i++) { c.beginPath(); c.arc(W * .85, H * .2, 30 + i * 26, 0, TAU); c.stroke(); }
     L.lines(c, W, [['PlateLoop', 34, 42, '#FFFFFF'], ['Every tray counts.', 14, 72, 'rgba(255,255,255,.92)', 'normal']]);
-    const steps = [['1', 'Scan', 'full tray'], ['2', 'Eat', 'what you took'], ['3', 'Scan', 'again'], ['4', 'Compost', 'leftovers'], ['5', 'Return', 'your tray']];
+    const steps = [['1', 'Scan', 'full tray'], ['2', 'Eat', 'what you took'], ['3', 'Scan', 'again'], ['4', 'Bin', 'leftovers'], ['5', 'Return', 'your tray']];
     steps.forEach(([n, a, b], i) => {
       const x = 45 + i * 90, y = 130;
       c.fillStyle = '#FFFFFF'; c.beginPath(); c.arc(x, y, 22, 0, TAU); c.fill();
@@ -268,7 +268,7 @@ L.buildWorld = scene => {
   const how = sign(200, 300, (c, W, H) => {
     c.fillStyle = '#FFFFFF'; c.fillRect(0, 0, W, H); c.fillStyle = '#2B8C43'; c.fillRect(0, 0, W, 44);
     L.lines(c, W, [['HOW TO USE', 13, 14, 'rgba(255,255,255,.85)'], ['PlateLoop', 22, 32, '#FFFFFF']]);
-    const rows = [['BEFORE YOU EAT', ''], ['1', 'Look at the camera'], ['2', 'Put your tray on the scale'], ['3', 'Wait for the beep'], ['AFTER YOU EAT', ''], ['4', 'Scan your tray again'], ['5', 'Scrape leftovers into the compost'], ['6', 'Return your tray on the rack']];
+    const rows = [['BEFORE YOU EAT', ''], ['1', 'Look at the camera'], ['2', 'Put your tray on the scale'], ['3', 'Wait for the beep'], ['AFTER YOU EAT', ''], ['4', 'Scan your tray again'], ['5', 'Scrape leftovers into the bin'], ['6', 'Return your tray on the rack']];
     let y = 66;
     rows.forEach(([n, t]) => {
       if (!t) { c.font = `bold 10px ${F}`; c.fillStyle = '#2B8C43'; c.fillText(n, 14, y); y += 20; return; }
@@ -283,12 +283,12 @@ L.buildWorld = scene => {
   box(.03, .7, .03, M.dark, 0, .35, -.1, standee);
   solid(8.6, 9.1, -8.6, -8.1);
   Wd.standee = { mesh: panel, group: standee };
-  // tray return rack beside the compost module
+  // tray return rack beside the food waste bin
   const rack = Wd.rack = new THREE.Group(); rack.position.set(12.05, 0, -8.95); scene.add(rack);
   [[-.6, -.2], [.6, -.2], [-.6, .2], [.6, .2]].forEach(([x, z]) => box(.04, 1.6, .04, M.steelDark, x, .8, z, rack));
   Wd.rackShelves = [.3, .62, .94, 1.26];
   Wd.rackShelves.forEach((y, i) => { box(1.24, .02, .44, M.steel, 0, y, 0, rack); const n = [4, 3, 1, 0][i]; for (let k = 0; k < n; k++) { const t = L.trayMesh(true, i * 7 + k); t.position.set(-.35 + k * .02, y + .012 + k * .024, 0); t.rotation.y = Math.PI / 2 * 0 + (k % 2 ? .03 : -.03); rack.add(t); } });
-  plane(1.25, .43, sign(260, 90, (c, W, H) => { c.fillStyle = '#1E6FB8'; c.fillRect(0, 0, W, H); L.lines(c, W, [['TRAY RETURN', 26, 34, '#FFFFFF'], ['Scrape into the compost first, then return your tray', 11, 66, 'rgba(255,255,255,.9)', 'normal']]); }), 12.1, 2.05, Z0 + .03);
+  plane(1.25, .43, sign(260, 90, (c, W, H) => { c.fillStyle = '#1E6FB8'; c.fillRect(0, 0, W, H); L.lines(c, W, [['TRAY RETURN', 26, 34, '#FFFFFF'], ['Scrape into the food waste bin first, then return your tray', 11, 66, 'rgba(255,255,255,.9)', 'normal']]); }), 12.1, 2.05, Z0 + .03);
   Wd.spots.rack = [12.05, 1, -8.95];
   solid(9.55, 12.75, -9.4, -8.55);
   // trolley of dirty trays next to the rack
