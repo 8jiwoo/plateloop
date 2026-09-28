@@ -55,6 +55,7 @@ function render() {
   const main = $('#kit-main', root);
   main.innerHTML = ({ overview, dishes, nutrition, environment, carbon, plan, report })[ui.view]();
   wire(main);
+  PL.motion(main, 'kitchen:' + ui.view);
 }
 
 /* ---------------------------------------------------------------- data helpers */

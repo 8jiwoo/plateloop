@@ -15,8 +15,42 @@ PL.esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '
 PL.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rng = PL.rng = seed => { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
 PL.toast = msg => {
+  document.querySelectorAll('.toast').forEach(o => o.remove());
   const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
-  document.body.appendChild(t); setTimeout(() => t.remove(), 3600);
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 260); }, 3400);
+};
+
+/* ------------------------------------------------------------ motion: every app calls PL.motion(container, key) after it
+   renders. When the key changes (a new tab, view or screen), cards rise in one after another, bars and rings fill from
+   zero and numbers count up. Re-renders with the same key (live updates) stay still, so nothing flickers. */
+const COUNT = /^([^\d-]*)(-?[\d,]*\.?\d+)(.*)$/;
+PL.countUp = (el, dur = 700, delay = 0) => {
+  const txt = el.textContent.trim(), m = COUNT.exec(txt); if (!m || el.children.length || /\d:\d|#/.test(txt)) return; // not clock times or ranks
+  const [, pre, raw, post] = m, to = parseFloat(raw.replace(/,/g, '')), dec = (raw.split('.')[1] || '').length, comma = raw.includes(',');
+  if (!isFinite(to) || Math.abs(to) < 2 && !dec) return;
+  const show = v => pre + (comma ? v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : v.toFixed(dec)) + post;
+  const t0 = performance.now() + delay; el.textContent = show(0);
+  const step = now => { if (!el.isConnected) return; const k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 3); el.textContent = show(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = show(to); };
+  requestAnimationFrame(step);
+  setTimeout(() => { if (el.isConnected) el.textContent = show(to); }, delay + dur + 400); // background tabs pause frames
+};
+const lastKey = new WeakMap();
+const RISE = '.vcard,.card,.kpi,.vtip,.vring,.insight,.kio-meta>div,.kio-chips>span,.kio-steps>div,.g-row,.lbrow,.hplate figure,.slot-card,.pl-rise';
+PL.motion = (el, key, opts = {}) => {
+  if (!el || PL.reduceMotion || !el.animate) return;
+  if (lastKey.get(el) === key && !opts.force) return;
+  lastKey.set(el, key);
+  el.dataset.enter = ''; clearTimeout(el._enterT); el._enterT = setTimeout(() => delete el.dataset.enter, 1300);
+  if (opts.slide) el.animate([{ opacity: 0, transform: `translateX(${opts.slide * 18}px)` }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  [...el.querySelectorAll(RISE)].filter(n => !n.closest('[data-still]')).slice(0, 18).forEach((n, i) =>
+    n.animate([{ opacity: 0, transform: 'translateY(14px) scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 480, delay: 40 + i * 45, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+  el.querySelectorAll('i[style*="width:"],b[style*="width:"]').forEach((n, i) => {
+    if (n.closest('[data-still]')) return;
+    n.style.transformOrigin = 'left center';
+    n.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: 750, delay: 120 + Math.min(i, 14) * 35, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+  });
+  [...el.querySelectorAll('.num,.kpi .v,.big-num')].slice(0, 40).forEach((n, i) => { if (!n.closest('[data-still]')) PL.countUp(n, 750, 80 + Math.min(i, 10) * 30); });
 };
 
 /* ------------------------------------------------------------ constants */

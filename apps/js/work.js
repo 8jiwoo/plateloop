@@ -217,6 +217,7 @@ function render(keep) {
   const pr = $('#work-print', body); if (pr) pr.onclick = () => print();
   const sh = $('#work-share', body); if (sh) sh.onclick = () => PL.toast('Shared with the company health programme (demo, nothing was sent).');
   if (keep) body.scrollTop = y;
+  PL.motion(body, `work:${w.id}:${ui.tab}`);
 }
 
 /* ---------------------------------------------------------------- Today: the pick for your goal, then how lunch went */

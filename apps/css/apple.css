@@ -112,7 +112,7 @@ td{padding:10px;border-bottom:.5px solid var(--sep);vertical-align:middle}
 tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:right}
 .table-wrap{overflow-x:auto}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(29,29,31,.92);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;box-shadow:var(--shadow);z-index:90;max-width:calc(100% - 32px);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);animation:toastin .38s cubic-bezier(.2,.9,.3,1.15);background:rgba(29,29,31,.92);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;box-shadow:var(--shadow);z-index:90;max-width:calc(100% - 32px);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);text-align:center}
 canvas.px{image-rendering:pixelated;background:#DDE4D4;border-radius:10px;display:block}
 .scanline{animation:scan 1.5s ease-in-out infinite}
 @keyframes scan{0%{transform:translateY(0)}50%{transform:translateY(270px)}100%{transform:translateY(0)}}
@@ -1229,3 +1229,26 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-mute{border-radius:4px}
 .g3-cross{width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.45)}
 .g3-cross.on{width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border:1.5px solid #7FE0A0;background:none;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
+
+/* ================================================================ motion (see PL.motion in core.js) */
+@property --p{syntax:'<number>';inherits:true;initial-value:0}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0)}}
+.toast.out{opacity:0;transform:translate(-50%,10px);transition:opacity .25s,transform .25s}
+/* rings sweep round from zero when a view opens */
+@keyframes ringfill{from{--p:0}}
+[data-enter] .vr,[data-enter] .vweek i,[data-enter] .hist2 i,[data-enter] .vfood.scored{animation:ringfill 1s cubic-bezier(.2,.8,.2,1) .15s backwards}
+/* everything you can press gives a little */
+.btn,.chip,.seg button,.phone-tabs button,.kit-side button,.demo-switch button,.kio-done{transition:transform .14s cubic-bezier(.3,.7,.4,1.4),background .15s,color .15s,box-shadow .2s,opacity .15s}
+.btn:active:not(:disabled),.chip:active,.seg button:active,.kit-side button:active,.kio-done:active{transform:scale(.95)}
+.phone-tabs button:active svg{transform:scale(.86)}
+.phone-tabs button svg{transition:transform .18s}
+.phone-tabs button[aria-selected="true"] svg{animation:tabpop .42s cubic-bezier(.3,.7,.4,1.6)}
+@keyframes tabpop{0%{transform:scale(.8)}60%{transform:scale(1.14) translateY(-2px)}100%{transform:none}}
+@media (hover:hover){
+  .vcard,.card,.kpi{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+  .kit-main .card:hover,.kit-main .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px -12px rgba(0,0,0,.25)}
+}
+/* a soft shimmer for things that are loading or being measured */
+.pl-shimmer{background:linear-gradient(100deg,var(--fill) 30%,var(--fill2) 50%,var(--fill) 70%);background-size:300% 100%;animation:shimmer 1.3s linear infinite}
+@keyframes shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+

@@ -88,6 +88,7 @@ function render(keepScroll) {
   wireRoom();
   if (ui.tab === 'kitchen' && ui.kseg === 'catch') Catch.attach();
   if (keepScroll) body.scrollTop = scroll;
+  PL.motion(body, `loopi:${st.id}:${ui.tab}:${ui.kseg || ''}`);
 }
 function paint(t) {
   const st = me();

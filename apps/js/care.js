@@ -71,6 +71,7 @@ function render(keep) {
   const send = $('#send-report', body); if (send) send.onclick = () => PL.toast(`Report sent to ${P.doctor} and the ward dietitian (demo, nothing was sent).`);
   const pr = $('#print-report', body); if (pr) pr.onclick = () => print();
   if (keep) body.scrollTop = y;
+  PL.motion(body, `care:${P.id}:${ui.tab}`);
 }
 /* ================================================================ Today */
 const V = PL.V;
