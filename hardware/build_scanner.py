@@ -344,12 +344,12 @@ def build_scanner():
     cyl('PS_FaceLens', 0.0085, 0.003, (0, -0.016, 0), M_LENS(), face, rot=front, seg=48)
     for i, x in enumerate((-0.036, 0.036)):
         cyl(f'PS_FaceIR{i}', 0.0045, 0.002, (x, -0.0155, 0), M_IR(), face, rot=front)
-    # compost module
+    # food waste bin
     box('PS_BinPlinth', (0.33, 0.40, 0.05), (0.585, 0.02, 0.025), M_INK(), R, bevel=0.012)
     box('PS_Bin', (0.36, 0.46, 0.81), (0.585, 0, 0.455), shell, R, bevel=0.06)
-    cyl('PS_BinRing', 0.12, 0.006, (0.585, -0.01, 0.861), M_GREEN(), R, seg=64)
+    cyl('PS_BinRing', 0.12, 0.006, (0.585, -0.01, 0.861), M_LABEL(), R, seg=64)
     cyl('PS_BinHole', 0.105, 0.008, (0.585, -0.01, 0.8625), M_INK(), R, seg=64)
-    text('PS_BinLabel', 'Compost', 0.035, (0.585, -0.2335, 0.62), M_LABEL(), R)
+    text('PS_BinLabel', 'Food waste', 0.03, (0.585, -0.2335, 0.62), M_LABEL(), R)
     tray('PS_Tray', (0.08, -0.04, 0.885), R,
          eaten={'rice': 0.25, 'chicken': 0.0, 'soup': 0.35, 'kailan': 0.7, 'cabbage': 0.4, 'melon': 0.0})
     return R
