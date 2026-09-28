@@ -10,7 +10,7 @@ People sign in with their face and scan their tray **before** the meal (what was
 
 | App | File | For |
 |---|---|---|
-| **PlateLoop Prototype** | `dist/1-plateloop-scanner-3d.html` | A full-screen, cinematic 3D scanner: drag to turn, scroll to zoom, tap a glowing light on a part to fly to it and read how it works. The display's panel opens the working **Kiosk** on the scanner's own screen (face sign-in, before and after scans, nutrition, the Green Tree). Add `?kiosk` to open straight into the kiosk. Soft spatial sound with a mute button. |
+| **PlateLoop Prototype** | `dist/1-plateloop-scanner-3d.html` | A full-screen, cinematic 3D scanner: drag to turn, scroll to zoom, tap a glowing light on a part to fly to it and read how it works. The display's panel opens the working **Kiosk** on the scanner's own screen (face sign-in, before and after scans, nutrition, the Green Tree). Add `?kiosk` to open straight into the kiosk. |
 | **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
 | **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: a Tamagotchi fed by real lunches, their tray and healthy plate, class and school leaderboards |
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
@@ -52,7 +52,7 @@ apps/                 source for the apps
   js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, eggs and the Barn, cooking, Healthy Catch, crates, badges)
   js/room.js          Loopi's animated pixel room
   js/health.js        hospital menus, demo people, healthcare report parts
-  js/model.js         PlateLoop Prototype: the explorable 3D scanner (built in three.js), hotspots, sound, kiosk mode
+  js/model.js         PlateLoop Prototype: the explorable 3D scanner (built in three.js), hotspots, kiosk mode
   js/scanner.js       PlateLoop Kiosk (runs on the scanner's screen inside PlateLoop Prototype)
   js/kitchen.js       PlateLoop Kitchen
   js/student.js       Loopi student app
