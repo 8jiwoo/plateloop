@@ -55,7 +55,7 @@ function mount(el) {
     if (!rec) return PL.toast('All of today\'s meals are scanned.');
     P.ack = null; // a new meal starts a fresh check
     PL.store.save('care');
-    PL.toast(`${mealName(rec.meal)} scanned: ${pct(ate(rec))} eaten, ${rec.n.kcal} kcal.`);
+    PL.notify($('#care-phone', root), { app: 'Loopi Care', icon: PL.V.loopi(ate(rec) >= .75 ? 'happy' : 'calm', 30), title: `${mealName(rec.meal)}: ${pct(ate(rec))} eaten`, text: `${rec.n.kcal} kcal and ${rec.n.p} g protein. Tap to see it dish by dish.`, onTap: () => { ui.tab = 'today'; render(); } });
   };
   $('#care-intro', el).onclick = intro;
   render();

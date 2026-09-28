@@ -502,6 +502,20 @@ PL.icons = {
 };
 PL.backLink = (label = 'All apps') => `<a class="backlink" href="#home">${PL.icons.back}<span>${label}</span></a>`;
 
+/* ------------------------------------------------------------ a push notification that slides down inside the phone.
+   o: { app, title, text, icon (html), onTap }. Tapping it runs onTap; it leaves by itself after a few seconds. */
+PL.notify = (host, o) => {
+  if (!host) return PL.toast(o.title + ' ' + (o.text || ''));
+  host.querySelectorAll('.pnote').forEach(n => n.remove());
+  const n = document.createElement('button'); n.className = 'pnote'; n.setAttribute('role', 'status');
+  n.innerHTML = `<span class="pnote-ic">${o.icon || ''}</span><span class="pnote-tx"><span class="pnote-app">${PL.esc(o.app || 'PlateLoop')}<em>now</em></span><b>${PL.esc(o.title)}</b>${o.text ? `<span>${PL.esc(o.text)}</span>` : ''}</span>`;
+  host.appendChild(n);
+  const bye = () => { if (!n.isConnected) return; n.classList.add('out'); setTimeout(() => n.remove(), 320); };
+  n.onclick = () => { bye(); if (o.onTap) o.onTap(); };
+  setTimeout(bye, o.ms || 5200);
+  if (navigator.vibrate && o.buzz) try { navigator.vibrate(40); } catch (e) {}
+};
+
 /* ------------------------------------------------------------ first-run intro, inside the phone frame.
    steps: [{ art, title, text, body, cta, consent }]. The explanation steps can be skipped, the consent step can't:
    'Skip' jumps to it. Inputs with data-pref are handed to done() as { name: value }. Seen once per app. */

@@ -452,7 +452,9 @@ PL.apps.student = {
     const ls = PL.S.lastScan;
     if (!fromSelf && ls && ls.at > ui.seenScan) {
       ui.seenScan = ls.at;
-      if (ls.sid === PL.S.me) PL.toast(ls.kind === 'before' ? 'Tray scanned. Enjoy your lunch!' : `Lunch scanned, +${ls.xp} points. Loopi's food is in the bowl.`);
+      if (ls.sid === PL.S.me) PL.notify($('#phone', root), ls.kind === 'before'
+        ? { app: 'Loopi', icon: V.loopi('happy', 30), title: 'Tray scanned. Enjoy your lunch!', text: 'Come back to the scanner when you’re done.', buzz: true }
+        : { app: 'Loopi', icon: V.loopi('cheer', 30), title: `Lunch is in! +${ls.xp} points`, text: 'Loopi’s food is waiting in its bowl. Tap to see your tray.', buzz: true, onTap: () => { ui.tab = 'lunch'; render(); $('#stu-body').scrollTop = 0; } });
     }
     if (Catch.running) return;
     render(kind !== 'me');

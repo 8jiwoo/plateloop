@@ -196,7 +196,7 @@ function mount(el) {
     const line = ui.line || recommend(w)[0].line, like = PREFS[w.id].like, base = H.PRESETS[ui.preset], eggs = eggsOn(w);
     const rec = record(line, eggs, Object.fromEntries(menuOf(line, eggs).map(x => [x.id, base * Math.min(1.05, like[x.id] || 1) + (Math.random() - .5) * .08])), H.TODAY);
     w.log.push(rec); PL.store.save('work');
-    PL.toast(`Tray scanned: ${LINES[line].name}, ${rec.n.kcal} kcal, ${rec.n.p} g protein.`);
+    PL.notify($('#work-phone', root), { app: 'Loopi Work', icon: PL.V.loopi('happy', 30), title: `Lunch scanned: ${LINES[line].name}`, text: `${rec.n.kcal} kcal, ${rec.n.p} g protein. Tap for your feedback.`, onTap: () => { ui.tab = 'today'; render(); } });
   };
   $('#work-intro', el).onclick = intro;
   render();
