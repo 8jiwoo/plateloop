@@ -1429,167 +1429,193 @@ body.xp-body{overflow:hidden;padding:0;background:#070908}
 }
 @media (prefers-reduced-motion:reduce){.xp-hot i::after{animation:none}.xp-title,.xp-gl,.xp-panel{transition-duration:.01s!important}}
 
-/* ================================================================ PlateLoop Kitchen: live service dashboard (dark, visual) */
-.kx{--bg:#0A0C0D;--bg2:#15181A;--fill:#1D2124;--fill2:#262B2F;--fill3:#343A3F;--label:#EDF0EF;--label2:#98A19D;--label3:#646C69;--sep:rgba(255,255,255,.07);
-  --tint:#3DDC84;--tint-ink:#3DDC84;--tint-soft:rgba(61,220,132,.13);--green:#3DDC84;--amber:#FFB547;--red:#FF6B6B;--slate:#7C8B99;--blue:#5E9BFF;--orange:#FFB547;--orange-soft:rgba(255,181,71,.13);--red-soft:rgba(255,107,107,.13);
-  --shadow-s:none;--shadow:0 30px 60px -30px rgba(0,0,0,.8);--bar2:rgba(21,24,26,.85);
-  color-scheme:dark;color:var(--label);font-family:"Inter",var(--font);
-  background:radial-gradient(90% 60% at 75% -10%,#15201A 0%,#0C0F0E 45%,#08090A 100%);grid-template-columns:240px minmax(0,1fr);min-height:100vh}
-body:has(.kx){background:#08090A}
-.kx .kit-side{position:sticky;top:12px;height:calc(100vh - 24px);margin:12px 0 12px 12px;padding:22px 14px 16px;border:0;border-radius:26px;
-  background:rgba(255,255,255,.035);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);display:flex;flex-direction:column}
-.kx-brand{display:flex;align-items:center;gap:8px;padding:0 8px;font-size:14.5px;letter-spacing:.02em}
+/* ================================================================ PlateLoop Kitchen: live service dashboard (dark, flat, square) */
+.kx{--bg:#0A0B0C;--bg2:#131517;--fill:#1B1E21;--fill2:#24282C;--fill3:#30353A;--label:#ECEFEE;--label2:#8F9894;--label3:#5E6663;--sep:rgba(255,255,255,.07);
+  --tint:#3DDC84;--tint-ink:#3DDC84;--tint-soft:rgba(61,220,132,.12);--green:#3DDC84;--amber:#FFB547;--red:#FF5F5F;--slate:#7C8B99;--blue:#5E9BFF;--orange:#FFB547;--orange-soft:rgba(255,181,71,.12);--red-soft:rgba(255,95,95,.12);
+  --shadow-s:none;--shadow:none;--bar2:rgba(19,21,23,.9);--r:4px;
+  color-scheme:dark;color:var(--label);font-family:"Inter",var(--font);background:#0A0B0C;grid-template-columns:216px minmax(0,1fr);min-height:100vh}
+body:has(.kx){background:#0A0B0C}
+.kx .kit-side{position:sticky;top:0;height:100vh;margin:0;padding:22px 12px 16px;border:0;border-right:1px solid var(--sep);border-radius:0;background:#0D0F10;display:flex;flex-direction:column;box-shadow:none}
+.kx-brand{display:flex;align-items:center;gap:8px;padding:0 10px 22px;font-size:14px;letter-spacing:.02em}
 .kx-brand b{font-weight:600}.kx-brand span{color:var(--label3)}
-.kx-dot{width:11px;height:11px;border-radius:50%;background:var(--green);box-shadow:0 0 12px 2px rgba(61,220,132,.45)}
-.kx-title{font-size:28px;font-weight:300;letter-spacing:-.03em;line-height:1.08;margin:26px 8px 22px}
-.kx-nav{display:flex;flex-direction:column;gap:2px}
-.kx-nav button{display:flex;align-items:center;gap:12px;border:0;background:none;padding:11px 12px;border-radius:14px;font:500 14px "Inter",var(--font);color:var(--label2);text-align:left;transition:background .2s,color .2s}
-.kx-nav button svg{width:19px;height:19px;flex:none}
-.kx-nav button:hover{background:rgba(255,255,255,.05);color:var(--label)}
-.kx-nav button[aria-current="page"]{background:rgba(255,255,255,.09);color:#fff}
-.kx-nav button[aria-current="page"] svg{color:var(--green)}
-.kx .kit-foot{margin-top:auto;padding:8px;gap:10px}
-.kx .kit-foot .linkish{font-size:12.5px;color:var(--label3)}
-.kx-live{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;color:var(--label2)}
-.kx-live i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:kxlive 2s infinite}
-@keyframes kxlive{0%{box-shadow:0 0 0 0 rgba(61,220,132,.55)}70%,100%{box-shadow:0 0 0 7px rgba(61,220,132,0)}}
-.kx .kit-main{padding:28px 32px 48px}
+.kx-dot{width:9px;height:9px;background:var(--green)}
+.kx-nav{display:flex;flex-direction:column;gap:1px}
+.kx-nav button{display:flex;align-items:center;gap:11px;border:0;background:none;padding:10px;border-radius:var(--r);font:500 13.5px "Inter",var(--font);color:var(--label2);text-align:left;transition:background .15s,color .15s}
+.kx-nav button svg{width:17px;height:17px;flex:none}
+.kx-nav button:hover{background:var(--fill);color:var(--label)}
+.kx-nav button[aria-current="page"]{background:var(--fill2);color:#fff;box-shadow:inset 2px 0 0 var(--green)}
+.kx .kit-foot{margin-top:auto;padding:8px 10px;gap:10px}
+.kx .kit-foot .linkish{font-size:12px;color:var(--label3)}
+.kx-live{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:500;color:var(--label2)}
+.kx-live i{width:6px;height:6px;background:var(--green);animation:kxblink 2s steps(2) infinite}
+@keyframes kxblink{50%{opacity:.35}}
+.kx .kit-main{padding:22px 28px 40px}
+.kx label{display:block;font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--label3)}
 
-.kx-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap;margin-bottom:18px}
-.kx-head h1{font-size:38px;font-weight:300;letter-spacing:-.035em}
-.kx-head p{color:var(--label3);margin-top:6px;font-size:14px}
-.kx-chips{display:flex;gap:8px;flex-wrap:wrap}
-.kx-dotchip,.kx-head .kx-live{display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:99px;background:rgba(255,255,255,.05);box-shadow:inset 0 0 0 1px rgba(255,255,255,.06);font-size:12.5px;color:var(--label2)}
-.kx-dotchip i{width:7px;height:7px;border-radius:50%}
-.kx-dotchip i.ok{background:var(--green)}.kx-dotchip i.bad{background:var(--red);box-shadow:0 0 10px rgba(255,107,107,.7)}
+/* header: the service, its clock and progress, and three tools */
+.kx-head{display:grid;grid-template-columns:1fr auto;align-items:end;gap:10px 16px;margin-bottom:16px}
+.kx-h1{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.kx-h1 h1{font-size:34px;font-weight:300;letter-spacing:-.03em}
+.kx-clock{font-size:34px;font-weight:300;letter-spacing:-.03em;color:var(--green);font-variant-numeric:tabular-nums}
+.kx-until{font-size:13px;color:var(--label3)}
+.kx-tools{display:flex;gap:6px}
+.kx-tool{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 12px;border:1px solid var(--sep);border-radius:var(--r);background:var(--bg2);color:var(--label2);font:500 13px "Inter",var(--font);transition:background .15s,color .15s,border-color .15s}
+.kx-tool svg{width:15px;height:15px}
+.kx-tool.icon{padding:0 9px}
+.kx-tool:hover{color:var(--label);border-color:rgba(255,255,255,.16)}
+.kx-tool.on{color:var(--green);border-color:rgba(61,220,132,.35);background:rgba(61,220,132,.08)}
+.kx-prog{grid-column:1/-1;height:2px;background:var(--fill2)}
+.kx-prog i{display:block;height:100%;background:var(--green);transition:width 1s linear}
 
-/* pinned alerts: short chips */
-.kx-alerts{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
-.kx-alert{display:flex;align-items:center;gap:10px;padding:7px 7px 7px 8px;border-radius:16px;background:var(--cs);box-shadow:inset 0 0 0 1px var(--cb)}
-.kx-alert[data-tone="red"]{--c:var(--red);--cs:rgba(255,107,107,.09);--cb:rgba(255,107,107,.22)}
-.kx-alert[data-tone="amber"]{--c:var(--amber);--cs:rgba(255,181,71,.08);--cb:rgba(255,181,71,.2)}
-.kx-alert[data-tone="green"]{--c:var(--green);--cs:rgba(61,220,132,.07);--cb:rgba(61,220,132,.18)}
-.kx-aic{width:30px;height:30px;border-radius:10px;display:grid;place-items:center;color:var(--c);background:rgba(0,0,0,.25)}
-.kx-aic svg{width:16px;height:16px}
-.kx-alert b{font-size:14px;font-weight:600;padding-right:4px}
-.kx-alert[data-tone="red"] .kx-aic{animation:kxpulse 2s ease-in-out infinite}
-@keyframes kxpulse{50%{box-shadow:0 0 0 4px rgba(255,107,107,.18)}}
-.kx-btn{border:0;height:32px;padding:0 13px;border-radius:11px;background:var(--c,var(--green));color:#0A0C0D;font:600 13px "Inter",var(--font);white-space:nowrap;transition:transform .12s,filter .15s}
-.kx-btn:hover{filter:brightness(1.1)}.kx-btn:active{transform:scale(.95)}
+/* alerts: one line each */
+.kx-alerts{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;min-height:40px}
+.kx-alert{display:flex;align-items:center;gap:10px;height:40px;padding:0 5px 0 12px;border-radius:var(--r);background:var(--bg2);border:1px solid var(--sep);border-left:3px solid var(--c)}
+.kx-alert[data-tone="red"]{--c:var(--red)}.kx-alert[data-tone="amber"]{--c:var(--amber)}.kx-alert[data-tone="green"]{--c:var(--green);padding-right:14px}
+.kx-alert > svg{width:16px;height:16px;color:var(--c);flex:none}
+.kx-alert b{font-size:13.5px;font-weight:600;padding-right:6px;white-space:nowrap}
+.kx-alert[data-tone="red"] > svg{animation:kxblink 1.4s steps(2) infinite}
+.kx-more{font-size:12.5px;color:var(--label3);padding:0 6px}
+.kx-btn{border:0;height:30px;padding:0 12px;border-radius:3px;background:var(--c,var(--green));color:#0A0B0C;font:600 12.5px "Inter",var(--font);white-space:nowrap;transition:filter .15s,transform .1s}
+.kx-btn:hover{filter:brightness(1.12)}.kx-btn:active{transform:translateY(1px)}
 
-/* overview */
-.kx-overview{display:grid;grid-template-columns:1.35fr 1.35fr 1fr 1fr;gap:12px;margin-bottom:26px}
-.kx-card{background:var(--bg2);border-radius:24px;padding:18px 20px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);min-width:0}
-.kx-k{display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;color:var(--label2)}
-.kx-k svg{width:15px;height:15px;color:var(--label3)}
-.kx-big{font-size:48px;font-weight:300;letter-spacing:-.045em;line-height:1;margin:12px 0 10px;font-variant-numeric:tabular-nums}
-.kx-big small{font-size:18px;letter-spacing:0;color:var(--label2);margin-left:3px}
-.kx-big.amber{color:var(--amber)}
-.kx-s{font-size:12.5px;color:var(--label3);line-height:1.35}
-.kx-bar{height:5px;border-radius:99px;background:var(--fill);overflow:hidden;margin:2px 0 8px}
-.kx-bar i{display:block;height:100%;border-radius:99px;background:var(--green)}
-.kx-hero{display:flex;align-items:center;gap:22px}
-.kx-hero-r{flex:1;min-width:0}
-.kx-ring{position:relative;flex:none;display:grid;place-items:center}
-.kx-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}
-.kx-ring .trk{fill:none;stroke:rgba(255,255,255,.07);stroke-width:7}
-.kx-ring .val{fill:none;stroke:var(--rc);stroke-width:7;stroke-linecap:round;filter:drop-shadow(0 0 6px var(--rg));transition:stroke-dashoffset .9s cubic-bezier(.2,.8,.2,1)}
-.kx-ring[data-tone="green"]{--rc:var(--green);--rg:rgba(61,220,132,.35)}.kx-ring[data-tone="amber"]{--rc:var(--amber);--rg:rgba(255,181,71,.35)}.kx-ring[data-tone="slate"]{--rc:var(--slate);--rg:rgba(124,139,153,.25)}
-.kx-ring > div{position:relative;text-align:center;line-height:1.05}
-.kx-ring b{display:block;font-size:26px;font-weight:300;letter-spacing:-.03em;font-variant-numeric:tabular-nums}
-.kx-ring span{display:block;font-size:11px;color:var(--label3);margin-top:3px}
-.kx-hero .kx-ring b{font-size:22px;font-weight:500}
-[data-enter] .kx-ring .val{animation:kxring 1.1s cubic-bezier(.2,.8,.2,1) .15s backwards}
-@keyframes kxring{from{stroke-dashoffset:264}}
-.kx-rushcard{display:flex;flex-direction:column}
-.kx-rushrow{display:flex;align-items:flex-end;gap:10px}.kx-rushrow .kx-big{margin:10px 0 4px}.kx-rushrow .kx-s{margin-bottom:8px}
-.kx-rush{width:100%;height:70px;display:block;margin-top:auto}
-.kx-rush .done{fill:rgba(61,220,132,.28)}.kx-rush .next{fill:rgba(255,181,71,.55)}.kx-rush .ln{fill:none;stroke:rgba(255,255,255,.22);stroke-width:1.2;vector-effect:non-scaling-stroke}
-.kx-rush .now{stroke:#fff;stroke-width:1.5;stroke-dasharray:3 3;vector-effect:non-scaling-stroke}
-.kx-axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--label3);margin-top:4px}
-.kx-dots{display:flex;gap:6px;margin-top:6px}
-.kx-dots i{width:12px;height:12px;border-radius:50%;background:var(--dc)}
-.kx-dots i[data-tone="green"]{--dc:var(--green)}.kx-dots i[data-tone="amber"]{--dc:var(--amber);box-shadow:0 0 8px rgba(255,181,71,.6)}.kx-dots i[data-tone="slate"]{--dc:var(--slate)}
-.kx-delta{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;font-weight:600;padding:5px 10px;border-radius:99px}
-.kx-delta svg{width:14px;height:14px}
-.kx-delta.good{color:var(--green);background:rgba(61,220,132,.1)}.kx-delta.bad{color:var(--red);background:rgba(255,107,107,.1)}
-[data-live].upd{animation:kxupd 1.1s ease}
-@keyframes kxupd{0%{color:var(--green);text-shadow:0 0 18px rgba(61,220,132,.6)}100%{text-shadow:none}}
+/* the three numbers that matter, and the lunch timeline */
+.kx-top{display:grid;grid-template-columns:1fr 2.6fr 1fr;gap:1px;background:var(--sep);border:1px solid var(--sep);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.kx-cell{background:var(--bg2);padding:16px 18px;min-width:0}
+.kx-num{display:flex;align-items:baseline;gap:6px;margin:10px 0 10px}
+.kx-num span{font-size:44px;font-weight:300;letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
+.kx-num em{font-style:normal;font-size:13px;color:var(--label3)}
+.kx-line{height:3px;background:var(--fill2)}
+.kx-line i{display:block;height:100%;background:var(--green);transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.kx-line.amber i{background:var(--amber)}
+.kx-delta{display:inline-flex;align-items:center;gap:3px;font-size:12px;font-weight:600;padding:3px 7px;border-radius:3px}
+.kx-delta svg{width:13px;height:13px}
+.kx-delta.good{color:var(--green);background:rgba(61,220,132,.1)}.kx-delta.bad{color:var(--red);background:rgba(255,95,95,.1)}
+.kx-tl{display:flex;flex-direction:column}
+.kx-tl-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.kx-tl-h > span{font-size:12.5px;color:var(--label2)}
+.kx-tl-h b{font-size:20px;font-weight:500;font-variant-numeric:tabular-nums;margin-right:2px}
+.amber{color:var(--amber)}
+.kx-tlw{position:relative;margin-top:auto;padding-top:20px}
+.kx-tlsvg{width:100%;height:80px;display:block}
+.kx-blocks{position:absolute;left:0;right:0;top:0;height:16px}
+.kx-blocks span{position:absolute;top:0;height:16px}
+.kx-blocks .cook{background:rgba(61,220,132,.16);border:1px solid var(--green);color:var(--green);font-size:10px;font-weight:600;line-height:14px;padding:0 4px;white-space:nowrap;overflow:visible;min-width:3px}
+.kx-blocks .done{width:3px;margin-left:-1px;background:var(--green)}
+.kx-axis{display:flex;justify-content:space-between;font-size:10.5px;color:var(--label3);margin-top:5px;font-variant-numeric:tabular-nums}
+.kx-tlsvg .done{fill:rgba(61,220,132,.3)}.kx-tlsvg .next{fill:rgba(255,181,71,.6)}.kx-tlsvg .rest{fill:rgba(255,255,255,.07)}
+.kx-tlsvg .now{stroke:#fff;stroke-width:1;vector-effect:non-scaling-stroke}
 
-/* food on the line */
-.kx-sec{margin-bottom:26px}
-.kx-sec-h{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:12px}
-.kx-sec-h h2{font-size:20px;font-weight:500;letter-spacing:-.02em}
-.kx-legend{display:flex;gap:14px;font-size:12px;color:var(--label3)}
-.kx-legend span{display:inline-flex;align-items:center;gap:6px}
-.kx-legend span::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--lc)}
-.kx-legend [data-tone="amber"]{--lc:var(--amber)}.kx-legend [data-tone="green"]{--lc:var(--green)}.kx-legend [data-tone="slate"]{--lc:var(--slate)}
-.kx-foods{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:12px}
-.kx-food{background:var(--bg2);border-radius:24px;padding:14px 14px 12px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05);display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;overflow:hidden}
-.kx-food[data-tone="amber"]{box-shadow:inset 0 0 0 1px rgba(255,181,71,.28)}
-.kx-food[data-tone="amber"]::before{content:"";position:absolute;inset:0;background:radial-gradient(80% 50% at 50% 0%,rgba(255,181,71,.1),transparent 70%);pointer-events:none}
-.kx-food-top{display:flex;align-items:center;gap:8px;align-self:stretch}
-.kx-food-top b{font-size:14.5px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.kx-food-top .food{flex:none}
-.kx-food-top em{width:9px;height:9px;border-radius:50%;background:var(--fc);font-size:0;flex:none}
-.kx-food[data-tone="amber"]{--fc:var(--amber)}.kx-food[data-tone="green"]{--fc:var(--green)}.kx-food[data-tone="slate"]{--fc:var(--slate)}
-.kx-food[data-tone="amber"] .kx-food-top em{box-shadow:0 0 10px rgba(255,181,71,.8)}
-.kx-food .kx-ring b{font-size:30px}
-.kx-hn{position:relative;align-self:stretch;height:6px;border-radius:99px;background:var(--fill)}
-.kx-hn i{display:block;height:100%;border-radius:99px;background:var(--fc)}
-.kx-hn s{position:absolute;top:-4px;width:2px;height:14px;border-radius:2px;background:#fff;margin-left:-1px}
-.kx-hn-l{align-self:stretch;display:flex;justify-content:space-between;font-size:11px;color:var(--label3);margin-top:-4px}
-.kx-act{align-self:stretch;border:0;min-height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;gap:6px;font:600 12.5px "Inter",var(--font);padding:0 8px;text-align:center}
-.kx-act svg{width:15px;height:15px;flex:none}
+/* six dishes: a level meter, a number and one action each */
+.kx-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1px;background:var(--sep);border:1px solid var(--sep);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.kx-tile{background:var(--bg2);padding:14px;display:flex;flex-direction:column;gap:12px;cursor:pointer;position:relative;transition:background .2s;outline:none}
+.kx-tile:hover,.kx-tile:focus-visible{background:#171A1C}
+.kx-tile::after{content:"";position:absolute;left:0;right:0;top:0;height:2px;background:var(--tc);opacity:.9}
+.kx-tile[data-tone="amber"]{--tc:var(--amber)}.kx-tile[data-tone="green"]{--tc:var(--green)}.kx-tile[data-tone="slate"]{--tc:var(--slate)}
+.kx-tile[data-tone="amber"]{background:linear-gradient(180deg,rgba(255,181,71,.07),transparent 45%),var(--bg2)}
+.kx-tile.crossed{animation:kxcross 1.6s ease}
+@keyframes kxcross{0%,40%{box-shadow:inset 0 0 0 2px var(--amber)}100%{box-shadow:inset 0 0 0 0 transparent}}
+.kx-tile header{display:flex;align-items:center;gap:8px}
+.kx-tile header b{font-size:14px;font-weight:600;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kx-sq{width:8px;height:8px;background:var(--tc);flex:none}
+.kx-tile-mid{display:flex;align-items:flex-end;justify-content:space-between;gap:10px;flex:1}
+.kx-tile .kx-num{flex-direction:column;align-items:flex-start;gap:4px;margin:0}
+.kx-tile .kx-num span{font-size:46px}
+.kx-meter{position:relative;width:14px;height:86px;background:var(--fill2);flex:none}
+.kx-meter i{position:absolute;left:0;right:0;bottom:0;background:var(--tc);transition:height .9s cubic-bezier(.2,.8,.2,1)}
+.kx-meter s{position:absolute;left:-5px;right:-5px;height:2px;background:#fff;margin-bottom:-1px;transition:bottom .9s cubic-bezier(.2,.8,.2,1)}
+.kx-act{border:0;min-height:36px;border-radius:3px;display:flex;align-items:center;justify-content:center;font:600 12.5px "Inter",var(--font);padding:0 8px;text-align:center;background:var(--fill);color:var(--label2)}
 .kx-act.prep{background:var(--amber);color:#1A1204}
-.kx-act.stop{background:rgba(124,139,153,.18);color:#C9D3DC}
-.kx-act.stopped{background:rgba(255,255,255,.06);color:var(--label2)}
-.kx-act.hold{background:rgba(61,220,132,.08);color:var(--green)}
-.kx-act.cooking{flex-direction:column;gap:6px;background:rgba(61,220,132,.1);color:var(--green);padding:8px 10px;font-weight:500;font-size:11.5px}
-button.kx-act{transition:transform .12s,filter .15s}button.kx-act:hover{filter:brightness(1.1)}button.kx-act:active{transform:scale(.96)}
-.kx-cookbar{display:block;align-self:stretch;height:4px;border-radius:99px;background:rgba(61,220,132,.18);overflow:hidden}
-.kx-cookbar i{display:block;height:100%;background:var(--green);border-radius:99px;transition:width .45s linear}
+.kx-act.stop{background:var(--fill2);color:#D5DDE3}
+.kx-act.hold{background:transparent;color:var(--green);border:1px solid rgba(61,220,132,.25)}
+.kx-act.out{background:rgba(255,95,95,.1);color:var(--red)}
+.kx-act.cooking{flex-direction:column;align-items:stretch;gap:6px;padding:8px 9px;background:rgba(61,220,132,.08);color:var(--green);font-weight:500;font-size:11.5px}
+button.kx-act{cursor:pointer;transition:filter .15s,transform .1s}button.kx-act:hover{filter:brightness(1.12)}button.kx-act:active{transform:translateY(1px)}
+.kx-cookbar{display:block;height:3px;background:rgba(61,220,132,.18);overflow:hidden}
+.kx-cookbar i{display:block;height:100%;background:var(--green);transition:width .45s linear}
 
-/* waste and insights */
-.kx-duo{display:grid;grid-template-columns:1.4fr 1fr;gap:12px}
-.kx-waste-top{display:flex;align-items:center;gap:18px;margin-bottom:16px}
-.kx-huge{font-size:60px;font-weight:300;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums;margin-right:auto}
-.kx-huge small{font-size:20px;color:var(--label2);letter-spacing:0;margin-left:3px}
-.kx-waste-top .kx-ring b{font-size:18px;font-weight:500}
-.kx-wlist{display:flex;flex-direction:column;gap:9px}
-.kx-wlist > div{display:grid;grid-template-columns:130px 1fr 44px;gap:12px;align-items:center;font-size:13px}
-.kx-wlist > div > span{display:flex;align-items:center;gap:8px;color:var(--label2)}
-.kx-wlist > div > i{height:8px;border-radius:99px;background:var(--fill);overflow:hidden;display:block}
-.kx-wlist > div > i > i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,rgba(255,181,71,.55),var(--amber))}
-.kx-wlist b{text-align:right;font-weight:600;font-variant-numeric:tabular-nums}
-.kx-insights{display:flex;flex-direction:column}
-.kx-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.kx-tile{background:var(--fill);border-radius:18px;padding:14px 12px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;min-width:0}
-.kx-tile > svg{width:26px;height:26px;color:var(--label2)}
-.kx-tile b{font-size:17px;font-weight:600;letter-spacing:-.01em}
-.kx-tile span{font-size:11.5px;color:var(--label3)}
-.kx-tile.good{box-shadow:inset 0 0 0 1px rgba(61,220,132,.2)}.kx-tile.bad{box-shadow:inset 0 0 0 1px rgba(255,181,71,.22)}
-.kx-rec{margin-top:12px;display:flex;align-items:center;gap:12px;padding:12px 12px 12px 14px;border-radius:18px;background:linear-gradient(120deg,rgba(61,220,132,.14),rgba(61,220,132,.04));box-shadow:inset 0 0 0 1px rgba(61,220,132,.2)}
-.kx-rec > svg{width:22px;height:22px;color:var(--green);flex:none}
-.kx-rec > div{flex:1;min-width:0}.kx-rec b{display:block;font-size:14.5px}.kx-rec span{font-size:12px;color:var(--label2)}
-.kx-rec .kx-btn{--c:var(--green)}
+/* today so far: one quiet strip */
+.kx-today{display:grid;grid-template-columns:1fr 1fr 1fr 2fr;gap:1px;background:var(--sep);border:1px solid var(--sep);border-radius:var(--r);overflow:hidden}
+.kx-today > div{background:var(--bg2);padding:13px 16px;min-width:0}
+.kx-today b{display:block;font-size:20px;font-weight:400;letter-spacing:-.02em;margin-top:6px;font-variant-numeric:tabular-nums}
+.kx-today span{font-size:11.5px;color:var(--label3)}
+.kx-tip{display:flex;align-items:center;gap:12px}
+.kx-tip > svg{width:18px;height:18px;color:var(--green);flex:none}
+.kx-tip p{margin:0;flex:1;font-size:13px;color:var(--label2);line-height:1.4}
+[data-live].upd{animation:kxupd .55s ease-out}
+@keyframes kxupd{0%{color:#fff;text-shadow:0 0 14px rgba(255,255,255,.35)}100%{text-shadow:none}}
 
-/* the deeper pages sit on the same dark background */
-.kx .kit-main > .page-head h1{font-weight:300;letter-spacing:-.035em}
-.kx .card,.kx .kpi{border-radius:24px;background:var(--bg2);box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+/* dish sheet */
+.kx-sheet{position:fixed;top:0;right:0;bottom:0;width:min(380px,100vw);z-index:60;background:#111315;border-left:1px solid var(--sep);padding:22px 22px 24px;overflow:auto;
+  transform:translateX(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);display:flex;flex-direction:column;gap:14px}
+.kx-sheet.in{transform:none}
+.kx-sheet[data-tone="amber"]{--tc:var(--amber)}.kx-sheet[data-tone="green"]{--tc:var(--green)}.kx-sheet[data-tone="slate"]{--tc:var(--slate)}
+.kx-sheet::before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:var(--tc)}
+.kx-x{position:absolute;right:14px;top:14px;width:32px;height:32px;border:1px solid var(--sep);border-radius:var(--r);background:none;color:var(--label2);display:grid;place-items:center}
+.kx-x svg{width:15px;height:15px}
+.kx-sh-top{display:flex;align-items:center;gap:12px}
+.kx-sh-top b{display:block;font-size:19px;font-weight:600}.kx-sh-top span{font-size:12.5px;color:var(--tc)}
+.kx-num.xl span{font-size:64px}
+.kx-stack{position:relative;height:14px;background:var(--fill2);display:flex}
+.kx-stack i{display:block;height:100%}.kx-stack i.served{background:#3A4046}.kx-stack i.left{background:var(--tc)}
+.kx-stack s{position:absolute;top:-4px;bottom:-4px;width:2px;background:#fff;margin-left:-1px}
+.kx-keys{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--label2)}
+.kx-keys i{display:inline-block;width:8px;height:8px;margin-right:6px}
+.kx-keys i.served{background:#3A4046}.kx-keys i.left{background:var(--tc)}.kx-keys i.need{background:#fff;width:2px}
+.kx-batches{display:flex;flex-wrap:wrap;gap:1px;background:var(--sep);border:1px solid var(--sep)}
+.kx-batches > div{background:var(--bg2);padding:9px 12px;flex:1;min-width:88px}
+.kx-batches b{display:block;font-size:15px;font-weight:500}.kx-batches span{font-size:11.5px;color:var(--label3)}
+.kx-batches .now b{color:var(--green)}
+.kx-waste1{display:flex;align-items:center;gap:12px}.kx-waste1 .kx-line{flex:1;height:6px}.kx-waste1 b{font-size:15px;font-weight:600}
+.kx-sh-tip{display:flex;gap:10px;margin:0;font-size:13px;color:var(--label2);line-height:1.45;padding:12px;border:1px solid var(--sep);border-radius:var(--r)}
+.kx-sh-tip svg{width:17px;height:17px;color:var(--green);flex:none;margin-top:1px}
+.kx-act.wide{min-height:44px;font-size:14px}
 
-@media (max-width:1380px){.kx-foods{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media (max-width:1180px){.kx-overview{grid-template-columns:1fr 1fr}.kx-duo{grid-template-columns:1fr}}
+/* wrap-up */
+.kx-wrap{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--sep);border:1px solid var(--sep);border-radius:var(--r);overflow:hidden;margin-bottom:16px}
+.kx-wrap .kx-cell{padding:20px 22px;display:flex;flex-direction:column;gap:12px}
+.kx-wrap .kx-num{margin:4px 0 0}
+.kx-cmp{display:grid;grid-template-columns:90px 1fr 64px;gap:12px;align-items:center;font-size:13px;color:var(--label2)}
+.kx-cmp > i{display:block;height:8px;background:var(--fill2)}
+.kx-cmp > i > i{display:block;height:100%;transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.kx-cmp i.g{background:var(--green)}.kx-cmp i.a{background:var(--amber)}.kx-cmp i.s{background:var(--slate)}
+.kx-cmp b{text-align:right;color:var(--label);font-weight:600;font-variant-numeric:tabular-nums}
+.kx-chips2{display:flex;flex-wrap:wrap;gap:6px}
+.kx-chips2 span{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:3px;background:rgba(255,181,71,.1);color:var(--amber);font-size:13px;font-weight:600}
+.kx-chips2 em{font-style:normal;font-weight:400;color:var(--label3)}
+.kx-none{display:flex;align-items:center;gap:8px;margin:0;color:var(--green);font-size:14px}.kx-none svg{width:16px;height:16px}
+.kx-cta{display:flex;align-items:center;gap:14px;padding:16px 18px;border:1px solid rgba(61,220,132,.25);border-radius:var(--r);background:rgba(61,220,132,.05)}
+.kx-cta > svg{width:20px;height:20px;color:var(--green);flex:none}
+.kx-cta > div{flex:1}.kx-cta b{display:block;font-size:15px}.kx-cta span{font-size:12.5px;color:var(--label2)}
+
+/* service mode: the wall screen during the rush */
+.kx.full{grid-template-columns:1fr}
+.kx.full .kit-side,.kx.full .kx-today,.kx.full .kx-top > .kx-cell:not(.kx-tl){display:none}
+.kx.full .kx-top{grid-template-columns:1fr}
+.kx.full .kit-main{padding:18px 22px}
+.kx.full .kx-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
+.kx.full .kx-tile{padding:20px 22px;gap:16px}
+.kx.full .kx-tile header b{font-size:18px}
+.kx.full .kx-tile .kx-num span{font-size:72px}
+.kx.full .kx-meter{width:18px;height:130px}
+.kx.full .kx-act{min-height:48px;font-size:15px}
+.kx.full .kx-h1 h1,.kx.full .kx-clock{font-size:40px}
+
+/* the deeper pages on the same dark ground */
+.kx .kit-main > .page-head h1{font-weight:300;letter-spacing:-.03em}
+.kx .card,.kx .kpi{border-radius:var(--r);background:var(--bg2);box-shadow:none;border:1px solid var(--sep)}
+
+@media (max-width:1380px){.kx-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media (max-width:1080px){.kx-top{grid-template-columns:1fr 1fr}.kx-top .kx-tl{grid-column:1/-1;order:3}.kx-today{grid-template-columns:1fr 1fr 1fr}.kx-today .kx-tip{grid-column:1/-1}}
 @media (max-width:900px){
   .kx{grid-template-columns:1fr}
-  .kx .kit-side{position:static;height:auto;margin:10px;border-radius:22px;padding:14px}
-  .kx-title{display:none}
+  .kx .kit-side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--sep);padding:12px}
+  .kx-brand{padding-bottom:10px}
   .kx-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none}.kx-nav button span{white-space:nowrap}
-  .kx .kit-foot{flex-direction:row;align-items:center}
+  .kx .kit-foot{display:none}
   .kx .kit-main{padding:14px 12px 40px}
-  .kx-overview{grid-template-columns:1fr}.kx-foods{grid-template-columns:repeat(2,minmax(0,1fr))}
-  .kx-head h1{font-size:30px}
-  .kx-tiles{grid-template-columns:1fr 1fr 1fr}
+  .kx-head{grid-template-columns:1fr}.kx-tools{flex-wrap:wrap}
+  .kx-grid,.kx.full .kx-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kx-wrap{grid-template-columns:1fr}
 }
 
 </style>
@@ -2645,11 +2671,13 @@ const ENROLLED = 840;
 const MAPE = TOMORROW.reduce((a, d) => a + d.err, 0) / TOMORROW.length;
 const SEED_MIX = { S: 35, M: 84, L: 21 }; // portion sizes of the 140 trays scanned before the demo starts
 
-const ui = { view: 'service', plan: { att: 812, weather: 'sunny', event: 'normal' }, seen: null, prev: {} };
+const ui = { view: 'service', plan: { att: 812, weather: 'sunny', event: 'normal' }, seen: null, prev: {}, tone: {}, full: false, sheet: null, bell: false, seenRed: null, play: null };
+try { ui.bell = localStorage.getItem('plateloop-kitchen-bell') === 'on'; } catch (e) {}
 let root = null;
-const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">${p}</svg>`;
 const NAV = [
   ['service', 'Live service', SV('<path d="M3 12h4l3-8 4 16 3-8h4"/>')],
+  ['wrap', 'Lunch wrap-up', SV('<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>')],
   ['dishes', 'Waste by dish', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
   ['nutrition', 'Nutrition', SV('<path d="M12 21c-4.5-2.5-8-6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 11c0 4-3.5 7.5-8 10Z"/>')],
   ['plan', 'Plan & order', SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>')],
@@ -2658,17 +2686,18 @@ const NAV = [
   ['report', 'Daily report', SV('<path d="M4 5h16M4 10h16M4 15h10M4 20h7"/>')],
 ];
 const IC = {
-  alert: SV('<path d="M12 3 2 20h20Z"/><path d="M12 10v4M12 17v.5"/>'),
   fire: SV('<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9Z"/>'),
   box: SV('<path d="M3 7l9-4 9 4-9 4Z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/>'),
-  scan: SV('<path d="M4 8V5a1 1 0 0 1 1-1h3M16 4h3a1 1 0 0 1 1 1v3M20 16v3a1 1 0 0 1-1 1h-3M8 20H5a1 1 0 0 1-1-1v-3M4 12h16"/>'),
-  tray: SV('<rect x="3" y="8" width="18" height="10" rx="2"/><path d="M9 8v10M15 8v10"/>'),
-  doc: SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5"/>'),
+  scan: SV('<path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M4 12h16"/>'),
+  tray: SV('<path d="M3 8h18v10H3z"/><path d="M9 8v10M15 8v10"/>'),
   up: SV('<path d="M7 14l5-5 5 5"/>'), down: SV('<path d="M7 10l5 5 5-5"/>'),
   spark: SV('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>'),
-  clock: SV('<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>'),
-  users: SV('<circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.5a3.5 3.5 0 0 1 0 7M18 14a6.5 6.5 0 0 1 3.5 6"/>'),
   bin: SV('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
+  play: SV('<path d="M7 5v14l11-7Z"/>'), pause: SV('<path d="M7 5h3v14H7zM14 5h3v14h-3z"/>'),
+  bell: SV('<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4Z"/><path d="M10 21h4"/>'),
+  belloff: SV('<path d="M6 16V11a6 6 0 0 1 9-5.2M18 11v5l2 2H4"/><path d="M10 21h4M3 3l18 18"/>'),
+  full: SV('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'), exit: SV('<path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"/>'),
+  x: SV('<path d="M6 6l12 12M18 6 6 18"/>'), check: SV('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
 };
 
 function mount(el) {
@@ -2678,33 +2707,86 @@ function mount(el) {
   <div class="kit kx">
     <aside class="kit-side">
       <div class="kx-brand"><span class="kx-dot" aria-hidden="true"></span><b>plateloop</b><span>kitchen</span></div>
-      <div class="kx-title">Kitchen<br>Service</div>
       <nav class="kx-nav" aria-label="Kitchen">${NAV.map(([id, label, ic]) => `<button data-view="${id}">${ic}<span>${label}</span></button>`).join('')}</nav>
       <div class="kit-foot"><div id="kit-live"></div><button class="linkish" data-reset>Reset demo</button></div>
     </aside>
     <main class="kit-main" id="kit-main"></main>
+    <aside class="kx-sheet" id="kx-sheet" role="dialog" aria-label="Dish details" hidden></aside>
   </div>`;
-  $$('.kx-nav button', el).forEach(b => b.onclick = () => { ui.view = b.dataset.view; render(); scrollTo({ top: 0 }); });
-  render();
+  $$('.kx-nav button', el).forEach(b => b.onclick = () => { ui.view = b.dataset.view; ui.sheet = null; render(true); scrollTo({ top: 0 }); });
+  el.onkeydown = e => { if (e.key === 'Escape') { if (ui.sheet) { ui.sheet = null; render(); } else if (ui.full) setFull(false); } };
+  render(true);
 }
-function render() {
+const VIEWS = () => ({ service: serviceView, wrap: wrapView, dishes, nutrition, environment, carbon, plan, report });
+/** Full render when the view changes; on live updates the service view is patched in place, so bars and
+ *  numbers move instead of the page being redrawn. */
+function render(force) {
   if (!root) return;
+  $('.kx', root).classList.toggle('full', ui.full && ui.view === 'service');
   $$('.kx-nav button', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   $('#kit-live', root).innerHTML = liveChip();
-  const main = $('#kit-main', root);
-  main.innerHTML = ({ service: serviceView, dishes, nutrition, environment, carbon, plan, report })[ui.view]();
+  const main = $('#kit-main', root), html = VIEWS()[ui.view]();
+  if (!force && main.dataset.view === ui.view && (ui.view === 'service' || ui.view === 'wrap')) { const tmp = document.createElement('div'); tmp.innerHTML = html; morph(main, tmp); }
+  else { main.innerHTML = html; main.dataset.view = ui.view; PL.motion(main, 'kitchen:' + ui.view, { force: !!force }); }
   wire(main);
-  PL.motion(main, 'kitchen:' + ui.view);
   flashChanges(main);
+  paintSheet();
+  if (ui.view === 'service') ringBell();
+}
+/** Make `a` look like `b`, keeping the nodes that stay the same (so CSS transitions play). */
+function morph(a, b) {
+  const an = [...a.childNodes], bn = [...b.childNodes];
+  if (an.length !== bn.length) { a.innerHTML = b.innerHTML; return; }
+  an.forEach((x, i) => {
+    const y = bn[i];
+    if (x.nodeType !== y.nodeType || x.nodeName !== y.nodeName) { a.replaceChild(y.cloneNode(true), x); return; }
+    if (x.nodeType === 3) { if (x.nodeValue !== y.nodeValue) x.nodeValue = y.nodeValue; return; }
+    if (x.nodeType !== 1) return;
+    [...x.attributes].forEach(at => { if (!y.hasAttribute(at.name)) x.removeAttribute(at.name); });
+    [...y.attributes].forEach(at => { if (x.getAttribute(at.name) !== at.value) x.setAttribute(at.name, at.value); });
+    morph(x, y);
+  });
 }
 const liveChip = () => `<span class="kx-live"><i></i>Live · ${PL.clock()}</span>`;
-/** Only values that changed since the last render get a brief highlight. */
+/** Changed numbers count to their new value with a brief glow; a dish that tips into high demand flashes amber. */
 function flashChanges(main) {
+  const still = PL.reduceMotion;
   $$('[data-live]', main).forEach(n => {
-    const k = n.dataset.live, v = n.textContent;
-    if (ui.prev[k] !== undefined && ui.prev[k] !== v && !PL.reduceMotion) { n.classList.remove('upd'); void n.offsetWidth; n.classList.add('upd'); }
+    const k = n.dataset.live, v = n.textContent, old = ui.prev[k];
+    if (old !== undefined && old !== v && !still) {
+      const a = parseFloat(old.replace(/,/g, '')), b = parseFloat(v.replace(/,/g, ''));
+      if (isFinite(a) && isFinite(b) && /^[\d.,\s]+$/.test(v)) {
+        const dec = (v.split('.')[1] || '').length, t0 = performance.now();
+        const f = now => { const k2 = Math.min(1, (now - t0) / 650), e = 1 - Math.pow(1 - k2, 3); if (!n.isConnected) return; n.textContent = (a + (b - a) * e).toFixed(dec); if (k2 < 1) requestAnimationFrame(f); else n.textContent = v; };
+        requestAnimationFrame(f); setTimeout(() => { if (n.isConnected) n.textContent = v; }, 900);
+      }
+      n.classList.remove('upd'); void n.offsetWidth; n.classList.add('upd');
+    }
     ui.prev[k] = v;
   });
+  $$('.kx-tile[data-id]', main).forEach(tile => {
+    const id = tile.dataset.id, tone = tile.dataset.tone;
+    if (ui.tone[id] && ui.tone[id] !== tone && tone === 'amber' && !still) { tile.classList.remove('crossed'); void tile.offsetWidth; tile.classList.add('crossed'); }
+    ui.tone[id] = tone;
+  });
+}
+/** Red alerts can chime and vibrate (off by default): only for alerts that weren't there before. */
+function ringBell() {
+  const red = alerts(service()).filter(a => a.tone === 'red').map(a => a.id);
+  if (!ui.seenRed) { ui.seenRed = new Set(red); return; }
+  const fresh = red.filter(id => !ui.seenRed.has(id));
+  red.forEach(id => ui.seenRed.add(id));
+  [...ui.seenRed].forEach(id => { if (!red.includes(id)) ui.seenRed.delete(id); });
+  if (!fresh.length || !ui.bell) return;
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext, c = ui.ac || (ui.ac = new AC()), t = c.currentTime;
+    [[880, 0], [660, .16]].forEach(([f, d]) => { const o = c.createOscillator(), g = c.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0, t + d); g.gain.linearRampToValueAtTime(.14, t + d + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d + .14); o.connect(g).connect(c.destination); o.start(t + d); o.stop(t + d + .16); });
+  } catch (e) {}
+  if (navigator.vibrate) try { navigator.vibrate([120, 60, 120]); } catch (e) {}
+}
+function setFull(on) {
+  ui.full = on; ui.sheet = null; render(true);
+  try { if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
 }
 
 /* ---------------------------------------------------------------- data helpers */
@@ -2733,18 +2815,21 @@ const LIVE = {
 };
 const STOCK = { chicken: ['Chicken thigh', 24], kailan: ['Kailan', 9] };
 const YESTERDAY = { perDiner: 171 };
-const hm = m => `${Math.floor(m / 60)}:${String(Math.round(m % 60)).padStart(2, '0')}`;
+const SHORT = { kailan: 'Kailan', cabbage: 'Cabbage', melon: 'Watermelon', rice: 'Rice', chicken: 'Chicken', soup: 'Soup' };
+const hm = m => `${Math.floor(m / 60)}:${String(Math.floor(m % 60)).padStart(2, '0')}`;
 const arrived = x => { const F = y => 1 / (1 + Math.exp(-(y - PEAK) / 11)), a = PERIODS[1][1], b = PERIODS[1][2]; return clamp((F(x) - F(a)) / (F(b) - F(a)), 0, 1); };
-const DEMO_MIN = 1000; // a cooking minute lasts one second in the demo
+const DEMO_MIN = 1000; // a cooking minute lasts one second in the demo (or one demo-clock minute while lunch plays)
+const cookDone = (c, L) => Math.max(clamp((Date.now() - c.at) / (L.mins * DEMO_MIN), 0, 1), clamp((T().clock - (c.c0 ?? T().clock)) / L.mins, 0, 1));
 
 function service() {
   const t = T(), now = t.clock, [pname, p0, p1] = PERIODS[1];
   if (t.recApplied) LIVE.cabbage.batch = 5;
   const served = t.trays + t.eating, left = Math.max(0, EXPECTED - served);
   const share = m => { const g0 = arrived(now); return g0 >= 1 ? 0 : (arrived(now + m) - g0) / (1 - g0); };
-  const next30 = Math.round(left * share(30)), next60 = Math.round(left * share(60));
+  const next30 = Math.round(left * share(30));
   if (!t.prep) t.prep = Object.fromEntries(MENU.map(d => [d.id, Math.round(t.servedNow[d.id] / 1000 + LIVE[d.id].buf)]));
   if (!t.stock) t.stock = Object.fromEntries(Object.entries(STOCK).map(([k, v]) => [k, v[1]]));
+  if (!t.ranOut) t.ranOut = {};
   const cook = t.cook || {}, stopped = t.stopped || {};
   const dishes = MENU.map(d => {
     const L = LIVE[d.id], servedKg = t.servedNow[d.id] / 1000, prepared = t.prep[d.id];
@@ -2755,120 +2840,136 @@ function service() {
     const ratio = have / Math.max(.1, need30);
     const status = ratio < 1 ? 'high' : have > needRest * 1.15 || ratio > 3 ? 'low' : 'normal';
     const stockKey = L.stock, stockLeft = stockKey ? t.stock[stockKey] : Infinity, canCook = stockLeft >= L.batch;
+    if (remaining < .05 && !t.ranOut[d.id] && now > p0) t.ranOut[d.id] = now;
     let act;
-    if (c) { const done = clamp((Date.now() - c.at) / (L.mins * DEMO_MIN), 0, 1); act = { kind: 'cooking', label: 'Batch cooking', detail: `${c.kg} kg · ready in ${Math.max(1, Math.ceil(L.mins * (1 - done)))} min`, done }; }
-    else if (stopped[d.id]) act = { kind: 'stopped', label: 'Cooking stopped', detail: `${fmt1(remaining)} kg on the line covers the rest of lunch`, btn: 'Resume' };
-    else if (status === 'high') act = { kind: 'prep', label: 'Prepare more', detail: canCook ? `Cook ${L.batch} kg now · ready in ${L.mins} min` : `Not enough ${STOCK[stockKey][0].toLowerCase()} for a batch`, btn: canCook ? `Cook ${L.batch} kg` : null };
-    else if (status === 'low') act = { kind: 'stop', label: 'Stop cooking', detail: `${fmt1(have - needRest)} kg more than the rest of lunch needs`, btn: 'Stop cooking' };
-    else act = { kind: 'hold', label: 'Hold', detail: isFinite(runsOut) ? `Enough for about ${Math.round(Math.min(runsOut, p1 - now))} min` : 'Enough for the rest of lunch' };
-    return { d, L, prepared, servedKg, remaining, servings: Math.floor(remaining * 1000 / L.take), need30, needRest, runsOut, status, act, stockLeft, canCook, over: have - needRest };
+    if (c) { const done = cookDone(c, L); act = { kind: 'cooking', label: `Cooking ${c.kg} kg`, detail: `ready in ${Math.max(1, Math.ceil(L.mins * (1 - done)))} min`, done }; }
+    else if (stopped[d.id]) act = { kind: 'stopped', label: 'Stopped', btn: 'Resume' };
+    else if (status === 'high') act = canCook ? { kind: 'prep', label: 'Prepare more', btn: `Cook ${L.batch} kg` } : { kind: 'out', label: 'No stock left' };
+    else if (status === 'low') act = { kind: 'stop', label: 'Stop cooking', btn: 'Stop cooking' };
+    else act = { kind: 'hold', label: 'Hold' };
+    return { d, L, prepared, servedKg, remaining, servings: Math.floor(remaining * 1000 / L.take), need30, needRest, runsOut, status, act, stockLeft, canCook, over: have - needRest, cooking: c };
   });
-  const core = dishes.filter(x => x.L.uptake >= .95), limit = core.reduce((a, b) => (b.servings / b.L.uptake < a.servings / a.L.uptake ? b : a));
   const tot = PL.todayTotals(), wasteKg = tot.lf / 1000, perDiner = t.trays ? tot.lf / t.trays : 0;
   const stats = dishStats().sort((a, b) => a.e - b.e);
-  return { t, now, pname, p0, p1, served, left, next30, next60, dishes, mealsLeft: Math.round(limit.servings / limit.L.uptake), limit, wasteKg, perDiner, vsYesterday: perDiner / YESTERDAY.perDiner - 1, stats, tot };
+  return { t, now, pname, p0, p1, served, left, next30, dishes, wasteKg, perDiner, vsYesterday: perDiner / YESTERDAY.perDiner - 1, stats, tot };
 }
 
-/** Pinned alerts: only what needs doing now, most urgent first, a few words and one button each. */
-const SHORT = { kailan: 'Kailan', cabbage: 'Cabbage', melon: 'Watermelon', rice: 'Rice', chicken: 'Chicken', soup: 'Soup' };
+/** Pinned alerts: only what needs doing now, three at most, a few words and one button each. */
 function alerts(S) {
   const t = S.t, out = [];
-  if (t.sc2 !== 'online') out.push({ id: 'sc2', tone: 'red', icon: IC.scan, title: t.sc2 === 'restarting' ? 'Scanner 2 reconnecting…' : 'Scanner 2 offline', btn: t.sc2 === 'restarting' ? null : 'Restart' });
-  S.dishes.filter(x => x.status === 'high' && x.runsOut < 25 && !(t.cook || {})[x.d.id]).forEach(x => out.push({ id: 'out-' + x.d.id, tone: 'red', icon: IC.fire, title: `${SHORT[x.d.id]} out in ~${Math.max(1, Math.round(x.runsOut))} min`, btn: x.canCook ? `Cook ${x.L.batch} kg` : null, dish: x.d.id }));
+  if (t.sc2 !== 'online') out.push({ id: 'sc2', tone: 'red', icon: IC.scan, title: t.sc2 === 'restarting' ? 'Scanner 2 reconnecting' : 'Scanner 2 offline', btn: t.sc2 === 'restarting' ? null : 'Restart' });
+  S.dishes.filter(x => x.status === 'high' && x.runsOut < 25 && !x.cooking).forEach(x => out.push({ id: 'out-' + x.d.id, tone: 'red', icon: IC.fire, title: x.remaining < .05 ? `${SHORT[x.d.id]} has run out` : `${SHORT[x.d.id]} out in ${Math.max(1, Math.round(x.runsOut))} min`, btn: x.canCook ? `Cook ${x.L.batch} kg` : null, dish: x.d.id }));
   Object.entries(STOCK).forEach(([k, [name]]) => { if (t.stock[k] < LIVE[k].batch) out.push({ id: 'stock-' + k, tone: 'red', icon: IC.box, title: `${name} almost gone`, btn: 'Order', go: 'plan' }); });
   S.dishes.filter(x => x.status === 'low' && !(t.stopped || {})[x.d.id]).forEach(x => out.push({ id: 'over-' + x.d.id, tone: 'amber', icon: IC.bin, title: `${SHORT[x.d.id]} overproduced`, btn: 'Stop', dish: x.d.id, stop: true }));
   if (t.eating > 0 && !t.remind) out.push({ id: 'remind', tone: 'amber', icon: IC.tray, title: `${t.eating} tray${t.eating > 1 ? 's' : ''} not scanned back`, btn: 'Remind' });
   const rank = { red: 0, amber: 1 };
-  return out.sort((a, b) => rank[a.tone] - rank[b.tone]).slice(0, 4);
+  return out.sort((a, b) => rank[a.tone] - rank[b.tone]);
 }
 
-/* ---------------------------------------------------------------- small visual pieces */
-/** A ring gauge: k 0..1, coloured by tone, with whatever goes in the middle. */
-const ring = (k, tone, size, inner) => { const r = 42, c = 2 * Math.PI * r; return `<div class="kx-ring" style="width:${size}px;height:${size}px" data-tone="${tone}"><svg viewBox="0 0 100 100" aria-hidden="true"><circle cx="50" cy="50" r="${r}" class="trk"/><circle cx="50" cy="50" r="${r}" class="val" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${(c * (1 - clamp(k, 0, 1))).toFixed(1)}"/></svg><div>${inner}</div></div>`; };
-/** The lunch rush as a curve: served so far, the next 30 minutes (amber) and the rest (faint), with a line at now. */
-function rushChart(S) {
-  const W = 300, H = 92, a = S.p0, b = S.p1, n = 48, X = m => (m - a) / (b - a) * W;
-  const dens = m => { const e = Math.exp(-(m - PEAK) / 11); return e / Math.pow(1 + e, 2); }, peak = dens(PEAK);
-  const pts = Array.from({ length: n + 1 }, (_, i) => { const m = a + (b - a) * i / n; return [X(m), H - 6 - dens(m) / peak * (H - 14)]; });
-  const area = (m0, m1) => { const p = pts.filter(([x]) => x >= X(m0) - .01 && x <= X(m1) + .01); if (p.length < 2) return ''; return `M${p[0][0].toFixed(1)},${H} ${p.map(([x, y]) => `L${x.toFixed(1)},${y.toFixed(1)}`).join(' ')} L${p[p.length - 1][0].toFixed(1)},${H}Z`; };
-  const line = `M${pts.map(([x, y]) => `${x.toFixed(1)},${y.toFixed(1)}`).join(' L')}`, now = clamp(S.now, a, b);
-  return `<svg class="kx-rush" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-    <path d="${area(a, now)}" class="done"/><path d="${area(now, Math.min(b, now + 30))}" class="next"/><path d="${line}" class="ln"/>
-    <line x1="${X(now).toFixed(1)}" x2="${X(now).toFixed(1)}" y1="4" y2="${H}" class="now"/></svg>`;
+/* ---------------------------------------------------------------- the lunch timeline: the rush, now, and every batch */
+function timeline(S) {
+  const W = 640, H = 96, a = S.p0, b = S.p1, n = 60, X = m => clamp((m - a) / (b - a), 0, 1) * W, top = 26;
+  const dens = m => { const e = Math.exp(-(m - PEAK) / 11); return e / Math.pow(1 + e, 2); }, pk = dens(PEAK);
+  const pts = Array.from({ length: n + 1 }, (_, i) => { const m = a + (b - a) * i / n; return [X(m), H - 4 - dens(m) / pk * (H - top - 8)]; });
+  const area = (m0, m1) => { const p = pts.filter(([x]) => x >= X(m0) - .01 && x <= X(m1) + .01); return p.length < 2 ? '' : `M${p[0][0].toFixed(1)},${H} ${p.map(([x, y]) => `L${x.toFixed(1)},${y.toFixed(1)}`).join(' ')} L${p[p.length - 1][0].toFixed(1)},${H}Z`; };
+  const now = clamp(S.now, a, b), t = S.t, P = m => (clamp((m - a) / (b - a), 0, 1) * 100).toFixed(2) + '%', blocks = [];
+  Object.entries(t.cook || {}).forEach(([id, c]) => { const c0 = c.c0 ?? S.now; blocks.push(`<span class="cook" style="left:${P(c0)};width:calc(${P(c0 + LIVE[id].mins)} - ${P(c0)})">${SHORT[id]} +${c.kg} kg</span>`); });
+  Object.entries(t.batches || {}).forEach(([id, list]) => list.forEach(bt => blocks.push(`<span class="done" style="left:${P(bt.at)}" title="${SHORT[id]} +${bt.kg} kg at ${hm(bt.at)}"></span>`)));
+  return `<div class="kx-tlw"><div class="kx-blocks">${blocks.join('')}</div>
+    <svg class="kx-tlsvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
+    <path d="${area(a, now)}" class="done"/><path d="${area(now, Math.min(b, now + 30))}" class="next"/><path d="${area(Math.min(b, now + 30), b)}" class="rest"/>
+    <line x1="${X(now).toFixed(1)}" x2="${X(now).toFixed(1)}" y1="0" y2="${H}" class="now"/></svg>
+    <div class="kx-axis">${[a, a + 30, a + 60, a + 90, b].map(m => `<span>${hm(m)}</span>`).join('')}</div></div>`;
 }
 
 function serviceView() {
-  const S = service(), A = alerts(S), t = S.t;
-  const el = Math.max(0, S.now - S.p0), total = S.p1 - S.p0;
-  const pop = S.stats[S.stats.length - 1], least = S.stats[0];
+  const S = service(), A = alerts(S), t = S.t, prog = clamp((S.now - S.p0) / (S.p1 - S.p0), 0, 1);
   const tone = { high: 'amber', normal: 'green', low: 'slate' }, word = { high: 'High demand', normal: 'Normal', low: 'Low demand' };
-  const cab = S.dishes.find(x => x.d.id === 'cabbage'), recKg = Math.max(1, Math.round(cab.over + 1));
-  const up = S.vsYesterday > 0;
+  const least = S.stats[0], up = S.vsYesterday > 0, cab = S.dishes.find(x => x.d.id === 'cabbage'), recKg = Math.max(1, Math.round(cab.over + 1));
   return `
   <header class="kx-head">
-    <div><h1>Live service</h1><p>${PL.SCHOOL} · Friday 25 September</p></div>
-    <div class="kx-chips"><span class="kx-dotchip"><i class="ok"></i>Scanner 1</span><span class="kx-dotchip"><i class="${t.sc2 === 'online' ? 'ok' : 'bad'}"></i>Scanner 2</span>${liveChip()}</div>
+    <div class="kx-h1"><h1>${S.pname}</h1><span class="kx-clock" data-live="clock">${hm(S.now)}</span><span class="kx-until">until ${hm(S.p1)}</span></div>
+    <div class="kx-tools">
+      <button class="kx-tool ${ui.play ? 'on' : ''}" data-play title="Demo: play the lunch rush">${ui.play ? IC.pause : IC.play}<span>${ui.play ? 'Pause' : 'Play lunch'}</span></button>
+      <button class="kx-tool icon ${ui.bell ? 'on' : ''}" data-bell aria-pressed="${ui.bell}" title="${ui.bell ? 'Alert sound on' : 'Alert sound off'}">${ui.bell ? IC.bell : IC.belloff}</button>
+      <button class="kx-tool" data-full>${ui.full ? IC.exit : IC.full}<span>${ui.full ? 'Exit' : 'Service mode'}</span></button>
+    </div>
+    <div class="kx-prog"><i style="width:${(prog * 100).toFixed(1)}%"></i></div>
   </header>
 
-  ${A.length ? `<section class="kx-alerts" aria-label="Alerts">${A.map(a => `<div class="kx-alert" data-tone="${a.tone}"><span class="kx-aic">${a.icon}</span><b>${esc(a.title)}</b>${a.btn ? `<button class="kx-btn" data-alert="${a.id}" ${a.dish ? `data-dish="${a.dish}"` : ''} ${a.stop ? 'data-stop="1"' : ''} ${a.go ? `data-go-view="${a.go}"` : ''}>${esc(a.btn)}</button>` : ''}</div>`).join('')}</section>`
-    : `<section class="kx-alerts"><div class="kx-alert" data-tone="green"><span class="kx-aic">${SV('<path d="M5 12.5l4.5 4.5L19 7.5"/>')}</span><b>All clear</b></div></section>`}
+  <section class="kx-alerts" aria-label="Alerts">${A.length ? A.slice(0, 3).map(a => `<div class="kx-alert" data-tone="${a.tone}">${a.icon}<b>${esc(a.title)}</b>${a.btn ? `<button class="kx-btn" data-alert="${a.id}" ${a.dish ? `data-dish="${a.dish}"` : ''} ${a.stop ? 'data-stop="1"' : ''} ${a.go ? `data-go-view="${a.go}"` : ''}>${esc(a.btn)}</button>` : ''}</div>`).join('') + (A.length > 3 ? `<span class="kx-more">+${A.length - 3}</span>` : '')
+    : `<div class="kx-alert" data-tone="green">${IC.check}<b>All clear</b></div>`}</section>
 
-  <section class="kx-overview">
-    <div class="kx-card kx-hero">
-      ${ring(el / total, 'green', 128, `<b>${S.pname}</b><span>${hm(S.now)}</span>`)}
-      <div class="kx-hero-r"><div class="kx-k">${IC.users}Diners</div><div class="kx-big" data-live="served">${S.served}</div><div class="kx-bar"><i style="width:${Math.min(100, S.served / EXPECTED * 100)}%"></i></div><div class="kx-s">of ${EXPECTED}</div></div>
-    </div>
-    <div class="kx-card kx-rushcard">
-      <div class="kx-k">${IC.clock}Next 30 min</div>
-      <div class="kx-rushrow"><div class="kx-big amber" data-live="n30">${S.next30}</div><div class="kx-s">diners<br>coming</div></div>
-      ${rushChart(S)}
-      <div class="kx-axis"><span>${hm(S.p0)}</span><span>peak ${hm(PEAK)}</span><span>${hm(S.p1)}</span></div>
-    </div>
-    <div class="kx-card kx-meals">
-      <div class="kx-k">${IC.tray}Meals left</div>
-      <div class="kx-big" data-live="meals">${S.mealsLeft}</div>
-      <div class="kx-dots">${S.dishes.map(x => `<i data-tone="${tone[x.status]}" title="${esc(x.d.name)}"></i>`).join('')}</div>
-    </div>
-    <div class="kx-card kx-wastecard">
-      <div class="kx-k">${IC.bin}Waste today</div>
-      <div class="kx-big" data-live="waste">${fmt1(S.wasteKg)}<small>kg</small></div>
-      <span class="kx-delta ${up ? 'bad' : 'good'}">${up ? IC.up : IC.down}${Math.abs(Math.round(S.vsYesterday * 100))}% vs yesterday</span>
-    </div>
+  <section class="kx-top">
+    <div class="kx-cell"><label>Diners</label><div class="kx-num"><span data-live="served">${S.served}</span><em>/ ${EXPECTED}</em></div><div class="kx-line"><i style="width:${Math.min(100, S.served / EXPECTED * 100).toFixed(1)}%"></i></div></div>
+    <div class="kx-cell kx-tl"><div class="kx-tl-h"><label>Lunch rush</label><span><b class="amber" data-live="n30">${S.next30}</b> diners in the next 30 min</span></div>${timeline(S)}</div>
+    <div class="kx-cell"><label>Waste today</label><div class="kx-num"><span data-live="waste">${fmt1(S.wasteKg)}</span><em>kg</em></div><span class="kx-delta ${up ? 'bad' : 'good'}">${up ? IC.up : IC.down}${Math.abs(Math.round(S.vsYesterday * 100))}% vs yesterday</span></div>
   </section>
 
-  <section class="kx-sec">
-    <div class="kx-sec-h"><h2>Food on the line</h2><div class="kx-legend"><span data-tone="amber">High demand</span><span data-tone="green">Normal</span><span data-tone="slate">Low demand</span></div></div>
-    <div class="kx-foods">${S.dishes.map(x => {
-      const a = x.act, k = x.prepared ? x.remaining / x.prepared : 0, need = x.need30, have = x.remaining, scale = Math.max(need, have) * 1.15 || 1;
-      return `<article class="kx-food" data-tone="${tone[x.status]}">
-        <div class="kx-food-top">${PL.V.food(x.d, 34)}<b>${esc(SHORT[x.d.id])}</b><em title="${word[x.status]}">${word[x.status]}</em></div>
-        ${ring(k, tone[x.status], 118, `<b data-live="sv-${x.d.id}">${x.servings}</b><span>servings</span>`)}
-        <div class="kx-hn" title="On the line vs what the next 30 minutes need"><i style="width:${Math.round(have / scale * 100)}%"></i><s style="left:${Math.round(need / scale * 100)}%"></s></div>
-        <div class="kx-hn-l"><span>${fmt1(have)} kg left</span><span>needs ${fmt1(need)}</span></div>
-        ${a.kind === 'cooking' ? `<div class="kx-act cooking"><span data-cook="${x.d.id}">${esc(a.detail)}</span><i class="kx-cookbar"><i style="width:${Math.round(a.done * 100)}%" data-cookbar="${x.d.id}"></i></i></div>`
-          : a.btn ? `<button class="kx-act ${a.kind}" data-dish-act="${a.kind}" data-dish="${x.d.id}">${a.kind === 'prep' ? IC.fire : a.kind === 'stop' ? IC.bin : IC.spark}${esc(a.btn)}</button>`
-          : `<div class="kx-act hold">${a.kind === 'prep' ? 'Out of stock' : 'Hold'}</div>`}
-      </article>`; }).join('')}</div>
-  </section>
+  <section class="kx-grid" aria-label="Food on the line">${S.dishes.map(x => {
+    const a = x.act, lvl = x.prepared ? clamp(x.remaining / x.prepared, 0, 1) : 0, need = x.prepared ? clamp(x.need30 / x.prepared, 0, 1) : 0;
+    return `<article class="kx-tile" data-id="${x.d.id}" data-tone="${tone[x.status]}" tabindex="0" role="button" aria-label="${esc(x.d.name)}: ${x.servings} servings, ${word[x.status]}. Open details">
+      <header>${PL.V.food(x.d, 26)}<b>${esc(SHORT[x.d.id])}</b><i class="kx-sq" title="${word[x.status]}"></i></header>
+      <div class="kx-tile-mid"><div class="kx-num"><span data-live="sv-${x.d.id}">${x.servings}</span><em>servings</em></div>
+        <div class="kx-meter" title="Left on the line; the tick is what the next 30 minutes need"><i style="height:${(lvl * 100).toFixed(1)}%"></i><s style="bottom:${(need * 100).toFixed(1)}%"></s></div></div>
+      ${a.kind === 'cooking' ? `<div class="kx-act cooking"><span data-cook="${x.d.id}">${esc(a.label)} · ${esc(a.detail)}</span><i class="kx-cookbar"><i style="width:${(a.done * 100).toFixed(0)}%" data-cookbar="${x.d.id}"></i></i></div>`
+        : a.btn ? `<button class="kx-act ${a.kind}" data-dish-act="${a.kind}" data-dish="${x.d.id}">${esc(a.btn)}</button>`
+        : `<div class="kx-act ${a.kind}">${esc(a.label)}</div>`}
+    </article>`; }).join('')}</section>
 
-  <section class="kx-duo">
-    <div class="kx-card kx-waste">
-      <div class="kx-sec-h"><h2>Waste</h2><span class="kx-live"><i></i>Live from the scanners</span></div>
-      <div class="kx-waste-top"><div class="kx-huge" data-live="waste2">${fmt1(S.wasteKg)}<small>kg</small></div>
-        ${ring(Math.min(1, S.perDiner / 300), S.perDiner < YESTERDAY.perDiner ? 'green' : 'amber', 84, `<b>${Math.round(S.perDiner)}</b><span>g/diner</span>`)}
-        ${ring(PL.zeroRate(), 'green', 84, `<b>${pct(PL.zeroRate())}</b><span>clean</span>`)}</div>
-      <div class="kx-wlist">${S.stats.map(r => `<div><span>${PL.V.food(r.d, 22)}${esc(SHORT[r.d.id])}</span><i><i style="width:${Math.round((1 - r.e) * 100)}%"></i></i><b>${pct(1 - r.e)}</b></div>`).join('')}</div>
-    </div>
-    <div class="kx-card kx-insights">
-      <div class="kx-sec-h"><h2>Insights</h2></div>
-      <div class="kx-tiles">
-        <div class="kx-tile">${IC.clock}<b>${hm(PEAK - 5)}</b><span>Peak</span></div>
-        <div class="kx-tile good">${PL.V.food(pop.d, 30)}<b>${esc(SHORT[pop.d.id])}</b><span>Most eaten · ${pct(pop.e)}</span></div>
-        <div class="kx-tile bad">${PL.V.food(least.d, 30)}<b>${esc(SHORT[least.d.id])}</b><span>Least finished · ${pct(least.e)}</span></div>
-      </div>
-      <div class="kx-rec">${IC.spark}<div><b>${t.recApplied ? 'Cabbage batches set to 5 kg' : `Cabbage: 5 kg batches`}</b><span>${t.recApplied ? 'Applied to the next batch' : `≈ ${recKg} kg less waste today`}</span></div>${t.recApplied ? '' : '<button class="kx-btn" data-rec="1">Apply</button>'}</div>
-    </div>
+  <section class="kx-today" aria-label="Today so far">
+    <div><label>Least finished</label><b>${esc(SHORT[least.d.id])}</b><span>${pct(least.e)} eaten</span></div>
+    <div><label>Left per diner</label><b data-live="pd">${Math.round(S.perDiner)}</b><span>g · yesterday ${YESTERDAY.perDiner}</span></div>
+    <div><label>Clean trays</label><b data-live="zero">${pct(PL.zeroRate())}</b><span>zero leftovers</span></div>
+    <div class="kx-tip">${IC.spark}<p>${t.recApplied ? 'Cabbage now cooks in 5 kg batches.' : `Cook cabbage in 5 kg batches: about ${recKg} kg less waste.`}</p>${t.recApplied ? '' : '<button class="kx-btn" data-rec="1">Apply</button>'}</div>
   </section>`;
+}
+
+/** Tap a dish: its numbers, its batches and its waste, in one sheet. The card stays simple. */
+function paintSheet() {
+  const el = root && $('#kx-sheet', root); if (!el) return;
+  if (!ui.sheet || ui.view !== 'service') { el.classList.remove('in'); el.hidden = true; return; }
+  const S = service(), x = S.dishes.find(y => y.d.id === ui.sheet); if (!x) return;
+  const st = S.stats.find(r => r.d.id === x.d.id), t = S.t, tone = { high: 'amber', normal: 'green', low: 'slate' }[x.status];
+  const scale = Math.max(x.prepared, x.servedKg + x.remaining, x.need30) || 1, cooked = (t.batches || {})[x.d.id] || [];
+  const tip = TREND[x.d.id] ? TREND[x.d.id][2] : '';
+  el.dataset.tone = tone;
+  el.innerHTML = `<button class="kx-x" data-sheet-close aria-label="Close">${IC.x}</button>
+    <div class="kx-sh-top">${PL.V.food(x.d, 40)}<div><b>${esc(x.d.name)}</b><span>${{ high: 'High demand', normal: 'Normal', low: 'Low demand' }[x.status]}</span></div></div>
+    <div class="kx-num xl"><span data-live="sh-sv">${x.servings}</span><em>servings left</em></div>
+    <label>On the line</label>
+    <div class="kx-stack"><i class="served" style="width:${(x.servedKg / scale * 100).toFixed(1)}%"></i><i class="left" style="width:${(x.remaining / scale * 100).toFixed(1)}%"></i><s style="left:${((x.servedKg + x.need30) / scale * 100).toFixed(1)}%"></s></div>
+    <div class="kx-keys"><span><i class="served"></i>Served ${fmt1(x.servedKg)} kg</span><span><i class="left"></i>Left ${fmt1(x.remaining)} kg</span><span><i class="need"></i>Next 30 min ${fmt1(x.need30)} kg</span></div>
+    <label>Batches</label>
+    <div class="kx-batches"><div><b>${fmt1(x.prepared - cooked.reduce((s2, b) => s2 + b.kg, 0))} kg</b><span>before ${hm(S.p0)}</span></div>${cooked.map(b => `<div><b>+${b.kg} kg</b><span>${hm(b.at)}</span></div>`).join('')}${x.cooking ? `<div class="now"><b>+${x.cooking.kg} kg</b><span>cooking</span></div>` : ''}</div>
+    <label>Left on trays</label>
+    <div class="kx-waste1"><div class="kx-line amber"><i style="width:${((1 - st.e) * 100).toFixed(1)}%"></i></div><b>${pct(1 - st.e)}</b></div>
+    ${tip ? `<p class="kx-sh-tip">${IC.spark}<span>${esc(tip)}</span></p>` : ''}
+    ${x.act.btn ? `<button class="kx-act ${x.act.kind} wide" data-dish-act="${x.act.kind}" data-dish="${x.d.id}">${esc(x.act.btn)}</button>` : ''}`;
+  if (el.hidden) { el.hidden = false; requestAnimationFrame(() => el.classList.add('in')); }
+  $('[data-sheet-close]', el).onclick = () => { ui.sheet = null; paintSheet(); };
+  $$('[data-dish-act]', el).forEach(b => b.onclick = () => dishAct(b.dataset.dishAct, b.dataset.dish));
+}
+
+/** After lunch: one screen of what happened and a single step into tomorrow's plan. */
+function wrapView() {
+  const S = service(), t = S.t, ran = Object.entries(t.ranOut || {}).sort((a, b) => a[1] - b[1]);
+  const over = S.dishes.filter(x => x.remaining > 1.5).sort((a, b) => b.remaining - a.remaining);
+  const maxOver = Math.max(1, ...over.map(x => x.remaining)), done = S.now >= S.p1;
+  const pdMax = Math.max(S.perDiner, YESTERDAY.perDiner) * 1.1 || 1;
+  return `
+  <header class="kx-head"><div class="kx-h1"><h1>Lunch wrap-up</h1><span class="kx-until">${hm(S.p0)}–${hm(S.p1)} · ${done ? 'finished' : `so far, ${hm(S.now)}`}</span></div>
+    <div class="kx-tools"><button class="kx-tool" data-go="service">${IC.play}<span>Back to live</span></button></div></header>
+  <section class="kx-wrap">
+    <div class="kx-cell"><label>Diners</label><div class="kx-num"><span>${S.served}</span><em>/ ${EXPECTED}</em></div><div class="kx-line"><i style="width:${Math.min(100, S.served / EXPECTED * 100).toFixed(1)}%"></i></div></div>
+    <div class="kx-cell"><label>Left per diner</label>
+      <div class="kx-cmp"><span>Today</span><i><i class="${S.perDiner <= YESTERDAY.perDiner ? 'g' : 'a'}" style="width:${(S.perDiner / pdMax * 100).toFixed(1)}%"></i></i><b>${Math.round(S.perDiner)} g</b></div>
+      <div class="kx-cmp"><span>Yesterday</span><i><i class="s" style="width:${(YESTERDAY.perDiner / pdMax * 100).toFixed(1)}%"></i></i><b>${YESTERDAY.perDiner} g</b></div></div>
+    <div class="kx-cell"><label>Ran out</label>${ran.length ? `<div class="kx-chips2">${ran.map(([id, at]) => `<span class="a">${PL.V.food(PL.DISH[id], 20)}${SHORT[id]}<em>${hm(at)}</em></span>`).join('')}</div>` : `<p class="kx-none">${IC.check}Nothing ran out</p>`}</div>
+    <div class="kx-cell"><label>Left on the line</label>${over.length ? over.map(x => `<div class="kx-cmp"><span>${SHORT[x.d.id]}</span><i><i class="s" style="width:${(x.remaining / maxOver * 100).toFixed(1)}%"></i></i><b>${fmt1(x.remaining)} kg</b></div>`).join('') : `<p class="kx-none">${IC.check}Nothing left over</p>`}</div>
+  </section>
+  <div class="kx-cta">${IC.spark}<div><b>${t.planFromToday ? 'Tomorrow’s plan uses today’s lunch' : 'Use today to plan tomorrow'}</b><span>${t.planFromToday ? 'Sides cooked 15% smaller, soup 10% smaller, busy dishes kept.' : 'Smaller sides and soup, the dishes that ran out kept at full size.'}</span></div>
+    ${t.planFromToday ? `<button class="kx-btn" data-go="plan">Open plan</button>` : '<button class="kx-btn" data-plan-today="1">Use for tomorrow</button>'}</div>`;
 }
 
 function chartDish() {
@@ -3051,6 +3152,7 @@ function forecast() {
     if (p.weather === 'hot' && d.id === 'soup') k *= .9;
     if (p.weather === 'hot' && d.id === 'fruit') k *= 1.08;
     if (p.event === 'sports' && (d.tags.includes('grain') || d.tags.includes('protein'))) k *= 1.10;
+    if (T().planFromToday) { if (d.tags.includes('veg')) k *= .85; if (d.id === 'soup') k *= .9; }
     return { d, stdKg: ENROLLED * d.std / 1000, newKg: att * d.learned * k * (1 + Math.max(.04, d.err + .01)) / 1000 };
   });
   const need = {}, needStd = {};
@@ -3063,7 +3165,7 @@ function plan() {
   const p = ui.plan;
   return `
   <div class="cycle">${[['Plan', 'Predict how much students will eat'], ['Order', 'Buy only what the plan needs'], ['Cook', 'Tune recipes to what students like'], ['Serve', 'Measure it all again tomorrow']].map(([a, b], i) => `<div class="${i < 2 ? 'on' : ''}"><span class="n">${i + 1}</span><b>${a}</b><small>${b}</small></div>`).join('')}</div>
-  <div class="page-head"><div><h1>Plan & order</h1><p>Monday 28 September. Quantities come from what students actually ate, not standard portion × enrolment.</p></div>
+  <div class="page-head"><div><h1>Plan & order</h1><p>Monday 28 September. Quantities come from what students actually ate, not standard portion × enrolment.</p>${T().planFromToday ? '<span class="pill green" style="margin-top:10px">Adjusted from today’s lunch: sides −15%, soup −10%</span>' : ''}</div>
     <div class="trust"><span>Forecast error <b class="num">${(MAPE * 100).toFixed(1)}%</b></span><div class="bar"><i style="width:${(1 - MAPE * 4) * 100}%"></i></div></div></div>
   <div class="card">
     <div class="controls">
@@ -3143,29 +3245,26 @@ function wire(main) {
     $('#event', main).onchange = e => { ui.plan.event = e.target.value; refreshPlan(); };
   }
   wireOrder(main);
-  // live service actions
-  const save = msg => { PL.store.save('kitchen'); if (msg) PL.toast(msg); };
-  const cookBatch = id => {
-    const t = T(), L = LIVE[id]; if (!L || (t.cook || {})[id]) return;
-    if (L.stock) { if (t.stock[L.stock] < L.batch) return PL.toast(`Not enough ${STOCK[L.stock][0].toLowerCase()} for a batch.`); t.stock[L.stock] -= L.batch; }
-    t.cook = { ...(t.cook || {}), [id]: { kg: L.batch, at: Date.now() } };
-    if (t.stopped) delete t.stopped[id];
-    save(`${PL.DISH[id].name}: ${L.batch} kg batch started, ready in ${L.mins} min.`);
-  };
-  const stopCooking = id => { const t = T(); t.stopped = { ...(t.stopped || {}), [id]: true }; save(`Stopped cooking ${PL.DISH[id].name.toLowerCase()}.`); };
-  $$('[data-dish-act]', main).forEach(b => b.onclick = () => {
-    const id = b.dataset.dish, k = b.dataset.dishAct;
-    if (k === 'prep') cookBatch(id); else if (k === 'stop') stopCooking(id);
-    else if (k === 'stopped') { delete T().stopped[id]; save(`Cooking resumed for ${PL.DISH[id].name.toLowerCase()}.`); }
+  // live service
+  $$('.kx-tile[data-id]', main).forEach(tile => {
+    const open = () => { ui.sheet = tile.dataset.id; paintSheet(); };
+    tile.onclick = e => { if (!e.target.closest('button')) open(); };
+    tile.onkeydown = e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === tile) { e.preventDefault(); open(); } };
   });
+  $$('[data-dish-act]', main).forEach(b => b.onclick = e => { e.stopPropagation(); dishAct(b.dataset.dishAct, b.dataset.dish); });
   $$('[data-alert]', main).forEach(b => b.onclick = () => {
     const id = b.dataset.alert, t = T();
-    if (b.dataset.goView) { ui.view = b.dataset.goView; render(); scrollTo({ top: 0 }); return; }
-    if (b.dataset.dish) return b.dataset.stop ? stopCooking(b.dataset.dish) : cookBatch(b.dataset.dish);
-    if (id === 'sc2') { t.sc2 = 'restarting'; save(); setTimeout(() => { T().sc2 = 'online'; save('Scanner 2 is back online. 6 queued trays synced.'); }, 2600); }
-    if (id === 'remind') { t.remind = true; save('The scanner now reminds students to scan their tray back.'); }
+    if (b.dataset.goView) { ui.view = b.dataset.goView; render(true); scrollTo({ top: 0 }); return; }
+    if (b.dataset.dish) return dishAct(b.dataset.stop ? 'stop' : 'prep', b.dataset.dish);
+    if (id === 'sc2') { t.sc2 = 'restarting'; saveK(); setTimeout(() => { T().sc2 = 'online'; saveK('Scanner 2 is back online. 6 queued trays synced.'); }, 2600); }
+    if (id === 'remind') { t.remind = true; saveK('The scanner now reminds students to scan their tray back.'); }
   });
-  const rec = $('[data-rec]', main); if (rec) rec.onclick = () => { const t = T(); t.recApplied = true; LIVE.cabbage.batch = 5; save('Cabbage: 5 kg batches, 25 g served by default.'); };
+  const rec = $('[data-rec]', main); if (rec) rec.onclick = () => { T().recApplied = true; LIVE.cabbage.batch = 5; saveK('Cabbage now cooks in 5 kg batches.'); };
+  const play = $('[data-play]', main); if (play) play.onclick = () => togglePlay();
+  const bell = $('[data-bell]', main); if (bell) bell.onclick = () => { ui.bell = !ui.bell; try { localStorage.setItem('plateloop-kitchen-bell', ui.bell ? 'on' : 'off'); } catch (e) {} if (ui.bell && navigator.vibrate) try { navigator.vibrate(40); } catch (e) {} render(); PL.toast(ui.bell ? 'Red alerts will chime and vibrate.' : 'Alert sound off.'); };
+  const full = $('[data-full]', main); if (full) full.onclick = () => setFull(!ui.full);
+  $$('[data-go]', main).forEach(b => b.onclick = () => { ui.view = b.dataset.go; render(true); scrollTo({ top: 0 }); });
+  const pt = $('[data-plan-today]', main); if (pt) pt.onclick = () => { T().planFromToday = true; saveK('Tomorrow’s plan now uses today’s lunch.'); ui.view = 'plan'; render(true); scrollTo({ top: 0 }); };
   PL.paintPets(main);
   const tree = $('#env-tree', main); if (tree) drawTreeInto(tree, 0);
   const cc = $('#copy-carbon', main);
@@ -3175,6 +3274,48 @@ function wire(main) {
     const txt = reportData().text.join('\n\n');
     (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(() => PL.toast('Summary copied.'), () => PL.toast('Copy isn\'t available here. Select the text instead.'));
   };
+}
+
+/* ---------------------------------------------------------------- actions */
+function saveK(msg) { PL.store.save('kitchen'); if (msg) PL.toast(msg); }
+function dishAct(kind, id) {
+  const t = T(), L = LIVE[id]; if (!L) return;
+  if (kind === 'prep') {
+    if ((t.cook || {})[id]) return;
+    if (L.stock) { if (t.stock[L.stock] < L.batch) return PL.toast(`Not enough ${STOCK[L.stock][0].toLowerCase()} for a batch.`); t.stock[L.stock] -= L.batch; }
+    t.cook = { ...(t.cook || {}), [id]: { kg: L.batch, at: Date.now(), c0: t.clock } };
+    if (t.stopped) delete t.stopped[id];
+    saveK(`${SHORT[id]}: ${L.batch} kg batch started, ready in ${L.mins} min.`);
+  } else if (kind === 'stop') { t.stopped = { ...(t.stopped || {}), [id]: true }; saveK(`Stopped cooking ${SHORT[id].toLowerCase()}.`); }
+  else if (kind === 'stopped') { delete t.stopped[id]; saveK(`Cooking resumed: ${SHORT[id].toLowerCase()}.`); }
+}
+/** Batches that are done go onto the line (and into the dish's batch list). */
+function finishCooking() {
+  const t = T(), cook = t.cook || {}; let done = null;
+  Object.entries(cook).forEach(([id, c]) => {
+    if (cookDone(c, LIVE[id]) < 1) return;
+    t.prep[id] += c.kg; (t.batches = t.batches || {})[id] = [...(t.batches[id] || []), { kg: c.kg, at: Math.min(t.clock, (c.c0 ?? t.clock) + LIVE[id].mins) }];
+    delete cook[id]; done = id;
+  });
+  return done;
+}
+/** Demo: play the rest of lunch. Every tick is 1.5 minutes: diners arrive on the rush curve, take their usual
+ *  portions and finish their trays; batches finish on the same clock. At 13:30 it opens the wrap-up. */
+function togglePlay() {
+  if (ui.play) { clearInterval(ui.play); ui.play = null; render(); return; }
+  ui.play = setInterval(stepLunch, 1100); render(); stepLunch();
+}
+function stepLunch() {
+  const t = T(), [, , end] = PERIODS[1];
+  if (!root || t.clock >= end) { clearInterval(ui.play); ui.play = null; if (root) { ui.view = 'wrap'; ui.sheet = null; render(true); } return; }
+  if (!t.prep) service();
+  const dt = 1.5, now = t.clock, left = Math.max(0, EXPECTED - t.trays - t.eating), g0 = arrived(now);
+  const n = g0 >= 1 ? 0 : Math.round(left * (arrived(now + dt) - g0) / (1 - g0));
+  MENU.forEach(d => { const L = LIVE[d.id], g = n * L.take * L.uptake; t.servedNow[d.id] += g; t.dish[d.id].served += g; t.dish[d.id].ret += g * PL.TYPICAL_LEFT[d.id] * .55; });
+  t.trays += n; t.clock = Math.min(end, now + dt);
+  const done = finishCooking();
+  PL.store.save('kitchen');
+  if (done) PL.toast(`${SHORT[done]}: fresh batch is on the line.`);
 }
 
 function drawTreeInto(cv, t) {
@@ -3192,19 +3333,17 @@ function drawTreeInto(cv, t) {
 PL.apps.kitchen = {
   title: 'PlateLoop Kitchen',
   mount,
-  unmount() { root = null; },
-  update() { if (!root) return; if (T().recApplied) LIVE.cabbage.batch = 5; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
+  unmount() { if (ui.play) { clearInterval(ui.play); ui.play = null; } root = null; },
+  update() { if (!root) return; if (T().recApplied) LIVE.cabbage.batch = 5; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); if (ui.view !== 'service' && ui.view !== 'wrap') scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
   tick() {
     if (!root) return;
-    const T0 = T(), cook = T0.cook || {};
-    let finished = null;
-    Object.entries(cook).forEach(([id, c]) => {
-      const L = LIVE[id], k = clamp((Date.now() - c.at) / (L.mins * DEMO_MIN), 0, 1);
-      if (k >= 1) { T0.prep[id] += c.kg; delete cook[id]; finished = id; return; }
+    const done = finishCooking();
+    if (done) { PL.store.save('kitchen'); PL.toast(`${SHORT[done]}: fresh batch is on the line.`); return; }
+    Object.entries(T().cook || {}).forEach(([id, c]) => {
+      const L = LIVE[id], k = cookDone(c, L);
       const bar = $(`[data-cookbar="${id}"]`, root); if (bar) bar.style.width = Math.round(k * 100) + '%';
-      const txt = $(`[data-cook="${id}"]`, root); if (txt) txt.textContent = `${c.kg} kg · ready in ${Math.max(1, Math.ceil(L.mins * (1 - k)))} min`;
+      const txt = $(`[data-cook="${id}"]`, root); if (txt) txt.textContent = `Cooking ${c.kg} kg · ready in ${Math.max(1, Math.ceil(L.mins * (1 - k)))} min`;
     });
-    if (finished) { PL.store.save('kitchen'); PL.toast(`${PL.DISH[finished].name}: fresh batch is on the line.`); }
   },
 };
 })();
