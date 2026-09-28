@@ -87,7 +87,7 @@ function overview() {
   ${inbox()}
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Live scans</h3><span class="hint">Tray numbers, not names</span></div>
-      <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}</span></div>`).join('')
+      <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}${f.estimated ? ' <span class="est" title="No before scan: served amount estimated from a regular portion">est.</span>' : ''}</span></div>`).join('')
         : `<p class="hint" style="padding:22px 2px">Class 3B is about to eat. Scans from the PlateLoop scanner appear here the moment they happen.</p>`}</div></div>
     <div class="card chart"><h3>Eaten by dish</h3><p class="hint">Share of each dish eaten on finished trays</p>${chartDish()}</div>
   </div>

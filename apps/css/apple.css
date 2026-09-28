@@ -1390,3 +1390,4 @@ body[data-app="lunch"]{background:#0B0D10}
 .pnote-app em{font-style:normal;text-transform:none;letter-spacing:0}
 .pnote b{font-size:14px}.pnote-tx > span:last-child:not(.pnote-app){font-size:12.5px;color:var(--label2);line-height:1.35}
 @media (max-width:760px){.pnote{position:fixed;top:60px}}
+.frow .est{font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-soft);padding:1px 6px;border-radius:99px;margin-left:4px}
