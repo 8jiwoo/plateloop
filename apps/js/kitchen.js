@@ -1,6 +1,6 @@
-/* PlateLoop Kitchen: the manager's live service dashboard. Pinned alerts, today's service at a glance,
-   every dish's remaining servings against AI demand with one action each, waste monitoring and insights.
-   Deeper pages: waste by dish, nutrition, plan & order, carbon, the Green Tree and the daily report. */
+/* PlateLoop Kitchen: the admin side of PlateLoop. What the scanners measured today (served, eaten, wasted),
+   which dishes come back, and what to buy for tomorrow, planned from what people really eat.
+   Pages: overview, purchasing (plan & order), waste by dish, nutrition, carbon and reports. */
 (() => {
 'use strict';
 const { $, $$, pct, fmt1, money, esc, MENU, rng, clamp } = PL;
@@ -21,69 +21,56 @@ const ENROLLED = 840;
 const MAPE = TOMORROW.reduce((a, d) => a + d.err, 0) / TOMORROW.length;
 const SEED_MIX = { S: 35, M: 84, L: 21 }; // portion sizes of the 140 trays scanned before the demo starts
 
-const ui = { view: 'service', plan: { att: 812, weather: 'sunny', event: 'normal' }, seen: null, prev: {}, tone: {}, full: false, sheet: null, bell: false, seenRed: null, play: null };
-try { ui.bell = localStorage.getItem('plateloop-kitchen-bell') === 'on'; } catch (e) {}
+const ui = { view: 'overview', plan: { att: 812, weather: 'sunny', event: 'normal' }, seen: null, prev: {} };
 let root = null;
-const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="square" stroke-linejoin="miter" aria-hidden="true">${p}</svg>`;
+const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const NAV = [
-  ['service', 'Live service', SV('<path d="M3 12h4l3-8 4 16 3-8h4"/>')],
-  ['wrap', 'Lunch wrap-up', SV('<path d="M4 4h16v16H4z"/><path d="M8 9h8M8 13h8M8 17h5"/>')],
+  ['overview', 'Overview', SV('<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>')],
+  ['plan', 'Purchasing', SV('<path d="M3 4h2l2.5 11h11L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>')],
   ['dishes', 'Waste by dish', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
   ['nutrition', 'Nutrition', SV('<path d="M12 21c-4.5-2.5-8-6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 11c0 4-3.5 7.5-8 10Z"/>')],
-  ['plan', 'Plan & order', SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>')],
   ['carbon', 'Carbon', SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/><path d="M9.5 14.5h5"/>')],
-  ['environment', 'Green Tree', SV('<path d="M12 22V12M12 12C8 12 5 9 5 5c4 0 7 3 7 7ZM12 14c3 0 6-2.5 6-6-3 0-6 2.5-6 6Z"/>')],
-  ['report', 'Daily report', SV('<path d="M4 5h16M4 10h16M4 15h10M4 20h7"/>')],
+  ['report', 'Reports', SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>')],
 ];
 const IC = {
-  fire: SV('<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-5 1-9Z"/>'),
-  box: SV('<path d="M3 7l9-4 9 4-9 4Z"/><path d="M3 7v10l9 4 9-4V7M12 11v10"/>'),
-  scan: SV('<path d="M4 8V4h4M16 4h4v4M20 16v4h-4M8 20H4v-4M4 12h16"/>'),
-  tray: SV('<path d="M3 8h18v10H3z"/><path d="M9 8v10M15 8v10"/>'),
-  up: SV('<path d="M7 14l5-5 5 5"/>'), down: SV('<path d="M7 10l5 5 5-5"/>'),
-  spark: SV('<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5 18 18M6 18l2.5-2.5M15.5 8.5 18 6"/>'),
+  tray: SV('<rect x="3" y="7" width="18" height="11" rx="2"/><path d="M9 7v11M15 7v11"/>'),
+  leaf: SV('<path d="M5 19c0-8 5-14 15-14 0 9-6 14-15 14ZM5 19l8-8"/>'),
   bin: SV('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
-  play: SV('<path d="M7 5v14l11-7Z"/>'), pause: SV('<path d="M7 5h3v14H7zM14 5h3v14h-3z"/>'),
-  bell: SV('<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4Z"/><path d="M10 21h4"/>'),
-  belloff: SV('<path d="M6 16V11a6 6 0 0 1 9-5.2M18 11v5l2 2H4"/><path d="M10 21h4M3 3l18 18"/>'),
-  full: SV('<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>'), exit: SV('<path d="M9 4v5H4M15 4v5h5M15 20v-5h5M9 20v-5H4"/>'),
-  x: SV('<path d="M6 6l12 12M18 6 6 18"/>'), check: SV('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
+  cloud: SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/>'),
+  cart: SV('<path d="M3 4h2l2.5 11h11L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>'),
+  scan: SV('<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16"/>'),
+  spark: SV('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"/>'),
+  chev: SV('<path d="M9 6l6 6-6 6"/>'), up: SV('<path d="M7 14l5-5 5 5"/>'), down: SV('<path d="M7 10l5 5 5-5"/>'),
+  check: SV('<path d="M5 12.5l4.5 4.5L19 7.5"/>'),
 };
 
 function mount(el) {
   root = el;
-  ui.seen = PL.S.today.feed.length ? PL.S.today.feed[0].t + PL.S.today.feed[0].tray + PL.S.today.feed[0].kind : null;
   el.innerHTML = `
   <div class="kit kx">
     <aside class="kit-side">
-      <div class="kx-brand"><span class="kx-dot" aria-hidden="true"></span><b>plateloop</b><span>kitchen</span></div>
+      <div class="kx-brand"><span class="kx-logo" aria-hidden="true"></span><div><b>PlateLoop</b><span>Kitchen</span></div></div>
       <nav class="kx-nav" aria-label="Kitchen">${NAV.map(([id, label, ic]) => `<button data-view="${id}">${ic}<span>${label}</span></button>`).join('')}</nav>
       <div class="kit-foot"><div id="kit-live"></div><button class="linkish" data-reset>Reset demo</button></div>
     </aside>
     <main class="kit-main" id="kit-main"></main>
-    <aside class="kx-sheet" id="kx-sheet" role="dialog" aria-label="Dish details" hidden></aside>
   </div>`;
-  $$('.kx-nav button', el).forEach(b => b.onclick = () => { ui.view = b.dataset.view; ui.sheet = null; render(true); scrollTo({ top: 0 }); });
-  el.onkeydown = e => { if (e.key === 'Escape') { if (ui.sheet) { ui.sheet = null; render(); } else if (ui.full) setFull(false); } };
+  $$('.kx-nav button', el).forEach(b => b.onclick = () => { ui.view = b.dataset.view; render(true); scrollTo({ top: 0 }); });
   render(true);
 }
-const VIEWS = () => ({ service: serviceView, wrap: wrapView, dishes, nutrition, environment, carbon, plan, report });
-/** Full render when the view changes; on live updates the service view is patched in place, so bars and
- *  numbers move instead of the page being redrawn. */
+const VIEWS = () => ({ overview, dishes, nutrition, carbon, plan, report });
+/** A new view renders fresh (and animates in); live updates to the overview patch it in place. */
 function render(force) {
   if (!root) return;
-  $('.kx', root).classList.toggle('full', ui.full && ui.view === 'service');
   $$('.kx-nav button', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   $('#kit-live', root).innerHTML = liveChip();
   const main = $('#kit-main', root), html = VIEWS()[ui.view]();
-  if (!force && main.dataset.view === ui.view && (ui.view === 'service' || ui.view === 'wrap')) { const tmp = document.createElement('div'); tmp.innerHTML = html; morph(main, tmp); }
+  if (!force && main.dataset.view === ui.view && ui.view === 'overview') { const tmp = document.createElement('div'); tmp.innerHTML = html; morph(main, tmp); }
   else { main.innerHTML = html; main.dataset.view = ui.view; PL.motion(main, 'kitchen:' + ui.view, { force: !!force }); }
   wire(main);
   flashChanges(main);
-  paintSheet();
-  if (ui.view === 'service') ringBell();
 }
-/** Make `a` look like `b`, keeping the nodes that stay the same (so CSS transitions play). */
+/** Make `a` look like `b`, keeping the nodes that stay the same so bars and numbers move smoothly. */
 function morph(a, b) {
   const an = [...a.childNodes], bn = [...b.childNodes];
   if (an.length !== bn.length) { a.innerHTML = b.innerHTML; return; }
@@ -98,45 +85,12 @@ function morph(a, b) {
   });
 }
 const liveChip = () => `<span class="kx-live"><i></i>Live · ${PL.clock()}</span>`;
-/** Changed numbers count to their new value with a brief glow; a dish that tips into high demand flashes amber. */
 function flashChanges(main) {
-  const still = PL.reduceMotion;
   $$('[data-live]', main).forEach(n => {
-    const k = n.dataset.live, v = n.textContent, old = ui.prev[k];
-    if (old !== undefined && old !== v && !still) {
-      const a = parseFloat(old.replace(/,/g, '')), b = parseFloat(v.replace(/,/g, ''));
-      if (isFinite(a) && isFinite(b) && /^[\d.,\s]+$/.test(v)) {
-        const dec = (v.split('.')[1] || '').length, t0 = performance.now();
-        const f = now => { const k2 = Math.min(1, (now - t0) / 650), e = 1 - Math.pow(1 - k2, 3); if (!n.isConnected) return; n.textContent = (a + (b - a) * e).toFixed(dec); if (k2 < 1) requestAnimationFrame(f); else n.textContent = v; };
-        requestAnimationFrame(f); setTimeout(() => { if (n.isConnected) n.textContent = v; }, 900);
-      }
-      n.classList.remove('upd'); void n.offsetWidth; n.classList.add('upd');
-    }
+    const k = n.dataset.live, v = n.textContent;
+    if (ui.prev[k] !== undefined && ui.prev[k] !== v && !PL.reduceMotion) { n.classList.remove('upd'); void n.offsetWidth; n.classList.add('upd'); }
     ui.prev[k] = v;
   });
-  $$('.kx-tile[data-id]', main).forEach(tile => {
-    const id = tile.dataset.id, tone = tile.dataset.tone;
-    if (ui.tone[id] && ui.tone[id] !== tone && tone === 'amber' && !still) { tile.classList.remove('crossed'); void tile.offsetWidth; tile.classList.add('crossed'); }
-    ui.tone[id] = tone;
-  });
-}
-/** Red alerts can chime and vibrate (off by default): only for alerts that weren't there before. */
-function ringBell() {
-  const red = alerts(service()).filter(a => a.tone === 'red').map(a => a.id);
-  if (!ui.seenRed) { ui.seenRed = new Set(red); return; }
-  const fresh = red.filter(id => !ui.seenRed.has(id));
-  red.forEach(id => ui.seenRed.add(id));
-  [...ui.seenRed].forEach(id => { if (!red.includes(id)) ui.seenRed.delete(id); });
-  if (!fresh.length || !ui.bell) return;
-  try {
-    const AC = window.AudioContext || window.webkitAudioContext, c = ui.ac || (ui.ac = new AC()), t = c.currentTime;
-    [[880, 0], [660, .16]].forEach(([f, d]) => { const o = c.createOscillator(), g = c.createGain(); o.frequency.value = f; g.gain.setValueAtTime(0, t + d); g.gain.linearRampToValueAtTime(.14, t + d + .01); g.gain.exponentialRampToValueAtTime(.0001, t + d + .14); o.connect(g).connect(c.destination); o.start(t + d); o.stop(t + d + .16); });
-  } catch (e) {}
-  if (navigator.vibrate) try { navigator.vibrate([120, 60, 120]); } catch (e) {}
-}
-function setFull(on) {
-  ui.full = on; ui.sheet = null; render(true);
-  try { if (on && document.documentElement.requestFullscreen && !document.fullscreenElement) document.documentElement.requestFullscreen().catch(() => {}); else if (!on && document.fullscreenElement) document.exitFullscreen(); } catch (e) {}
 }
 
 /* ---------------------------------------------------------------- data helpers */
@@ -148,178 +102,63 @@ function portionMix() {
   const tot = m.S + m.M + m.L;
   return { m, tot };
 }
-
-/* ================================================================ live service: the model behind the dashboard
-   Diners arrive on a lunch curve that peaks at 12:05. Each dish has what a diner really takes (learned from the
-   before scans), the share of diners who take it, the size of a batch and how long a batch takes to cook.
-   Prepared = cooked so far; served comes from the scanner; remaining = prepared − served. */
-const PERIODS = [['Breakfast', 7 * 60, 8 * 60 + 30], ['Lunch', 11 * 60 + 30, 13 * 60 + 30], ['Dinner', 17 * 60 + 30, 19 * 60 + 30]];
-const EXPECTED = 812, PEAK = 12 * 60 + 5;
-const LIVE = {
-  rice:    { take: 205, uptake: 1,   buf: 128, batch: 30, mins: 20, stock: null },
-  chicken: { take: 118, uptake: .97, buf: 41, batch: 15, mins: 25, stock: 'chicken' },
-  kailan:  { take: 36,  uptake: .8,  buf: 18, batch: 6,  mins: 8,  stock: 'kailan' },
-  cabbage: { take: 28,  uptake: .6,  buf: 16, batch: 8,  mins: 10, stock: null },
-  melon:   { take: 70,  uptake: .95, buf: 22, batch: 10, mins: 5,  stock: null },
-  soup:    { take: 160, uptake: .7,  buf: 75, batch: 30, mins: 20, stock: null },
-};
-const STOCK = { chicken: ['Chicken thigh', 24], kailan: ['Kailan', 9] };
-const YESTERDAY = { perDiner: 171 };
 const SHORT = { kailan: 'Kailan', cabbage: 'Cabbage', melon: 'Watermelon', rice: 'Rice', chicken: 'Chicken', soup: 'Soup' };
-const hm = m => `${Math.floor(m / 60)}:${String(Math.floor(m % 60)).padStart(2, '0')}`;
-const arrived = x => { const F = y => 1 / (1 + Math.exp(-(y - PEAK) / 11)), a = PERIODS[1][1], b = PERIODS[1][2]; return clamp((F(x) - F(a)) / (F(b) - F(a)), 0, 1); };
-const DEMO_MIN = 1000; // a cooking minute lasts one second in the demo (or one demo-clock minute while lunch plays)
-const cookDone = (c, L) => Math.max(clamp((Date.now() - c.at) / (L.mins * DEMO_MIN), 0, 1), clamp((T().clock - (c.c0 ?? T().clock)) / L.mins, 0, 1));
+/** A small line of the last few school days, ending at today's value. */
+const spark = (vals, good) => {
+  const W = 90, H = 30, lo = Math.min(...vals), hi = Math.max(...vals), k = hi - lo || 1;
+  const pts = vals.map((v, i) => [i / (vals.length - 1) * W, H - 3 - (v - lo) / k * (H - 6)]);
+  return `<svg class="kx-spark ${good === true ? 'good' : good === false ? 'bad' : ''}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><path d="M${pts.map(p => p.map(n => n.toFixed(1)).join(',')).join(' L')}"/><circle cx="${pts[pts.length - 1][0].toFixed(1)}" cy="${pts[pts.length - 1][1].toFixed(1)}" r="2.6"/></svg>`;
+};
 
-function service() {
-  const t = T(), now = t.clock, [pname, p0, p1] = PERIODS[1];
-  if (t.recApplied) LIVE.cabbage.batch = 5;
-  const served = t.trays + t.eating, left = Math.max(0, EXPECTED - served);
-  const share = m => { const g0 = arrived(now); return g0 >= 1 ? 0 : (arrived(now + m) - g0) / (1 - g0); };
-  const next30 = Math.round(left * share(30));
-  if (!t.prep) t.prep = Object.fromEntries(MENU.map(d => [d.id, Math.round(t.servedNow[d.id] / 1000 + LIVE[d.id].buf)]));
-  if (!t.stock) t.stock = Object.fromEntries(Object.entries(STOCK).map(([k, v]) => [k, v[1]]));
-  if (!t.ranOut) t.ranOut = {};
-  const cook = t.cook || {}, stopped = t.stopped || {};
-  const dishes = MENU.map(d => {
-    const L = LIVE[d.id], servedKg = t.servedNow[d.id] / 1000, prepared = t.prep[d.id];
-    const remaining = Math.max(0, prepared - servedKg), c = cook[d.id];
-    const incoming = c ? c.kg : 0, have = remaining + incoming;
-    const need30 = next30 * L.uptake * L.take / 1000, needRest = left * L.uptake * L.take / 1000;
-    const perMin = need30 / 30, runsOut = perMin > 0 ? remaining / perMin : Infinity;
-    const ratio = have / Math.max(.1, need30);
-    const status = ratio < 1 ? 'high' : have > needRest * 1.15 || ratio > 3 ? 'low' : 'normal';
-    const stockKey = L.stock, stockLeft = stockKey ? t.stock[stockKey] : Infinity, canCook = stockLeft >= L.batch;
-    if (remaining < .05 && !t.ranOut[d.id] && now > p0) t.ranOut[d.id] = now;
-    let act;
-    if (c) { const done = cookDone(c, L); act = { kind: 'cooking', label: `Cooking ${c.kg} kg`, detail: `ready in ${Math.max(1, Math.ceil(L.mins * (1 - done)))} min`, done }; }
-    else if (stopped[d.id]) act = { kind: 'stopped', label: 'Stopped', btn: 'Resume' };
-    else if (status === 'high') act = canCook ? { kind: 'prep', label: 'Prepare more', btn: `Cook ${L.batch} kg` } : { kind: 'out', label: 'No stock left' };
-    else if (status === 'low') act = { kind: 'stop', label: 'Stop cooking', btn: 'Stop cooking' };
-    else act = { kind: 'hold', label: 'Hold' };
-    return { d, L, prepared, servedKg, remaining, servings: Math.floor(remaining * 1000 / L.take), need30, needRest, runsOut, status, act, stockLeft, canCook, over: have - needRest, cooking: c };
-  });
-  const tot = PL.todayTotals(), wasteKg = tot.lf / 1000, perDiner = t.trays ? tot.lf / t.trays : 0;
-  const stats = dishStats().sort((a, b) => a.e - b.e);
-  return { t, now, pname, p0, p1, served, left, next30, dishes, wasteKg, perDiner, vsYesterday: perDiner / YESTERDAY.perDiner - 1, stats, tot };
-}
-
-/** Pinned alerts: only what needs doing now, three at most, a few words and one button each. */
-function alerts(S) {
-  const t = S.t, out = [];
-  if (t.sc2 !== 'online') out.push({ id: 'sc2', tone: 'red', icon: IC.scan, title: t.sc2 === 'restarting' ? 'Scanner 2 reconnecting' : 'Scanner 2 offline', btn: t.sc2 === 'restarting' ? null : 'Restart' });
-  S.dishes.filter(x => x.status === 'high' && x.runsOut < 25 && !x.cooking).forEach(x => out.push({ id: 'out-' + x.d.id, tone: 'red', icon: IC.fire, title: x.remaining < .05 ? `${SHORT[x.d.id]} has run out` : `${SHORT[x.d.id]} out in ${Math.max(1, Math.round(x.runsOut))} min`, btn: x.canCook ? `Cook ${x.L.batch} kg` : null, dish: x.d.id }));
-  Object.entries(STOCK).forEach(([k, [name]]) => { if (t.stock[k] < LIVE[k].batch) out.push({ id: 'stock-' + k, tone: 'red', icon: IC.box, title: `${name} almost gone`, btn: 'Order', go: 'plan' }); });
-  S.dishes.filter(x => x.status === 'low' && !(t.stopped || {})[x.d.id]).forEach(x => out.push({ id: 'over-' + x.d.id, tone: 'amber', icon: IC.bin, title: `${SHORT[x.d.id]} overproduced`, btn: 'Stop', dish: x.d.id, stop: true }));
-  if (t.eating > 0 && !t.remind) out.push({ id: 'remind', tone: 'amber', icon: IC.tray, title: `${t.eating} tray${t.eating > 1 ? 's' : ''} not scanned back`, btn: 'Remind' });
-  const rank = { red: 0, amber: 1 };
-  return out.sort((a, b) => rank[a.tone] - rank[b.tone]);
-}
-
-/* ---------------------------------------------------------------- the lunch timeline: the rush, now, and every batch */
-function timeline(S) {
-  const W = 640, H = 96, a = S.p0, b = S.p1, n = 60, X = m => clamp((m - a) / (b - a), 0, 1) * W, top = 26;
-  const dens = m => { const e = Math.exp(-(m - PEAK) / 11); return e / Math.pow(1 + e, 2); }, pk = dens(PEAK);
-  const pts = Array.from({ length: n + 1 }, (_, i) => { const m = a + (b - a) * i / n; return [X(m), H - 4 - dens(m) / pk * (H - top - 8)]; });
-  const area = (m0, m1) => { const p = pts.filter(([x]) => x >= X(m0) - .01 && x <= X(m1) + .01); return p.length < 2 ? '' : `M${p[0][0].toFixed(1)},${H} ${p.map(([x, y]) => `L${x.toFixed(1)},${y.toFixed(1)}`).join(' ')} L${p[p.length - 1][0].toFixed(1)},${H}Z`; };
-  const now = clamp(S.now, a, b), t = S.t, P = m => (clamp((m - a) / (b - a), 0, 1) * 100).toFixed(2) + '%', blocks = [];
-  Object.entries(t.cook || {}).forEach(([id, c]) => { const c0 = c.c0 ?? S.now; blocks.push(`<span class="cook" style="left:${P(c0)};width:calc(${P(c0 + LIVE[id].mins)} - ${P(c0)})">${SHORT[id]} +${c.kg} kg</span>`); });
-  Object.entries(t.batches || {}).forEach(([id, list]) => list.forEach(bt => blocks.push(`<span class="done" style="left:${P(bt.at)}" title="${SHORT[id]} +${bt.kg} kg at ${hm(bt.at)}"></span>`)));
-  return `<div class="kx-tlw"><div class="kx-blocks">${blocks.join('')}</div>
-    <svg class="kx-tlsvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true">
-    <path d="${area(a, now)}" class="done"/><path d="${area(now, Math.min(b, now + 30))}" class="next"/><path d="${area(Math.min(b, now + 30), b)}" class="rest"/>
-    <line x1="${X(now).toFixed(1)}" x2="${X(now).toFixed(1)}" y1="0" y2="${H}" class="now"/></svg>
-    <div class="kx-axis">${[a, a + 30, a + 60, a + 90, b].map(m => `<span>${hm(m)}</span>`).join('')}</div></div>`;
-}
-
-function serviceView() {
-  const S = service(), A = alerts(S), t = S.t, prog = clamp((S.now - S.p0) / (S.p1 - S.p0), 0, 1);
-  const tone = { high: 'amber', normal: 'green', low: 'slate' }, word = { high: 'High demand', normal: 'Normal', low: 'Low demand' };
-  const least = S.stats[0], up = S.vsYesterday > 0, cab = S.dishes.find(x => x.d.id === 'cabbage'), recKg = Math.max(1, Math.round(cab.over + 1));
+/* ================================================================ Overview: the admin's day at a glance */
+function overview() {
+  const t = T(), tot = PL.todayTotals(), trays = t.trays + t.eating, f = forecast(), saved = f.costStd - f.cost;
+  const eaten = 1 - tot.w, co2 = (t.co2 || 0) / 1000, stats = dishStats().sort((a, b) => a.e - b.e);
+  const last = HISTORY.slice(-7), wasteTrend = [...last.slice(0, 6), tot.w];
+  const todo = [];
+  if (!PL.S.order.approved) todo.push({ id: 'order', tone: 'blue', icon: IC.cart, t: 'Approve tomorrow’s order', s: `${money(f.orderTotal)} · supplier cut-off 14:00`, btn: 'Review', go: 'plan' });
+  if (t.sc2 !== 'online') todo.push({ id: 'sc2', tone: 'red', icon: IC.scan, t: t.sc2 === 'restarting' ? 'Scanner 2 is reconnecting' : 'Scanner 2 is offline', s: '6 trays waiting on the device, nothing lost', btn: t.sc2 === 'restarting' ? null : 'Restart' });
+  if (t.eating > 0 && !t.remind) todo.push({ id: 'remind', tone: 'orange', icon: IC.tray, t: `${t.eating} tray${t.eating > 1 ? 's' : ''} not scanned back`, s: 'Remind students at the tray rack', btn: 'Remind' });
+  const top = [...f.orders].filter(o => o.order > 0).sort((a, b) => b.order * b.price - a.order * a.price).slice(0, 5);
+  const maxKg = Math.max(...top.map(o => o.kg), 1);
+  const ins = stats.slice(0, 3).map(r => ({ d: r.d, e: r.e, tip: TREND[r.d.id] ? TREND[r.d.id][2] : '' }));
   return `
-  <header class="kx-head">
-    <div class="kx-h1"><h1>${S.pname}</h1><span class="kx-clock" data-live="clock">${hm(S.now)}</span><span class="kx-until">until ${hm(S.p1)}</span></div>
-    <div class="kx-tools">
-      <button class="kx-tool ${ui.play ? 'on' : ''}" data-play title="Demo: play the lunch rush">${ui.play ? IC.pause : IC.play}<span>${ui.play ? 'Pause' : 'Play lunch'}</span></button>
-      <button class="kx-tool icon ${ui.bell ? 'on' : ''}" data-bell aria-pressed="${ui.bell}" title="${ui.bell ? 'Alert sound on' : 'Alert sound off'}">${ui.bell ? IC.bell : IC.belloff}</button>
-      <button class="kx-tool" data-full>${ui.full ? IC.exit : IC.full}<span>${ui.full ? 'Exit' : 'Service mode'}</span></button>
+  <header class="kx-head"><div><p class="kx-date">Friday 25 September</p><h1>Overview</h1></div>${liveChip()}</header>
+
+  ${todo.length ? `<section class="kx-group kx-todo" aria-label="To do">${todo.map(x => `<div class="kx-row"><span class="kx-ic" data-tone="${x.tone}">${x.icon}</span><div class="kx-row-t"><b>${x.t}</b><span>${x.s}</span></div>${x.btn ? `<button class="kx-btn ${x.tone === 'blue' ? 'prim' : ''}" data-todo="${x.id}" ${x.go ? `data-go="${x.go}"` : ''}>${x.btn}</button>` : ''}</div>`).join('')}</section>` : ''}
+
+  <section class="kx-widgets">
+    <div class="kx-w"><div class="kx-w-h">${IC.tray}<span>Trays scanned</span></div><div class="kx-w-n"><b data-live="trays">${trays}</b></div><div class="kx-w-f"><span>${t.eating} eating now</span>${spark([118, 131, 126, 140, 133, 137, trays])}</div></div>
+    <div class="kx-w"><div class="kx-w-h">${IC.leaf}<span>Eaten</span></div><div class="kx-w-n"><b data-live="eaten">${Math.round(eaten * 100)}</b><em>%</em></div><div class="kx-w-f"><span>of ${fmt1(tot.sv / 1000)} kg served</span>${spark([.71, .73, .72, .75, .74, .76, eaten], true)}</div></div>
+    <div class="kx-w"><div class="kx-w-h">${IC.bin}<span>Food wasted</span></div><div class="kx-w-n"><b data-live="waste">${fmt1(tot.lf / 1000)}</b><em>kg</em></div><div class="kx-w-f"><span>${money(tot.val)} of ingredients</span>${spark(wasteTrend, tot.w <= last[0])}</div></div>
+    <div class="kx-w"><div class="kx-w-h">${IC.cloud}<span>CO₂ avoided</span></div><div class="kx-w-n"><b data-live="co2">${fmt1(co2)}</b><em>kg</em></div><div class="kx-w-f"><span>vs the usual leftovers</span>${spark([7.1, 8.4, 8.0, 9.2, 10.1, 10.6, co2], true)}</div></div>
+  </section>
+
+  <section class="kx-duo">
+    <div class="kx-card">
+      <div class="kx-card-h"><div><h2>Tomorrow’s order</h2><p>Monday · ${ui.plan.att} diners expected</p></div><button class="kx-link" data-go="plan">Purchasing${IC.chev}</button></div>
+      <div class="kx-order-sum">
+        <div><span>To buy</span><b>${money(f.orderTotal)}</b></div>
+        <div><span>Less than the standard plan</span><b class="good">${money(saved)}</b></div>
+        <div><span>Less food cooked</span><b>${fmt1(f.tStd - f.tNew)} kg</b></div>
+      </div>
+      <div class="kx-list">${top.map(o => `<div class="kx-buy"><span class="kx-buy-n">${esc(o.ing)}</span><span class="kx-buy-bar"><i class="need" style="width:${(o.kg / maxKg * 100).toFixed(1)}%"></i><i class="stock" style="width:${(Math.min(o.inv, o.kg) / maxKg * 100).toFixed(1)}%"></i></span><b>${fmt1(o.order)} kg</b><em>${money(o.order * o.price)}</em></div>`).join('')}</div>
+      <div class="kx-key">${top.some(o => o.inv > 0) ? '<span><i class="stock"></i>In stock</span>' : ''}<span><i class="need"></i>Needed for tomorrow</span></div>
+      <div class="kx-order-cta">${PL.S.order.approved ? `<span class="kx-ok">${IC.check}Approved at ${PL.S.order.approved.at}</span>` : `<button class="kx-btn prim wide" data-go="plan">Review and approve</button>`}</div>
     </div>
-    <div class="kx-prog"><i style="width:${(prog * 100).toFixed(1)}%"></i></div>
-  </header>
-
-  <section class="kx-alerts" aria-label="Alerts">${A.length ? A.slice(0, 3).map(a => `<div class="kx-alert" data-tone="${a.tone}">${a.icon}<b>${esc(a.title)}</b>${a.btn ? `<button class="kx-btn" data-alert="${a.id}" ${a.dish ? `data-dish="${a.dish}"` : ''} ${a.stop ? 'data-stop="1"' : ''} ${a.go ? `data-go-view="${a.go}"` : ''}>${esc(a.btn)}</button>` : ''}</div>`).join('') + (A.length > 3 ? `<span class="kx-more">+${A.length - 3}</span>` : '')
-    : `<div class="kx-alert" data-tone="green">${IC.check}<b>All clear</b></div>`}</section>
-
-  <section class="kx-top">
-    <div class="kx-cell"><label>Diners</label><div class="kx-num"><span data-live="served">${S.served}</span><em>/ ${EXPECTED}</em></div><div class="kx-line"><i style="width:${Math.min(100, S.served / EXPECTED * 100).toFixed(1)}%"></i></div></div>
-    <div class="kx-cell kx-tl"><div class="kx-tl-h"><label>Lunch rush</label><span><b class="amber" data-live="n30">${S.next30}</b> diners in the next 30 min</span></div>${timeline(S)}</div>
-    <div class="kx-cell"><label>Waste today</label><div class="kx-num"><span data-live="waste">${fmt1(S.wasteKg)}</span><em>kg</em></div><span class="kx-delta ${up ? 'bad' : 'good'}">${up ? IC.up : IC.down}${Math.abs(Math.round(S.vsYesterday * 100))}% vs yesterday</span></div>
+    <div class="kx-card">
+      <div class="kx-card-h"><div><h2>Left on trays</h2><p>Share of each dish that came back today</p></div><button class="kx-link" data-go="dishes">Waste${IC.chev}</button></div>
+      <div class="kx-list">${stats.map(r => `<div class="kx-waste"><span class="kx-waste-n">${PL.V.food(r.d, 26)}${esc(SHORT[r.d.id])}</span><span class="kx-waste-bar"><i class="${r.e < .6 ? 'hi' : r.e < .8 ? 'mid' : 'lo'}" style="width:${((1 - r.e) * 100).toFixed(1)}%"></i></span><b data-live="w-${r.d.id}">${pct(1 - r.e)}</b></div>`).join('')}</div>
+    </div>
   </section>
 
-  <section class="kx-grid" aria-label="Food on the line">${S.dishes.map(x => {
-    const a = x.act, lvl = x.prepared ? clamp(x.remaining / x.prepared, 0, 1) : 0, need = x.prepared ? clamp(x.need30 / x.prepared, 0, 1) : 0;
-    return `<article class="kx-tile" data-id="${x.d.id}" data-tone="${tone[x.status]}" tabindex="0" role="button" aria-label="${esc(x.d.name)}: ${x.servings} servings, ${word[x.status]}. Open details">
-      <header>${PL.V.food(x.d, 26)}<b>${esc(SHORT[x.d.id])}</b><i class="kx-sq" title="${word[x.status]}"></i></header>
-      <div class="kx-tile-mid"><div class="kx-num"><span data-live="sv-${x.d.id}">${x.servings}</span><em>servings</em></div>
-        <div class="kx-meter" title="Left on the line; the tick is what the next 30 minutes need"><i style="height:${(lvl * 100).toFixed(1)}%"></i><s style="bottom:${(need * 100).toFixed(1)}%"></s></div></div>
-      ${a.kind === 'cooking' ? `<div class="kx-act cooking"><span data-cook="${x.d.id}">${esc(a.label)} · ${esc(a.detail)}</span><i class="kx-cookbar"><i style="width:${(a.done * 100).toFixed(0)}%" data-cookbar="${x.d.id}"></i></i></div>`
-        : a.btn ? `<button class="kx-act ${a.kind}" data-dish-act="${a.kind}" data-dish="${x.d.id}">${esc(a.btn)}</button>`
-        : `<div class="kx-act ${a.kind}">${esc(a.label)}</div>`}
-    </article>`; }).join('')}</section>
-
-  <section class="kx-today" aria-label="Today so far">
-    <div><label>Least finished</label><b>${esc(SHORT[least.d.id])}</b><span>${pct(least.e)} eaten</span></div>
-    <div><label>Left per diner</label><b data-live="pd">${Math.round(S.perDiner)}</b><span>g · yesterday ${YESTERDAY.perDiner}</span></div>
-    <div><label>Clean trays</label><b data-live="zero">${pct(PL.zeroRate())}</b><span>zero leftovers</span></div>
-    <div class="kx-tip">${IC.spark}<p>${t.recApplied ? 'Cabbage now cooks in 5 kg batches.' : `Cook cabbage in 5 kg batches: about ${recKg} kg less waste.`}</p>${t.recApplied ? '' : '<button class="kx-btn" data-rec="1">Apply</button>'}</div>
+  <section class="kx-duo">
+    <div class="kx-card"><div class="kx-card-h"><div><h2>Plate waste</h2><p>Last 30 school days, whole school</p></div></div>${chartTrend()}</div>
+    <div class="kx-card">
+      <div class="kx-card-h"><div><h2>Insights</h2><p>From today’s before and after scans</p></div></div>
+      <div class="kx-list">${ins.map(x => `<div class="kx-ins">${PL.V.food(x.d, 34)}<div><b>${esc(x.d.name)} · ${pct(x.e)} eaten</b><span>${esc(x.tip)}</span></div></div>`).join('')}</div>
+    </div>
   </section>`;
-}
-
-/** Tap a dish: its numbers, its batches and its waste, in one sheet. The card stays simple. */
-function paintSheet() {
-  const el = root && $('#kx-sheet', root); if (!el) return;
-  if (!ui.sheet || ui.view !== 'service') { el.classList.remove('in'); el.hidden = true; return; }
-  const S = service(), x = S.dishes.find(y => y.d.id === ui.sheet); if (!x) return;
-  const st = S.stats.find(r => r.d.id === x.d.id), t = S.t, tone = { high: 'amber', normal: 'green', low: 'slate' }[x.status];
-  const scale = Math.max(x.prepared, x.servedKg + x.remaining, x.need30) || 1, cooked = (t.batches || {})[x.d.id] || [];
-  const tip = TREND[x.d.id] ? TREND[x.d.id][2] : '';
-  el.dataset.tone = tone;
-  el.innerHTML = `<button class="kx-x" data-sheet-close aria-label="Close">${IC.x}</button>
-    <div class="kx-sh-top">${PL.V.food(x.d, 40)}<div><b>${esc(x.d.name)}</b><span>${{ high: 'High demand', normal: 'Normal', low: 'Low demand' }[x.status]}</span></div></div>
-    <div class="kx-num xl"><span data-live="sh-sv">${x.servings}</span><em>servings left</em></div>
-    <label>On the line</label>
-    <div class="kx-stack"><i class="served" style="width:${(x.servedKg / scale * 100).toFixed(1)}%"></i><i class="left" style="width:${(x.remaining / scale * 100).toFixed(1)}%"></i><s style="left:${((x.servedKg + x.need30) / scale * 100).toFixed(1)}%"></s></div>
-    <div class="kx-keys"><span><i class="served"></i>Served ${fmt1(x.servedKg)} kg</span><span><i class="left"></i>Left ${fmt1(x.remaining)} kg</span><span><i class="need"></i>Next 30 min ${fmt1(x.need30)} kg</span></div>
-    <label>Batches</label>
-    <div class="kx-batches"><div><b>${fmt1(x.prepared - cooked.reduce((s2, b) => s2 + b.kg, 0))} kg</b><span>before ${hm(S.p0)}</span></div>${cooked.map(b => `<div><b>+${b.kg} kg</b><span>${hm(b.at)}</span></div>`).join('')}${x.cooking ? `<div class="now"><b>+${x.cooking.kg} kg</b><span>cooking</span></div>` : ''}</div>
-    <label>Left on trays</label>
-    <div class="kx-waste1"><div class="kx-line amber"><i style="width:${((1 - st.e) * 100).toFixed(1)}%"></i></div><b>${pct(1 - st.e)}</b></div>
-    ${tip ? `<p class="kx-sh-tip">${IC.spark}<span>${esc(tip)}</span></p>` : ''}
-    ${x.act.btn ? `<button class="kx-act ${x.act.kind} wide" data-dish-act="${x.act.kind}" data-dish="${x.d.id}">${esc(x.act.btn)}</button>` : ''}`;
-  if (el.hidden) { el.hidden = false; requestAnimationFrame(() => el.classList.add('in')); }
-  $('[data-sheet-close]', el).onclick = () => { ui.sheet = null; paintSheet(); };
-  $$('[data-dish-act]', el).forEach(b => b.onclick = () => dishAct(b.dataset.dishAct, b.dataset.dish));
-}
-
-/** After lunch: one screen of what happened and a single step into tomorrow's plan. */
-function wrapView() {
-  const S = service(), t = S.t, ran = Object.entries(t.ranOut || {}).sort((a, b) => a[1] - b[1]);
-  const over = S.dishes.filter(x => x.remaining > 1.5).sort((a, b) => b.remaining - a.remaining);
-  const maxOver = Math.max(1, ...over.map(x => x.remaining)), done = S.now >= S.p1;
-  const pdMax = Math.max(S.perDiner, YESTERDAY.perDiner) * 1.1 || 1;
-  return `
-  <header class="kx-head"><div class="kx-h1"><h1>Lunch wrap-up</h1><span class="kx-until">${hm(S.p0)}–${hm(S.p1)} · ${done ? 'finished' : `so far, ${hm(S.now)}`}</span></div>
-    <div class="kx-tools"><button class="kx-tool" data-go="service">${IC.play}<span>Back to live</span></button></div></header>
-  <section class="kx-wrap">
-    <div class="kx-cell"><label>Diners</label><div class="kx-num"><span>${S.served}</span><em>/ ${EXPECTED}</em></div><div class="kx-line"><i style="width:${Math.min(100, S.served / EXPECTED * 100).toFixed(1)}%"></i></div></div>
-    <div class="kx-cell"><label>Left per diner</label>
-      <div class="kx-cmp"><span>Today</span><i><i class="${S.perDiner <= YESTERDAY.perDiner ? 'g' : 'a'}" style="width:${(S.perDiner / pdMax * 100).toFixed(1)}%"></i></i><b>${Math.round(S.perDiner)} g</b></div>
-      <div class="kx-cmp"><span>Yesterday</span><i><i class="s" style="width:${(YESTERDAY.perDiner / pdMax * 100).toFixed(1)}%"></i></i><b>${YESTERDAY.perDiner} g</b></div></div>
-    <div class="kx-cell"><label>Ran out</label>${ran.length ? `<div class="kx-chips2">${ran.map(([id, at]) => `<span class="a">${PL.V.food(PL.DISH[id], 20)}${SHORT[id]}<em>${hm(at)}</em></span>`).join('')}</div>` : `<p class="kx-none">${IC.check}Nothing ran out</p>`}</div>
-    <div class="kx-cell"><label>Left on the line</label>${over.length ? over.map(x => `<div class="kx-cmp"><span>${SHORT[x.d.id]}</span><i><i class="s" style="width:${(x.remaining / maxOver * 100).toFixed(1)}%"></i></i><b>${fmt1(x.remaining)} kg</b></div>`).join('') : `<p class="kx-none">${IC.check}Nothing left over</p>`}</div>
-  </section>
-  <div class="kx-cta">${IC.spark}<div><b>${t.planFromToday ? 'Tomorrow’s plan uses today’s lunch' : 'Use today to plan tomorrow'}</b><span>${t.planFromToday ? 'Sides cooked 15% smaller, soup 10% smaller, busy dishes kept.' : 'Smaller sides and soup, the dishes that ran out kept at full size.'}</span></div>
-    ${t.planFromToday ? `<button class="kx-btn" data-go="plan">Open plan</button>` : '<button class="kx-btn" data-plan-today="1">Use for tomorrow</button>'}</div>`;
 }
 
 function chartDish() {
@@ -333,7 +172,7 @@ function chartDish() {
   return s + '</svg>';
 }
 function chartTrend() {
-  const W = 1000, H = 230, l = 44, r = 16, t = 14, b = 28, iw = W - l - r, ih = H - t - b, max = .35;
+  const W = 640, H = 250, l = 44, r = 16, t = 14, b = 28, iw = W - l - r, ih = H - t - b, max = .35;
   const X = i => l + i / (HISTORY.length - 1) * iw, Y = v => t + ih - v / max * ih;
   let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Plate waste over 30 school days">`;
   s += `<rect x="${l}" y="${t}" width="${X(9.5) - l}" height="${ih}" rx="8" fill="var(--fill)"/><text class="axis" x="${l + 10}" y="${t + 18}">Before PlateLoop</text>`;
@@ -407,32 +246,6 @@ function nutrition() {
 }
 
 /* ---------------------------------------------------------------- Environment (Nuvilab-style dashboard + Green Tree) */
-function environment() {
-  const e = PL.env(PL.S.term.kg), zr = PL.zeroRate(), week = [...(PL.S.zeroWeek || []), zr];
-  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri'], goal = .2, W = 520, H = 220, l = 34, b = 26, t = 10, ih = H - b - t, max = .3, bw = 52;
-  let chart = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Zero-leftover rate this week">`;
-  [0, .1, .2, .3].forEach(v => { const y = t + ih - v / max * ih; chart += `<line class="gridline" x1="${l}" x2="${W - 6}" y1="${y}" y2="${y}"/><text class="axis" x="${l - 6}" y="${y + 4}" text-anchor="end">${v * 100}%</text>`; });
-  week.forEach((v, i) => { const x = l + 20 + i * ((W - l - 40) / 5), h = v / max * ih; chart += `<rect x="${x}" y="${t + ih - h}" width="${bw}" height="${h}" rx="8" fill="${v >= goal ? 'var(--tint)' : 'var(--blue)'}" opacity="${i === 4 ? 1 : .75}"/><text x="${x + bw / 2}" y="${t + ih - h - 6}" text-anchor="middle" style="font:600 12px var(--font);fill:var(--label)">${pct(v)}</text><text class="axis" x="${x + bw / 2}" y="${H - 6}" text-anchor="middle">${days[i]}${i === 4 ? ' (live)' : ''}</text>`; });
-  const gy = t + ih - goal / max * ih;
-  chart += `<line x1="${l}" x2="${W - 6}" y1="${gy}" y2="${gy}" stroke="var(--orange)" stroke-width="1.5" stroke-dasharray="5 5"/><text class="axis" x="${W - 8}" y="${gy - 6}" text-anchor="end" style="fill:var(--orange)">Goal 20%</text></svg>`;
-  return `
-  <div class="page-head"><div><h1>Environment</h1><p>The school's impact, shown on the canteen screen and in every student's Loopi app.</p></div></div>
-  <div class="env-hero">
-    <div class="env-tree"><canvas id="env-tree" width="200" height="170" aria-label="School Green Tree"></canvas><div><b class="num">${PL.S.today.zero}</b> fruits today · one for every zero-leftover tray</div></div>
-    <div class="env-big"><div class="k">CO₂ avoided this term</div><div class="v num">${(e.co2 / 1000).toFixed(2)} t</div><div class="s">from ${Math.round(e.kg).toLocaleString('en-US')} kg of food not wasted</div>
-      <div class="env-eq"><div><b class="num">${Math.round(e.trees).toLocaleString('en-US')}</b>pine trees<small>absorbing CO₂ for a year</small></div><div><b class="num">${Math.round(e.km).toLocaleString('en-US')}</b>km not driven<small>by an average car</small></div><div><b class="num">${(PL.S.term.zero || 0).toLocaleString('en-US')}</b>zero-leftover trays<small>this term</small></div></div></div>
-  </div>
-  <div class="kgrid">
-    <div class="card chart"><h3>Zero-leftover rate this week</h3><p class="hint">Share of trays with less than 5% left</p>${chart}</div>
-    <div class="card"><h3>Waste by class this week</h3><p class="hint">Compared with each class's starting level</p>
-      <div class="lb" style="margin-top:12px;box-shadow:none;background:var(--fill)">${PL.classRows().map((r, i) => `<div class="lb-row ${i < 3 ? 'top' + (i + 1) : ''}"><span class="lb-rank">${i + 1}</span><canvas width="40" height="34" data-cls="${r.c.id}"></canvas><div><div class="lb-name">Class ${r.c.id}</div><div class="lb-sub">waste ${pct(r.w)} · started at ${pct(r.c.base)}</div></div><div class="lb-val">${r.red > 0 ? '−' + pct(r.red) : '0%'}</div></div>`).join('')}</div></div>
-  </div>
-  <p class="hint" style="margin-top:14px">Illustrative factors: 2.5 kg CO₂e per kg of food, 6.6 kg CO₂ absorbed per pine tree per year, 0.17 kg CO₂ per car-km. Swap in published factors (e.g. from NEA or EPA WARM) before quoting.</p>`;
-}
-
-/* ---------------------------------------------------------------- Carbon: the whole canteen's footprint, toward carbon-neutral operation
-   Illustrative factors (kg CO₂e): per kg of food produced, per kg of food thrown away, and per unit of
-   energy, water and transport. Swap in published factors (e.g. EPA WARM, national grid) before quoting. */
 const EF_FOOD = { rice: 2.7, chicken: 6.1, kailan: 1.2, cabbage: .6, melon: .5, soup: 1.8 };
 const EF_DISPOSAL = .58;
 const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .41], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
@@ -502,7 +315,6 @@ function forecast() {
     if (p.weather === 'hot' && d.id === 'soup') k *= .9;
     if (p.weather === 'hot' && d.id === 'fruit') k *= 1.08;
     if (p.event === 'sports' && (d.tags.includes('grain') || d.tags.includes('protein'))) k *= 1.10;
-    if (T().planFromToday) { if (d.tags.includes('veg')) k *= .85; if (d.id === 'soup') k *= .9; }
     return { d, stdKg: ENROLLED * d.std / 1000, newKg: att * d.learned * k * (1 + Math.max(.04, d.err + .01)) / 1000 };
   });
   const need = {}, needStd = {};
@@ -515,7 +327,7 @@ function plan() {
   const p = ui.plan;
   return `
   <div class="cycle">${[['Plan', 'Predict how much students will eat'], ['Order', 'Buy only what the plan needs'], ['Cook', 'Tune recipes to what students like'], ['Serve', 'Measure it all again tomorrow']].map(([a, b], i) => `<div class="${i < 2 ? 'on' : ''}"><span class="n">${i + 1}</span><b>${a}</b><small>${b}</small></div>`).join('')}</div>
-  <div class="page-head"><div><h1>Plan & order</h1><p>Monday 28 September. Quantities come from what students actually ate, not standard portion × enrolment.</p>${T().planFromToday ? '<span class="pill green" style="margin-top:10px">Adjusted from today’s lunch: sides −15%, soup −10%</span>' : ''}</div>
+  <div class="page-head"><div><h1>Purchasing</h1><p>Monday 28 September. Quantities come from what students actually ate, not standard portion × enrolment.</p></div>
     <div class="trust"><span>Forecast error <b class="num">${(MAPE * 100).toFixed(1)}%</b></span><div class="bar"><i style="width:${(1 - MAPE * 4) * 100}%"></i></div></div></div>
   <div class="card">
     <div class="controls">
@@ -595,28 +407,13 @@ function wire(main) {
     $('#event', main).onchange = e => { ui.plan.event = e.target.value; refreshPlan(); };
   }
   wireOrder(main);
-  // live service
-  $$('.kx-tile[data-id]', main).forEach(tile => {
-    const open = () => { ui.sheet = tile.dataset.id; paintSheet(); };
-    tile.onclick = e => { if (!e.target.closest('button')) open(); };
-    tile.onkeydown = e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === tile) { e.preventDefault(); open(); } };
-  });
-  $$('[data-dish-act]', main).forEach(b => b.onclick = e => { e.stopPropagation(); dishAct(b.dataset.dishAct, b.dataset.dish); });
-  $$('[data-alert]', main).forEach(b => b.onclick = () => {
-    const id = b.dataset.alert, t = T();
-    if (b.dataset.goView) { ui.view = b.dataset.goView; render(true); scrollTo({ top: 0 }); return; }
-    if (b.dataset.dish) return dishAct(b.dataset.stop ? 'stop' : 'prep', b.dataset.dish);
-    if (id === 'sc2') { t.sc2 = 'restarting'; saveK(); setTimeout(() => { T().sc2 = 'online'; saveK('Scanner 2 is back online. 6 queued trays synced.'); }, 2600); }
-    if (id === 'remind') { t.remind = true; saveK('The scanner now reminds students to scan their tray back.'); }
-  });
-  const rec = $('[data-rec]', main); if (rec) rec.onclick = () => { T().recApplied = true; LIVE.cabbage.batch = 5; saveK('Cabbage now cooks in 5 kg batches.'); };
-  const play = $('[data-play]', main); if (play) play.onclick = () => togglePlay();
-  const bell = $('[data-bell]', main); if (bell) bell.onclick = () => { ui.bell = !ui.bell; try { localStorage.setItem('plateloop-kitchen-bell', ui.bell ? 'on' : 'off'); } catch (e) {} if (ui.bell && navigator.vibrate) try { navigator.vibrate(40); } catch (e) {} render(); PL.toast(ui.bell ? 'Red alerts will chime and vibrate.' : 'Alert sound off.'); };
-  const full = $('[data-full]', main); if (full) full.onclick = () => setFull(!ui.full);
   $$('[data-go]', main).forEach(b => b.onclick = () => { ui.view = b.dataset.go; render(true); scrollTo({ top: 0 }); });
-  const pt = $('[data-plan-today]', main); if (pt) pt.onclick = () => { T().planFromToday = true; saveK('Tomorrow’s plan now uses today’s lunch.'); ui.view = 'plan'; render(true); scrollTo({ top: 0 }); };
+  $$('[data-todo]', main).forEach(b => b.onclick = () => {
+    const id = b.dataset.todo, t = T(); if (b.dataset.go) return;
+    if (id === 'sc2') { t.sc2 = 'restarting'; PL.store.save('kitchen'); setTimeout(() => { T().sc2 = 'online'; PL.store.save('kitchen'); PL.toast('Scanner 2 is back online. 6 queued trays synced.'); }, 2600); }
+    if (id === 'remind') { t.remind = true; PL.store.save('kitchen'); PL.toast('The scanner now reminds students to scan their tray back.'); }
+  });
   PL.paintPets(main);
-  const tree = $('#env-tree', main); if (tree) drawTreeInto(tree, 0);
   const cc = $('#copy-carbon', main);
   if (cc) cc.onclick = () => (navigator.clipboard ? navigator.clipboard.writeText(carbonReport()) : Promise.reject()).then(() => PL.toast('Carbon report copied.'), () => PL.toast('Copy is not available here. Select the text instead.'));
   const cp = $('#copy-report', main);
@@ -626,74 +423,11 @@ function wire(main) {
   };
 }
 
-/* ---------------------------------------------------------------- actions */
-function saveK(msg) { PL.store.save('kitchen'); if (msg) PL.toast(msg); }
-function dishAct(kind, id) {
-  const t = T(), L = LIVE[id]; if (!L) return;
-  if (kind === 'prep') {
-    if ((t.cook || {})[id]) return;
-    if (L.stock) { if (t.stock[L.stock] < L.batch) return PL.toast(`Not enough ${STOCK[L.stock][0].toLowerCase()} for a batch.`); t.stock[L.stock] -= L.batch; }
-    t.cook = { ...(t.cook || {}), [id]: { kg: L.batch, at: Date.now(), c0: t.clock } };
-    if (t.stopped) delete t.stopped[id];
-    saveK(`${SHORT[id]}: ${L.batch} kg batch started, ready in ${L.mins} min.`);
-  } else if (kind === 'stop') { t.stopped = { ...(t.stopped || {}), [id]: true }; saveK(`Stopped cooking ${SHORT[id].toLowerCase()}.`); }
-  else if (kind === 'stopped') { delete t.stopped[id]; saveK(`Cooking resumed: ${SHORT[id].toLowerCase()}.`); }
-}
-/** Batches that are done go onto the line (and into the dish's batch list). */
-function finishCooking() {
-  const t = T(), cook = t.cook || {}; let done = null;
-  Object.entries(cook).forEach(([id, c]) => {
-    if (cookDone(c, LIVE[id]) < 1) return;
-    t.prep[id] += c.kg; (t.batches = t.batches || {})[id] = [...(t.batches[id] || []), { kg: c.kg, at: Math.min(t.clock, (c.c0 ?? t.clock) + LIVE[id].mins) }];
-    delete cook[id]; done = id;
-  });
-  return done;
-}
-/** Demo: play the rest of lunch. Every tick is 1.5 minutes: diners arrive on the rush curve, take their usual
- *  portions and finish their trays; batches finish on the same clock. At 13:30 it opens the wrap-up. */
-function togglePlay() {
-  if (ui.play) { clearInterval(ui.play); ui.play = null; render(); return; }
-  ui.play = setInterval(stepLunch, 1100); render(); stepLunch();
-}
-function stepLunch() {
-  const t = T(), [, , end] = PERIODS[1];
-  if (!root || t.clock >= end) { clearInterval(ui.play); ui.play = null; if (root) { ui.view = 'wrap'; ui.sheet = null; render(true); } return; }
-  if (!t.prep) service();
-  const dt = 1.5, now = t.clock, left = Math.max(0, EXPECTED - t.trays - t.eating), g0 = arrived(now);
-  const n = g0 >= 1 ? 0 : Math.round(left * (arrived(now + dt) - g0) / (1 - g0));
-  MENU.forEach(d => { const L = LIVE[d.id], g = n * L.take * L.uptake; t.servedNow[d.id] += g; t.dish[d.id].served += g; t.dish[d.id].ret += g * PL.TYPICAL_LEFT[d.id] * .55; });
-  t.trays += n; t.clock = Math.min(end, now + dt);
-  const done = finishCooking();
-  PL.store.save('kitchen');
-  if (done) PL.toast(`${SHORT[done]}: fresh batch is on the line.`);
-}
-
-function drawTreeInto(cv, t) {
-  const c = cv.getContext('2d'), W = cv.width, H = cv.height, u = 5;
-  c.imageSmoothingEnabled = false;
-  c.fillStyle = '#EAF6EC'; c.fillRect(0, 0, W, H);
-  c.fillStyle = '#CFE8D3'; c.fillRect(0, H - 26, W, 26);
-  c.fillStyle = '#8B5E3C'; c.fillRect(W / 2 - 7, H - 54, 14, 30);
-  const layers = [[H - 56, 38], [H - 78, 30], [H - 98, 22], [H - 114, 13]];
-  layers.forEach(([y, hw], i) => { c.fillStyle = i % 2 ? '#34A853' : '#2E9447'; for (let r = 0; r < 22; r += u) { const w = Math.round(hw * (1 - r / 30)) * 2; c.fillRect(W / 2 - w / 2, y - r, w, u); } });
-  const n = Math.min(PL.S.today.zero, 48); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
-  for (let i = 0; i < n; i++) { const L = layers[i % 4], x = W / 2 + (rnd() - .5) * L[1] * 1.6, y = L[0] - rnd() * 16; c.fillStyle = '#FF3B30'; c.fillRect(Math.round(x / u) * u, Math.round(y / u) * u, u, u); }
-}
-
 PL.apps.kitchen = {
   title: 'PlateLoop Kitchen',
   mount,
-  unmount() { if (ui.play) { clearInterval(ui.play); ui.play = null; } root = null; },
-  update() { if (!root) return; if (T().recApplied) LIVE.cabbage.batch = 5; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); if (ui.view !== 'service' && ui.view !== 'wrap') scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
-  tick() {
-    if (!root) return;
-    const done = finishCooking();
-    if (done) { PL.store.save('kitchen'); PL.toast(`${SHORT[done]}: fresh batch is on the line.`); return; }
-    Object.entries(T().cook || {}).forEach(([id, c]) => {
-      const L = LIVE[id], k = cookDone(c, L);
-      const bar = $(`[data-cookbar="${id}"]`, root); if (bar) bar.style.width = Math.round(k * 100) + '%';
-      const txt = $(`[data-cook="${id}"]`, root); if (txt) txt.textContent = `Cooking ${c.kg} kg · ready in ${Math.max(1, Math.ceil(L.mins * (1 - k)))} min`;
-    });
-  },
+  unmount() { root = null; },
+  update() { if (!root) return; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); if (ui.view !== 'overview') scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
+  tick(t) { if (root && t % 20 === 0) $$('.kx-live', root).forEach(l => { l.outerHTML = liveChip(); }); },
 };
 })();
