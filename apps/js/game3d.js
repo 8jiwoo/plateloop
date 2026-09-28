@@ -246,7 +246,7 @@ function buildPeople() {
   G.makcik = add(L.person({ name: 'Mdm Rosnah', kind: 'makcik', hair: 'tudung', tudungCol: '#E9B8C6', skin: L.SKINS[3], adult: true, height: 1.56, watch: true }), 5.9, -8.7, 0);
   [G.auntie, G.rahman, G.tan, G.drinks, G.cook, G.makcik].forEach(P => talkTarget(P));
   // ambient students from the class list
-  const others = PL.S.students.filter(s => !s.named && !['Priya', 'Ryan', 'Hafiz'].includes(s.name));
+  const others = PL.S.students.filter(s => !s.named && !['Priya', 'Azri', 'Hafiz'].includes(s.name));
   const r = L.rng(2026);
   let k = 0;
   const student = (seed) => {
@@ -306,7 +306,7 @@ function buildPeople() {
   }
   // two students squaring up near the back of the canteen
   {
-    const A = G.brawlA = add(L.person({ name: 'Ryan', kind: 'pe', house: '#B8392E', hair: 'short', skin: L.SKINS[1], height: 1.7, watch: false, smooth: true, seed: 901 }), 6.3, 7.35, Math.PI / 2, 'fight');
+    const A = G.brawlA = add(L.person({ name: 'Azri', kind: 'pe', house: '#B8392E', face: L.FACES && L.FACES.azri ? 'azri' : undefined, hair: 'short', hairCol: '#141110', capTilt: -.8, height: 1.7, watch: false, smooth: true, seed: 901 }), 6.3, 7.35, Math.PI / 2, 'fight');
     const B = G.brawlB = add(L.person({ name: 'Hafiz', kind: 'boy', hair: 'crop', skin: L.SKINS[3], height: 1.72, watch: false, smooth: true, seed: 902 }), 7.5, 7.35, -Math.PI / 2, 'fight');
     [A, B].forEach(P => { P.root.rotation.order = 'YXZ'; P.prompt = 'What\u2019s going on?'; P.noTurn = true; P.home = P.root.position.clone(); talkTarget(P); G.solidPeople.push(P); });
   }
@@ -953,7 +953,7 @@ async function sophieSings() {
     await say(S, 'Thanks for listening! Back to practice.');
   });
 }
-/** Ryan gloats, Hafiz objects, Ryan doubles down and gets punched across the canteen, then comes back
+/** Azri gloats, Hafiz objects, Azri doubles down and gets punched across the canteen, then comes back
  *  flying with a spinning kung fu kick. */
 // when each line starts in the "GG freaking EZ" clip (seconds), and when the clip ends
 const GGEZ_TIMES = [2.0, 2.72, 3.95, 6.2], GGEZ_END = 7.63;
@@ -986,7 +986,7 @@ async function brawl() {
     // pull the camera's view out and keep both of them in frame
     const tmp = new THREE.Vector3(), both = { head: { getWorldPosition: v => { A.hips.getWorldPosition(v); B.hips.getWorldPosition(tmp); return v.add(tmp).multiplyScalar(.5).setY(1.05); } } };
     G.faceTarget = both; G.fovAdd = 24;
-    // the punch sends Ryan flying
+    // the punch sends Azri flying
     B.pose = 'punch'; play('whoosh'); await sleep(170);
     B.head.getWorldPosition(hp); play('punch', at(hp)); G.shake = .35;
     await knock(A, 3.4, 1.4, 1.2, 4.5);
@@ -1006,7 +1006,7 @@ async function brawl() {
       if (e > .45) B.root.position.x = b0.x + (e - .45) * .5;
     });
     A.root.rotation.y = y0; A.root.position.y = 0; A.pose = 'fight';
-    // the last kick launches Hafiz, just like Ryan
+    // the last kick launches Hafiz, just like Azri
     B.head.getWorldPosition(hp); play('punch', at(hp)); G.shake = .4;
     await knock(B, 2.8, 1.1, 1.0, 2.5);
     await sleep(1300);
