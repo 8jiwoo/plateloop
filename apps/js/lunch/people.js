@@ -20,6 +20,7 @@ const OUTFITS = {
   cook:    { top: 'tee', col: '#A83A30', apron: '#E3DDCF', bottom: 'trousers', bot: '#25252A', shoes: 'black', sleeves: 'short' },
   uncle:   { top: 'tee', col: '#9AA3AD', apron: '#2E5C8A', bottom: 'trousers', bot: '#2B2B30', shoes: 'black', sleeves: 'short' },
   cleaner: { top: 'polo', col: '#35684F', bottom: 'trousers', bot: '#55585E', shoes: 'black', sleeves: 'short', logo: 'CLEANING' },
+  spider:  { top: 'spider', col: '#C4202B', bottom: 'suit', bot: '#1E3C8E', shoes: 'red', sleeves: 'long', gloves: '#C4202B' },
   makcik:  { top: 'kurung', col: '#6FA3A0', bottom: 'longskirt', bot: '#6FA3A0', shoes: 'black', sleeves: 'long' },
 };
 
@@ -151,6 +152,47 @@ function hairCanvas(o) {
   });
 }
 /* ================================================================ clothes */
+// a web of black lines over a red part of the suit: spokes from (cx, cy) and sagging rings between them
+function webLines(c, W, H, cx, cy, gap = 14) {
+  c.save(); c.strokeStyle = 'rgba(12,6,8,.55)'; c.lineWidth = 1.2;
+  const n = 16, R = Math.hypot(W, H);
+  for (let i = 0; i < n; i++) { const a = i / n * TAU; c.beginPath(); c.moveTo(cx, cy); c.lineTo(cx + Math.cos(a) * R, cy + Math.sin(a) * R); c.stroke(); }
+  for (let r = gap; r < R; r += gap) {
+    c.beginPath();
+    for (let i = 0; i <= n; i++) {
+      const a = i / n * TAU, b = (i + .5) / n * TAU, x = cx + Math.cos(a) * r, y = cy + Math.sin(a) * r;
+      if (!i) c.moveTo(x, y); else c.quadraticCurveTo(cx + Math.cos(b) * r * .9, cy + Math.sin(b) * r * .9, x, y);
+    }
+    c.stroke();
+  }
+  c.restore();
+}
+// straight-ish web for arms and boots: lines down the limb and gently curved rings round it
+function webGrid(c, W, H, gap = 11) {
+  c.save(); c.strokeStyle = 'rgba(12,6,8,.5)'; c.lineWidth = 1;
+  for (let x = 0; x <= W; x += gap) { c.beginPath(); c.moveTo(x, 0); c.lineTo(x, H); c.stroke(); }
+  for (let y = gap / 2; y < H; y += gap) { c.beginPath(); c.moveTo(0, y); for (let x = 0; x < W; x += gap) c.quadraticCurveTo(x + gap / 2, y + 3, x + gap, y); c.stroke(); }
+  c.restore();
+}
+function spiderSuit(c, W, H, fx, f) {
+  // web on the red, centred on the chest spider and on the back
+  webLines(c, W, H, fx, 88); webLines(c, W, H, 0, 88); webLines(c, W, H, W, 88);
+  // blue down both sides, from under the arms to the waist
+  [-1, 1].forEach(s => {
+    c.fillStyle = f.bot; c.beginPath();
+    c.moveTo(fx + s * 40, 30); c.quadraticCurveTo(fx + s * 30, 150, fx + s * 22, H); c.lineTo(fx + s * 106, H); c.quadraticCurveTo(fx + s * 96, 150, fx + s * 88, 30); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(0,0,0,.35)'; c.lineWidth = 2; c.stroke();
+  });
+  // the spider on the chest
+  c.fillStyle = '#111014'; c.strokeStyle = '#111014'; c.lineWidth = 2.2; c.lineCap = 'round';
+  c.beginPath(); c.ellipse(fx, 96, 5, 10, 0, 0, TAU); c.fill();
+  c.beginPath(); c.arc(fx, 82, 4, 0, TAU); c.fill();
+  [[-1, 84, -14, 66, -18, 58], [-1, 90, -18, 84, -22, 76], [-1, 98, -18, 104, -22, 112], [-1, 104, -14, 116, -16, 126]].forEach(([, y, x1, y1, x2, y2]) => [-1, 1].forEach(s => {
+    c.beginPath(); c.moveTo(fx + s * 3, y); c.lineTo(fx + s * -x1, y1); c.lineTo(fx + s * -x2, y2); c.stroke();
+  }));
+  // a belt line where the red meets the blue at the waist
+  c.fillStyle = f.bot; c.fillRect(0, 228, W, 28);
+}
 function topCanvas(o, f) {
   const W = 256, H = 256, fx = 128, r = L.rng(o.seed + 11), ink = 'rgba(0,0,0,.22)';
   return L.canvas(W, H, c => {
@@ -160,7 +202,8 @@ function topCanvas(o, f) {
       [fx - 64, fx + 64].forEach(x => L.blob(t, x, 130, 18, 140, '#000000', .16));
       L.blob(t, fx, 205, 70, 18, '#000000', .1);
     });
-    if (f.top === 'shirt' || f.top === 'polo') {
+    if (f.top === 'spider') spiderSuit(c, W, H, fx, f);
+    else if (f.top === 'shirt' || f.top === 'polo') {
       c.fillStyle = L.mix(f.col, -.12); c.fillRect(0, 0, W, 9);
       c.fillStyle = o.skin; c.beginPath(); c.moveTo(fx - 7, 8); c.lineTo(fx + 7, 8); c.lineTo(fx, 28); c.closePath(); c.fill();
       [-1, 1].forEach(s => { c.fillStyle = f.col; c.beginPath(); c.moveTo(fx + s * 6, 9); c.lineTo(fx + s * 34, 3); c.lineTo(fx + s * 20, 38); c.closePath(); c.fill(); c.strokeStyle = ink; c.lineWidth = 1.5; c.stroke(); });
@@ -186,7 +229,7 @@ function topCanvas(o, f) {
       L.soft(c, W, H, 3, t => { for (let i = 0; i < 10; i++) L.blob(t, fx + (r() - .5) * 100, 120 + r() * 120, 6, 6, '#8A5A2A', .14); });
     }
     if (f.bottom === 'trousers' || f.bottom === 'shorts') { c.fillStyle = f.bot; c.fillRect(0, 228, W, 28); c.fillStyle = '#16161A'; c.fillRect(0, 222, W, 8); c.fillStyle = '#B0B0A8'; c.fillRect(fx - 6, 222, 12, 8); }
-    else { c.fillStyle = f.bot; c.fillRect(0, 236, W, 20); }
+    else if (f.bottom !== 'suit') { c.fillStyle = f.bot; c.fillRect(0, 236, W, 20); }
     L.wrapShade(c, W, H, .5, .22); L.vshade(c, W, H, .1, .22); L.grain(c, W, H, 6, o.seed + 1);
   });
 }
@@ -194,7 +237,12 @@ function limbCanvas(o, f, part) {
   const W = 64, H = 128, r = L.rng(o.seed + part.length);
   return L.canvas(W, H, c => {
     const fill = (col, y0, y1) => { c.fillStyle = col; c.fillRect(0, y0, W, y1 - y0); };
-    if (part === 'upper') { fill(o.skin, 0, H); fill(f.col, 0, f.sleeves === 'long' ? H : 70); if (f.sleeves !== 'long') fill(L.mix(f.col, -.16), 62, 70); }
+    if (f.top === 'spider') {
+      if (part === 'upper' || part === 'fore' || part === 'hand') { fill(f.col, 0, H); if (part === 'upper') fill(f.bot, 0, 18); webGrid(c, W, H, part === 'hand' ? 9 : 11); }
+      else if (part === 'thigh') fill(f.bot, 0, H);
+      else if (part === 'shin') { fill(f.bot, 0, H); c.fillStyle = f.col; c.beginPath(); c.moveTo(0, 60); c.lineTo(W / 2, 46); c.lineTo(W, 60); c.lineTo(W, H); c.lineTo(0, H); c.closePath(); c.fill(); c.save(); c.clip(); webGrid(c, W, H, 10); c.restore(); }
+    }
+    else if (part === 'upper') { fill(o.skin, 0, H); fill(f.col, 0, f.sleeves === 'long' ? H : 70); if (f.sleeves !== 'long') fill(L.mix(f.col, -.16), 62, 70); }
     else if (part === 'fore') { fill(o.skin, 0, H); if (f.sleeves === 'long') { fill(f.col, 0, 104); fill(L.mix(f.col, -.15), 96, 104); } }
     else if (part === 'hand') fill(f.gloves || o.skin, 0, H);
     else if (part === 'thigh') { const bare = f.bottom === 'skirt'; fill(bare ? o.skin : f.bot, 0, H); if (f.bottom === 'shorts') { fill(o.skin, 76, H); fill(L.mix(f.bot, .15), 70, 76); } }
@@ -210,6 +258,7 @@ function limbCanvas(o, f, part) {
 function shoeCanvas(f) {
   return L.canvas(64, 64, c => {
     const white = f.shoes === 'white';
+    if (f.shoes === 'red') { c.fillStyle = f.col; c.fillRect(0, 0, 64, 64); webGrid(c, 64, 64, 9); c.fillStyle = L.mix(f.col, -.35); c.fillRect(0, 52, 64, 12); return; }
     c.fillStyle = white ? '#E6E5E0' : '#1D1B1B'; c.fillRect(0, 0, 64, 64);
     c.fillStyle = white ? '#B7B6B0' : '#0C0B0B'; c.fillRect(0, 48, 64, 16);
     if (white) { c.fillStyle = '#9A9A94'; for (let y = 12; y < 40; y += 8) c.fillRect(24, y, 16, 2); } else L.blob(c, 24, 16, 16, 6, '#FFFFFF', .22);
@@ -300,6 +349,10 @@ L.person = o => {
       const side = facetMesh(new THREE.CylinderGeometry(.106, long ? .13 : .115, len, sg(8), 1, true, 1.15, TAU - 2.3), hm);
       side.position.y = .02 - len / 2; side.scale.z = 1.05; head.add(side);
     }
+    if (o.hairHang) {
+      const hang = P.hairHang = facetMesh(new THREE.CylinderGeometry(.1, .104, .25, sg(9), 1, true, .75, Math.PI * 2 - 1.5), hm);
+      hang.geometry.translate(0, .125, 0); hang.position.set(0, .06, -.01); hang.scale.z = .9; head.add(hang);
+    }
     if (o.hair === 'pony') { const tail = facetMesh(new THREE.CylinderGeometry(.034, .012, .26, sg(5)), hm); tail.position.set(0, -.08, -.13); tail.rotation.x = .35; head.add(tail); }
   }
   // arms
@@ -351,6 +404,7 @@ L.animPerson = (P, dt, cam) => {
   P.t += dt;
   const t = P.t, R = P.root, pose = P.pose, sit = pose === 'sit' || pose === 'eat';
   if (pose === 'pray' || pose === 'split') { pray(P, dt, pose === 'split'); return; }
+  if (pose.startsWith('hang')) { hang(P, dt, cam); return; }
   if (FIGHT.has(pose)) { fighter(P, dt); return; }
   if (P.skirt) { P.skirt.visible = !sit; P.skirtSit.visible = sit; }
   let hipY = .84, thigh = 0, knee = 0, thighL = 0, kneeL = 0, lean = 0;
@@ -428,6 +482,44 @@ function fighter(P, dt) {
   P.hips.rotation.x += (hrx - P.hips.rotation.x) * k; P.hips.rotation.y = 0; P.hips.rotation.z = 0;
   P.chest.rotation.x = 0; P.torso.rotation.x = 0; P.chest.position.y = 0;
   P.head.rotation.x += ((pose === 'lie' ? .3 : -hrx * .6) - P.head.rotation.x) * k; P.head.rotation.y *= 1 - k;
+  P.tray.visible = false;
+}
+
+/** Hanging upside down from a web by the feet (the game turns the root over): arms folded, one knee bent,
+ *  head turned to watch you. 'hangwave' waves at you, 'hanggroove' dances to the music. */
+const V3 = new THREE.Vector3();
+function hang(P, dt, cam) {
+  const t = P.t, pose = P.pose, k = 1 - Math.exp(-7 * dt), to = (r, x, y, z) => { r.x += (x - r.x) * k; r.y += (y - r.y) * k; r.z += (z - r.z) * k; };
+  P.hips.position.y += (.84 - P.hips.position.y) * k; P.hips.rotation.set(0, 0, 0); P.chest.position.y = 0; P.torso.rotation.x = 0;
+  P.torso.scale.y = 1 + Math.sin(t * 1.4) * .007;
+  if (pose === 'hanggroove') {
+    const b = t * 7.4, up = Math.sin(b);
+    to(P.chest.rotation, Math.sin(b * .5) * .12, Math.sin(b * .5) * .25, 0);
+    to(P.armR.sh.rotation, -.3, 0, -2.3 - up * .6); to(P.armR.el.rotation, -.6 - Math.max(0, up) * .6, 0, 0);
+    to(P.armL.sh.rotation, -.3, 0, 2.3 - up * .6); to(P.armL.el.rotation, -.6 - Math.max(0, -up) * .6, 0, 0);
+    to(P.legR.hip.rotation, 0, 0, -.04); to(P.legR.knee.rotation, 0, 0, 0);
+    to(P.legL.hip.rotation, -.25 - Math.abs(up) * .45, 0, .05); to(P.legL.knee.rotation, .7 + Math.abs(up) * .7, 0, 0);
+  } else {
+    to(P.chest.rotation, .03, 0, 0);
+    // arms crossed over the chest
+    to(P.armL.sh.rotation, -.64, 0, -.02); to(P.armL.el.rotation, -.98, 0, -1.2);
+    if (pose === 'hangwave') { to(P.armR.sh.rotation, 0, 0, -2.75); P.armR.el.rotation.x += (-.35 - P.armR.el.rotation.x) * k; P.armR.el.rotation.z = Math.sin(t * 9) * .35; P.armR.el.rotation.y = 0; }
+    else { to(P.armR.sh.rotation, -.74, 0, .02); to(P.armR.el.rotation, -.86, 0, 1.25); }
+    // the web holds the right foot; the left knee hooks over it
+    to(P.legR.hip.rotation, 0, 0, -.03); to(P.legR.knee.rotation, 0, 0, 0);
+    to(P.legL.hip.rotation, -.28, 0, .04); to(P.legL.knee.rotation, .62, 0, 0);
+  }
+  // look at you, whichever way up she is
+  let yaw = Math.sin(t * .3) * .3, pitch = 0;
+  const target = P.lookAt || (cam && P.root.position.distanceTo(cam) < 6 ? cam : null);
+  if (target) {
+    P.chest.worldToLocal(V3.copy(target)); V3.y -= P.head.position.y;
+    const a = Math.atan2(V3.x, V3.z);
+    if (Math.abs(a) < 2.2) { yaw = Math.max(-1.1, Math.min(1.1, a)); pitch = Math.max(-.6, Math.min(.6, -Math.atan2(V3.y, Math.hypot(V3.x, V3.z)))); }
+  }
+  P.headYaw = damp(P.headYaw, yaw, 4, dt); P.headPitch = damp(P.headPitch, pitch, 4, dt);
+  P.head.rotation.set(P.headPitch, P.headYaw, 0);
+  if (P.hairHang) P.hairHang.rotation.set(-P.headPitch * .8, 0, 0);
   P.tray.visible = false;
 }
 
