@@ -2,10 +2,9 @@
    The core: a tray scanned back feeds Loopi the food you ate; a tray with less left than your usual earns
    a heart; full hearts grow Loopi from egg to adult, and a grown Loopi lays an egg (rarity odds shown) that
    hatches a new one while the old one retires to the Barn. Your real leftovers become crumbs to sweep into
-   the compost. Around it: gems, ingredients from the food groups you actually ate, oven cooking in recipe
-   order (burnt or wrong dishes go to the compost; compost-grown ingredients can make golden snacks), the
-   worm farm, recipe cards from the Healthy Catch minigame, and wardrobe crates (earned gems only, odds
-   shown). Hearts only ever come from real trays, so the game can't be won without eating well. */
+   the food waste bin. Around it: gems, ingredients from the food groups you actually ate, oven cooking in
+   recipe order (burnt or wrong dishes are thrown away; now and then a dish comes out golden), recipe cards
+   from the Healthy Catch minigame, and wardrobe crates (earned gems only, odds shown). Hearts only ever come from real trays, so the game can't be won without eating well. */
 (() => {
 'use strict';
 const { MENU } = PL;
@@ -20,9 +19,8 @@ G.BALLS_PER_DAY = 5;          // fetch throws that add Joy
 G.PETS_PER_DAY = 5;           // pats that add Joy
 G.PET_GEM = { chance: .25, min: 2, max: 8, cap: 3 };
 G.OVEN_CAP = 4;
-G.SPOIL_CHANCE = .1;          // a correct recipe can still burn; it goes to the compost
-G.GOLDEN_BASE = .2; G.GOLDEN_PER_GROWN = .2; G.GOLDEN_HUNGER = 2;
-G.COMPOST_COST = 15; G.COMPOST_RECOVER = .35; G.WORM_CHANCE = .3;
+G.SPOIL_CHANCE = .1;          // a correct recipe can still burn; it's thrown away
+G.GOLDEN_CHANCE = .15; G.GOLDEN_HUNGER = 2; // a cooked dish sometimes comes out golden
 G.RARITY_BONUS = { common: .4, rare: 1, epic: 1.7, legendary: 2.5 };
 G.MENTOR_BONUS = .1;
 G.EGG_WEIGHTS = { common: 50, rare: 30, epic: 15, legendary: 5 };
@@ -141,7 +139,7 @@ G.serveLunch = st => {
   g.mess.push(...p.crumbs);
   return p;
 };
-/** Swept crumbs are your real leftovers: they're composted and counted, but never turned into ingredients. */
+/** Swept crumbs are your real leftovers: they go in the food waste bin and are counted, but never turned into ingredients. */
 G.sweep = (st, dish) => {
   const g = G.ensure(st), i = g.mess.indexOf(dish);
   if (i >= 0) { g.mess.splice(i, 1); g.composted++; }
@@ -191,9 +189,8 @@ G.ovenAdd = (st, type) => {
   const seq = g.oven.map(o => o.t), open = G.RECIPES.filter(rc => G.recipeUnlocked(g, rc));
   const match = open.find(rc => rc.seq.length === seq.length && rc.seq.every((x, i) => x === seq[i]));
   if (match) {
-    const grownN = g.oven.filter(o => o.grown).length;
     if (Math.random() < G.SPOIL_CHANCE) { dump(g); return { result: 'spoiled', recipe: match }; }
-    const golden = grownN > 0 && Math.random() < G.GOLDEN_BASE + G.GOLDEN_PER_GROWN * grownN;
+    const golden = Math.random() < G.GOLDEN_CHANCE;
     const snack = { id: 's' + Date.now() + Math.floor(Math.random() * 1e4), recipe: match.id, name: (golden ? 'Golden ' : '') + match.name, hunger: match.hunger + (golden ? G.GOLDEN_HUNGER : 0), golden };
     g.snacks.push(snack); g.oven = []; g.gems += 3;
     return { result: 'cooked', snack };
@@ -204,17 +201,6 @@ G.ovenAdd = (st, type) => {
 };
 G.emptyOven = st => { const g = G.ensure(st), n = g.oven.length; dump(g); return n; };
 
-/* ---------------------------------------------------------------- worm farm: kitchen scraps grow back */
-G.compost = st => {
-  const g = G.ensure(st);
-  if (!g.bin.length) return { error: 'The compost bin is empty.' };
-  if (g.gems < G.COMPOST_COST) return { error: `Turning the compost costs ${G.COMPOST_COST} gems.` };
-  g.gems -= G.COMPOST_COST;
-  const worms = Math.random() < G.WORM_CHANCE, got = blank(), n = g.bin.length;
-  g.bin.forEach(t => { if (Math.random() < G.COMPOST_RECOVER || (worms && Math.random() < .5)) { got[t]++; g.grown[t]++; } });
-  g.bin = [];
-  return { got, n, worms };
-};
 G.unlock = (st, key) => {
   const g = G.ensure(st), rc = G.RECIPES.find(x => x.unlock === key);
   if (!rc || g.unlocked[key] || g.cards[key] < rc.cost) return false;

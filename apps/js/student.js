@@ -1,7 +1,7 @@
 /* Loopi, the student app for teens and university students: a Tamagotchi fed by real lunches.
    Loopi (the room: feed it the lunch you ate, sweep up your leftovers, play, grow it up, lay and hatch
    eggs), Lunch (the two scans, your tray, your plate and your week), Kitchen (cook snacks in recipe order,
-   the worm farm, recipe cards, the Healthy Catch minigame), Ranks and Me (badges, history). Wardrobe
+   recipe cards, the Healthy Catch minigame), Ranks and Me (badges, history). Wardrobe
    crates and the Barn open as sheets.
    Rules: js/game.js. Room: js/room.js. Drawings: js/visual.js. */
 (() => {
@@ -200,7 +200,7 @@ function lunchTab(st, g) {
     <div class="vcard"><h3>Nutrition</h3><div class="vrings">${V.ring(a.intake.kcal, PL.TARGET.kcal, 'Calories', 'kcal')}${V.ring(a.intake.p, PL.TARGET.p, 'Protein', 'g', 'aim')}${V.ring(a.intake.c, PL.TARGET.c, 'Carbs', 'g')}</div></div>
     <div class="vtips">
       ${a.co2 > 0 ? V.tip('cloud', 'good', `You saved ${a.co2} g of CO₂`, 'Food that isn\'t wasted doesn\'t have to be grown, cooked and thrown away again.') : ''}
-      ${leftG > 20 ? V.tip('recycle', 'info', `${leftG} g went to the compost bin`, 'It shows up as crumbs in Loopi\'s room until you sweep them.') : V.tip('check', 'good', 'Hardly anything left', 'Your tray grew a fruit on the school\'s Green Tree.')}
+      ${leftG > 20 ? V.tip('recycle', 'info', `${leftG} g went into the food waste bin`, 'It shows up as crumbs in Loopi\'s room until you sweep them.') : V.tip('check', 'good', 'Hardly anything left', 'Your tray grew a fruit on the school\'s Green Tree.')}
     </div>`;
   }
   const days = st.log.slice(0, 5).reverse(), tries = Math.min(3, st.pet.quest);
@@ -209,9 +209,9 @@ function lunchTab(st, g) {
   return out;
 }
 
-/* ================================================================ Kitchen: cook, compost, recipes, catch */
+/* ================================================================ Kitchen: cook, recipes, catch */
 function kitchenTab(st, g) {
-  const segs = { cook: 'Cook', compost: 'Compost', recipes: 'Recipes', catch: 'Catch' };
+  const segs = { cook: 'Cook', recipes: 'Recipes', catch: 'Catch' };
   const seg = `<div class="seg" id="kseg">${Object.entries(segs).map(([k, v]) => `<button data-k="${k}" aria-pressed="${ui.kseg === k}">${v}</button>`).join('')}</div>`;
   const pantry = (counts, extra, add) => `<div class="pantry">${Object.keys(G.INGREDIENTS).map(t => { const n = counts[t] + (extra ? extra[t] : 0); return `<${add ? 'button' : 'div'} class="pan" ${add ? `data-add="${t}" ${n ? '' : 'disabled'}` : ''}>${ING(t, 34)}<b class="num">${n}</b><small>${G.INGREDIENTS[t].name}${extra && extra[t] ? ` · ${extra[t]} grown` : ''}</small></${add ? 'button' : 'div'}>`; }).join('')}</div>`;
   if (ui.kseg === 'catch') return seg + catchTab(g);
@@ -220,19 +220,10 @@ function kitchenTab(st, g) {
     return `${seg}
     <div class="vcard"><h3>Oven <small>add ingredients in a recipe's order</small></h3>
       <div class="oven2">${Array.from({ length: G.OVEN_CAP }, (_, i) => `<div class="slot2">${g.oven[i] ? ING(g.oven[i].t, 36) + (g.oven[i].grown ? '<em>grown</em>' : '') : `<span>${i + 1}</span>`}</div>`).join('')}</div>
-      <p class="oven-msg" role="status">${ui.ovenMsg || 'A wrong order or a burnt dish goes to the compost. Compost-grown ingredients can make a dish golden.'}</p>
+      <p class="oven-msg" role="status">${ui.ovenMsg || 'A wrong order or a burnt dish gets thrown away. Now and then a dish comes out golden.'}</p>
       ${pantry(g.ing, g.grown, true)}
-      ${g.oven.length ? '<button class="btn small ghost" id="empty-oven" style="margin-top:8px">Empty the oven into the compost</button>' : ''}</div>
+      ${g.oven.length ? '<button class="btn small ghost" id="empty-oven" style="margin-top:8px">Empty the oven</button>' : ''}</div>
     <div class="vcard"><h3>Recipes you know</h3><div class="recipes2">${known.map(rc => `<div class="rcp"><span class="seq2">${rc.seq.map((t, i) => `${i ? '<i>›</i>' : ''}${ING(t, 26)}`).join('')}</span><div><b>${rc.name}</b><small>+${rc.hunger} food</small></div></div>`).join('')}</div></div>`;
-  }
-  if (ui.kseg === 'compost') {
-    return `${seg}
-    <div class="vcard"><h3>Worm farm <small>${g.bin.length} kitchen scraps</small></h3>
-      <div class="binbox">${g.bin.length ? g.bin.map(t => ING(t, 28)).join('') : '<span class="hint">Empty. Burnt or wrong dishes end up here.</span>'}</div>
-      <p class="hint" style="margin:10px 0">Turn the compost and the worms grow some scraps back into fresh ingredients. Sometimes extra worms join in and grow even more.</p>
-      <button class="btn primary big" id="compost" ${g.bin.length ? '' : 'disabled'}>Turn the compost · ${GEM} ${G.COMPOST_COST}</button></div>
-    <div class="vcard"><h3>Compost-grown ingredients</h3>${pantry(g.grown)}</div>
-    <p class="foot">Your real lunch leftovers go to the school's compost too (${g.composted} scraps so far), but they never turn into ingredients. Eating your lunch is always the better deal.</p>`;
   }
   return `${seg}
     <div class="vcard"><h3>Recipe book <small>find cards in Healthy Catch</small></h3><div class="recipes2">${G.RECIPES.map(rc => {
@@ -355,7 +346,7 @@ function meTab(st, g) {
   <div class="statgrid">
     <div>${V.icon('check', 'var(--tint)')}<b class="num">${st.pet.c.lowWaste}</b><span>clean trays</span></div>
     <div>${V.icon('leaf', '#2B8C43')}<b class="num">${st.pet.c.veg}</b><span>veggie tries</span></div>
-    <div>${V.icon('recycle', '#8E6A3A')}<b class="num">${g.composted}</b><span>scraps composted</span></div>
+    <div>${V.icon('recycle', '#8E6A3A')}<b class="num">${g.composted}</b><span>scraps swept up</span></div>
   </div>
   <h4 class="sec">Badges · ${earned.size} of ${G.BADGES.length} · tap one to dress up Loopi</h4>
   <div class="badge-grid">${G.BADGES.map(b => { const got = earned.has(b.id), on = g.eq === b.item;
@@ -420,17 +411,10 @@ function wire(st) {
   $$('#kseg button', body).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.kseg = b.dataset.k; ui.ovenMsg = ''; render(); });
   $$('[data-add]', body).forEach(b => b.onclick = () => {
     const res = act(() => G.ovenAdd(me(), b.dataset.add));
-    ui.ovenMsg = { pending: 'Keep going…', cooked: `Cooked <b>${res.snack ? esc(res.snack.name) : ''}</b>! Feed it to Loopi on the Loopi tab.`, rejected: 'No recipe starts like that. The ingredients went to the compost.', spoiled: `Oh no, the ${res.recipe ? res.recipe.name.toLowerCase() : 'dish'} burnt! It went to the compost.`, none: 'You are out of that ingredient.' }[res.result];
+    ui.ovenMsg = { pending: 'Keep going…', cooked: `Cooked <b>${res.snack ? esc(res.snack.name) : ''}</b>! Feed it to Loopi on the Loopi tab.`, rejected: 'No recipe starts like that. The ingredients were thrown away.', spoiled: `Oh no, the ${res.recipe ? res.recipe.name.toLowerCase() : 'dish'} burnt! It went in the bin.`, none: 'You are out of that ingredient.' }[res.result];
     render(true);
   });
-  const eo = $('#empty-oven', body); if (eo) eo.onclick = () => { act(() => G.emptyOven(me())); ui.ovenMsg = 'The oven is empty. The ingredients went to the compost.'; render(true); };
-  const cp = $('#compost', body);
-  if (cp) cp.onclick = () => {
-    const res = act(() => G.compost(me()));
-    if (res.error) return PL.toast(res.error);
-    const got = Object.entries(res.got).filter(([, n]) => n > 0);
-    modal(res.worms ? 'The worms helped!' : 'Compost turned', `${res.worms ? '<p class="hint center">Extra worms joined in and gave more scraps a second chance.</p>' : ''}<div class="got2">${got.map(([t, n]) => `<div>${ING(t, 28)}<b>+${n} grown ${G.INGREDIENTS[t].name.toLowerCase()}</b></div>`).join('') || '<p class="hint">Nothing grew back this time. The scraps became soil.</p>'}</div>`);
-  };
+  const eo = $('#empty-oven', body); if (eo) eo.onclick = () => { act(() => G.emptyOven(me())); ui.ovenMsg = 'The oven is empty.'; render(true); };
   $$('[data-unlock]', body).forEach(b => b.onclick = () => { if (act(() => G.unlock(me(), b.dataset.unlock))) PL.toast('New recipe unlocked!'); });
   $$('[data-go]', body).forEach(b => b.onclick = () => { ui.tab = b.dataset.go; render(); $('#stu-body').scrollTop = 0; });
   $$('#rank-seg button', body).forEach(b => b.onclick = () => { ui.seg = b.dataset.seg; render(); });

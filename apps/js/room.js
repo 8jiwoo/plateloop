@@ -1,6 +1,6 @@
 /* Loopi's room: a full-colour pixel room. Loopi wanders around, eats the lunch waiting in its bowl, plays
    fetch, gets petted and sleeps when the lights go off. Crumbs on the floor are the student's real
-   leftovers; tapping one (or Sweep) flicks it into the compost bin. The plant grows with clean trays.
+   leftovers; tapping one (or Sweep) flicks it into the food waste bin. The plant grows with clean trays.
    This file only animates and handles taps; game-state changes go back to the app through `hooks`. */
 (() => {
 'use strict';
@@ -157,9 +157,9 @@ const Room = PL.Room = {
     for (let k = 0; k <= lv; k++) { const y = 54 - k * 5; R(G1, 146 - (k % 2), y, 4, 2); R(G1, 152, y - 2, 4 + (k % 2), 2); }
     if (lv >= 3) { R('#FF9F0A', 149, 55 - stem, 4, 3); R('#FFD60A', 150, 54 - stem, 2, 1); }
     if (lv >= 4) { R('#FF3B30', 146, 44 - lv, 2, 2); R('#FF3B30', 154, 41 - lv, 2, 2); }
-    // compost bin
-    R('#248A3D', 131, 79, 20, 3); R('#34C759', 132, 82, 18, 17); R('#2EAA52', 132, 94, 18, 5);
-    R('#FFFFFF', 139, 86, 4, 1); R('#FFFFFF', 138, 87, 2, 3); R('#FFFFFF', 141, 88, 3, 2);
+    // food waste bin
+    R('#636366', 131, 79, 20, 3); R('#8E8E93', 132, 82, 18, 17); R('#7C7C80', 132, 94, 18, 5);
+    R('#C7C7CC', 136, 85, 1, 11); R('#C7C7CC', 140, 85, 1, 11); R('#C7C7CC', 144, 85, 1, 11);
     // bowl: today's lunch waits here until Loopi eats it
     const food = this.food || info.plate;
     if (food) {
