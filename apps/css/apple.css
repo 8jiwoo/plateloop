@@ -1423,24 +1423,11 @@ body.xp-body{overflow:hidden;padding:0;background:#070908}
 .kx{--bg:#000000;--bg2:#1C1C1E;--fill:#2C2C2E;--fill2:#3A3A3C;--fill3:#48484A;--label:#F5F5F7;--label2:#AEAEB2;--label3:#8E8E93;--sep:rgba(84,84,88,.55);
   --tint:#30D158;--tint-ink:#30D158;--tint-soft:rgba(48,209,88,.15);--green:#30D158;--orange:#FF9F0A;--orange-soft:rgba(255,159,10,.15);--red:#FF453A;--red-soft:rgba(255,69,58,.15);--blue:#0A84FF;
   --shadow-s:none;--shadow:none;--bar2:rgba(28,28,30,.9);
-  color-scheme:dark;color:var(--label);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;background:#000;grid-template-columns:232px minmax(0,1fr);min-height:100vh}
+  color-scheme:dark;color:var(--label);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter",system-ui,sans-serif;background:#000;display:block;min-height:100vh;position:relative;isolation:isolate}
 body:has(.kx){background:#000}
-.kx .kit-side{position:sticky;top:0;height:100vh;margin:0;padding:20px 12px 16px;border:0;border-right:.5px solid var(--sep);border-radius:0;background:rgba(28,28,30,.72);backdrop-filter:blur(30px) saturate(1.8);-webkit-backdrop-filter:blur(30px) saturate(1.8);display:flex;flex-direction:column;box-shadow:none}
-.kx-brand{display:flex;align-items:center;gap:10px;padding:0 8px 22px}
-.kx-brand b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}.kx-brand span{display:block;font-size:12px;color:var(--label3)}
-.kx-logo{width:30px;height:30px;border-radius:8px;background:linear-gradient(145deg,#3AE374,#1FA84F);position:relative;flex:none}
-.kx-logo::after{content:"";position:absolute;inset:8px;border:2.5px solid #fff;border-radius:50%;border-right-color:transparent;transform:rotate(-45deg)}
-.kx-nav{display:flex;flex-direction:column;gap:2px}
-.kx-nav button{display:flex;align-items:center;gap:10px;border:0;background:none;padding:8px 10px;border-radius:8px;font:500 14px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;color:var(--label);text-align:left;transition:background .15s}
-.kx-nav button svg{width:18px;height:18px;flex:none;color:var(--green)}
-.kx-nav button:hover{background:rgba(255,255,255,.06)}
-.kx-nav button[aria-current="page"]{background:rgba(255,255,255,.12)}
-.kx .kit-foot{margin-top:auto;padding:8px 10px;gap:10px}
-.kx .kit-foot .linkish{font-size:12.5px;color:var(--blue)}
 .kx-live{display:inline-flex;align-items:center;gap:7px;font-size:12.5px;font-weight:500;color:var(--label2)}
 .kx-live i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:kxlive 2s infinite}
 @keyframes kxlive{0%{box-shadow:0 0 0 0 rgba(48,209,88,.5)}70%,100%{box-shadow:0 0 0 6px rgba(48,209,88,0)}}
-.kx .kit-main{padding:30px 36px 48px;max-width:1320px}
 
 .kx-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;margin-bottom:20px}
 .kx-date{margin:0 0 2px;font-size:13px;font-weight:600;letter-spacing:.02em;text-transform:uppercase;color:var(--label3)}
@@ -1522,12 +1509,6 @@ body:has(.kx){background:#000}
 
 @media (max-width:1180px){.kx-widgets{grid-template-columns:repeat(2,minmax(0,1fr))}.kx-duo{grid-template-columns:1fr}}
 @media (max-width:900px){
-  .kx{grid-template-columns:1fr}
-  .kx .kit-side{position:static;height:auto;border-right:0;border-bottom:.5px solid var(--sep);padding:12px}
-  .kx-brand{padding-bottom:10px}
-  .kx-nav{flex-direction:row;overflow-x:auto;scrollbar-width:none}.kx-nav button span{white-space:nowrap}
-  .kx .kit-foot{display:none}
-  .kx .kit-main{padding:16px 14px 40px}
   .kx-order-sum{grid-template-columns:1fr}
   .kx-buy{grid-template-columns:1fr 70px 60px}.kx-buy-bar{display:none}
 }
@@ -1638,3 +1619,56 @@ body:has(.kx){background:#000}
   .kx-row2{grid-template-columns:1fr 60px}.kx-row2 .kx-bar1,.kx-row2 > span:last-child{display:none}
   .kx-report > div{grid-template-columns:1fr;gap:4px}
 }
+
+
+/* ---- the floating top bar: brand, a glass nav with a sliding highlight, live status */
+.kx-ambient{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.kx-ambient i{position:absolute;width:52vw;height:52vw;border-radius:50%;filter:blur(90px);opacity:.16}
+.kx-ambient i:nth-child(1){left:-10vw;top:-26vw;background:#30D158;animation:kxdrift 22s ease-in-out infinite alternate}
+.kx-ambient i:nth-child(2){right:-14vw;top:-20vw;background:#0A84FF;opacity:.12;animation:kxdrift 28s ease-in-out -8s infinite alternate-reverse}
+.kx-ambient i:nth-child(3){left:30vw;top:60vh;background:#64D2FF;opacity:.06;animation:kxdrift 34s ease-in-out -14s infinite alternate}
+@keyframes kxdrift{to{transform:translate(8vw,6vh) scale(1.15)}}
+.kx-bar{position:sticky;top:0;z-index:50;display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:16px;padding:16px 28px;transition:padding .35s cubic-bezier(.2,.8,.2,1),background .35s,box-shadow .35s}
+.kx-bar.scrolled{padding:9px 28px;background:rgba(10,10,12,.7);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);box-shadow:0 .5px 0 var(--sep)}
+.kx-brand{display:flex;align-items:center;gap:10px;min-width:0}
+.kx-brand b{display:block;font-size:15px;font-weight:600;letter-spacing:-.01em}.kx-brand span{display:block;font-size:12px;color:var(--label3)}
+.kx-logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(145deg,#3AE374,#1FA84F);position:relative;flex:none;box-shadow:0 6px 18px -6px rgba(48,209,88,.6)}
+.kx-logo::after{content:"";position:absolute;inset:8px;border:2.5px solid #fff;border-radius:50%;border-right-color:transparent;animation:kxspin 8s linear infinite}
+@keyframes kxspin{to{transform:rotate(360deg)}}
+.kx-nav{position:relative;display:flex;gap:2px;padding:5px;border-radius:99px;background:rgba(44,44,46,.62);backdrop-filter:blur(24px) saturate(1.8);-webkit-backdrop-filter:blur(24px) saturate(1.8);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 12px 40px -12px rgba(0,0,0,.8);scrollbar-width:none}
+.kx-nav::-webkit-scrollbar{display:none}
+.kx-thumb{position:absolute;left:0;top:0;border-radius:99px;background:linear-gradient(180deg,rgba(255,255,255,.2),rgba(255,255,255,.12));box-shadow:inset 0 .5px 0 rgba(255,255,255,.35),0 6px 16px -6px rgba(0,0,0,.6);
+  transition:transform .5s cubic-bezier(.3,1.35,.45,1),width .5s cubic-bezier(.3,1.35,.45,1);pointer-events:none;z-index:0}
+.kx-nav button{position:relative;z-index:1;display:flex;align-items:center;gap:7px;border:0;background:none;padding:8px 15px;border-radius:99px;font:500 13.5px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;color:var(--label2);white-space:nowrap;transition:color .25s}
+.kx-nav button svg{width:17px;height:17px;flex:none;transition:transform .35s cubic-bezier(.3,1.6,.5,1),color .25s}
+.kx-nav button:hover{color:var(--label)}
+.kx-nav button:hover svg{transform:translateY(-2px) scale(1.12)}
+.kx-nav button:active svg{transform:scale(.88)}
+.kx-nav button[aria-current="page"]{color:#fff}
+.kx-nav button[aria-current="page"] svg{color:var(--green);animation:kxpop .5s cubic-bezier(.3,1.6,.5,1)}
+@keyframes kxpop{0%{transform:scale(.6) rotate(-12deg)}100%{transform:none}}
+.kx-bar-r{display:flex;justify-content:flex-end;align-items:center;gap:8px}
+.kx-bar-r .kx-live{height:32px;padding:0 12px;border-radius:99px;background:rgba(44,44,46,.62)}
+.kx-reset{width:32px;height:32px;border:0;border-radius:50%;background:rgba(44,44,46,.62);color:var(--label2);display:grid;place-items:center;transition:transform .5s cubic-bezier(.3,1.4,.5,1),color .2s}
+.kx-reset svg{width:16px;height:16px}.kx-reset:hover{color:var(--label);transform:rotate(-180deg)}
+.kx .kit-main{max-width:1240px;margin:0 auto;padding:14px 28px 64px}
+
+/* a little life on hover */
+@media (hover:hover){
+  .kx-w,.kx-card{transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+  .kx-w:hover{transform:translateY(-3px);box-shadow:0 18px 40px -22px rgba(0,0,0,.9),inset 0 0 0 .5px rgba(255,255,255,.1)}
+  .kx-card:hover{box-shadow:inset 0 0 0 .5px rgba(255,255,255,.08)}
+  .kx-li,.kx-buy,.kx-waste,.kx-dish,.kx-menu,.kx-row2,.kx-nut,.kx-ins{transition:background .2s}
+  .kx-li:hover,.kx-buy:hover,.kx-waste:hover,.kx-dish:hover,.kx-menu:hover,.kx-row2:hover,.kx-nut:hover,.kx-ins:hover{background:rgba(255,255,255,.03);border-radius:10px}
+}
+
+/* phones: the nav becomes a floating dock at the bottom */
+@media (max-width:980px){
+  .kx-bar{grid-template-columns:1fr auto;padding:14px 16px}
+  .kx-bar.scrolled{padding:9px 16px;backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(10,10,12,.94)} /* a blurred bar would trap the fixed dock inside it */
+  .kx-nav{position:fixed;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);max-width:calc(100vw - 24px);overflow-x:auto;z-index:60}
+  .kx-nav button{flex-direction:column;gap:2px;padding:7px 12px;font-size:10.5px}
+  .kx-nav button svg{width:20px;height:20px}
+  .kx .kit-main{padding:8px 14px 110px}
+}
+@media (prefers-reduced-motion:reduce){.kx-ambient i,.kx-logo::after{animation:none}}

@@ -48,25 +48,65 @@ function mount(el) {
   root = el;
   el.innerHTML = `
   <div class="kit kx">
-    <aside class="kit-side">
+    <div class="kx-ambient" aria-hidden="true"><i></i><i></i><i></i></div>
+    <header class="kx-bar" id="kx-bar">
       <div class="kx-brand"><span class="kx-logo" aria-hidden="true"></span><div><b>PlateLoop</b><span>Kitchen</span></div></div>
-      <nav class="kx-nav" aria-label="Kitchen">${NAV.map(([id, label, ic]) => `<button data-view="${id}">${ic}<span>${label}</span></button>`).join('')}</nav>
-      <div class="kit-foot"><div id="kit-live"></div><button class="linkish" data-reset>Reset demo</button></div>
-    </aside>
+      <nav class="kx-nav" aria-label="Kitchen"><span class="kx-thumb" id="kx-thumb" aria-hidden="true"></span>${NAV.map(([id, label, ic], i) => `<button data-view="${id}" title="${label} (${i + 1})">${ic}<span>${label}</span></button>`).join('')}</nav>
+      <div class="kx-bar-r"><div id="kit-live"></div><button class="kx-reset" data-reset title="Reset the demo">${SV('<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5"/>')}</button></div>
+    </header>
     <main class="kit-main" id="kit-main"></main>
   </div>`;
-  $$('.kx-nav button', el).forEach(b => b.onclick = () => { ui.view = b.dataset.view; render(true); scrollTo({ top: 0 }); });
+  $$('.kx-nav button', el).forEach(b => b.onclick = () => go(b.dataset.view));
+  // the bar turns to glass and tightens once the page scrolls
+  const bar = $('#kx-bar', el);
+  ui.onScroll = () => bar.classList.toggle('scrolled', scrollY > 8);
+  addEventListener('scroll', ui.onScroll, { passive: true });
+  // 1–6 jump between pages
+  ui.onKey = e => { if (e.target.closest && e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return; const n = +e.key; if (n >= 1 && n <= NAV.length) go(NAV[n - 1][0]); };
+  addEventListener('keydown', ui.onKey);
+  ui.onResize = () => moveThumb(false);
+  addEventListener('resize', ui.onResize);
   render(true);
+  requestAnimationFrame(() => moveThumb(false));
+}
+/** Switch page: the content slides in from the side you're heading to. */
+function go(view) {
+  if (view === ui.view) return;
+  const from = NAV.findIndex(n => n[0] === ui.view), to = NAV.findIndex(n => n[0] === view);
+  ui.dir = to > from ? 1 : -1; ui.view = view;
+  render(true);
+  scrollTo({ top: 0, behavior: PL.reduceMotion ? 'auto' : 'smooth' });
+}
+/** The highlight pill glides to the active page, stretching a little on the way. */
+function moveThumb(animate = true) {
+  const nav = root && $('.kx-nav', root), th = nav && $('#kx-thumb', nav), btn = nav && $(`[data-view="${ui.view}"]`, nav);
+  if (!btn || !th) return;
+  const x = btn.offsetLeft, w = btn.offsetWidth, y = btn.offsetTop, h = btn.offsetHeight;
+  if (!animate || PL.reduceMotion) th.style.transition = 'none';
+  const prev = parseFloat(th.dataset.x || x), grow = Math.abs(prev - x) > 4 && animate && !PL.reduceMotion;
+  th.style.width = w + 'px'; th.style.height = h + 'px';
+  th.style.transform = `translate(${x}px,${y}px)`;
+  th.dataset.x = x;
+  if (grow) th.animate([{ scale: '1 1' }, { scale: '1.12 .86' }, { scale: '1 1' }], { duration: 420, easing: 'ease-out' });
+  if (!animate || PL.reduceMotion) requestAnimationFrame(() => { th.style.transition = ''; });
+  // keep the active item in view in the mobile dock
+  if (nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: x - nav.clientWidth / 2 + w / 2, behavior: animate ? 'smooth' : 'auto' });
 }
 const VIEWS = () => ({ overview, dishes, nutrition, carbon, plan, report });
-/** A new view renders fresh (and animates in); live updates to the overview patch it in place. */
+/** A new view renders fresh (and slides in); live updates to the overview patch it in place. */
 function render(force) {
   if (!root) return;
   $$('.kx-nav button', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
   $('#kit-live', root).innerHTML = liveChip();
   const main = $('#kit-main', root), html = VIEWS()[ui.view]();
   if (!force && main.dataset.view === ui.view && ui.view === 'overview') { const tmp = document.createElement('div'); tmp.innerHTML = html; morph(main, tmp); }
-  else { main.innerHTML = html; main.dataset.view = ui.view; PL.motion(main, 'kitchen:' + ui.view, { force: !!force }); }
+  else {
+    const changed = main.dataset.view !== ui.view;
+    main.innerHTML = html; main.dataset.view = ui.view;
+    if (changed && main.animate && !PL.reduceMotion && ui.dir) main.animate([{ opacity: 0, transform: `translateX(${ui.dir * 28}px)` }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
+    PL.motion(main, 'kitchen:' + ui.view, { force: !!force });
+    moveThumb(changed);
+  }
   wire(main);
   flashChanges(main);
 }
@@ -123,7 +163,7 @@ function overview() {
   const maxKg = Math.max(...top.map(o => o.kg), 1);
   const ins = stats.slice(0, 3).map(r => ({ d: r.d, e: r.e, tip: TREND[r.d.id] ? TREND[r.d.id][2] : '' }));
   return `
-  <header class="kx-head"><div><p class="kx-date">Friday 25 September</p><h1>Overview</h1></div>${liveChip()}</header>
+  <header class="kx-head"><div><p class="kx-date">Friday 25 September</p><h1>Overview</h1></div></header>
 
   ${todo.length ? `<section class="kx-group kx-todo" aria-label="To do">${todo.map(x => `<div class="kx-row"><span class="kx-ic" data-tone="${x.tone}">${x.icon}</span><div class="kx-row-t"><b>${x.t}</b><span>${x.s}</span></div>${x.btn ? `<button class="kx-btn ${x.tone === 'blue' ? 'prim' : ''}" data-todo="${x.id}" ${x.go ? `data-go="${x.go}"` : ''}>${x.btn}</button>` : ''}</div>`).join('')}</section>` : ''}
 
@@ -395,7 +435,7 @@ function wire(main) {
     $('#event', main).onchange = e => { ui.plan.event = e.target.value; refreshPlan(); };
   }
   wireOrder(main);
-  $$('[data-go]', main).forEach(b => b.onclick = () => { ui.view = b.dataset.go; render(true); scrollTo({ top: 0 }); });
+  $$('[data-go]', main).forEach(b => b.onclick = () => go(b.dataset.go));
   $$('[data-todo]', main).forEach(b => b.onclick = () => {
     const id = b.dataset.todo, t = T(); if (b.dataset.go) return;
     if (id === 'sc2') { t.sc2 = 'restarting'; PL.store.save('kitchen'); setTimeout(() => { T().sc2 = 'online'; PL.store.save('kitchen'); PL.toast('Scanner 2 is back online. 6 queued trays synced.'); }, 2600); }
@@ -414,7 +454,7 @@ function wire(main) {
 PL.apps.kitchen = {
   title: 'PlateLoop Kitchen',
   mount,
-  unmount() { root = null; },
+  unmount() { removeEventListener('scroll', ui.onScroll); removeEventListener('keydown', ui.onKey); removeEventListener('resize', ui.onResize); root = null; },
   update() { if (!root) return; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); if (ui.view !== 'overview') scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
   tick(t) { if (root && t % 20 === 0) $$('.kx-live', root).forEach(l => { l.outerHTML = liveChip(); }); },
 };
