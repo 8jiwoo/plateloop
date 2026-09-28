@@ -13,7 +13,7 @@ const lerp = (a, b, k) => a + (b - a) * k;
    anchor/normal are in the scanner's own space (metres, y up, front = +z). view is where the camera goes:
    target, azimuth (theta, around y from +z), polar angle (phi, from straight up) and distance. */
 const PARTS = [
-  { id: 'depth', name: 'Depth camera', line: 'Sees every dish in 3D', anchor: [0, 1.585, .045], normal: [0, -.6, .8],
+  { id: 'depth', name: 'Depth camera', line: 'Sees every dish in 3D', anchor: [0, 1.594, .05], normal: [0, -.6, .8],
     view: { target: [0, 1.56, .02], theta: -.42, phi: 1.82, r: 1.23 },
     what: 'Recognises each food on the tray and measures how much of it there is.',
     how: 'A colour camera picks out today’s dishes while two infrared cameras and a dot projector map the height of the food in every compartment, 0.62 m below. Height over each compartment gives volume, and volume gives grams.',
@@ -126,8 +126,8 @@ function makeAudio() {
 function brushed() {
   const c = document.createElement('canvas'); c.width = c.height = 256; const x = c.getContext('2d');
   x.fillStyle = '#b8bcc0'; x.fillRect(0, 0, 256, 256);
-  for (let i = 0; i < 1400; i++) { const y = Math.random() * 256, a = Math.random() * .12; x.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '40,44,48'},${a})`; x.fillRect(0, y, 256, Math.random() * 1.3 + .3); }
-  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(6, 6); return t;
+  for (let i = 0; i < 2600; i++) { const y = Math.random() * 256, a = Math.random() * .045; x.fillStyle = `rgba(${Math.random() < .5 ? '255,255,255' : '40,44,48'},${a})`; x.fillRect(0, y, 256, Math.random() * .8 + .2); }
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(10, 10); t.anisotropy = 8; return t;
 }
 function makeMats() {
   const BR = brushed();
@@ -221,25 +221,31 @@ function buildScanner(M) {
   const FOOD = [[0x3F8B3A, -.133, -.072, .04], [0xD8E6A8, 0, -.072, .034], [0xF2545B, .133, -.072, .036], [0xF3EDDA, -.133, .072, .046], [0x9C5A2E, 0, .072, .04], [0xE8A25C, .133, .072, .042]];
   FOOD.forEach(([c, x, z, r]) => { const m = add(trayG, new THREE.SphereGeometry(r, 24, 14), M.food(c), x, .012, z); m.scale.set(1, .32, .82); });
 
-  /* --- the column and the camera arm --- */
+  /* --- the column and the camera arm: machined, with crisp edges and fine split lines --- */
   const arm = part('arm');
-  add(arm, rbox(.075, .69, .075, .012, .02), M.alu(), 0, 1.265, -.205);
-  add(arm, rbox(.095, .05, .34, .014, .03), M.alu(), 0, 1.622, -.075);
-  add(arm, rbox(.078, .003, .002, .001, .001), M.graphite(), 0, 1.6, -.205 + .04, 0, 0, 0, false);
+  add(arm, rbox(.068, .69, .068, .0025, .007), M.alu(), 0, 1.262, -.205);
+  // a dark gasket where the column meets the arm
+  add(arm, rbox(.072, .004, .072, .001, .008), M.graphite(), 0, 1.599, -.205, 0, 0, 0, false);
+  // the arm: a flat-topped bar, barely softened at the edges
+  add(arm, rbox(.1, .04, .34, .0025, .005), M.alu(), 0, 1.621, -.075);
+  // split lines along both sides, and a flush black glass face at the front
+  [-1, 1].forEach(sx => add(arm, new THREE.BoxGeometry(.0012, .0016, .31), M.graphite(), sx * .0502, 1.621, -.07, 0, 0, 0, false));
+  add(arm, rbox(.092, .032, .002, .0008, .004), M.glass(), 0, 1.621, .0955, 0, 0, 0, false);
 
-  /* --- the depth camera module under the arm --- */
+  /* --- the depth camera module, flush under the arm --- */
   const dep = part('depth');
-  add(dep, rbox(.086, .012, .14, .004, .02), M.glass(), 0, 1.592, .02);
-  [-.03, .03].forEach(z => { add(dep, new THREE.CylinderGeometry(.0105, .0105, .004, 32), M.graphite(), 0, 1.5855, z); add(dep, new THREE.CylinderGeometry(.0068, .0068, .005, 32), M.lens(), 0, 1.5845, z); });
-  add(dep, new THREE.CylinderGeometry(.0125, .0125, .004, 32), M.graphite(), 0, 1.5855, .02 - .02);
-  add(dep, new THREE.CylinderGeometry(.008, .008, .005, 32), M.lens(), 0, 1.5845, 0);
-  const ring = add(dep, new THREE.TorusGeometry(.0145, .0012, 8, 40), M.led(), 0, 1.5852, 0, Math.PI / 2, 0, 0, false); leds.push(ring);
-  [[.022, .055], [-.022, .055]].forEach(([x, z]) => add(dep, new THREE.CylinderGeometry(.0035, .0035, .004, 16), M.led(0x5A1010), x, 1.5855, z));
-  // status strip on the front of the arm
-  const astrip = add(dep, rbox(.05, .004, .003, .0015, .002), M.led(), 0, 1.622, .097, 0, 0, 0, false); leds.push(astrip);
+  add(dep, rbox(.088, .005, .15, .001, .006), M.glass(), 0, 1.5985, .02);
+  const LY = 1.5955; // just below the glass
+  [-.034, .034].forEach(z => { add(dep, new THREE.CylinderGeometry(.0105, .0105, .0015, 40), M.graphite(), 0, LY, z); add(dep, new THREE.CylinderGeometry(.0072, .0072, .002, 40), M.lens(), 0, LY - .0005, z); });
+  add(dep, new THREE.CylinderGeometry(.0125, .0125, .0015, 40), M.graphite(), 0, LY, 0);
+  add(dep, new THREE.CylinderGeometry(.0085, .0085, .002, 40), M.lens(), 0, LY - .0005, 0);
+  const ring = add(dep, new THREE.TorusGeometry(.0142, .0008, 8, 48), M.led(), 0, LY + .0004, 0, Math.PI / 2, 0, 0, false); leds.push(ring);
+  [[.024, .06], [-.024, .06]].forEach(([x, z]) => add(dep, new THREE.CylinderGeometry(.003, .003, .0015, 20), M.led(0x5A1010), x, LY, z));
+  // status line in the black glass face at the front of the arm
+  const astrip = add(dep, new THREE.BoxGeometry(.05, .0022, .001), M.led(), 0, 1.621, .0969, 0, 0, 0, false); leds.push(astrip);
   // the scan beam, shown while scanning
   const beamM = new THREE.MeshBasicMaterial({ color: 0x46FF9A, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide });
-  const beam = new THREE.Mesh(new THREE.ConeGeometry(.3, .63, 4, 1, true), beamM); beam.userData.part = 'beam'; beam.position.set(0, 1.27, .02); beam.rotation.y = Math.PI / 4; beam.scale.set(1, 1, .72); S.add(beam);
+  const beam = new THREE.Mesh(new THREE.ConeGeometry(.3, .63, 4, 1, true), beamM); beam.userData.part = 'beam'; beam.position.set(0, 1.279, .02); beam.rotation.y = Math.PI / 4; beam.scale.set(1, 1, .72); S.add(beam);
 
   /* --- display on its stand, leaning back 15° --- */
   const disp = part('display');
@@ -567,6 +573,7 @@ function start(el) {
 
   return {
     get kiosk() { return kioskMounted; }, state,
+    look: (v, dur) => flyTo({ target: HERO.target, theta: HERO.theta, phi: HERO.phi, r: heroR(), ...v }, dur), // for testing
     stop() {
       cancelAnimationFrame(raf); ro.disconnect(); removeEventListener('keydown', onKey);
       if (kioskMounted) PL.apps.scanner.unmount();
@@ -589,5 +596,6 @@ PL.apps.model = {
   unmount() { if (X) X.stop(); X = null; root = null; document.body.classList.remove('xp-body'); },
   update(kind, fromSelf) { if (X && X.kiosk && PL.apps.scanner.update) PL.apps.scanner.update(kind, fromSelf); },
   tick(t) { if (X && X.kiosk && PL.apps.scanner.tick) PL.apps.scanner.tick(t); },
+  debug: () => X,
 };
 })();
