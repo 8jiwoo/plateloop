@@ -1,16 +1,15 @@
 """
-Build the seven PlateLoop apps as self-contained HTML files.
+Build the six PlateLoop apps as self-contained HTML files.
 
   python build.py <out_dir>
 
-Outputs seven separate apps: 1-plateloop-scanner-3d.html, 2-plateloop-kiosk.html,
-3-plateloop-kitchen.html, 4-loopi-student-app.html, 5-loopi-care-hospital.html,
-7-loopi-work-office.html and
-8-plateloop-lunch-rush-3d.html (a first-person 3D game of a canteen lunch with the scanner). They have no shared navigation.
-Each file inlines the CSS, the shared core + visuals and its own app, so it runs by
-double-clicking. scanner-3d.html also embeds three.js, the 3D model and the renders, so it
-works offline. All seven share one demo save in the browser, so a tray scanned on the scanner
-screen shows up in the kitchen and student apps open in other tabs.
+Outputs six separate apps: 1-plateloop-scanner-3d.html (PlateLoop Prototype: the explorable 3D scanner
+with the working kiosk on its screen), 3-plateloop-kitchen.html, 4-loopi-student-app.html,
+5-loopi-care-hospital.html, 7-loopi-work-office.html and 8-plateloop-lunch-rush-3d.html (a first-person
+3D game of a canteen lunch with the scanner). They have no shared navigation.
+Each file inlines the CSS, the shared core + visuals and its own app, so it runs by double-clicking.
+The 3D files also embed three.js, so they work offline. All of them share one demo save in the browser,
+so a tray scanned on the scanner's screen shows up in the kitchen and student apps open in other tabs.
 """
 import base64, io, os, sys
 from PIL import Image
@@ -21,8 +20,7 @@ os.makedirs(OUT, exist_ok=True)
 read = lambda p: open(os.path.join(SRC, p), encoding='utf-8').read()
 
 PAGES = {
-    'model':   ('1-plateloop-scanner-3d.html', 'PlateLoop Scanner',  ['vendor/three.min.js', 'vendor/GLTFLoader.js', 'js/model.js']),
-    'scanner': ('2-plateloop-kiosk.html',      'PlateLoop Kiosk',    ['js/scanner.js']),
+    'model':   ('1-plateloop-scanner-3d.html', 'PlateLoop Prototype', ['vendor/three.min.js', 'js/scanner.js', 'js/model.js']),
     'kitchen': ('3-plateloop-kitchen.html',    'PlateLoop Kitchen',  ['js/kitchen.js']),
     'student': ('4-loopi-student-app.html',    'Loopi',              ['js/room.js', 'js/student.js']),
     'care':    ('5-loopi-care-hospital.html',  'Loopi Care',         ['js/health.js', 'js/care.js']),
@@ -65,13 +63,13 @@ BOOT = """
 """
 css = read('css/apple.css')
 fonts = ('<link rel="preconnect" href="https://fonts.googleapis.com">\n<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n'
-         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Silkscreen&display=swap">')
+         '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Silkscreen&display=swap">')
 for app, (fname, title, scripts) in PAGES.items():
     parts = ['<!doctype html>', '<html lang="en">', '<head>', '<meta charset="utf-8">',
              '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">',
              f'<title>{title}</title>', fonts, f'<style>\n{css}\n</style>', '</head>', '<body>', '<div id="root"></div>',
              '<noscript>PlateLoop needs JavaScript to run.</noscript>']
-    if app in ('model', 'lunch'):
+    if app == 'lunch':
         m = read('scanner.gltf.json'); assert '</script' not in m.lower()
         parts.append(f'<script type="application/json" id="model-scanner">{m}</script>')
     for p in ['js/core.js', 'js/visual.js', 'js/game.js'] + scripts:

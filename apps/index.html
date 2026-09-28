@@ -3,7 +3,7 @@
 <title>PlateLoop Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Silkscreen&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Silkscreen&display=swap">
 <link rel="stylesheet" href="css/apple.css">
 <style>
 /* demo-only switcher: the four real apps are separate files with no shared navigation */
@@ -43,12 +43,14 @@
 <script src="js/lunch/screen.js"></script>
 <script src="js/game3d.js"></script>
 <script>
-/* Demo router for the seven apps (#model, #scanner, #kitchen, #student, #care, #work, #lunch) with a floating switcher. */
+/* Demo router for the apps (#model, #kitchen, #student, #care, #work, #lunch) with a floating switcher.
+   #model is PlateLoop Prototype, which runs the kiosk (#scanner) on the 3D scanner's own screen. */
 (() => {
   const { $, apps } = PL;
   const root = $('#root');
   let current = null, name = null, t = 0;
   function open(n) {
+    if (n === 'scanner') { history.replaceState(null, '', '?kiosk#model'); n = 'model'; }
     if (!apps[n]) n = 'model';
     if (n === name) return;
     if (current && current.unmount) current.unmount();
@@ -62,7 +64,7 @@
   }
   const sw = document.createElement('nav');
   sw.className = 'demo-switch'; sw.setAttribute('aria-label', 'Demo: switch app');
-  sw.innerHTML = [['model', 'Scanner'], ['scanner', 'Kiosk'], ['kitchen', 'Kitchen'], ['student', 'Loopi'], ['care', 'Care'], ['work', 'Work'], ['lunch', 'Game']].map(([id, l]) => `<button data-go="${id}">${l}</button>`).join('');
+  sw.innerHTML = [['model', 'Scanner'], ['kitchen', 'Kitchen'], ['student', 'Loopi'], ['care', 'Care'], ['work', 'Work'], ['lunch', 'Game']].map(([id, l]) => `<button data-go="${id}">${l}</button>`).join('');
   sw.onclick = e => { const b = e.target.closest('[data-go]'); if (b) PL.open(b.dataset.go); };
   document.body.appendChild(sw);
   PL.open = n => { if (location.hash !== '#' + n) { try { history.pushState(null, '', '#' + n); } catch (e) {} } open(n); };
