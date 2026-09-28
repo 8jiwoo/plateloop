@@ -27,7 +27,7 @@ const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const NAV = [
   ['overview', 'Overview', SV('<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>')],
   ['plan', 'Purchasing', SV('<path d="M3 4h2l2.5 11h11L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>')],
-  ['dishes', 'Waste by dish', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
+  ['dishes', 'Waste', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
   ['nutrition', 'Nutrition', SV('<path d="M12 21c-4.5-2.5-8-6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 11c0 4-3.5 7.5-8 10Z"/>')],
   ['carbon', 'Carbon', SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/><path d="M9.5 14.5h5"/>')],
   ['report', 'Reports', SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>')],
@@ -51,23 +51,36 @@ function mount(el) {
     <div class="kx-ambient" aria-hidden="true"><i></i><i></i><i></i></div>
     <header class="kx-bar" id="kx-bar">
       <div class="kx-brand"><span class="kx-logo" aria-hidden="true"></span><div><b>PlateLoop</b><span>Kitchen</span></div></div>
-      <nav class="kx-nav" aria-label="Kitchen"><span class="kx-thumb" id="kx-thumb" aria-hidden="true"></span>${NAV.map(([id, label, ic], i) => `<button data-view="${id}" title="${label} (${i + 1})">${ic}<span>${label}</span></button>`).join('')}</nav>
       <div class="kx-bar-r"><div id="kit-live"></div><button class="kx-reset" data-reset title="Reset the demo">${SV('<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v5h5"/>')}</button></div>
     </header>
     <main class="kit-main" id="kit-main"></main>
+    <div class="kx-dock" id="kx-dock">
+      <div class="kx-scrim" data-dock-close></div>
+      <nav class="kx-fan" aria-label="Kitchen pages">${NAV.map(([id, label, ic], i) => { const a = Math.PI * .9 - i / (NAV.length - 1) * Math.PI * .8;
+        return `<button class="kx-fan-b" data-view="${id}" style="--i:${i};--x:${Math.cos(a).toFixed(3)};--y:${(-Math.sin(a)).toFixed(3)}" tabindex="-1"><span class="kx-fan-ic">${ic}</span><span class="kx-fan-l">${label}</span></button>`; }).join('')}</nav>
+      <button class="kx-orb" id="kx-dot" aria-expanded="false" aria-label="Pages"><span class="kx-orb-ic" id="kx-dot-ic"></span><span class="kx-orb-x">${SV('<path d="M6 6l12 12M18 6 6 18"/>')}</span></button>
+    </div>
   </div>`;
-  $$('.kx-nav button', el).forEach(b => b.onclick = () => go(b.dataset.view));
+  $$('.kx-fan-b', el).forEach(b => b.onclick = () => { dock(false); go(b.dataset.view); });
+  $('#kx-dot', el).onclick = () => dock(!ui.dock);
+  $('[data-dock-close]', el).onclick = () => dock(false);
   // the bar turns to glass and tightens once the page scrolls
   const bar = $('#kx-bar', el);
   ui.onScroll = () => bar.classList.toggle('scrolled', scrollY > 8);
   addEventListener('scroll', ui.onScroll, { passive: true });
   // 1–6 jump between pages
-  ui.onKey = e => { if (e.target.closest && e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return; const n = +e.key; if (n >= 1 && n <= NAV.length) go(NAV[n - 1][0]); };
+  ui.onKey = e => { if (e.key === 'Escape' && ui.dock) return dock(false); if (e.target.closest && e.target.closest('input,select,textarea') || e.metaKey || e.ctrlKey || e.altKey) return; const n = +e.key; if (n >= 1 && n <= NAV.length) { dock(false); go(NAV[n - 1][0]); } };
   addEventListener('keydown', ui.onKey);
-  ui.onResize = () => moveThumb(false);
-  addEventListener('resize', ui.onResize);
   render(true);
-  requestAnimationFrame(() => moveThumb(false));
+}
+/** Open or close the page fan above the green dot. */
+function dock(open) {
+  ui.dock = open;
+  const d = root && $('#kx-dock', root); if (!d) return;
+  d.classList.toggle('open', open);
+  $('#kx-dot', d).setAttribute('aria-expanded', String(open));
+  $$('.kx-fan-b', d).forEach(b => { b.tabIndex = open ? 0 : -1; });
+  if (open) { const cur = $(`.kx-fan-b[data-view="${ui.view}"]`, d); if (cur) cur.focus({ preventScroll: true }); }
 }
 /** Switch page: the content slides in from the side you're heading to. */
 function go(view) {
@@ -77,26 +90,13 @@ function go(view) {
   render(true);
   scrollTo({ top: 0, behavior: PL.reduceMotion ? 'auto' : 'smooth' });
 }
-/** The highlight pill glides to the active page, stretching a little on the way. */
-function moveThumb(animate = true) {
-  const nav = root && $('.kx-nav', root), th = nav && $('#kx-thumb', nav), btn = nav && $(`[data-view="${ui.view}"]`, nav);
-  if (!btn || !th) return;
-  const x = btn.offsetLeft, w = btn.offsetWidth, y = btn.offsetTop, h = btn.offsetHeight;
-  if (!animate || PL.reduceMotion) th.style.transition = 'none';
-  const prev = parseFloat(th.dataset.x || x), grow = Math.abs(prev - x) > 4 && animate && !PL.reduceMotion;
-  th.style.width = w + 'px'; th.style.height = h + 'px';
-  th.style.transform = `translate(${x}px,${y}px)`;
-  th.dataset.x = x;
-  if (grow) th.animate([{ scale: '1 1' }, { scale: '1.12 .86' }, { scale: '1 1' }], { duration: 420, easing: 'ease-out' });
-  if (!animate || PL.reduceMotion) requestAnimationFrame(() => { th.style.transition = ''; });
-  // keep the active item in view in the mobile dock
-  if (nav.scrollWidth > nav.clientWidth) nav.scrollTo({ left: x - nav.clientWidth / 2 + w / 2, behavior: animate ? 'smooth' : 'auto' });
-}
 const VIEWS = () => ({ overview, dishes, nutrition, carbon, plan, report });
 /** A new view renders fresh (and slides in); live updates to the overview patch it in place. */
 function render(force) {
   if (!root) return;
-  $$('.kx-nav button', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  $$('.kx-fan-b', root).forEach(b => b.dataset.view === ui.view ? b.setAttribute('aria-current', 'page') : b.removeAttribute('aria-current'));
+  const cur = NAV.find(n => n[0] === ui.view), dotIc = $('#kx-dot-ic', root);
+  if (dotIc && dotIc.dataset.view !== ui.view) { dotIc.innerHTML = cur[2]; dotIc.dataset.view = ui.view; $('#kx-dot', root).setAttribute('aria-label', `Pages, now on ${cur[1]}`); if (dotIc.animate && !PL.reduceMotion) dotIc.animate([{ transform: 'scale(.4) rotate(-40deg)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 450, easing: 'cubic-bezier(.3,1.5,.5,1)' }); }
   $('#kit-live', root).innerHTML = liveChip();
   const main = $('#kit-main', root), html = VIEWS()[ui.view]();
   if (!force && main.dataset.view === ui.view && ui.view === 'overview') { const tmp = document.createElement('div'); tmp.innerHTML = html; morph(main, tmp); }
@@ -105,7 +105,6 @@ function render(force) {
     main.innerHTML = html; main.dataset.view = ui.view;
     if (changed && main.animate && !PL.reduceMotion && ui.dir) main.animate([{ opacity: 0, transform: `translateX(${ui.dir * 28}px)` }, { opacity: 1, transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
     PL.motion(main, 'kitchen:' + ui.view, { force: !!force });
-    moveThumb(changed);
   }
   wire(main);
   flashChanges(main);
@@ -454,7 +453,7 @@ function wire(main) {
 PL.apps.kitchen = {
   title: 'PlateLoop Kitchen',
   mount,
-  unmount() { removeEventListener('scroll', ui.onScroll); removeEventListener('keydown', ui.onKey); removeEventListener('resize', ui.onResize); root = null; },
+  unmount() { removeEventListener('scroll', ui.onScroll); removeEventListener('keydown', ui.onKey); ui.dock = false; root = null; },
   update() { if (!root) return; const y = scrollY, fid = document.activeElement && document.activeElement.id; if (ui.view === 'plan' && fid === 'att') return; render(); if (ui.view !== 'overview') scrollTo({ top: y }); if (fid && $('#' + fid)) $('#' + fid).focus(); },
   tick(t) { if (root && t % 20 === 0) $$('.kx-live', root).forEach(l => { l.outerHTML = liveChip(); }); },
 };
