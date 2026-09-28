@@ -38,6 +38,7 @@ function mount(el) {
         <select id="care-preset">${Object.keys(H.PRESETS).map(p => `<option>${p}</option>`).join('')}</select>
         <button class="btn primary" id="care-serve"></button>
       </div>
+      <section class="ward" id="care-ward" aria-label="Nurse station"></section>
       <button class="linkish" id="care-intro" style="font-size:13px;text-align:left">Show the first-run intro</button>
       <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
     </aside>
@@ -52,6 +53,7 @@ function mount(el) {
   $('#care-serve', el).onclick = () => {
     const P = me(), rec = H.scanPatientMeal(P, ui.preset);
     if (!rec) return PL.toast('All of today\'s meals are scanned.');
+    P.ack = null; // a new meal starts a fresh check
     PL.store.save('care');
     PL.toast(`${mealName(rec.meal)} scanned: ${pct(ate(rec))} eaten, ${rec.n.kcal} kcal.`);
   };
@@ -82,6 +84,7 @@ function render(keep) {
   $('#care-serve', root).textContent = next ? `Scan ${mealName(next).toLowerCase()} tray` : 'Today is done';
   $('#care-serve', root).disabled = !next;
   $('#care-preset', root).value = ui.preset;
+  ward();
   $('#care-top', root).innerHTML = `${PL.V.avatar(P, 36)}<div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div>`;
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   body.innerHTML = ({ today, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
@@ -93,6 +96,35 @@ function render(keep) {
   if (keep) body.scrollTop = y;
   PL.motion(body, `care:${P.id}:${ui.tab}`);
 }
+/* ================================================================ Nurse station: the ward at a glance, with alerts to act on */
+const ACTIONS = {
+  visit: ['Check in', 'checked in', 'They asked how the food tastes and what you’d like instead.'],
+  drink: ['Offer a supplement drink', 'brought a supplement drink', 'A small nutrition drink between meals makes up for what was missed.'],
+  refer: ['Refer to the dietitian', 'asked the dietitian to visit', 'The dietitian will stop by today to adjust your menu.'],
+};
+const NURSE = 'Nurse Aisha';
+function ward() {
+  const box = root && $('#care-ward', root); if (!box) return;
+  const rows = PL.S.care.patients.map(Q => {
+    const D = H.DIETS[Q.diet], tot = sumN(Q.log.filter(l => l.day === H.TODAY)), frac = tot.kcal / D.target.kcal, al = alertFor(Q);
+    return { Q, frac, al };
+  }).sort((a, b) => (b.al && !b.Q.ack) - (a.al && !a.Q.ack));
+  const open = rows.filter(r => r.al && !r.Q.ack).length;
+  box.innerHTML = `<div class="ward-h"><b>Nurse station · Ward 7B</b><span class="${open ? 'ward-n' : 'ward-ok'}">${open ? `${open} alert${open > 1 ? 's' : ''}` : 'All fine'}</span></div>
+    ${rows.map(({ Q, frac, al }) => `<div class="ward-row ${al && !Q.ack ? 'alarm' : ''}">
+      <button class="ward-who" data-open="${Q.id}" aria-pressed="${Q.id === me().id}">${PL.V.avatar(Q, 28)}<span><b>${esc(Q.name)}</b><small>${Q.room} · ${Math.round(frac * 100)}% of today’s energy</small></span><i class="wbar"><i style="width:${Math.min(100, Math.round(frac * 100))}%"></i></i></button>
+      ${al ? (Q.ack ? `<p class="ward-done">✓ ${esc(Q.ack.who)} ${ACTIONS[Q.ack.act][1]} · ${Q.ack.t}</p>`
+        : `<p class="ward-al">${esc(al)}</p><div class="ward-acts">${Object.entries(ACTIONS).map(([k, a]) => `<button class="btn small" data-act="${k}" data-pid="${Q.id}">${a[0]}</button>`).join('')}</div>`) : ''}
+    </div>`).join('')}`;
+  $$('[data-open]', box).forEach(b => b.onclick = () => { PL.S.care.me.patient = b.dataset.open; PL.store.save('me'); });
+  $$('[data-act]', box).forEach(b => b.onclick = () => {
+    const Q = H.patient(b.dataset.pid), last = Q.log[Q.log.length - 1];
+    const [h, m] = (last ? last.t : '12:10').split(':').map(Number), t = h * 60 + m + 25;
+    Q.ack = { act: b.dataset.act, who: NURSE, t: `${Math.floor(t / 60)}:${String(t % 60).padStart(2, '0')}` };
+    PL.store.save('care'); PL.toast(`${Q.name}: ${ACTIONS[Q.ack.act][1]}. The care team can see it.`);
+  });
+}
+
 /* ================================================================ Today */
 const V = PL.V;
 const ALL = Object.values(H.WARD_MENU).flat();
@@ -110,7 +142,9 @@ function today(P) {
     : ['think', `Not much of ${mealName(last.meal).toLowerCase()} was eaten. Tell your nurse if something doesn't taste right.`];
   const alert = alertFor(P), third = P.diet === 'diabetic' ? 'c' : 'na';
   return `
-  ${alert ? `<div class="vtips alert">${V.tip('warn', 'warn', alert, 'Your nurse has been told, and the dietitian will stop by today.')}</div>` : ''}
+  ${alert ? `<div class="vtips ${P.ack ? '' : 'alert'}">${P.ack
+    ? V.tip('heart', 'info', `${esc(P.ack.who)} ${ACTIONS[P.ack.act][1]} at ${P.ack.t}`, ACTIONS[P.ack.act][2])
+    : V.tip('warn', 'warn', alert, 'Your nurse has been told and will come by soon.')}</div>` : ''}
   ${V.guide(expr, line)}
   <div class="vcard"><h3>Today's meals <small>${good} of 3 eaten well</small></h3><div class="meals3">${H.MEALS.map(([id, name, t]) => {
     const r = recs.find(x => x.meal === id), menu = H.wardMenu(id, P.diet);
