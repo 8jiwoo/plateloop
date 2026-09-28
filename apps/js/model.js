@@ -12,7 +12,7 @@ const PARTS = [
   { p: [-0.276, 0.055, 1.285], t: 'Face camera', s: 'The only way students sign in', d: 'Students just look up at the screen. An infrared face camera recognises them in under a second, even in a dim canteen, so there are no cards to lose and no phones needed. It opens the tray before lunch and closes it after. It keeps a match code, never a photo.', spec: 'IR + RGB · under 1 s · on-device' },
   { p: [0.31, -0.19, 0.88], t: 'Weighing platform', s: 'Checks the camera with a scale', d: 'Four load cells weigh the whole tray. If the camera and the scale disagree by more than 10%, the tray is scanned again.', spec: '0–5 kg · ±2 g' },
   { p: [0.08, -0.04, 0.92], t: 'Tray', s: 'Scanned full, then scanned again', d: 'Before: what was served. After: what is left. Eaten = before − after, per dish. The menu is known in advance, so the AI only chooses among today\'s dishes.', spec: 'Standard 6-compartment tray' },
-  { p: [0.585, -0.01, 0.87], t: 'Compost bin', s: 'Scraps go here after the second scan', d: 'The bin weighs scraps in bulk for the compost report. The Kitchen app shows how full it is.', spec: '60 L' },
+  { p: [0.585, -0.01, 0.87], t: 'Food waste bin', s: 'Scraps go here after the second scan', d: 'The bin weighs scraps in bulk for the food waste report. The Kitchen app shows how full it is.', spec: '60 L' },
   { p: [-0.05, -0.235, 0.35], t: 'On-device AI', s: 'Works offline, and photos never leave', d: 'The vision model runs inside the cabinet in about 1.4 s per scan. Face matching happens here too. Only numbers (grams per dish and a student number) are sent to the Kitchen and Student apps.', spec: 'Edge AI module' },
 ];
 const DIMS = [
@@ -76,7 +76,7 @@ function mount(el) {
     </div>
     <h2 class="section-title">Gallery</h2>
     <div class="renders" id="renders">
-      <figure><img src="render_scanner_hero.png" alt="PlateLoop Scanner, full view" loading="lazy"><figcaption>The PlateLoop Scanner with its compost bin</figcaption></figure>
+      <figure><img src="render_scanner_hero.png" alt="PlateLoop Scanner, full view" loading="lazy"><figcaption>The PlateLoop Scanner with its food waste bin</figcaption></figure>
       <figure><img src="render_scanner_detail.png" alt="Close-up of the screen, face camera and tray platform" loading="lazy"><figcaption>Screen, face camera and tray platform</figcaption></figure>
     </div>
   </div>`;

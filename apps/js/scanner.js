@@ -159,7 +159,7 @@ function screen() {
       </div>
       <div class="kio-chips">${chips.map(c => `<span>${c}</span>`).join('')}</div>
       <div class="kio-rank"><div>You're <b>#${r.meRank}</b> in your class${r.meRank < r.meRankBefore ? ` <b>▲ ${r.meRankBefore - r.meRank}</b>` : ''}${g && g.ready ? ' · Loopi is ready to grow!' : ''}</div></div></div>`;
-    ban = banner(null, ['compost', 'Scraps go in the compost bin', 'Then you\'re all done. See you tomorrow!']);
+    ban = banner(null, ['compost', 'Scraps go in the food waste bin', 'Then you\'re all done. See you tomorrow!']);
     extra = `<div class="kio-progress" style="animation-duration:12s"></div><button class="kio-done" id="kio-done">Done</button>`;
   }
   s.innerHTML = `${status}<div class="kio-main">${main}</div>${ban}${extra}`;
