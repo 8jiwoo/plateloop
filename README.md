@@ -16,7 +16,7 @@ People sign in with their face and scan their tray **before** the meal (what was
 | **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: a Tamagotchi fed by real lunches, their tray and healthy plate, class and school leaderboards |
 | **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
 | **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
-| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person 3D game of one school lunch with PlateLoop, with low-poly characters and a foggy, rainy atmosphere: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the compost module, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
+| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person 3D game of one school lunch with PlateLoop, with low-poly characters and a foggy, rainy atmosphere: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the food waste bin, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
 
@@ -42,7 +42,7 @@ apps/                 source for the seven apps
   css/apple.css       design system (light + dark)
   js/core.js          menu, before/after scans, nutrition, storage sync
   js/visual.js        Loopi the guide, food drawings, tray, My Healthy Plate, gauges
-  js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, eggs and the Barn, cooking, worm farm, Healthy Catch, crates, badges)
+  js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, eggs and the Barn, cooking, Healthy Catch, crates, badges)
   js/room.js          Loopi's animated pixel room
   js/health.js        hospital menus, demo people, healthcare report parts
   js/model.js         PlateLoop Scanner 3D page
