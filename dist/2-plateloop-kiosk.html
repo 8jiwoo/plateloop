@@ -122,7 +122,7 @@ td{padding:10px;border-bottom:.5px solid var(--sep);vertical-align:middle}
 tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:right}
 .table-wrap{overflow-x:auto}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(29,29,31,.92);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;box-shadow:var(--shadow);z-index:90;max-width:calc(100% - 32px);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);animation:toastin .38s cubic-bezier(.2,.9,.3,1.15);background:rgba(29,29,31,.92);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;box-shadow:var(--shadow);z-index:90;max-width:calc(100% - 32px);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);text-align:center}
 canvas.px{image-rendering:pixelated;background:#DDE4D4;border-radius:10px;display:block}
 .scanline{animation:scan 1.5s ease-in-out infinite}
 @keyframes scan{0%{transform:translateY(0)}50%{transform:translateY(270px)}100%{transform:translateY(0)}}
@@ -1240,6 +1240,168 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-cross{width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.45)}
 .g3-cross.on{width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border:1.5px solid #7FE0A0;background:none;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
 
+/* ================================================================ motion (see PL.motion in core.js) */
+@property --p{syntax:'<number>';inherits:true;initial-value:0}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0)}}
+.toast.out{opacity:0;transform:translate(-50%,10px);transition:opacity .25s,transform .25s}
+/* rings sweep round from zero when a view opens */
+@keyframes ringfill{from{--p:0}}
+[data-enter] .vr,[data-enter] .vweek i,[data-enter] .hist2 i,[data-enter] .vfood.scored{animation:ringfill 1s cubic-bezier(.2,.8,.2,1) .15s backwards}
+/* everything you can press gives a little */
+.btn,.chip,.seg button,.phone-tabs button,.kit-side button,.demo-switch button,.kio-done{transition:transform .14s cubic-bezier(.3,.7,.4,1.4),background .15s,color .15s,box-shadow .2s,opacity .15s}
+.btn:active:not(:disabled),.chip:active,.seg button:active,.kit-side button:active,.kio-done:active{transform:scale(.95)}
+.phone-tabs button:active svg{transform:scale(.86)}
+.phone-tabs button svg{transition:transform .18s}
+.phone-tabs button[aria-selected="true"] svg{animation:tabpop .42s cubic-bezier(.3,.7,.4,1.6)}
+@keyframes tabpop{0%{transform:scale(.8)}60%{transform:scale(1.14) translateY(-2px)}100%{transform:none}}
+@media (hover:hover){
+  .vcard,.card,.kpi{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+  .kit-main .card:hover,.kit-main .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px -12px rgba(0,0,0,.25)}
+}
+/* a soft shimmer for things that are loading or being measured */
+.pl-shimmer{background:linear-gradient(100deg,var(--fill) 30%,var(--fill2) 50%,var(--fill) 70%);background-size:300% 100%;animation:shimmer 1.3s linear infinite}
+@keyframes shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+
+/* ================================================================ kiosk: when something goes wrong */
+.kio-kicker.warn{color:#E07A00}
+.kio-choices{display:flex;gap:1.4cqw;margin-top:.6cqw}
+.kio-choice{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:1.8cqw;padding:1.5cqw 2.2cqw;font:700 2.2cqw var(--font-d);text-align:left;display:flex;flex-direction:column;gap:.3cqw;transition:transform .14s,background .15s}
+.kio-choice small{font:500 1.45cqw var(--font);color:#6E6E73}
+.kio-choice.primary{background:#34C759;color:#fff}.kio-choice.primary small{color:rgba(255,255,255,.85)}
+.kio-choice:active{transform:scale(.96)}
+.kio-alt{position:absolute;right:3.2cqw;bottom:25.5%;border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.8cqw 1.6cqw .8cqw 1cqw;font:600 1.45cqw var(--font);display:flex;align-items:center;gap:.7cqw}
+.kio-alt svg{width:2.4cqw;height:2.4cqw}
+.kio-codewrap{grid-column:1/-1;display:grid;grid-template-columns:1.25fr 1fr;gap:4cqw;align-items:center;padding:0 2cqw}
+.kio-codeinfo{display:flex;flex-direction:column;gap:1.1cqw}
+.kio-codeinfo .kio-title{font-size:4cqw}
+.kio-cls{display:flex;gap:.7cqw;flex-wrap:wrap}
+.kio-cls button{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.6cqw 1.5cqw;font:600 1.6cqw var(--font)}
+.kio-cls button[aria-pressed="true"]{background:#1D1D1F;color:#fff}
+.kio-code{display:flex;align-items:baseline;gap:1.4cqw;font:700 6cqw var(--font-d);letter-spacing:.06em}
+.kio-code span{font-size:3cqw;color:#8E8E93;letter-spacing:0}
+.kio-code b.ph{color:#D1D1D6}
+.kio-code-err{color:#D70015;font:600 1.6cqw var(--font);margin:0}
+.kio-demo-hint{font-size:1.35cqw;color:#8E8E93;margin:0}
+.kio-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:1cqw}
+.kio-keys button{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:1.6cqw;aspect-ratio:1.55;font:600 2.8cqw var(--font-d);transition:transform .1s,background .15s}
+.kio-keys button.ok{background:#34C759;color:#fff;font-size:2.2cqw}
+.kio-keys button.del{background:transparent;font-size:2.4cqw}
+.kio-keys button:active{transform:scale(.9);background:#D1D1D6}
+.kio-keys button.hit{animation:khit .32s ease-out}
+@keyframes khit{0%{transform:scale(.88);background:#C7C7CC}100%{transform:none}}
+.kio-handic{width:12cqw;height:12cqw;color:#E07A00}
+.kio-handic svg{width:100%;height:100%;overflow:visible}
+.a-lift{transform-box:fill-box;transform-origin:center;animation:klift 1.3s ease-in-out infinite}
+@keyframes klift{0%,100%{transform:translateY(0)}50%{transform:translateY(-22%)}}
+.kstep.on .a-lift{animation:klift 1.3s ease-in-out infinite}
+.kio-est{background:#FFF4E0;color:#7A4B00;border-radius:1.4cqw;padding:1cqw 1.4cqw;font-size:1.45cqw;line-height:1.35}
+.kio-edge{margin-top:12px;padding-top:12px;border-top:.5px dashed var(--sep)}
+.kio-drawer .kio-demo.kio-edge{grid-template-columns:1.3fr 1fr 1.2fr}
+.kio-check{display:flex;align-items:center;min-height:36px}
+.switch-line{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--label)!important;margin:0!important;cursor:pointer}
+.switch-line input{width:18px;height:18px;accent-color:var(--tint)}
+@media (max-width:980px){.kio-drawer .kio-demo.kio-edge{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.kio-drawer .kio-demo.kio-edge{grid-template-columns:1fr}}
+
+/* ================================================================ first-run intro (PL.onboard) */
+.onb{position:absolute;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:54px 22px calc(26px + env(safe-area-inset-bottom,0px));animation:onbin .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes onbin{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.onb-top{display:grid;grid-template-columns:40px 1fr 56px;align-items:center}
+.onb-back{border:0;background:var(--fill);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--label)}
+.onb-skip{border:0;background:none;color:var(--label2);font-weight:600;font-size:14px;justify-self:end}
+.onb-dots{display:flex;gap:6px;justify-content:center}
+.onb-dots i{width:7px;height:7px;border-radius:99px;background:var(--fill2);transition:width .35s cubic-bezier(.2,.8,.2,1),background .35s}
+.onb-dots i.on{width:22px;background:var(--tint)}.onb-dots i.past{background:color-mix(in srgb,var(--tint) 45%,var(--fill2))}
+.onb-page{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;overflow-y:auto;padding:10px 0}
+.onb-page h2{font-size:27px;letter-spacing:-.03em}
+.onb-page > p{color:var(--label2);font-size:15.5px;line-height:1.45;max-width:31ch}
+.onb-art{min-height:120px;display:grid;place-items:center;margin-bottom:6px}
+.onb-art > .vicon{width:88px;height:88px;border-radius:26px}
+.onb-art > .vicon svg{width:50px;height:50px}
+.onb-art .vrings{gap:14px}
+.onb-steps{display:flex;flex-direction:column;gap:10px;width:100%;max-width:290px}
+.onb-steps > div{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;text-align:left;background:var(--bg2);border-radius:16px;padding:10px 12px;box-shadow:var(--shadow-s)}
+.onb-steps .vicon{grid-row:1/3}.onb-steps b{font-size:15px}.onb-steps span{font-size:12.5px;color:var(--label2)}
+.onb-steps > div{animation:onbstep .5s cubic-bezier(.2,.8,.2,1) backwards}
+.onb-steps > div:nth-child(2){animation-delay:.12s}.onb-steps > div:nth-child(3){animation-delay:.24s}
+@keyframes onbstep{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.onb-prefs{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;margin-top:4px}
+.onb-pref{display:flex;align-items:center;gap:12px;background:var(--bg2);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow-s);cursor:pointer}
+.onb-pref span{flex:1;display:flex;flex-direction:column;gap:2px}.onb-pref b{font-size:14.5px}.onb-pref small{font-size:12px;color:var(--label2);line-height:1.35}
+.onb-pref input,.switch-row input[role="switch"]{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:99px;background:var(--fill2);position:relative;flex:none;cursor:pointer;transition:background .2s;margin:0}
+.onb-pref input::after,.switch-row input[role="switch"]::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);transition:transform .25s cubic-bezier(.3,.7,.4,1.3)}
+.onb-pref input:checked,.switch-row input[role="switch"]:checked{background:var(--tint)}
+.onb-pref input:checked::after,.switch-row input[role="switch"]:checked::after{transform:translateX(18px)}
+.onb-agree{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--label2);line-height:1.4;padding:8px 4px 0;cursor:pointer}
+.onb-agree input{width:20px;height:20px;accent-color:var(--tint);flex:none;margin:0}
+.onb-list{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:6px;text-align:left}
+.onb-list li{background:var(--bg2);border-radius:12px;padding:9px 12px;font-size:13.5px;color:var(--label2);box-shadow:var(--shadow-s)}
+.onb-list b{color:var(--label)}
+.onb-goals{display:flex;flex-direction:column;gap:7px;width:100%;text-align:left}
+.onb-goals label{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow-s);cursor:pointer;transition:box-shadow .2s,transform .15s}
+.onb-goals input{accent-color:var(--indigo);margin-top:3px;flex:none}
+.onb-goals span{display:flex;flex-direction:column;gap:1px}.onb-goals b{font-size:14.5px}.onb-goals small{font-size:12px;color:var(--label2);line-height:1.35}
+.onb-goals label:has(input:checked){box-shadow:0 0 0 2px var(--indigo)}
+.onb-foot{padding-top:12px}
+.onb-next{width:100%;padding:14px;font-size:17px;border-radius:16px}
+.onb-next:disabled{opacity:.4}
+.care .onb-dots i.on,.care .onb-pref input:checked{background:var(--blue)}
+.work .onb-dots i.on,.work .onb-pref input:checked{background:var(--indigo)}
+.sw-sub{display:block;font-size:12px;color:var(--label3);font-weight:400;margin-top:1px}
+.care .phone.lg .phone-body{zoom:1.16}
+@media (max-width:760px){.onb{position:fixed;padding-top:64px}}
+
+/* ================================================================ Loopi Care: nurse station (demo sidebar) */
+.ward{background:var(--bg2);border-radius:14px;padding:12px;box-shadow:var(--shadow-s);display:flex;flex-direction:column;gap:8px}
+.ward-h{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.ward-n{background:#FF9F0A;color:#fff;font-weight:700;font-size:11.5px;padding:2px 8px;border-radius:99px;animation:wardp 1.8s ease-in-out infinite}
+@keyframes wardp{50%{box-shadow:0 0 0 5px rgba(255,159,10,.18)}}
+.ward-ok{color:var(--tint-ink);font-weight:600;font-size:12px}
+.ward-row{border-radius:12px;padding:6px;transition:background .25s}
+.ward-row.alarm{background:color-mix(in srgb,#FF9F0A 11%,transparent)}
+.ward-who{width:100%;border:0;background:none;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:9px;row-gap:5px;align-items:center;text-align:left;padding:2px;border-radius:10px}
+.ward-who[aria-pressed="true"] b{color:var(--blue)}
+.ward-who .av-circle{grid-row:1/3}
+.ward-who span{display:flex;flex-direction:column}.ward-who b{font-size:13.5px}.ward-who small{font-size:11.5px;color:var(--label2)}
+.wbar{height:4px;border-radius:99px;background:var(--fill2);overflow:hidden;display:block}
+.wbar i{display:block;height:100%;background:var(--blue);border-radius:99px}
+.ward-al{font-size:12px;color:#C25E00;font-weight:600;margin:6px 2px 6px 39px}
+.ward-acts{display:flex;flex-wrap:wrap;gap:5px;margin-left:37px}
+.ward-acts .btn{font-size:11.5px;padding:5px 9px}
+.ward-done{font-size:12px;color:var(--tint-ink);font-weight:600;margin:6px 2px 2px 39px;animation:fade .4s}
+
+/* ================================================================ Kitchen: needs attention */
+.inbox{margin-bottom:16px}
+.tasks{display:flex;flex-direction:column;margin-top:8px}
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:.5px solid var(--sep);transition:opacity .3s}
+.task:first-child{border-top:0}
+.task b{display:block;font-size:14.5px}.task span{font-size:13px;color:var(--label2);line-height:1.4}
+.task-dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.task[data-tone="blue"]{--c:var(--blue)}.task[data-tone="orange"]{--c:var(--orange)}.task[data-tone="yellow"]{--c:#E8B400}.task[data-tone="red"]{--c:var(--red)}
+.task:not(.done) .task-dot{box-shadow:0 0 0 0 var(--c);animation:taskp 2s ease-out infinite}
+@keyframes taskp{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 50%,transparent)}80%,100%{box-shadow:0 0 0 7px transparent}}
+.task.done{opacity:.62}.task.done .task-dot{background:var(--tint)}
+.task-ok{width:26px;height:26px;border-radius:50%;background:var(--tint-soft);color:var(--tint-ink);display:grid;place-items:center;font-weight:700;animation:pop .4s cubic-bezier(.2,.9,.3,1.3)}
+.task.doing{opacity:.5;transform:translateX(6px);transition:opacity .25s,transform .25s}
+@media (max-width:640px){.task{grid-template-columns:auto 1fr}.task .btn,.task .task-ok{grid-column:2;justify-self:start}}
+/* Kiosk: the kitchen's reminder while trays are still out */
+.kio-remind{position:absolute;left:50%;transform:translateX(-50%);top:1.2cqw;white-space:nowrap;display:flex;align-items:center;gap:1cqw;background:#FFF6D6;color:#5A4300;border-radius:99cqw;padding:.7cqw 1.6cqw .7cqw 1cqw;font-size:1.45cqw;animation:kremind 2.4s ease-in-out infinite}
+.kio-remind svg{width:2.6cqw;height:2.6cqw}
+@keyframes kremind{0%,100%{box-shadow:0 0 0 0 rgba(255,204,0,.5)}50%{box-shadow:0 0 0 .8cqw rgba(255,204,0,0)}}
+
+/* ================================================================ in-phone notification (PL.notify) */
+.pnote{position:absolute;left:10px;right:10px;top:52px;z-index:70;border:0;text-align:left;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:20px;background:color-mix(in srgb,var(--bg2) 82%,transparent);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);box-shadow:0 12px 32px -10px rgba(0,0,0,.45),0 0 0 .5px var(--sep);color:var(--label);animation:pnotein .55s cubic-bezier(.2,.9,.25,1.15)}
+.pnote.out{transform:translateY(-130%);opacity:0;transition:transform .3s ease-in,opacity .3s}
+@keyframes pnotein{from{transform:translateY(-140%)}to{transform:none}}
+.pnote-ic{width:38px;height:38px;border-radius:10px;background:var(--tint-soft);display:grid;place-items:center;flex:none;overflow:hidden}
+.pnote-ic svg{width:34px;height:34px}
+.pnote-tx{display:flex;flex-direction:column;min-width:0}
+.pnote-app{font-size:11px;color:var(--label3);text-transform:uppercase;letter-spacing:.04em;display:flex;justify-content:space-between}
+.pnote-app em{font-style:normal;text-transform:none;letter-spacing:0}
+.pnote b{font-size:14px}.pnote-tx > span:last-child:not(.pnote-app){font-size:12.5px;color:var(--label2);line-height:1.35}
+@media (max-width:760px){.pnote{position:fixed;top:60px}}
+.frow .est{font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-soft);padding:1px 6px;border-radius:99px;margin-left:4px}
+
 </style>
 </head>
 <body>
@@ -1264,8 +1426,42 @@ PL.esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '
 PL.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rng = PL.rng = seed => { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
 PL.toast = msg => {
+  document.querySelectorAll('.toast').forEach(o => o.remove());
   const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
-  document.body.appendChild(t); setTimeout(() => t.remove(), 3600);
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 260); }, 3400);
+};
+
+/* ------------------------------------------------------------ motion: every app calls PL.motion(container, key) after it
+   renders. When the key changes (a new tab, view or screen), cards rise in one after another, bars and rings fill from
+   zero and numbers count up. Re-renders with the same key (live updates) stay still, so nothing flickers. */
+const COUNT = /^([^\d-]*)(-?[\d,]*\.?\d+)(.*)$/;
+PL.countUp = (el, dur = 700, delay = 0) => {
+  const txt = el.textContent.trim(), m = COUNT.exec(txt); if (!m || el.children.length || /\d:\d|#/.test(txt)) return; // not clock times or ranks
+  const [, pre, raw, post] = m, to = parseFloat(raw.replace(/,/g, '')), dec = (raw.split('.')[1] || '').length, comma = raw.includes(',');
+  if (!isFinite(to) || Math.abs(to) < 2 && !dec) return;
+  const show = v => pre + (comma ? v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : v.toFixed(dec)) + post;
+  const t0 = performance.now() + delay; el.textContent = show(0);
+  const step = now => { if (!el.isConnected) return; const k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 3); el.textContent = show(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = show(to); };
+  requestAnimationFrame(step);
+  setTimeout(() => { if (el.isConnected) el.textContent = show(to); }, delay + dur + 400); // background tabs pause frames
+};
+const lastKey = new WeakMap();
+const RISE = '.vcard,.card,.kpi,.vtip,.vring,.insight,.kio-meta>div,.kio-chips>span,.kio-steps>div,.g-row,.lbrow,.hplate figure,.slot-card,.pl-rise';
+PL.motion = (el, key, opts = {}) => {
+  if (!el || PL.reduceMotion || !el.animate) return;
+  if (lastKey.get(el) === key && !opts.force) return;
+  lastKey.set(el, key);
+  el.dataset.enter = ''; clearTimeout(el._enterT); el._enterT = setTimeout(() => delete el.dataset.enter, 1300);
+  if (opts.slide) el.animate([{ opacity: 0, transform: `translateX(${opts.slide * 18}px)` }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  [...el.querySelectorAll(RISE)].filter(n => !n.closest('[data-still]')).slice(0, 18).forEach((n, i) =>
+    n.animate([{ opacity: 0, transform: 'translateY(14px) scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 480, delay: 40 + i * 45, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+  el.querySelectorAll('i[style*="width:"],b[style*="width:"]').forEach((n, i) => {
+    if (n.closest('[data-still]')) return;
+    n.style.transformOrigin = 'left center';
+    n.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: 750, delay: 120 + Math.min(i, 14) * 35, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+  });
+  [...el.querySelectorAll('.num,.kpi .v,.big-num')].slice(0, 40).forEach((n, i) => { if (!n.closest('[data-still]')) PL.countUp(n, 750, 80 + Math.min(i, 10) * 30); });
 };
 
 /* ------------------------------------------------------------ constants */
@@ -1716,6 +1912,68 @@ PL.icons = {
   loop: '<svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="var(--mint)" stroke-width="4"/><path d="M16 3a13 13 0 0 1 13 13" fill="none" stroke="var(--persim)" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="16" r="5" fill="currentColor"/></svg>',
 };
 PL.backLink = (label = 'All apps') => `<a class="backlink" href="#home">${PL.icons.back}<span>${label}</span></a>`;
+
+/* ------------------------------------------------------------ a push notification that slides down inside the phone.
+   o: { app, title, text, icon (html), onTap }. Tapping it runs onTap; it leaves by itself after a few seconds. */
+PL.notify = (host, o) => {
+  if (!host) return PL.toast(o.title + ' ' + (o.text || ''));
+  host.querySelectorAll('.pnote').forEach(n => n.remove());
+  const n = document.createElement('button'); n.className = 'pnote'; n.setAttribute('role', 'status');
+  n.innerHTML = `<span class="pnote-ic">${o.icon || ''}</span><span class="pnote-tx"><span class="pnote-app">${PL.esc(o.app || 'PlateLoop')}<em>now</em></span><b>${PL.esc(o.title)}</b>${o.text ? `<span>${PL.esc(o.text)}</span>` : ''}</span>`;
+  host.appendChild(n);
+  const bye = () => { if (!n.isConnected) return; n.classList.add('out'); setTimeout(() => n.remove(), 320); };
+  n.onclick = () => { bye(); if (o.onTap) o.onTap(); };
+  setTimeout(bye, o.ms || 5200);
+  if (navigator.vibrate && o.buzz) try { navigator.vibrate(40); } catch (e) {}
+};
+
+/* ------------------------------------------------------------ first-run intro, inside the phone frame.
+   steps: [{ art, title, text, body, cta, consent }]. The explanation steps can be skipped, the consent step can't:
+   'Skip' jumps to it. Inputs with data-pref are handed to done() as { name: value }. Seen once per app. */
+const seenKey = key => 'plateloop-intro-' + key;
+PL.introSeen = key => { try { return localStorage.getItem(seenKey(key)) === '1'; } catch (e) { return false; } };
+PL.introReset = key => { try { localStorage.removeItem(seenKey(key)); } catch (e) {} };
+PL.onboard = (host, key, steps, done) => {
+  if (!host) return;
+  host.querySelectorAll('.onb').forEach(o => o.remove());
+  const el = document.createElement('div'); el.className = 'onb'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Welcome');
+  host.appendChild(el);
+  let i = 0;
+  const consentAt = steps.findIndex(s => s.consent), last = steps.length - 1;
+  const prefs = () => Object.fromEntries([...el.querySelectorAll('[data-pref]')].map(x => [x.dataset.pref, x.type === 'checkbox' ? x.checked : x.value]));
+  const kept = {};
+  const paint = dir => {
+    Object.assign(kept, prefs());
+    const s = steps[i], can = !s.consent || el.dataset.agree === '1';
+    el.innerHTML = `<div class="onb-top">${i ? `<button class="onb-back" data-onb="back" aria-label="Back">${PL.icons.back}</button>` : '<span></span>'}
+      <div class="onb-dots">${steps.map((_, j) => `<i class="${j === i ? 'on' : j < i ? 'past' : ''}"></i>`).join('')}</div>
+      ${i < consentAt ? '<button class="onb-skip" data-onb="skip">Skip</button>' : '<span></span>'}</div>
+      <div class="onb-page"><div class="onb-art">${s.art || ''}</div><h2>${s.title}</h2>${s.text ? `<p>${s.text}</p>` : ''}${s.body || ''}</div>
+      <div class="onb-foot"><button class="btn primary onb-next" data-onb="next" ${can ? '' : 'disabled'}>${s.cta || (i === last ? 'Get started' : 'Continue')}</button></div>`;
+    Object.entries(kept).forEach(([n, v]) => { const x = el.querySelector(`[data-pref="${n}"]`); if (x) { if (x.type === 'checkbox') x.checked = v; else x.value = v; } });
+    const agree = el.querySelector('[data-agree]');
+    if (agree) { agree.checked = el.dataset.agree === '1'; agree.onchange = () => { el.dataset.agree = agree.checked ? '1' : ''; el.querySelector('.onb-next').disabled = !agree.checked; }; }
+    if (dir && el.animate && !PL.reduceMotion) {
+      el.querySelector('.onb-page').animate([{ opacity: 0, transform: `translateX(${dir * 36}px)` }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      const art = el.querySelector('.onb-art'); if (art) art.animate([{ transform: 'scale(.86)' }, { transform: 'scale(1.04)', offset: .7 }, { transform: 'none' }], { duration: 480, easing: 'ease-out' });
+    }
+    const nx = el.querySelector('.onb-next'); if (nx && !nx.disabled) nx.focus({ preventScroll: true });
+  };
+  el.onclick = e => {
+    const b = e.target.closest('[data-onb]'); if (!b) return;
+    const a = b.dataset.onb;
+    if (a === 'back' && i > 0) { i--; paint(-1); }
+    else if (a === 'skip') { i = consentAt >= 0 ? consentAt : last; paint(1); }
+    else if (a === 'next') {
+      if (i < last) { i++; paint(1); return; }
+      Object.assign(kept, prefs());
+      try { localStorage.setItem(seenKey(key), '1'); } catch (err) {}
+      const close = () => { el.remove(); if (done) done(kept); };
+      if (el.animate && !PL.reduceMotion) el.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(1.04)' }], { duration: 260, easing: 'ease-in' }).onfinish = close; else close();
+    }
+  };
+  paint(0);
+};
 })();
 
 </script>
@@ -2188,6 +2446,8 @@ const ICON = {
   check: I('<circle cx="20" cy="20" r="13" stroke-width="2.4"/><path class="a-check" d="M13.5 20.5l4.5 4.5 8.5-9" stroke-width="2.8"/>'),
   lunch: I('<path d="M12 6v9a3 3 0 0 0 6 0V6M15 6v28M28 6c-3 3-4 8-4 12h4v16" stroke-width="2.4"/>'),
   compost: I('<path class="a-drop" d="M20 3v8M16 8l4 4 4-4" stroke-width="2.4"/><path d="M10 16h20l-2 18H12Z" stroke-width="2.4"/><path d="M16 22v7M24 22v7" stroke-width="2"/>'),
+  keypad: I('<rect x="8" y="5" width="24" height="30" rx="4" stroke-width="2.4"/><path d="M14 13h.1M20 13h.1M26 13h.1M14 19h.1M20 19h.1M26 19h.1M14 25h.1M20 25h.1M26 25h.1" stroke-width="3.4"/>'),
+  hand: I('<g class="a-lift"><path d="M14 22V10a2 2 0 0 1 4 0v9M18 18V7a2 2 0 0 1 4 0v11M22 18V9a2 2 0 0 1 4 0v11M26 20v-6a2 2 0 0 1 4 0v8c0 6-4 10-9 10h-2c-4 0-6-2-8-5l-4-6a2 2 0 0 1 3-3l4 3" stroke-width="2.2"/></g><path d="M5 37h30" stroke-width="2.4"/>'),
 };
 const STEPS = [['face', 'Look at the camera', 'above the screen'], ['tray', 'Place your tray', 'before and after lunch'], ['check', 'Wait for the chime', 'about two seconds']];
 const banner = (active, solo) => solo
@@ -2195,7 +2455,12 @@ const banner = (active, solo) => solo
   : `<div class="kio-banner">${STEPS.map(([ic, t, s], i) => `<div class="kstep ${i === active ? 'on' : ''}" data-step="${i}"><span class="ic">${ICON[ic]}</span><span><span class="n">${i + 1}</span><b>${t}</b><small>${s}</small></span></div>`).join('')}</div>`;
 const nbars = n => `<div class="kio-nut">${PL.NUTRIENTS.map(([k, label, unit]) => { const st = PL.nStatus(k, n[k]); return `<div class="${st}"><span>${label}</span><i><b style="width:${Math.min(100, n[k] / PL.TARGET[k] / 1.5 * 100)}%"></b><em style="left:${100 / 1.5}%"></em></i><strong class="num">${n[k]}${unit === 'g' ? ' g' : ''}</strong></div>`; }).join('')}</div>`;
 
-const k = { mode: 'idle', sid: 's1', portion: 'M', preset: 'Tried everything', phase: null, eat: null, before: null, result: null, step: 0, timers: [], bi: 0 };
+const k = { mode: 'idle', sid: 's1', portion: 'M', preset: 'Tried everything', phase: null, eat: null, before: null, result: null, step: 0, timers: [], bi: 0,
+  // what can go wrong at the scanner (demo): face camera, scale, and a student who skipped the first scan
+  face: 'ok', scale: 'ok', skip: false, method: 'face', tries: 0, handDone: false, code: '', codeCls: '3B', codeErr: '' };
+const CLASSES = ['3A', '3B', '3C', '3D', '3E', '3F'];
+/** a student's register number in their class (what they type if they don't use face sign-in) */
+const regNo = st => PL.S.students.filter(s => s.cls === st.cls).indexOf(st) + 1;
 let root = null;
 const later = (fn, ms) => k.timers.push(setTimeout(fn, PL.reduceMotion ? Math.min(ms, 250) : ms));
 const clearTimers = () => { k.timers.forEach(clearTimeout); k.timers = []; };
@@ -2219,6 +2484,11 @@ function mount(el) {
         <div><label for="kio-preset">How they eat</label><select id="kio-preset">${[...Object.keys(PRESETS), 'Clean plate', 'Random'].map(p => `<option>${p}</option>`).join('')}</select></div>
         <div><button class="btn primary big" id="kio-tap" style="padding:10px"></button></div>
       </div>
+      <div class="kio-demo kio-edge">
+        <div><label for="kio-face">Face camera</label><select id="kio-face"><option value="ok">Recognises them</option><option value="miss">Can't find them (mask, lighting)</option><option value="optout">They opted out of face sign-in</option></select></div>
+        <div><label for="kio-scale">Scale</label><select id="kio-scale"><option value="ok">Reads the tray</option><option value="hand">A hand is on the tray</option></select></div>
+        <div class="kio-check"><label class="switch-line"><input type="checkbox" id="kio-skip"> Skipped the before-lunch scan</label></div>
+      </div>
       <div class="kio-note"><p class="hint" id="kio-progress"></p><div class="row"><button class="btn small" id="kio-rest">Scan the whole class</button><button class="btn small ghost" data-reset>Reset demo</button></div></div>
     </details>
   </div>`;
@@ -2227,6 +2497,9 @@ function mount(el) {
   $('#kio-sid', el).onchange = e => { k.sid = e.target.value; controls(); };
   $('#kio-preset', el).onchange = e => { k.preset = e.target.value; };
   $('#kio-tap', el).onclick = tap;
+  $('#kio-face', el).onchange = e => { k.face = e.target.value; };
+  $('#kio-scale', el).onchange = e => { k.scale = e.target.value; };
+  $('#kio-skip', el).onchange = e => { k.skip = e.target.checked; controls(); };
   $('#kio-rest', el).onclick = () => { const n = PL.scanRestOfClass(); PL.store.save('scan'); PL.toast(n ? `${n} students scanned before and after lunch.` : 'Everyone in class 3B is done.'); };
   controls(); screen();
 }
@@ -2239,32 +2512,91 @@ function controls() {
   $$('#kio-portion button', root).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.p === k.portion)));
   $('#kio-preset', root).value = k.preset;
   const ph = phaseOf(PL.student(k.sid));
-  $('#kio-tap', root).textContent = { before: 'Walk up · before lunch', after: 'Walk up · after lunch', done: 'Walk up · already done' }[ph];
+  $('#kio-tap', root).textContent = { before: k.skip ? 'Walk up · after lunch (no first scan)' : 'Walk up · before lunch', after: 'Walk up · after lunch', done: 'Walk up · already done' }[ph];
+  $('#kio-face', root).value = k.face; $('#kio-scale', root).value = k.scale; $('#kio-skip', root).checked = k.skip;
+  $('#kio-skip', root).disabled = ph !== 'before';
   const cls = PL.S.students.filter(s => s.cls === '3B');
   const eating = cls.filter(s => phaseOf(s) === 'after').length, done = cls.filter(s => s.scanned).length;
   $('#kio-progress', root).textContent = `Class 3B: ${eating} eating, ${done} of 28 done. PlateLoop Kitchen and Loopi update as you scan.`;
   $('#kio-rest', root).disabled = done >= 28;
 }
 
-function tap() {
-  clearTimers();
+/** A student walks up. The happy path is face → hello → scan → result; each step has a way out when
+ *  something goes wrong, so nobody is ever stuck at the scanner holding a tray. */
+function prep() {
   const st = PL.student(k.sid);
   k.phase = phaseOf(st);
-  if (k.phase === 'done') { k.mode = 'already'; screen(); later(idle, 4000); return; }
+  // skipped the first scan: the after scan still works, using a regular portion as the estimate of what was served
+  if (k.phase === 'before' && k.skip) k.phase = 'after';
   if (k.phase === 'after') k.eat = k.preset === 'Random'
     ? Object.fromEntries(MENU.map(d => [d.id, Math.round(clamp(1 - PL.TYPICAL_LEFT[d.id] * Math.random() * 1.8, 0, 1) * 20) * 5]))
     : k.preset === 'Clean plate' ? Object.fromEntries(MENU.map(d => [d.id, 100])) : { ...PRESETS[k.preset] };
+  k.method = 'face'; k.tries = 0; k.handDone = false;
+}
+const already = () => { k.mode = 'already'; screen(); later(idle, 4000); };
+function tap(useCode) {
+  clearTimers(); prep();
+  if (useCode === true || k.face === 'optout' || PL.student(k.sid).faceOff) codeEntry();
+  else if (k.phase === 'done') already();
+  else lookForFace();
+}
+function lookForFace() {
   k.mode = 'face'; screen();
-  later(() => { k.mode = 'hello'; screen(); }, 1300);
-  later(() => { k.mode = 'scan'; k.step = 0; screen(); }, 2800);
-  later(() => { k.step = 1; screen(); }, 3400);
-  later(() => { k.step = 2; screen(); }, 4000);
-  later(() => {
-    if (k.phase === 'before') { k.before = PL.scanBefore(k.sid, k.portion, 'face'); k.mode = 'fed'; later(idle, 9000); }
-    else { k.result = PL.scanAfter(k.sid, k.eat, 'face'); k.mode = 'result'; later(idle, 12000); }
-    screen();
-    PL.store.save('scan');
-  }, 4600);
+  if (k.face === 'miss' && k.tries === 0) later(() => { k.mode = 'noface'; screen(); }, 2400);
+  else later(hello, 1300);
+}
+function hello() { k.mode = 'hello'; screen(); later(scan, 1500); }
+function scan() {
+  k.mode = 'scan'; k.step = 0; screen();
+  later(() => { k.step = 1; screen(); }, 600);
+  if (k.scale === 'hand' && !k.handDone) {
+    // the weight keeps changing: someone is still holding the tray
+    later(() => { k.mode = 'hand'; screen(); }, 1150);
+    later(() => { k.handDone = true; scan(); }, 4200);
+    return;
+  }
+  later(() => { k.step = 2; screen(); }, 1200);
+  later(finish, 1800);
+}
+function finish() {
+  if (k.phase === 'before') { k.before = PL.scanBefore(k.sid, k.portion, k.method); k.mode = 'fed'; later(idle, 9000); }
+  else { k.result = PL.scanAfter(k.sid, k.eat, k.method); k.mode = 'result'; later(idle, k.result.estimated ? 15000 : 12000); }
+  if (k.skip) { k.skip = false; controls(); }
+  screen();
+  PL.store.save('scan');
+}
+/** Sign in with class and register number instead of a face. In the demo it types itself unless you tap first. */
+function codeEntry() {
+  clearTimers();
+  const st = PL.student(k.sid);
+  k.mode = 'code'; k.code = ''; k.codeErr = ''; k.codeCls = st.cls; k.typed = false; screen();
+  const want = String(regNo(st)).padStart(2, '0');
+  [...want].forEach((d, i) => later(() => { if (!k.typed) press(d, true); }, 1500 + i * 450));
+  later(() => { if (!k.typed) press('ok', true); }, 1500 + want.length * 450 + 350);
+  later(idle, 30000);
+}
+function press(key, auto) {
+  if (k.mode !== 'code') return;
+  if (!auto) k.typed = true;
+  const btn = root && $(`[data-key="${key}"]`, root);
+  if (btn) { btn.classList.remove('hit'); void btn.offsetWidth; btn.classList.add('hit'); }
+  if (key === 'del') k.code = k.code.slice(0, -1);
+  else if (key === 'ok') {
+    const who = PL.S.students.filter(s => s.cls === k.codeCls)[+k.code - 1];
+    if (!who) { k.codeErr = `There's no number ${+k.code || 0} in ${k.codeCls}. Try again, or ask the teacher on duty.`; k.code = ''; paintCode(true); return; }
+    clearTimers();
+    if (who.id !== k.sid) { k.sid = who.id; prep(); controls(); }
+    if (k.phase === 'done') { already(); return; }
+    k.method = 'code'; later(hello, 300); return;
+  } else if (k.code.length < 2) k.code += key;
+  k.codeErr = ''; paintCode();
+}
+function paintCode(shake) {
+  const out = root && $('#kio-code', root); if (!out) return;
+  out.innerHTML = `<span>${esc(k.codeCls)}</span><b class="${k.code ? '' : 'ph'}">${k.code ? esc(k.code) : '00'}</b>`;
+  const err = $('#kio-code-err', root); err.textContent = k.codeErr; err.hidden = !k.codeErr;
+  if (shake) out.animate([{ transform: 'translateX(0)' }, { transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'translateX(-5px)' }, { transform: 'none' }], { duration: 380 });
+  $$('[data-cls]', root).forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cls === k.codeCls)));
 }
 function idle() { clearTimers(); k.mode = 'idle'; screen(); controls(); }
 
@@ -2274,7 +2606,7 @@ function screen() {
   const st = PL.student(k.sid);
   const status = `<div class="kio-status"><span class="num">${PL.clock()}</span><span><i></i>Connected to Kitchen</span></div>`;
   // idle: the school's Green Tree; with a student: Loopi reacts to what's happening
-  const expr = { hello: 'wave', scan: 'think', fed: 'point', already: 'happy' }[k.mode] || (k.result ? (k.result.zero ? 'cheer' : k.result.w < st.baseline ? 'happy' : 'calm') : 'happy');
+  const expr = { hello: 'wave', scan: 'think', fed: 'point', already: 'happy', noface: 'calm', hand: 'think' }[k.mode] || (k.result ? (k.result.zero ? 'cheer' : k.result.w < st.baseline ? 'happy' : 'calm') : 'happy');
   const left = cap => k.mode === 'idle'
     ? `<div class="kio-left"><canvas id="kio-pet" width="160" height="132"></canvas>${cap ? `<div class="cap">${cap}</div>` : ''}</div>`
     : `<div class="kio-left">${PL.V.loopi(expr, 200)}</div>`;
@@ -2287,6 +2619,33 @@ function screen() {
       <div class="kio-sub">Once before lunch and once after. Every clean tray grows a fruit on the school's Green Tree.</div>
       <div class="kio-meta"><div><b class="num">${T.trays}</b>trays today</div><div><b class="num">${T.eating}</b>eating now</div><div><b class="num">${pct(PL.zeroRate())}</b>zero leftover</div><div><b class="num">${((T.co2 || 0) / 1000).toFixed(1)} kg</b>CO₂ saved today</div></div></div>`;
     ban = banner(k.bi);
+    extra = `<button class="kio-alt" id="kio-alt">${ICON.keypad}No face scan? Use your number</button>`
+      + (T.remind && T.eating > 0 ? `<div class="kio-remind">${ICON.tray}<span><b>Finished eating?</b> Scan your tray again before the tray rack.</span></div>` : '');
+  } else if (k.mode === 'noface') {
+    main = `${left()}<div class="kio-right">
+      <div class="kio-kicker warn">Face not found</div>
+      <div class="kio-title">We couldn't find you.</div>
+      <div class="kio-sub">It happens with a mask, a cap or strong light behind you. Nothing was saved.</div>
+      <div class="kio-choices"><button class="kio-choice primary" id="kio-retry">Try again<small>Look straight at the camera</small></button><button class="kio-choice" id="kio-usecode">Use my number<small>Class and register number</small></button></div></div>`;
+    ban = banner(null, ['face', 'Take off your cap or step closer', 'Or ask the teacher on duty']);
+  } else if (k.mode === 'code') {
+    const st2 = PL.student(k.sid);
+    main = `<div class="kio-codewrap">
+      <div class="kio-codeinfo"><div class="kio-kicker">${k.face === 'optout' || st2.faceOff ? 'No face scan' : 'Sign in with your number'}</div>
+        <div class="kio-title">Your class and register number.</div>
+        <div class="kio-sub">${k.face === 'optout' || st2.faceOff ? 'You chose not to use face sign-in. Your number works exactly the same.' : 'The same number as on your class list.'}</div>
+        <div class="kio-cls">${CLASSES.map(c => `<button data-cls="${c}" aria-pressed="${c === k.codeCls}">${c}</button>`).join('')}</div>
+        <div class="kio-code" id="kio-code"></div><p class="kio-code-err" id="kio-code-err" role="alert" hidden></p>
+        <p class="kio-demo-hint">Demo: ${esc(st2.name)} is number ${regNo(st2)} in ${esc(st2.cls)}. It types itself, or tap the keys.</p></div>
+      <div class="kio-keys">${['1', '2', '3', '4', '5', '6', '7', '8', '9', 'del', '0', 'ok'].map(x => `<button data-key="${x}" class="${x === 'ok' ? 'ok' : x === 'del' ? 'del' : ''}" aria-label="${x === 'del' ? 'Delete' : x === 'ok' ? 'Done' : x}">${x === 'del' ? '⌫' : x === 'ok' ? 'OK' : x}</button>`).join('')}</div></div>`;
+    ban = banner(null, ['keypad', 'Type your register number', 'Then tap OK']);
+  } else if (k.mode === 'hand') {
+    main = `${left()}<div class="kio-right">
+      <div class="kio-kicker warn">Hold on</div>
+      <div class="kio-title">Lift your hand off the tray.</div>
+      <div class="kio-sub">The scale needs the tray on its own for a moment. It will measure again by itself.</div>
+      <div class="kio-handic">${ICON.hand}</div></div>`;
+    ban = banner(null, ['hand', 'Hands off the tray', 'Measuring again in a second']);
   } else if (k.mode === 'already') {
     main = `${left()}<div class="kio-right"><div class="kio-kicker">All set</div><div class="kio-title">You're done for today, ${esc(st.name)}.</div><div class="kio-sub">You scanned before and after lunch. See you tomorrow!</div></div>`;
     ban = banner(null, ['check', 'Nothing more to do', 'Loopi has been fed']);
@@ -2297,7 +2656,7 @@ function screen() {
   } else if (k.mode === 'hello') {
     const before = k.phase === 'before';
     main = `${left()}<div class="kio-right">
-      <div class="kio-kicker">Face recognised · ${before ? 'before lunch' : 'after lunch'}</div>
+      <div class="kio-kicker">${k.method === 'code' ? 'Number accepted' : 'Face recognised'} · ${before ? 'before lunch' : 'after lunch'}</div>
       <div class="kio-title">${before ? `Hi, ${esc(st.name)}.` : `Welcome back, ${esc(st.name)}.`}</div>
       <div class="kio-sub">${before ? 'Place your full tray on the scale.' : 'Place your tray on the scale, leftovers and all.'}</div>
       <div class="kio-tray">${PL.traySVG({ empty: true, id: 'kt' })}</div></div>`;
@@ -2309,7 +2668,7 @@ function screen() {
     main = `${left()}<div class="kio-right">
       <div class="kio-kicker">${before ? 'Before lunch' : 'After lunch'}</div>
       <div class="kio-title">Scanning…</div>
-      <div class="kio-tray">${PL.traySVG({ portion: before ? k.portion : PL.portionOf(st.before.served), left: leftFrac, scanning: true, id: 'kt' })}</div>
+      <div class="kio-tray">${PL.traySVG({ portion: before ? k.portion : st.before ? PL.portionOf(st.before.served) : 'M', left: leftFrac, scanning: true, id: 'kt' })}</div>
       <div class="kio-steps">${steps.map((x, i) => `<div class="${i < k.step ? 'done' : i === k.step ? 'on' : ''}">${i < k.step ? '✓' : '·'} ${x}</div>`).join('')}</div></div>`;
     ban = banner(2);
   } else if (k.mode === 'fed') {
@@ -2334,13 +2693,21 @@ function screen() {
         <div><div class="kio-nut-h">You ate ${r.intake.kcal} kcal</div>${nbars(r.intake)}</div>
       </div>
       <div class="kio-chips">${chips.map(c => `<span>${c}</span>`).join('')}</div>
+      ${r.estimated ? '<div class="kio-est"><b>Estimated.</b> We didn’t see your tray before lunch, so a regular portion was used for what you were served. Scan before you eat next time for exact numbers.</div>' : ''}
       <div class="kio-rank"><div>You're <b>#${r.meRank}</b> in your class${r.meRank < r.meRankBefore ? ` <b>▲ ${r.meRankBefore - r.meRank}</b>` : ''}${g && g.ready ? ' · Loopi is ready to grow!' : ''}</div></div></div>`;
     ban = banner(null, ['compost', 'Scraps go in the food waste bin', 'Then you\'re all done. See you tomorrow!']);
     extra = `<div class="kio-progress" style="animation-duration:12s"></div><button class="kio-done" id="kio-done">Done</button>`;
   }
   s.innerHTML = `${status}<div class="kio-main">${main}</div>${ban}${extra}`;
   const done = $('#kio-done', s); if (done) done.onclick = idle;
+  const alt = $('#kio-alt', s); if (alt) alt.onclick = () => tap(true);
+  const retry = $('#kio-retry', s); if (retry) retry.onclick = () => { clearTimers(); k.tries++; lookForFace(); };
+  const useCode = $('#kio-usecode', s); if (useCode) useCode.onclick = codeEntry;
+  $$('[data-key]', s).forEach(b => b.onclick = () => press(b.dataset.key));
+  $$('[data-cls]', s).forEach(b => b.onclick = () => { k.typed = true; k.codeCls = b.dataset.cls; paintCode(); });
+  if (k.mode === 'code') paintCode();
   draw(0);
+  PL.motion(s, 'kiosk:' + k.mode + (k.mode === 'scan' ? '' : k.sid));
 }
 
 /* the school Green Tree (pixel art): one fruit per zero-leftover tray today */

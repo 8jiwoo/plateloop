@@ -122,7 +122,7 @@ td{padding:10px;border-bottom:.5px solid var(--sep);vertical-align:middle}
 tr:last-child td{border-bottom:0}
 td.r,th.r{text-align:right}
 .table-wrap{overflow-x:auto}
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:rgba(29,29,31,.92);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;box-shadow:var(--shadow);z-index:90;max-width:calc(100% - 32px);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);text-align:center}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);animation:toastin .38s cubic-bezier(.2,.9,.3,1.15);background:rgba(29,29,31,.92);color:#fff;padding:11px 18px;border-radius:999px;font-weight:600;font-size:14px;box-shadow:var(--shadow);z-index:90;max-width:calc(100% - 32px);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);text-align:center}
 canvas.px{image-rendering:pixelated;background:#DDE4D4;border-radius:10px;display:block}
 .scanline{animation:scan 1.5s ease-in-out infinite}
 @keyframes scan{0%{transform:translateY(0)}50%{transform:translateY(270px)}100%{transform:translateY(0)}}
@@ -1240,6 +1240,168 @@ body[data-app="lunch"]{background:#0B0D10}
 .g3-cross{width:3px;height:3px;margin:-1.5px 0 0 -1.5px;border-radius:50%;background:rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.45)}
 .g3-cross.on{width:9px;height:9px;margin:-4.5px 0 0 -4.5px;border:1.5px solid #7FE0A0;background:none;box-shadow:0 0 0 1px rgba(0,0,0,.45)}
 
+/* ================================================================ motion (see PL.motion in core.js) */
+@property --p{syntax:'<number>';inherits:true;initial-value:0}
+@keyframes toastin{from{opacity:0;transform:translate(-50%,16px) scale(.96)}to{opacity:1;transform:translate(-50%,0)}}
+.toast.out{opacity:0;transform:translate(-50%,10px);transition:opacity .25s,transform .25s}
+/* rings sweep round from zero when a view opens */
+@keyframes ringfill{from{--p:0}}
+[data-enter] .vr,[data-enter] .vweek i,[data-enter] .hist2 i,[data-enter] .vfood.scored{animation:ringfill 1s cubic-bezier(.2,.8,.2,1) .15s backwards}
+/* everything you can press gives a little */
+.btn,.chip,.seg button,.phone-tabs button,.kit-side button,.demo-switch button,.kio-done{transition:transform .14s cubic-bezier(.3,.7,.4,1.4),background .15s,color .15s,box-shadow .2s,opacity .15s}
+.btn:active:not(:disabled),.chip:active,.seg button:active,.kit-side button:active,.kio-done:active{transform:scale(.95)}
+.phone-tabs button:active svg{transform:scale(.86)}
+.phone-tabs button svg{transition:transform .18s}
+.phone-tabs button[aria-selected="true"] svg{animation:tabpop .42s cubic-bezier(.3,.7,.4,1.6)}
+@keyframes tabpop{0%{transform:scale(.8)}60%{transform:scale(1.14) translateY(-2px)}100%{transform:none}}
+@media (hover:hover){
+  .vcard,.card,.kpi{transition:transform .25s cubic-bezier(.2,.8,.2,1),box-shadow .25s}
+  .kit-main .card:hover,.kit-main .kpi:hover{transform:translateY(-2px);box-shadow:0 8px 24px -12px rgba(0,0,0,.25)}
+}
+/* a soft shimmer for things that are loading or being measured */
+.pl-shimmer{background:linear-gradient(100deg,var(--fill) 30%,var(--fill2) 50%,var(--fill) 70%);background-size:300% 100%;animation:shimmer 1.3s linear infinite}
+@keyframes shimmer{from{background-position:100% 0}to{background-position:-100% 0}}
+
+/* ================================================================ kiosk: when something goes wrong */
+.kio-kicker.warn{color:#E07A00}
+.kio-choices{display:flex;gap:1.4cqw;margin-top:.6cqw}
+.kio-choice{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:1.8cqw;padding:1.5cqw 2.2cqw;font:700 2.2cqw var(--font-d);text-align:left;display:flex;flex-direction:column;gap:.3cqw;transition:transform .14s,background .15s}
+.kio-choice small{font:500 1.45cqw var(--font);color:#6E6E73}
+.kio-choice.primary{background:#34C759;color:#fff}.kio-choice.primary small{color:rgba(255,255,255,.85)}
+.kio-choice:active{transform:scale(.96)}
+.kio-alt{position:absolute;right:3.2cqw;bottom:25.5%;border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.8cqw 1.6cqw .8cqw 1cqw;font:600 1.45cqw var(--font);display:flex;align-items:center;gap:.7cqw}
+.kio-alt svg{width:2.4cqw;height:2.4cqw}
+.kio-codewrap{grid-column:1/-1;display:grid;grid-template-columns:1.25fr 1fr;gap:4cqw;align-items:center;padding:0 2cqw}
+.kio-codeinfo{display:flex;flex-direction:column;gap:1.1cqw}
+.kio-codeinfo .kio-title{font-size:4cqw}
+.kio-cls{display:flex;gap:.7cqw;flex-wrap:wrap}
+.kio-cls button{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:99cqw;padding:.6cqw 1.5cqw;font:600 1.6cqw var(--font)}
+.kio-cls button[aria-pressed="true"]{background:#1D1D1F;color:#fff}
+.kio-code{display:flex;align-items:baseline;gap:1.4cqw;font:700 6cqw var(--font-d);letter-spacing:.06em}
+.kio-code span{font-size:3cqw;color:#8E8E93;letter-spacing:0}
+.kio-code b.ph{color:#D1D1D6}
+.kio-code-err{color:#D70015;font:600 1.6cqw var(--font);margin:0}
+.kio-demo-hint{font-size:1.35cqw;color:#8E8E93;margin:0}
+.kio-keys{display:grid;grid-template-columns:repeat(3,1fr);gap:1cqw}
+.kio-keys button{border:0;background:#F2F2F7;color:#1D1D1F;border-radius:1.6cqw;aspect-ratio:1.55;font:600 2.8cqw var(--font-d);transition:transform .1s,background .15s}
+.kio-keys button.ok{background:#34C759;color:#fff;font-size:2.2cqw}
+.kio-keys button.del{background:transparent;font-size:2.4cqw}
+.kio-keys button:active{transform:scale(.9);background:#D1D1D6}
+.kio-keys button.hit{animation:khit .32s ease-out}
+@keyframes khit{0%{transform:scale(.88);background:#C7C7CC}100%{transform:none}}
+.kio-handic{width:12cqw;height:12cqw;color:#E07A00}
+.kio-handic svg{width:100%;height:100%;overflow:visible}
+.a-lift{transform-box:fill-box;transform-origin:center;animation:klift 1.3s ease-in-out infinite}
+@keyframes klift{0%,100%{transform:translateY(0)}50%{transform:translateY(-22%)}}
+.kstep.on .a-lift{animation:klift 1.3s ease-in-out infinite}
+.kio-est{background:#FFF4E0;color:#7A4B00;border-radius:1.4cqw;padding:1cqw 1.4cqw;font-size:1.45cqw;line-height:1.35}
+.kio-edge{margin-top:12px;padding-top:12px;border-top:.5px dashed var(--sep)}
+.kio-drawer .kio-demo.kio-edge{grid-template-columns:1.3fr 1fr 1.2fr}
+.kio-check{display:flex;align-items:center;min-height:36px}
+.switch-line{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--label)!important;margin:0!important;cursor:pointer}
+.switch-line input{width:18px;height:18px;accent-color:var(--tint)}
+@media (max-width:980px){.kio-drawer .kio-demo.kio-edge{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.kio-drawer .kio-demo.kio-edge{grid-template-columns:1fr}}
+
+/* ================================================================ first-run intro (PL.onboard) */
+.onb{position:absolute;inset:0;z-index:60;background:var(--bg);display:flex;flex-direction:column;padding:54px 22px calc(26px + env(safe-area-inset-bottom,0px));animation:onbin .45s cubic-bezier(.2,.8,.2,1)}
+@keyframes onbin{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:none}}
+.onb-top{display:grid;grid-template-columns:40px 1fr 56px;align-items:center}
+.onb-back{border:0;background:var(--fill);width:34px;height:34px;border-radius:50%;display:grid;place-items:center;color:var(--label)}
+.onb-skip{border:0;background:none;color:var(--label2);font-weight:600;font-size:14px;justify-self:end}
+.onb-dots{display:flex;gap:6px;justify-content:center}
+.onb-dots i{width:7px;height:7px;border-radius:99px;background:var(--fill2);transition:width .35s cubic-bezier(.2,.8,.2,1),background .35s}
+.onb-dots i.on{width:22px;background:var(--tint)}.onb-dots i.past{background:color-mix(in srgb,var(--tint) 45%,var(--fill2))}
+.onb-page{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:12px;overflow-y:auto;padding:10px 0}
+.onb-page h2{font-size:27px;letter-spacing:-.03em}
+.onb-page > p{color:var(--label2);font-size:15.5px;line-height:1.45;max-width:31ch}
+.onb-art{min-height:120px;display:grid;place-items:center;margin-bottom:6px}
+.onb-art > .vicon{width:88px;height:88px;border-radius:26px}
+.onb-art > .vicon svg{width:50px;height:50px}
+.onb-art .vrings{gap:14px}
+.onb-steps{display:flex;flex-direction:column;gap:10px;width:100%;max-width:290px}
+.onb-steps > div{display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:12px;text-align:left;background:var(--bg2);border-radius:16px;padding:10px 12px;box-shadow:var(--shadow-s)}
+.onb-steps .vicon{grid-row:1/3}.onb-steps b{font-size:15px}.onb-steps span{font-size:12.5px;color:var(--label2)}
+.onb-steps > div{animation:onbstep .5s cubic-bezier(.2,.8,.2,1) backwards}
+.onb-steps > div:nth-child(2){animation-delay:.12s}.onb-steps > div:nth-child(3){animation-delay:.24s}
+@keyframes onbstep{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+.onb-prefs{display:flex;flex-direction:column;gap:8px;width:100%;text-align:left;margin-top:4px}
+.onb-pref{display:flex;align-items:center;gap:12px;background:var(--bg2);border-radius:14px;padding:11px 13px;box-shadow:var(--shadow-s);cursor:pointer}
+.onb-pref span{flex:1;display:flex;flex-direction:column;gap:2px}.onb-pref b{font-size:14.5px}.onb-pref small{font-size:12px;color:var(--label2);line-height:1.35}
+.onb-pref input,.switch-row input[role="switch"]{appearance:none;-webkit-appearance:none;width:44px;height:26px;border-radius:99px;background:var(--fill2);position:relative;flex:none;cursor:pointer;transition:background .2s;margin:0}
+.onb-pref input::after,.switch-row input[role="switch"]::after{content:"";position:absolute;top:2px;left:2px;width:22px;height:22px;border-radius:50%;background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.2);transition:transform .25s cubic-bezier(.3,.7,.4,1.3)}
+.onb-pref input:checked,.switch-row input[role="switch"]:checked{background:var(--tint)}
+.onb-pref input:checked::after,.switch-row input[role="switch"]:checked::after{transform:translateX(18px)}
+.onb-agree{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--label2);line-height:1.4;padding:8px 4px 0;cursor:pointer}
+.onb-agree input{width:20px;height:20px;accent-color:var(--tint);flex:none;margin:0}
+.onb-list{list-style:none;margin:0;padding:0;width:100%;display:flex;flex-direction:column;gap:6px;text-align:left}
+.onb-list li{background:var(--bg2);border-radius:12px;padding:9px 12px;font-size:13.5px;color:var(--label2);box-shadow:var(--shadow-s)}
+.onb-list b{color:var(--label)}
+.onb-goals{display:flex;flex-direction:column;gap:7px;width:100%;text-align:left}
+.onb-goals label{display:flex;gap:10px;align-items:flex-start;background:var(--bg2);border-radius:14px;padding:10px 12px;box-shadow:var(--shadow-s);cursor:pointer;transition:box-shadow .2s,transform .15s}
+.onb-goals input{accent-color:var(--indigo);margin-top:3px;flex:none}
+.onb-goals span{display:flex;flex-direction:column;gap:1px}.onb-goals b{font-size:14.5px}.onb-goals small{font-size:12px;color:var(--label2);line-height:1.35}
+.onb-goals label:has(input:checked){box-shadow:0 0 0 2px var(--indigo)}
+.onb-foot{padding-top:12px}
+.onb-next{width:100%;padding:14px;font-size:17px;border-radius:16px}
+.onb-next:disabled{opacity:.4}
+.care .onb-dots i.on,.care .onb-pref input:checked{background:var(--blue)}
+.work .onb-dots i.on,.work .onb-pref input:checked{background:var(--indigo)}
+.sw-sub{display:block;font-size:12px;color:var(--label3);font-weight:400;margin-top:1px}
+.care .phone.lg .phone-body{zoom:1.16}
+@media (max-width:760px){.onb{position:fixed;padding-top:64px}}
+
+/* ================================================================ Loopi Care: nurse station (demo sidebar) */
+.ward{background:var(--bg2);border-radius:14px;padding:12px;box-shadow:var(--shadow-s);display:flex;flex-direction:column;gap:8px}
+.ward-h{display:flex;justify-content:space-between;align-items:center;font-size:13px}
+.ward-n{background:#FF9F0A;color:#fff;font-weight:700;font-size:11.5px;padding:2px 8px;border-radius:99px;animation:wardp 1.8s ease-in-out infinite}
+@keyframes wardp{50%{box-shadow:0 0 0 5px rgba(255,159,10,.18)}}
+.ward-ok{color:var(--tint-ink);font-weight:600;font-size:12px}
+.ward-row{border-radius:12px;padding:6px;transition:background .25s}
+.ward-row.alarm{background:color-mix(in srgb,#FF9F0A 11%,transparent)}
+.ward-who{width:100%;border:0;background:none;display:grid;grid-template-columns:auto 1fr;grid-template-rows:auto auto;column-gap:9px;row-gap:5px;align-items:center;text-align:left;padding:2px;border-radius:10px}
+.ward-who[aria-pressed="true"] b{color:var(--blue)}
+.ward-who .av-circle{grid-row:1/3}
+.ward-who span{display:flex;flex-direction:column}.ward-who b{font-size:13.5px}.ward-who small{font-size:11.5px;color:var(--label2)}
+.wbar{height:4px;border-radius:99px;background:var(--fill2);overflow:hidden;display:block}
+.wbar i{display:block;height:100%;background:var(--blue);border-radius:99px}
+.ward-al{font-size:12px;color:#C25E00;font-weight:600;margin:6px 2px 6px 39px}
+.ward-acts{display:flex;flex-wrap:wrap;gap:5px;margin-left:37px}
+.ward-acts .btn{font-size:11.5px;padding:5px 9px}
+.ward-done{font-size:12px;color:var(--tint-ink);font-weight:600;margin:6px 2px 2px 39px;animation:fade .4s}
+
+/* ================================================================ Kitchen: needs attention */
+.inbox{margin-bottom:16px}
+.tasks{display:flex;flex-direction:column;margin-top:8px}
+.task{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 0;border-top:.5px solid var(--sep);transition:opacity .3s}
+.task:first-child{border-top:0}
+.task b{display:block;font-size:14.5px}.task span{font-size:13px;color:var(--label2);line-height:1.4}
+.task-dot{width:10px;height:10px;border-radius:50%;background:var(--c)}
+.task[data-tone="blue"]{--c:var(--blue)}.task[data-tone="orange"]{--c:var(--orange)}.task[data-tone="yellow"]{--c:#E8B400}.task[data-tone="red"]{--c:var(--red)}
+.task:not(.done) .task-dot{box-shadow:0 0 0 0 var(--c);animation:taskp 2s ease-out infinite}
+@keyframes taskp{0%{box-shadow:0 0 0 0 color-mix(in srgb,var(--c) 50%,transparent)}80%,100%{box-shadow:0 0 0 7px transparent}}
+.task.done{opacity:.62}.task.done .task-dot{background:var(--tint)}
+.task-ok{width:26px;height:26px;border-radius:50%;background:var(--tint-soft);color:var(--tint-ink);display:grid;place-items:center;font-weight:700;animation:pop .4s cubic-bezier(.2,.9,.3,1.3)}
+.task.doing{opacity:.5;transform:translateX(6px);transition:opacity .25s,transform .25s}
+@media (max-width:640px){.task{grid-template-columns:auto 1fr}.task .btn,.task .task-ok{grid-column:2;justify-self:start}}
+/* Kiosk: the kitchen's reminder while trays are still out */
+.kio-remind{position:absolute;left:50%;transform:translateX(-50%);top:1.2cqw;white-space:nowrap;display:flex;align-items:center;gap:1cqw;background:#FFF6D6;color:#5A4300;border-radius:99cqw;padding:.7cqw 1.6cqw .7cqw 1cqw;font-size:1.45cqw;animation:kremind 2.4s ease-in-out infinite}
+.kio-remind svg{width:2.6cqw;height:2.6cqw}
+@keyframes kremind{0%,100%{box-shadow:0 0 0 0 rgba(255,204,0,.5)}50%{box-shadow:0 0 0 .8cqw rgba(255,204,0,0)}}
+
+/* ================================================================ in-phone notification (PL.notify) */
+.pnote{position:absolute;left:10px;right:10px;top:52px;z-index:70;border:0;text-align:left;display:flex;gap:10px;align-items:center;padding:10px 12px;border-radius:20px;background:color-mix(in srgb,var(--bg2) 82%,transparent);backdrop-filter:blur(24px) saturate(1.6);-webkit-backdrop-filter:blur(24px) saturate(1.6);box-shadow:0 12px 32px -10px rgba(0,0,0,.45),0 0 0 .5px var(--sep);color:var(--label);animation:pnotein .55s cubic-bezier(.2,.9,.25,1.15)}
+.pnote.out{transform:translateY(-130%);opacity:0;transition:transform .3s ease-in,opacity .3s}
+@keyframes pnotein{from{transform:translateY(-140%)}to{transform:none}}
+.pnote-ic{width:38px;height:38px;border-radius:10px;background:var(--tint-soft);display:grid;place-items:center;flex:none;overflow:hidden}
+.pnote-ic svg{width:34px;height:34px}
+.pnote-tx{display:flex;flex-direction:column;min-width:0}
+.pnote-app{font-size:11px;color:var(--label3);text-transform:uppercase;letter-spacing:.04em;display:flex;justify-content:space-between}
+.pnote-app em{font-style:normal;text-transform:none;letter-spacing:0}
+.pnote b{font-size:14px}.pnote-tx > span:last-child:not(.pnote-app){font-size:12.5px;color:var(--label2);line-height:1.35}
+@media (max-width:760px){.pnote{position:fixed;top:60px}}
+.frow .est{font-size:11px;font-weight:700;color:var(--orange);background:var(--orange-soft);padding:1px 6px;border-radius:99px;margin-left:4px}
+
 </style>
 </head>
 <body>
@@ -1264,8 +1426,42 @@ PL.esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '
 PL.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const rng = PL.rng = seed => { let a = seed >>> 0; return () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; };
 PL.toast = msg => {
+  document.querySelectorAll('.toast').forEach(o => o.remove());
   const t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.textContent = msg;
-  document.body.appendChild(t); setTimeout(() => t.remove(), 3600);
+  document.body.appendChild(t);
+  setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 260); }, 3400);
+};
+
+/* ------------------------------------------------------------ motion: every app calls PL.motion(container, key) after it
+   renders. When the key changes (a new tab, view or screen), cards rise in one after another, bars and rings fill from
+   zero and numbers count up. Re-renders with the same key (live updates) stay still, so nothing flickers. */
+const COUNT = /^([^\d-]*)(-?[\d,]*\.?\d+)(.*)$/;
+PL.countUp = (el, dur = 700, delay = 0) => {
+  const txt = el.textContent.trim(), m = COUNT.exec(txt); if (!m || el.children.length || /\d:\d|#/.test(txt)) return; // not clock times or ranks
+  const [, pre, raw, post] = m, to = parseFloat(raw.replace(/,/g, '')), dec = (raw.split('.')[1] || '').length, comma = raw.includes(',');
+  if (!isFinite(to) || Math.abs(to) < 2 && !dec) return;
+  const show = v => pre + (comma ? v.toLocaleString('en-US', { minimumFractionDigits: dec, maximumFractionDigits: dec }) : v.toFixed(dec)) + post;
+  const t0 = performance.now() + delay; el.textContent = show(0);
+  const step = now => { if (!el.isConnected) return; const k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 3); el.textContent = show(to * e); if (k < 1) requestAnimationFrame(step); else el.textContent = show(to); };
+  requestAnimationFrame(step);
+  setTimeout(() => { if (el.isConnected) el.textContent = show(to); }, delay + dur + 400); // background tabs pause frames
+};
+const lastKey = new WeakMap();
+const RISE = '.vcard,.card,.kpi,.vtip,.vring,.insight,.kio-meta>div,.kio-chips>span,.kio-steps>div,.g-row,.lbrow,.hplate figure,.slot-card,.pl-rise';
+PL.motion = (el, key, opts = {}) => {
+  if (!el || PL.reduceMotion || !el.animate) return;
+  if (lastKey.get(el) === key && !opts.force) return;
+  lastKey.set(el, key);
+  el.dataset.enter = ''; clearTimeout(el._enterT); el._enterT = setTimeout(() => delete el.dataset.enter, 1300);
+  if (opts.slide) el.animate([{ opacity: 0, transform: `translateX(${opts.slide * 18}px)` }, { opacity: 1, transform: 'none' }], { duration: 320, easing: 'cubic-bezier(.2,.8,.2,1)' });
+  [...el.querySelectorAll(RISE)].filter(n => !n.closest('[data-still]')).slice(0, 18).forEach((n, i) =>
+    n.animate([{ opacity: 0, transform: 'translateY(14px) scale(.985)' }, { opacity: 1, transform: 'none' }], { duration: 480, delay: 40 + i * 45, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));
+  el.querySelectorAll('i[style*="width:"],b[style*="width:"]').forEach((n, i) => {
+    if (n.closest('[data-still]')) return;
+    n.style.transformOrigin = 'left center';
+    n.animate([{ transform: 'scaleX(0)' }, { transform: 'none' }], { duration: 750, delay: 120 + Math.min(i, 14) * 35, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' });
+  });
+  [...el.querySelectorAll('.num,.kpi .v,.big-num')].slice(0, 40).forEach((n, i) => { if (!n.closest('[data-still]')) PL.countUp(n, 750, 80 + Math.min(i, 10) * 30); });
 };
 
 /* ------------------------------------------------------------ constants */
@@ -1716,6 +1912,68 @@ PL.icons = {
   loop: '<svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="13" fill="none" stroke="var(--mint)" stroke-width="4"/><path d="M16 3a13 13 0 0 1 13 13" fill="none" stroke="var(--persim)" stroke-width="4" stroke-linecap="round"/><circle cx="16" cy="16" r="5" fill="currentColor"/></svg>',
 };
 PL.backLink = (label = 'All apps') => `<a class="backlink" href="#home">${PL.icons.back}<span>${label}</span></a>`;
+
+/* ------------------------------------------------------------ a push notification that slides down inside the phone.
+   o: { app, title, text, icon (html), onTap }. Tapping it runs onTap; it leaves by itself after a few seconds. */
+PL.notify = (host, o) => {
+  if (!host) return PL.toast(o.title + ' ' + (o.text || ''));
+  host.querySelectorAll('.pnote').forEach(n => n.remove());
+  const n = document.createElement('button'); n.className = 'pnote'; n.setAttribute('role', 'status');
+  n.innerHTML = `<span class="pnote-ic">${o.icon || ''}</span><span class="pnote-tx"><span class="pnote-app">${PL.esc(o.app || 'PlateLoop')}<em>now</em></span><b>${PL.esc(o.title)}</b>${o.text ? `<span>${PL.esc(o.text)}</span>` : ''}</span>`;
+  host.appendChild(n);
+  const bye = () => { if (!n.isConnected) return; n.classList.add('out'); setTimeout(() => n.remove(), 320); };
+  n.onclick = () => { bye(); if (o.onTap) o.onTap(); };
+  setTimeout(bye, o.ms || 5200);
+  if (navigator.vibrate && o.buzz) try { navigator.vibrate(40); } catch (e) {}
+};
+
+/* ------------------------------------------------------------ first-run intro, inside the phone frame.
+   steps: [{ art, title, text, body, cta, consent }]. The explanation steps can be skipped, the consent step can't:
+   'Skip' jumps to it. Inputs with data-pref are handed to done() as { name: value }. Seen once per app. */
+const seenKey = key => 'plateloop-intro-' + key;
+PL.introSeen = key => { try { return localStorage.getItem(seenKey(key)) === '1'; } catch (e) { return false; } };
+PL.introReset = key => { try { localStorage.removeItem(seenKey(key)); } catch (e) {} };
+PL.onboard = (host, key, steps, done) => {
+  if (!host) return;
+  host.querySelectorAll('.onb').forEach(o => o.remove());
+  const el = document.createElement('div'); el.className = 'onb'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Welcome');
+  host.appendChild(el);
+  let i = 0;
+  const consentAt = steps.findIndex(s => s.consent), last = steps.length - 1;
+  const prefs = () => Object.fromEntries([...el.querySelectorAll('[data-pref]')].map(x => [x.dataset.pref, x.type === 'checkbox' ? x.checked : x.value]));
+  const kept = {};
+  const paint = dir => {
+    Object.assign(kept, prefs());
+    const s = steps[i], can = !s.consent || el.dataset.agree === '1';
+    el.innerHTML = `<div class="onb-top">${i ? `<button class="onb-back" data-onb="back" aria-label="Back">${PL.icons.back}</button>` : '<span></span>'}
+      <div class="onb-dots">${steps.map((_, j) => `<i class="${j === i ? 'on' : j < i ? 'past' : ''}"></i>`).join('')}</div>
+      ${i < consentAt ? '<button class="onb-skip" data-onb="skip">Skip</button>' : '<span></span>'}</div>
+      <div class="onb-page"><div class="onb-art">${s.art || ''}</div><h2>${s.title}</h2>${s.text ? `<p>${s.text}</p>` : ''}${s.body || ''}</div>
+      <div class="onb-foot"><button class="btn primary onb-next" data-onb="next" ${can ? '' : 'disabled'}>${s.cta || (i === last ? 'Get started' : 'Continue')}</button></div>`;
+    Object.entries(kept).forEach(([n, v]) => { const x = el.querySelector(`[data-pref="${n}"]`); if (x) { if (x.type === 'checkbox') x.checked = v; else x.value = v; } });
+    const agree = el.querySelector('[data-agree]');
+    if (agree) { agree.checked = el.dataset.agree === '1'; agree.onchange = () => { el.dataset.agree = agree.checked ? '1' : ''; el.querySelector('.onb-next').disabled = !agree.checked; }; }
+    if (dir && el.animate && !PL.reduceMotion) {
+      el.querySelector('.onb-page').animate([{ opacity: 0, transform: `translateX(${dir * 36}px)` }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      const art = el.querySelector('.onb-art'); if (art) art.animate([{ transform: 'scale(.86)' }, { transform: 'scale(1.04)', offset: .7 }, { transform: 'none' }], { duration: 480, easing: 'ease-out' });
+    }
+    const nx = el.querySelector('.onb-next'); if (nx && !nx.disabled) nx.focus({ preventScroll: true });
+  };
+  el.onclick = e => {
+    const b = e.target.closest('[data-onb]'); if (!b) return;
+    const a = b.dataset.onb;
+    if (a === 'back' && i > 0) { i--; paint(-1); }
+    else if (a === 'skip') { i = consentAt >= 0 ? consentAt : last; paint(1); }
+    else if (a === 'next') {
+      if (i < last) { i++; paint(1); return; }
+      Object.assign(kept, prefs());
+      try { localStorage.setItem(seenKey(key), '1'); } catch (err) {}
+      const close = () => { el.remove(); if (done) done(kept); };
+      if (el.animate && !PL.reduceMotion) el.animate([{ opacity: 1 }, { opacity: 0, transform: 'scale(1.04)' }], { duration: 260, easing: 'ease-in' }).onfinish = close; else close();
+    }
+  };
+  paint(0);
+};
 })();
 
 </script>
@@ -2231,6 +2489,7 @@ function render() {
   const main = $('#kit-main', root);
   main.innerHTML = ({ overview, dishes, nutrition, environment, carbon, plan, report })[ui.view]();
   wire(main);
+  PL.motion(main, 'kitchen:' + ui.view);
 }
 
 /* ---------------------------------------------------------------- data helpers */
@@ -2259,13 +2518,30 @@ function overview() {
   return `
   <div class="page-head"><div><h1>Today</h1><p>Friday 25 September · every tray is scanned before and after lunch.</p></div></div>
   <div class="kpis">${kpis.map(([k, v, s, c]) => `<div class="kpi"><div class="k">${k}</div><div class="v ${c}">${v}</div><div class="s">${s}</div></div>`).join('')}</div>
+  ${inbox()}
   <div class="kgrid">
     <div class="card"><div class="row spread"><h3>Live scans</h3><span class="hint">Tray numbers, not names</span></div>
-      <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}</span></div>`).join('')
+      <div class="feed">${t.feed.length ? t.feed.map((f, i) => `<div class="frow ${i < fresh ? 'new' : ''}"><span class="t">${f.t}</span><span class="kind ${f.kind}">${f.kind === 'before' ? 'Before' : 'After'}</span><span class="tr">#${String(f.tray).padStart(4, '0')}</span><span class="cls">Class ${f.cls}</span><span class="val">${f.kind === 'before' ? `${Math.round(f.served)} g served` : f.zero ? '<span style="color:var(--tint-ink)">Zero leftover</span>' : `<span style="color:${f.w > .3 ? 'var(--orange)' : 'inherit'}">${pct(f.w)} left</span>`}${f.estimated ? ' <span class="est" title="No before scan: served amount estimated from a regular portion">est.</span>' : ''}</span></div>`).join('')
         : `<p class="hint" style="padding:22px 2px">Class 3B is about to eat. Scans from the PlateLoop scanner appear here the moment they happen.</p>`}</div></div>
     <div class="card chart"><h3>Eaten by dish</h3><p class="hint">Share of each dish eaten on finished trays</p>${chartDish()}</div>
   </div>
   <div class="card chart"><h3>Plate waste, last 30 school days</h3><p class="hint">Food left ÷ food served, whole school</p>${chartTrend()}</div>`;
+}
+/** Needs attention: what the data says to do today, each with a one-tap action. Done items stay, ticked. */
+function tasks() {
+  const t = T(), done = t.tasks || {}, worst = dishStats().sort((a, b) => a.e - b.e)[0], low = intakeStats().low.length, list = [];
+  if (!PL.S.order.approved) list.push({ id: 'order', tone: 'blue', title: 'Approve tomorrow’s supplier order', text: `Planned from what students really eat: ${money(forecast().orderTotal)}. The supplier cut-off is 14:00.`, btn: 'Review order', go: 'plan' });
+  else list.push({ id: 'order', tone: 'blue', title: 'Tomorrow’s order is approved', text: `${money(PL.S.order.approved.total)} at ${PL.S.order.approved.at}.`, done: true });
+  if (worst && worst.e < .7) list.push({ id: 'dish', tone: 'orange', title: `${worst.d.name}: only ${pct(worst.e)} eaten`, text: worst.d.id === 'kailan' ? 'Students ate 64% of the oyster-sauce version in last month’s A/B test. Cook that on Monday.' : `Serve a smaller default scoop and let students ask for more.`, btn: 'Add to Monday’s cook plan', done: done.dish, doneText: 'Added to Monday’s cook plan' });
+  if (t.eating > 0) list.push({ id: 'remind', tone: 'yellow', title: `${t.eating} tray${t.eating > 1 ? 's' : ''} not scanned back yet`, text: 'Without the after scan we can’t tell what was eaten. The scanner screen can remind students at the tray rack.', btn: 'Show a reminder on the scanner', done: done.remind || t.remind, doneText: 'Reminder is showing on the scanner' });
+  if (low) list.push({ id: 'low', tone: 'red', title: `${low} student${low > 1 ? 's' : ''} ate under 60% of the lunch target`, text: 'Tray numbers only. The form teacher sees names if a pattern lasts a week.', btn: 'See nutrition', go: 'nutrition' });
+  return list;
+}
+function inbox() {
+  const list = tasks(), open = list.filter(x => !x.done).length;
+  return `<div class="card inbox"><div class="row spread"><h3>Needs attention</h3><span class="pill ${open ? 'orange' : 'green'}">${open ? `${open} to do` : 'All done'}</span></div>
+    <div class="tasks">${list.map(x => `<div class="task ${x.done ? 'done' : ''}" data-tone="${x.tone}"><i class="task-dot"></i><div><b>${x.done && x.doneText ? x.doneText : x.title}</b><span>${x.text}</span></div>
+      ${x.done ? '<span class="task-ok" aria-label="Done">✓</span>' : `<button class="btn small ${x.go ? '' : 'primary'}" data-task="${x.id}" ${x.go ? `data-go-view="${x.go}"` : ''}>${x.btn}</button>`}</div>`).join('')}</div></div>`;
 }
 function chartDish() {
   const W = 520, rowH = 36, top = 6, left = 150, right = 50, rows = dishStats().sort((a, b) => b.e - a.e), H = top + rows.length * rowH + 24, iw = W - left - right;
@@ -2539,6 +2815,13 @@ function wire(main) {
     $('#event', main).onchange = e => { ui.plan.event = e.target.value; refreshPlan(); };
   }
   wireOrder(main);
+  $$('[data-task]', main).forEach(b => b.onclick = () => {
+    if (b.dataset.goView) { ui.view = b.dataset.goView; render(); scrollTo({ top: 0 }); return; }
+    const t = T(); t.tasks = { ...(t.tasks || {}), [b.dataset.task]: true };
+    if (b.dataset.task === 'remind') t.remind = true;
+    const row = b.closest('.task'); row.classList.add('doing');
+    setTimeout(() => { PL.store.save('kitchen'); PL.toast(b.dataset.task === 'remind' ? 'The scanner now reminds students to scan their tray back.' : 'Added to Monday’s cook plan.'); }, 280);
+  });
   PL.paintPets(main);
   const tree = $('#env-tree', main); if (tree) drawTreeInto(tree, 0);
   const cc = $('#copy-carbon', main);
