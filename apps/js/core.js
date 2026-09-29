@@ -516,6 +516,46 @@ PL.notify = (host, o) => {
   if (navigator.vibrate && o.buzz) try { navigator.vibrate(40); } catch (e) {}
 };
 
+/* ------------------------------------------------------------ premium stage for the phone apps (Loopi, Care, Work):
+   ambient light in the app's colour, a "built for" card with the research behind the app, and a phone that tilts
+   toward the pointer and settles flat when you use it. o: { accent, glow, who, facts: [[n, unit, text, source]], how: [..] } */
+const RESEARCH_URL = 'https://github.com/8jiwoo/plateloop/blob/main/docs/research.md';
+PL.premium = (root, o) => {
+  const stu = root && root.querySelector('.stu'); if (!stu) return;
+  stu.classList.add('premium');
+  stu.style.setProperty('--acc', o.accent); stu.style.setProperty('--glow', o.glow || o.accent);
+  stu.insertAdjacentHTML('afterbegin', '<div class="stage-glow" aria-hidden="true"><i></i><i></i><i></i></div>');
+  const phone0 = stu.querySelector('.phone');
+  if (phone0) phone0.insertAdjacentHTML('afterend', `<aside class="stu-aside"><section class="research" aria-label="Why this app">
+    <div class="research-h"><span>Built for</span><b>${PL.esc(o.who)}</b></div>
+    <div class="research-facts">${o.facts.map(([n, u, t, s]) => `<div><b><span class="num">${n}</span>${u ? `<em>${u}</em>` : ''}</b><p>${PL.esc(t)}</p><small>${PL.esc(s)}</small></div>`).join('')}</div>
+    <ul class="research-how">${o.how.map(h => `<li>${PL.esc(h)}</li>`).join('')}</ul>
+    <a class="research-link" href="${RESEARCH_URL}" target="_blank" rel="noopener">Read the research</a></section></aside>`);
+  const card = stu.querySelector('.research');
+  if (card && !PL.reduceMotion && 'IntersectionObserver' in window) card.querySelectorAll('.research-facts .num').forEach((n, i) => PL.countUp(n, 900, 250 + i * 120));
+  // the phone leans toward the pointer; over the screen itself it settles flat so it's easy to use
+  const phone = stu.querySelector('.phone'); if (!phone || PL.reduceMotion) return;
+  phone.insertAdjacentHTML('beforeend', '<i class="phone-sheen" aria-hidden="true"></i>');
+  const fine = matchMedia('(hover:hover) and (min-width:1041px)');
+  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+  const loop = () => {
+    cx += (tx - cx) * .08; cy += (ty - cy) * .08;
+    const still = Math.abs(tx - cx) < .01 && Math.abs(ty - cy) < .01;
+    phone.style.transform = Math.abs(cx) < .02 && Math.abs(cy) < .02 && still ? '' : `perspective(1600px) rotateY(${cx.toFixed(2)}deg) rotateX(${cy.toFixed(2)}deg)`;
+    phone.style.setProperty('--sx', (50 + cx * 7).toFixed(1) + '%'); phone.style.setProperty('--sy', (30 - cy * 6).toFixed(1) + '%');
+    raf = still ? 0 : requestAnimationFrame(loop);
+  };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+  stu.addEventListener('pointermove', e => {
+    if (!fine.matches) return;
+    const r = phone.getBoundingClientRect(), inside = e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
+    if (inside) { tx = 0; ty = 0; }
+    else { tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / 700)) * 7; ty = -Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / 600)) * 5; }
+    kick();
+  });
+  stu.addEventListener('pointerleave', () => { tx = 0; ty = 0; kick(); });
+};
+
 /* ------------------------------------------------------------ first-run intro, inside the phone frame.
    steps: [{ art, title, text, body, cta, consent }]. The explanation steps can be skipped, the consent step can't:
    'Skip' jumps to it. Inputs with data-pref are handed to done() as { name: value }. Seen once per app. */

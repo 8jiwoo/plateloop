@@ -16,8 +16,41 @@ const ICON = {
   me: I('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>'),
   check: I('<path d="M5 12.5l4.5 4.5L19 7"/>'),
   alert: I('<path d="M12 4 2.5 20h19Z"/><path d="M12 10v4M12 17v.5"/>'),
+  menu: I('<path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/>'),
+  speak: I('<path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4Z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>'),
 };
-const TABS = { today: 'Today', report: 'Report', me: 'Me' };
+const TABS = { today: 'Today', menu: 'Menu', report: 'Report', me: 'Me' };
+/* Tomorrow's choices: patients who pick their own meals eat more energy and protein, and leave less (see docs/research.md). */
+const dishLike = (name, color, edge) => ({ name, color, edge });
+const CHOICES = {
+  breakfast: [
+    ['congee', dishLike('Chicken congee', '#F3EDDA', '#BFB28E'), 'Soft and easy to eat', 14],
+    ['toast', dishLike('Eggs and wholemeal toast', '#F6D365', '#C9A13B'), 'The most protein', 19],
+    ['oats', dishLike('Oats with banana', '#F7DC6F', '#C9A13B'), 'Light, a little sweet', 9],
+  ],
+  lunch: [
+    ['fish', dishLike('Steamed fish with ginger', '#EDE3D1', '#B8A88A'), 'High protein, mild', 24],
+    ['chicken', dishLike('Braised chicken and potato', '#B5652D', '#7A3F17'), 'Hearty, soft', 26],
+    ['tofu', dishLike('Tofu and vegetable soup', '#F4E7C8', '#C9B48A'), 'Light, if appetite is low', 13],
+  ],
+  dinner: [
+    ['chicken', dishLike('Braised chicken and potato', '#B5652D', '#7A3F17'), 'Hearty, soft', 26],
+    ['fish', dishLike('Fish porridge', '#F3EDDA', '#BFB28E'), 'Soft and warm', 18],
+    ['tofu', dishLike('Pan-fried tofu with rice', '#F4E7C8', '#C9B48A'), 'Vegetarian', 15],
+  ],
+};
+const SIZES = [['S', 'Small'], ['M', 'Regular'], ['L', 'Large']];
+/* Why a meal was left: the reasons patients give most (appetite, taste, portion, tiredness, pain, nausea). */
+const FEEL = ['😣', '🙁', '😐', '🙂', '😋'];
+const WHY = [['appetite', 'Not hungry'], ['taste', 'Didn’t taste right'], ['portion', 'Too much food'], ['tired', 'Too tired'], ['pain', 'In pain'], ['nausea', 'Felt sick']];
+const WHY_REPLY = {
+  appetite: 'Smaller portions more often can help. Your nurse can bring a snack between meals.',
+  taste: 'Illness can change how food tastes. The dietitian can add sauces or spices to your menu.',
+  portion: 'Tomorrow’s portions are set to Small. You can change that in Menu.',
+  tired: 'A nurse can help you sit up and open your tray next time.',
+  pain: 'Your nurse will check your pain relief before the next meal.',
+  nausea: 'Your nurse will ask the doctor about something for the nausea, and bring plain food.',
+};
 const me = () => H.patient(PL.S.care.me.patient) || PL.S.care.patients[0];
 const DAYS = () => [...new Set(me().log.map(l => l.day))];
 const sumN = recs => recs.reduce((o, r) => { Object.keys(o).forEach(k => { o[k] += r.n[k] || 0; }); return o; }, { kcal: 0, p: 0, c: 0, f: 0, na: 0 });
@@ -45,7 +78,7 @@ function mount(el) {
     <div class="phone" id="care-phone">
       <header class="phone-top" id="care-top"></header>
       <div class="phone-body" id="care-body"></div>
-      <nav class="phone-tabs three" role="tablist" aria-label="Loopi Care">${Object.keys(TABS).map(t => `<button role="tab" data-tab="${t}">${ICON[t]}${TABS[t]}</button>`).join('')}</nav>
+      <nav class="phone-tabs" role="tablist" aria-label="Loopi Care">${Object.keys(TABS).map(t => `<button role="tab" data-tab="${t}">${ICON[t]}${TABS[t]}</button>`).join('')}</nav>
     </div>
   </div>`;
   $$('.phone-tabs button', el).forEach(b => b.onclick = () => { ui.tab = b.dataset.tab; render(); $('#care-body').scrollTop = 0; });
@@ -58,6 +91,11 @@ function mount(el) {
     PL.notify($('#care-phone', root), { app: 'Loopi Care', icon: PL.V.loopi(ate(rec) >= .75 ? 'happy' : 'calm', 30), title: `${mealName(rec.meal)}: ${pct(ate(rec))} eaten`, text: `${rec.n.kcal} kcal and ${rec.n.p} g protein. Tap to see it dish by dish.`, onTap: () => { ui.tab = 'today'; render(); } });
   };
   $('#care-intro', el).onclick = intro;
+  PL.premium(el, { accent: '#0A84FF', glow: '#5AC8FA', who: 'Hospital patients, nurses and dietitians',
+    facts: [['29', '%', 'of inpatients in a Singapore hospital were malnourished, and stayed about two days longer.', 'Lim et al., Clinical Nutrition 2012'],
+      ['93', '%', 'of food charts filled in by staff were incomplete. Poor eaters get missed.', 'Clinical Nutrition 2015'],
+      ['31', '%', 'of hospital food is left on the plate, the median across studies.', 'Nutrients 2023 review']],
+    how: ['Every tray is measured, so no one fills in a chart', 'Patients choose tomorrow’s meals and portion size', 'Alerts reach the nurse with the patient’s own reason', 'Protein shown as recovery, with read-aloud'] });
   render();
   if (!PL.introSeen('care')) intro();
 }
@@ -85,9 +123,11 @@ function render(keep) {
   $('#care-serve', root).disabled = !next;
   $('#care-preset', root).value = ui.preset;
   ward();
-  $('#care-top', root).innerHTML = `${PL.V.avatar(P, 36)}<div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div>`;
+  $('#care-top', root).innerHTML = `${PL.V.avatar(P, 36)}<div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div><button class="speak" id="care-speak" aria-label="Read my day aloud" title="Read aloud">${ICON.speak}</button>`;
+  $('#care-speak', root).onclick = () => speak(P);
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
-  body.innerHTML = ({ today, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
+  body.innerHTML = ({ today, menu, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
+  wireCare(P, body);
   const send = $('#send-report', body); if (send) send.onclick = () => PL.toast(`Report sent to ${P.doctor} and the ward dietitian (demo, nothing was sent).`);
   const pr = $('#print-report', body); if (pr) pr.onclick = () => print();
   $('#care-phone', root).classList.toggle('lg', !!P.big);
@@ -114,7 +154,7 @@ function ward() {
     ${rows.map(({ Q, frac, al }) => `<div class="ward-row ${al && !Q.ack ? 'alarm' : ''}">
       <button class="ward-who" data-open="${Q.id}" aria-pressed="${Q.id === me().id}">${PL.V.avatar(Q, 28)}<span><b>${esc(Q.name)}</b><small>${Q.room} · ${Math.round(frac * 100)}% of today’s energy</small></span><i class="wbar"><i style="width:${Math.min(100, Math.round(frac * 100))}%"></i></i></button>
       ${al ? (Q.ack ? `<p class="ward-done">✓ ${esc(Q.ack.who)} ${ACTIONS[Q.ack.act][1]} · ${Q.ack.t}</p>`
-        : `<p class="ward-al">${esc(al)}</p><div class="ward-acts">${Object.entries(ACTIONS).map(([k, a]) => `<button class="btn small" data-act="${k}" data-pid="${Q.id}">${a[0]}</button>`).join('')}</div>`) : ''}
+        : `<p class="ward-al">${esc(al)}${(() => { const l = Q.log.filter(x => x.day === H.TODAY && x.why).slice(-1)[0]; return l ? ` · says: ${esc(WHY.find(w => w[0] === l.why)[1].toLowerCase())}` : ''; })()}</p><div class="ward-acts">${Object.entries(ACTIONS).map(([k, a]) => `<button class="btn small" data-act="${k}" data-pid="${Q.id}">${a[0]}</button>`).join('')}</div>`) : ''}
     </div>`).join('')}`;
   $$('[data-open]', box).forEach(b => b.onclick = () => { PL.S.care.me.patient = b.dataset.open; PL.store.save('me'); });
   $$('[data-act]', box).forEach(b => b.onclick = () => {
@@ -156,9 +196,55 @@ function today(P) {
         : `<div class="mealc-wait">${id === next ? 'Next' : 'Later'}</div><span>${id === next ? `Arrives about ${t}` : `About ${t}`}</span>`}
     </div>`;
   }).join('')}</div></div>
+  ${last && ate(last) < .75 ? checkin(last) : ''}
   ${last ? `<div class="vcard"><h3>${mealName(last.meal)}, dish by dish</h3>${V.tray(H.wardMenu(last.meal, P.diet), last)}</div>` : ''}
   <div class="vcard"><h3>So far today <small>of your daily target</small></h3><div class="vrings">${V.ring(tot.kcal, D.target.kcal, 'Energy', 'kcal', 'aim')}${V.ring(tot.p, D.target.p, 'Protein', 'g', 'aim')}${V.ring(tot[third], D.target[third], third === 'c' ? 'Carbs' : 'Sodium', third === 'c' ? 'g' : 'mg', 'limit')}</div></div>
   <p class="foot">Daily targets for a ${D.name.toLowerCase()} diet, set by your care team.</p>`;
+}
+
+/** After a poor meal: how was it, and why? The answer goes to the nurse station with the alert. */
+function checkin(r) {
+  const name = mealName(r.meal).toLowerCase();
+  if (r.why) return `<div class="vcard checkin done"><div class="ck-h"><span class="ck-face">${FEEL[r.feel ?? 1]}</span><div><b>Thanks for telling us</b><span>${esc(WHY.find(w => w[0] === r.why)[1])} · your nurse can see this</span></div></div><p class="ck-reply">${esc(WHY_REPLY[r.why])}</p></div>`;
+  return `<div class="vcard checkin"><h3>How was ${name}?</h3>
+    <div class="ck-faces" role="radiogroup" aria-label="How was ${name}">${FEEL.map((f, i) => `<button role="radio" aria-checked="${r.feel === i}" data-feel="${i}" aria-label="${['Awful', 'Not good', 'Okay', 'Good', 'Great'][i]}">${f}</button>`).join('')}</div>
+    <p class="ck-q">What got in the way?</p>
+    <div class="ck-why">${WHY.map(([k, t]) => `<button data-why="${k}">${t}</button>`).join('')}</div></div>`;
+}
+/** Tomorrow's menu: one main per meal and a portion size, sent to the kitchen. */
+function menu(P) {
+  const o = P.order || (P.order = { breakfast: { pick: 'congee', size: 'M' }, lunch: { pick: 'fish', size: 'M' }, dinner: { pick: 'chicken', size: 'M' }, sent: null });
+  const prot = H.MEALS.reduce((a, [id]) => { const c = CHOICES[id].find(x => x[0] === o[id].pick); return a + c[3] * { S: .75, M: 1, L: 1.25 }[o[id].size]; }, 0);
+  const T = H.DIETS[P.diet].target;
+  return `
+  ${V.guide('point', o.sent ? `Tomorrow is sorted. The kitchen is cooking what you chose.` : 'Pick what you feel like eating tomorrow. Choosing your own meals helps you eat more.')}
+  ${H.MEALS.map(([id, name, t]) => `<div class="vcard menu-meal"><h3>${name} <small>tomorrow, ${t}</small></h3>
+    <div class="mm-opts">${CHOICES[id].map(([k, d, note, p]) => `<button class="mm-opt" data-meal="${id}" data-pick="${k}" aria-pressed="${o[id].pick === k}">${V.food(d, 40)}<b>${esc(d.name)}</b><span>${esc(note)}</span><em>${p} g protein</em></button>`).join('')}</div>
+    <div class="seg mm-size" role="group" aria-label="${name} portion">${SIZES.map(([k, l]) => `<button data-meal="${id}" data-size="${k}" aria-pressed="${o[id].size === k}">${l}</button>`).join('')}</div></div>`).join('')}
+  <div class="vcard mm-sum"><div class="mm-prot"><span>Protein tomorrow</span><b class="num">${Math.round(prot)} g</b><i><i style="width:${Math.min(100, prot / T.p * 100).toFixed(0)}%"></i></i><small>of ${T.p} g a day from meals, before snacks</small></div>
+    ${o.sent ? `<p class="mm-sent">${ICON.check} Sent to the kitchen at ${o.sent}</p>` : '<button class="btn primary mm-send" id="mm-send">Send to the kitchen</button>'}</div>
+  <p class="foot">The kitchen cooks to what patients choose, so less comes back uneaten.</p>`;
+}
+function wireCare(P, body) {
+  const last = P.log.filter(l => l.day === H.TODAY).slice(-1)[0];
+  $$('[data-feel]', body).forEach(b => b.onclick = () => { last.feel = +b.dataset.feel; render(true); });
+  $$('[data-why]', body).forEach(b => b.onclick = () => {
+    last.why = b.dataset.why; if (last.feel == null) last.feel = 1;
+    if (last.why === 'portion' && P.order) H.MEALS.forEach(([id]) => { P.order[id].size = 'S'; });
+    if (last.why === 'portion' && !P.order) { menu(P); H.MEALS.forEach(([id]) => { P.order[id].size = 'S'; }); }
+    PL.store.save('care'); PL.toast('Thanks. Your nurse can see this now.');
+  });
+  $$('.mm-opt', body).forEach(b => b.onclick = () => { P.order[b.dataset.meal].pick = b.dataset.pick; P.order.sent = null; PL.store.save('care'); });
+  $$('[data-size]', body).forEach(b => b.onclick = () => { P.order[b.dataset.meal].size = b.dataset.size; P.order.sent = null; PL.store.save('care'); });
+  const send = $('#mm-send', body); if (send) send.onclick = () => { P.order.sent = new Date().toTimeString().slice(0, 5); render(true); PL.store.save('care'); PL.toast('Tomorrow’s meals sent to the kitchen.'); };
+}
+/** Read the day aloud, for patients who find small text hard. */
+function speak(P) {
+  if (!('speechSynthesis' in window)) return PL.toast('Reading aloud isn’t available in this browser.');
+  const recs = P.log.filter(l => l.day === H.TODAY), tot = sumN(recs), T = H.DIETS[P.diet].target, next = H.nextMeal(P);
+  const text = `Hello ${P.name.split(' ')[0]}. ${recs.length ? `Today you have had ${recs.length} meal${recs.length > 1 ? 's' : ''}, and ${recs.filter(r => ate(r) >= .75).length} went well. You have had ${Math.round(tot.p)} grams of protein out of ${T.p}.` : 'Breakfast is on its way.'} ${next ? `Your next meal is ${mealName(next).toLowerCase()} at about ${H.MEALS.find(m => m[0] === next)[2]}.` : 'That is all your meals for today.'}`;
+  speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = .92; speechSynthesis.speak(u);
+  PL.toast('Reading your day aloud.');
 }
 
 /* ================================================================ Report: the healthcare report */
