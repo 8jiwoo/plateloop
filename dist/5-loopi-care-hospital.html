@@ -1716,6 +1716,180 @@ body:has(.kx){background:#000}
 .kx-date{flex-wrap:wrap;row-gap:2px}.kx-date span{white-space:nowrap}
 @media (max-width:520px){.kx-widgets.three{grid-template-columns:1fr 1fr}.kx-widgets.three > :first-child{grid-column:1/-1}}
 
+/* ================================================================ premium stage for the phone apps (Loopi, Loopi Care, Loopi Work) */
+body:has(.stu.premium){background:#050607}
+.stu.premium{--bg:#000000;--bg2:#1C1C1E;--fill:#2C2C2E;--fill2:#3A3A3C;--fill3:#48484A;--label:#F5F5F7;--label2:#AEAEB2;--label3:#8E8E93;--sep:rgba(84,84,88,.55);
+  --tint-soft:rgba(48,209,88,.16);--orange-soft:rgba(255,159,10,.16);--red-soft:rgba(255,69,58,.16);--bar:rgba(22,22,24,.78);--bar2:rgba(20,20,22,.82);--shadow-s:none;--shadow:0 20px 40px -20px rgba(0,0,0,.8);
+  color-scheme:dark;color:var(--label);position:relative;isolation:isolate;max-width:1320px;grid-template-columns:minmax(0,1fr) 390px minmax(0,1fr);gap:44px;padding:40px 28px 60px;min-height:100vh;align-items:center}
+.stu.premium .warm,.stu.premium.warm{--bg:#000000;--bg2:#1C1C1E;--fill:#2C2C2E;--fill2:#3A3A3C;--label:#F5F5F7;--label2:#AEAEB2;--label3:#8E8E93;--sep:rgba(84,84,88,.55);--bar2:rgba(20,20,22,.82);color-scheme:dark}
+.stage-glow{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.stage-glow i{position:absolute;border-radius:50%;filter:blur(100px)}
+.stage-glow i:nth-child(1){width:46vw;height:46vw;left:50%;top:48%;transform:translate(-50%,-50%);background:var(--glow);opacity:.2;animation:stagebreath 9s ease-in-out infinite}
+.stage-glow i:nth-child(2){width:34vw;height:34vw;left:-8vw;top:-12vw;background:var(--acc);opacity:.12;animation:stagedrift 26s ease-in-out infinite alternate}
+.stage-glow i:nth-child(3){width:30vw;height:30vw;right:-8vw;bottom:-12vw;background:#0A84FF;opacity:.08;animation:stagedrift 30s ease-in-out -10s infinite alternate-reverse}
+@keyframes stagebreath{50%{opacity:.28;transform:translate(-50%,-50%) scale(1.08)}}
+@keyframes stagedrift{to{transform:translate(6vw,5vh) scale(1.12)}}
+
+/* the device: titanium edge, glass, a moving sheen */
+.stu.premium .phone{background:var(--bg);border-radius:56px;height:min(844px,calc(100vh - 80px));
+  box-shadow:0 0 0 2px #2A2B2E,0 0 0 9px #0B0B0C,0 0 0 11px #6B6E73,0 0 0 12.5px #2A2C2F,0 60px 120px -40px rgba(0,0,0,.95),0 0 90px -20px color-mix(in srgb,var(--glow) 35%,transparent);
+  will-change:transform;transition:box-shadow .4s}
+.stu.premium .phone::before{top:12px;width:120px;height:34px;background:#000;box-shadow:inset 0 0 0 1px #111}
+.stu.premium .phone::after{content:"";position:absolute;right:-14.5px;top:170px;width:3px;height:74px;border-radius:0 3px 3px 0;background:linear-gradient(90deg,#55585D,#2A2C2F);pointer-events:none}
+.phone-sheen{position:absolute;inset:0;z-index:80;pointer-events:none;border-radius:inherit;background:radial-gradient(120% 70% at var(--sx,50%) var(--sy,20%),rgba(255,255,255,.07),transparent 55%);mix-blend-mode:screen}
+.stu.premium .phone-top{background:rgba(18,18,20,.72);border-bottom-color:rgba(255,255,255,.06)}
+.stu.premium .phone-tabs{background:rgba(18,18,20,.8);border-top-color:rgba(255,255,255,.06);padding-top:8px}
+.stu.premium .phone-tabs button[aria-selected="true"]{color:var(--acc)}
+.stu.premium .phone-tabs button[aria-selected="true"] svg{filter:drop-shadow(0 0 8px color-mix(in srgb,var(--acc) 60%,transparent))}
+.stu.premium .phone .card,.stu.premium .phone .vcard{background:var(--bg2);border:0;box-shadow:inset 0 0 0 .5px rgba(255,255,255,.06)}
+
+/* left: the demo controls as glass panels */
+.stu.premium .stu-side{padding-top:0;gap:14px;max-width:300px}
+.stu.premium .loopi-brand b{font-size:28px;font-weight:700;letter-spacing:-.03em}
+.stu.premium .loopi-brand span{color:var(--label3)}
+.stu.premium .stu-note{color:var(--label3);font-size:12px;text-transform:uppercase;letter-spacing:.06em;font-weight:600}
+.stu.premium .chip{background:rgba(255,255,255,.06);color:var(--label);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1)}
+.stu.premium .chip[aria-pressed="true"]{background:var(--acc);color:#000;box-shadow:0 6px 18px -8px var(--acc)}
+.stu.premium .demo-box,.stu.premium .ward{background:rgba(28,28,30,.6);backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.1);border-radius:18px}
+.stu.premium .demo-box select{background:rgba(255,255,255,.06);color:var(--label);border:0;border-radius:10px;padding:8px 10px}
+.stu.premium .btn.primary{background:var(--acc);color:#000}
+.stu.premium .linkish{color:var(--label3)}.stu.premium .linkish:hover{color:var(--label)}
+
+/* right: the research behind the app */
+.stu-aside{grid-column:3;align-self:center;max-width:320px}
+.research{border-radius:22px;padding:20px;background:linear-gradient(160deg,rgba(255,255,255,.07),rgba(255,255,255,.02));backdrop-filter:blur(24px) saturate(1.5);-webkit-backdrop-filter:blur(24px) saturate(1.5);box-shadow:inset 0 0 0 .5px rgba(255,255,255,.12),0 30px 60px -30px rgba(0,0,0,.8)}
+.research-h span{display:block;font-size:11.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--acc)}
+.research-h b{display:block;font-size:19px;font-weight:700;letter-spacing:-.02em;margin-top:4px;line-height:1.2}
+.research-facts{display:flex;flex-direction:column;margin-top:14px}
+.research-facts > div{padding:12px 0;border-top:.5px solid rgba(255,255,255,.1)}
+.research-facts b{display:flex;align-items:baseline;gap:3px;font-size:34px;font-weight:700;letter-spacing:-.035em;line-height:1;color:#fff}
+.research-facts em{font-style:normal;font-size:16px;font-weight:600;color:var(--label2)}
+.research-facts p{margin:6px 0 2px;font-size:13px;line-height:1.4;color:var(--label2)}
+.research-facts small{font-size:11px;color:var(--label3)}
+.research-how{list-style:none;margin:10px 0 0;padding:12px 0 0;border-top:.5px solid rgba(255,255,255,.1);display:flex;flex-direction:column;gap:8px}
+.research-how li{position:relative;padding-left:22px;font-size:13px;font-weight:500;line-height:1.35}
+.research-how li::before{content:"✓";position:absolute;left:0;top:0;color:var(--acc);font-weight:800}
+.research-link{display:inline-block;margin-top:14px;font-size:13px;font-weight:600;color:var(--acc)}
+.research-link::after{content:" →"}
+
+@media (max-width:1200px){.stu.premium{gap:28px}.stu-aside{max-width:280px}}
+@media (max-width:1040px){.stu.premium{grid-template-columns:minmax(0,1fr) 390px;align-items:start}.stu-aside{grid-column:1;max-width:none}}
+@media (max-width:760px){.stu.premium{grid-template-columns:1fr;padding:16px 14px 110px}.stu-aside{grid-column:1;order:3}.stu.premium .phone{box-shadow:none;border-radius:0;height:auto}.stu.premium .phone::after{display:none}.phone-sheen{display:none}}
+@media (prefers-reduced-motion:reduce){.stage-glow i{animation:none}}
+
+/* ---- Loopi Care: read aloud, appetite check-in, tomorrow's menu */
+.phone-top .speak{margin-left:auto;flex:none;width:36px;height:36px;border-radius:50%;border:0;background:var(--fill);color:var(--acc,var(--blue));display:grid;place-items:center;transition:transform .2s}
+.phone-top .speak:active{transform:scale(.9)}
+.phone-top .speak svg{width:19px;height:19px}
+.checkin h3{margin-bottom:10px}
+.ck-faces{display:flex;justify-content:space-between;gap:6px}
+.ck-faces button{flex:1;aspect-ratio:1;max-width:52px;border:0;border-radius:50%;background:var(--fill);font-size:26px;line-height:1;display:grid;place-items:center;transition:transform .25s cubic-bezier(.3,1.6,.5,1),background .2s,box-shadow .2s}
+.ck-faces button:hover{transform:scale(1.08)}
+.ck-faces button[aria-checked="true"]{transform:scale(1.14);background:color-mix(in srgb,var(--acc,var(--blue)) 28%,transparent);box-shadow:0 0 0 2px var(--acc,var(--blue))}
+.ck-q{margin:14px 0 8px;font-size:13px;font-weight:600;color:var(--label2)}
+.ck-why{display:flex;flex-wrap:wrap;gap:6px}
+.ck-why button{border:0;border-radius:99px;padding:8px 12px;font-size:13px;font-weight:600;background:var(--fill);color:var(--label);transition:background .2s,transform .2s}
+.ck-why button:hover{background:var(--fill2)}.ck-why button:active{transform:scale(.95)}
+.checkin.done .ck-h{display:flex;gap:12px;align-items:center}
+.checkin.done .ck-h b{display:block;font-size:15px}.checkin.done .ck-h span{font-size:12.5px;color:var(--label3)}
+.ck-face{font-size:34px;line-height:1}
+.ck-reply{margin:10px 0 0;font-size:13.5px;line-height:1.45;color:var(--label2)}
+.menu-meal h3 small{font-weight:500}
+.mm-opts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.mm-opt{border:0;border-radius:16px;padding:10px 8px 12px;background:var(--fill);color:var(--label);display:flex;flex-direction:column;align-items:center;text-align:center;gap:3px;transition:transform .25s cubic-bezier(.3,1.5,.5,1),box-shadow .2s,background .2s}
+.mm-opt .food{margin-bottom:4px;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.mm-opt b{font-size:12.5px;line-height:1.2}
+.mm-opt span{font-size:11px;color:var(--label3);line-height:1.25}
+.mm-opt em{font-style:normal;font-size:11px;font-weight:700;color:var(--label2);margin-top:auto;padding-top:4px}
+.mm-opt[aria-pressed="true"]{background:color-mix(in srgb,var(--acc,var(--blue)) 18%,var(--bg2));box-shadow:inset 0 0 0 1.5px var(--acc,var(--blue))}
+.mm-opt[aria-pressed="true"] .food{transform:scale(1.15) rotate(-6deg)}
+.mm-opt[aria-pressed="true"] em{color:var(--acc,var(--blue))}
+.mm-prot span{font-size:13px;color:var(--label2);font-weight:600}
+.mm-prot b{display:block;font-size:30px;font-weight:700;letter-spacing:-.03em;margin:2px 0 8px}
+.mm-prot > i{display:block;height:8px;border-radius:99px;background:var(--fill);overflow:hidden}
+.mm-prot > i > i{display:block;height:100%;border-radius:inherit;background:var(--acc,var(--blue));transition:width .6s cubic-bezier(.2,.8,.2,1)}
+.mm-prot small{display:block;margin-top:6px;font-size:12px;color:var(--label3)}
+.mm-send{width:100%;margin-top:14px}
+.mm-sent{display:flex;gap:6px;align-items:center;margin:14px 0 0;font-weight:600;color:var(--acc,var(--blue))}
+.mm-sent svg{width:18px;height:18px}
+.phone.lg .mm-opt b{font-size:14px}.phone.lg .ck-why button{font-size:15px}
+
+/* ---- Loopi: food groups, class race */
+.fg-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px}
+.fg{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 4px 10px;border-radius:16px;background:var(--fill);text-align:center}
+.fg-ic{position:relative;width:48px;height:48px;border-radius:50%;display:grid;place-items:center;background:var(--bg2);box-shadow:inset 0 0 0 2px var(--fill2)}
+.fg .food{filter:grayscale(1);opacity:.4;transition:filter .5s var(--d),opacity .5s var(--d)}
+.fg-ic i{position:absolute;right:-3px;bottom:-3px;width:20px;height:20px;border-radius:50%;background:var(--fg);color:#fff;display:grid;place-items:center;transform:scale(0);transition:transform .45s cubic-bezier(.3,1.7,.5,1) calc(var(--d) + .25s)}
+.fg-ic i svg{width:12px;height:12px;stroke-width:3.2}
+.fg b{font-size:12.5px}.fg small{font-size:11px;color:var(--label3)}
+.fg.on{background:color-mix(in srgb,var(--fg) 14%,var(--bg2))}
+.fg.on .fg-ic{box-shadow:inset 0 0 0 2px var(--fg),0 0 18px -4px var(--fg)}
+.fg.on .food{filter:none;opacity:1}.fg.on .fg-ic i{transform:scale(1)}
+.fg.on small{color:var(--fg);font-weight:700}
+.race-h{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.race-h .hint{margin:2px 0 0}
+.race-left{flex:none;text-align:center;font-size:28px;font-weight:700;line-height:1;letter-spacing:-.03em}
+.race-left small{display:block;font-size:10.5px;font-weight:600;color:var(--label3);letter-spacing:0;margin-top:3px}
+.race-rows{display:flex;flex-direction:column;gap:7px;margin:14px 0 12px}
+.race-row{display:grid;grid-template-columns:14px 28px 1fr 48px;gap:8px;align-items:center;font-size:13px}
+.race-row > span{color:var(--label3);font-weight:600}
+.race-row em{font-style:normal;text-align:right;color:var(--label2);font-weight:600}
+.race-bar{height:12px;border-radius:99px;background:var(--fill);overflow:hidden}
+.race-bar i{display:block;height:100%;width:var(--w);border-radius:inherit;background:var(--fill3);transform-origin:left;animation:racein 1s cubic-bezier(.2,.8,.2,1) var(--d) both}
+.race-row.us b,.race-row.us em{color:var(--acc,var(--tint))}
+.race-row.us .race-bar i{background:linear-gradient(90deg,color-mix(in srgb,var(--acc,var(--tint)) 60%,transparent),var(--acc,var(--tint)));box-shadow:0 0 14px -2px var(--acc,var(--tint))}
+@keyframes racein{from{transform:scaleX(0)}}
+.race-foot{display:flex;gap:10px;align-items:center;justify-content:space-between;border-top:.5px solid var(--sep);padding-top:12px}
+.race-foot p{margin:0;font-size:13px;color:var(--label2);line-height:1.35}
+.cheer{flex:none;display:flex;align-items:center;gap:6px;border:0;border-radius:99px;padding:9px 12px 9px 11px;font-weight:700;font-size:13px;background:var(--acc,var(--tint));color:#000;transition:transform .2s cubic-bezier(.3,1.7,.5,1)}
+.cheer:active{transform:scale(.92)}
+.cheer b{background:rgba(0,0,0,.18);border-radius:99px;padding:1px 7px;font-size:12px}
+.cheer:disabled{background:var(--fill);color:var(--label2)}
+.cheer-burst{position:absolute;z-index:90;font-style:normal;font-size:20px;pointer-events:none;animation:cheerpop 1.2s cubic-bezier(.2,.7,.3,1) both}
+@keyframes cheerpop{0%{transform:translate(-50%,0) scale(.3);opacity:0}15%{opacity:1}100%{transform:translate(calc(-50% + var(--x)),var(--y)) rotate(var(--r)) scale(1);opacity:0}}
+@media (prefers-reduced-motion:reduce){.race-bar i,.cheer-burst{animation:none}.cheer-burst{display:none}}
+
+/* ---- Loopi Work: pre-order ticket, 3 pm energy, team challenge */
+.pre-slots{display:flex;gap:6px;margin:12px 0}
+.pre-slots button{flex:1;border:0;border-radius:12px;padding:10px 0;font-size:13px;font-weight:600;background:var(--fill);color:var(--label);font-variant-numeric:tabular-nums;transition:background .2s,transform .2s,box-shadow .2s}
+.pre-slots button[aria-checked="true"]{background:color-mix(in srgb,var(--acc,var(--indigo)) 22%,var(--bg2));box-shadow:inset 0 0 0 1.5px var(--acc,var(--indigo));color:var(--acc,var(--indigo))}
+.pre-slots button:active{transform:scale(.94)}
+.pre-go{width:100%}
+.ticket{padding:0!important;overflow:hidden;background:linear-gradient(150deg,color-mix(in srgb,var(--acc,var(--indigo)) 32%,var(--bg2)),var(--bg2) 70%)!important;animation:tkin .6s cubic-bezier(.2,.9,.3,1.2) both}
+@keyframes tkin{from{transform:translateY(12px) scale(.96);opacity:0}}
+.tk-top{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:16px 16px 14px}
+.tk-k{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--acc,var(--indigo))}
+.tk-top b{display:block;font-size:17px;margin-top:3px}.tk-top small{font-size:12.5px;color:var(--label2)}
+.tk-code{font-size:28px;font-weight:800;letter-spacing:-.02em;padding:8px 12px;border-radius:12px;background:rgba(0,0,0,.28);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.tk-cut{position:relative;height:0;border-top:1.5px dashed rgba(255,255,255,.18);margin:0 14px}
+.tk-cut::before,.tk-cut::after{content:"";position:absolute;top:-10px;width:20px;height:20px;border-radius:50%;background:var(--bg)}
+.tk-cut::before{left:-24px}.tk-cut::after{right:-24px}
+.tk-bot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px 14px;font-size:12.5px;color:var(--label2)}
+.pre-done{display:flex;gap:6px;align-items:center;margin:-4px 2px 12px;font-size:13px;font-weight:600;color:var(--acc,var(--indigo))}
+.pre-done svg{width:16px;height:16px}
+.en-opts{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+.en-opts button{border:0;border-radius:14px;padding:10px 2px 8px;background:var(--fill);color:var(--lc);display:flex;flex-direction:column;align-items:center;gap:5px;transition:transform .25s cubic-bezier(.3,1.6,.5,1),background .2s}
+.en-opts button:hover{transform:translateY(-3px);background:var(--fill2)}
+.en-opts button span{font-size:11px;font-weight:600;color:var(--label2)}
+.en-opts svg,.bolt-big svg{width:22px;height:28px}
+.lv1{--lc:#FF453A}.lv2{--lc:#FF9F0A}.lv3{--lc:#FFD60A}.lv4{--lc:#30D158}.lv5{--lc:#64D2FF}
+.energy.done .en-h{display:flex;gap:12px;align-items:center}
+.bolt-big{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:var(--lc);background:color-mix(in srgb,var(--lc) 16%,transparent);animation:tkin .5s cubic-bezier(.2,.9,.3,1.3) both}
+.energy.done b{display:block;font-size:15px}.energy.done .en-h span:not(.bolt-big){font-size:12.5px;color:var(--label2);line-height:1.35}
+.en-cols{display:flex;gap:8px;align-items:flex-end;height:150px;margin:6px 0 10px}
+.en-cols > div{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;height:100%;justify-content:flex-end}
+.en-cols em{font-style:normal;font-size:10.5px;font-weight:600;color:var(--label2)}
+.en-bar{width:100%;max-width:34px;flex:1;display:flex;align-items:flex-end;border-radius:9px;background:var(--fill);overflow:hidden}
+.en-bar i{display:block;width:100%;height:var(--h);border-radius:9px;background:linear-gradient(180deg,var(--acc,var(--indigo)),color-mix(in srgb,var(--acc,var(--indigo)) 55%,transparent));transform-origin:bottom;animation:enup .9s cubic-bezier(.2,.8,.2,1) var(--d) both}
+.en-cols .carby .en-bar i{background:linear-gradient(180deg,#FF9F0A,rgba(255,159,10,.45))}
+.en-cols b{font-size:12px}.en-cols small{font-size:10.5px;color:var(--label3);white-space:nowrap}
+.en-cols .carby small{color:#FF9F0A;font-weight:600}
+@keyframes enup{from{transform:scaleY(0)}}
+.race.team .race-row{grid-template-columns:14px 92px 1fr 44px}
+.race.team .race-row b{font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cheer[aria-pressed="true"]{background:var(--fill);color:var(--label)}
+@media (prefers-reduced-motion:reduce){.ticket,.bolt-big,.en-bar i{animation:none}}
+
 </style>
 </head>
 <body>
@@ -2239,6 +2413,46 @@ PL.notify = (host, o) => {
   n.onclick = () => { bye(); if (o.onTap) o.onTap(); };
   setTimeout(bye, o.ms || 5200);
   if (navigator.vibrate && o.buzz) try { navigator.vibrate(40); } catch (e) {}
+};
+
+/* ------------------------------------------------------------ premium stage for the phone apps (Loopi, Care, Work):
+   ambient light in the app's colour, a "built for" card with the research behind the app, and a phone that tilts
+   toward the pointer and settles flat when you use it. o: { accent, glow, who, facts: [[n, unit, text, source]], how: [..] } */
+const RESEARCH_URL = 'https://github.com/8jiwoo/plateloop/blob/main/docs/research.md';
+PL.premium = (root, o) => {
+  const stu = root && root.querySelector('.stu'); if (!stu) return;
+  stu.classList.add('premium');
+  stu.style.setProperty('--acc', o.accent); stu.style.setProperty('--glow', o.glow || o.accent);
+  stu.insertAdjacentHTML('afterbegin', '<div class="stage-glow" aria-hidden="true"><i></i><i></i><i></i></div>');
+  const phone0 = stu.querySelector('.phone');
+  if (phone0) phone0.insertAdjacentHTML('afterend', `<aside class="stu-aside"><section class="research" aria-label="Why this app">
+    <div class="research-h"><span>Built for</span><b>${PL.esc(o.who)}</b></div>
+    <div class="research-facts">${o.facts.map(([n, u, t, s]) => `<div><b><span class="num">${n}</span>${u ? `<em>${u}</em>` : ''}</b><p>${PL.esc(t)}</p><small>${PL.esc(s)}</small></div>`).join('')}</div>
+    <ul class="research-how">${o.how.map(h => `<li>${PL.esc(h)}</li>`).join('')}</ul>
+    <a class="research-link" href="${RESEARCH_URL}" target="_blank" rel="noopener">Read the research</a></section></aside>`);
+  const card = stu.querySelector('.research');
+  if (card && !PL.reduceMotion && 'IntersectionObserver' in window) card.querySelectorAll('.research-facts .num').forEach((n, i) => PL.countUp(n, 900, 250 + i * 120));
+  // the phone leans toward the pointer; over the screen itself it settles flat so it's easy to use
+  const phone = stu.querySelector('.phone'); if (!phone || PL.reduceMotion) return;
+  phone.insertAdjacentHTML('beforeend', '<i class="phone-sheen" aria-hidden="true"></i>');
+  const fine = matchMedia('(hover:hover) and (min-width:1041px)');
+  let tx = 0, ty = 0, cx = 0, cy = 0, raf = 0;
+  const loop = () => {
+    cx += (tx - cx) * .08; cy += (ty - cy) * .08;
+    const still = Math.abs(tx - cx) < .01 && Math.abs(ty - cy) < .01;
+    phone.style.transform = Math.abs(cx) < .02 && Math.abs(cy) < .02 && still ? '' : `perspective(1600px) rotateY(${cx.toFixed(2)}deg) rotateX(${cy.toFixed(2)}deg)`;
+    phone.style.setProperty('--sx', (50 + cx * 7).toFixed(1) + '%'); phone.style.setProperty('--sy', (30 - cy * 6).toFixed(1) + '%');
+    raf = still ? 0 : requestAnimationFrame(loop);
+  };
+  const kick = () => { if (!raf) raf = requestAnimationFrame(loop); };
+  stu.addEventListener('pointermove', e => {
+    if (!fine.matches) return;
+    const r = phone.getBoundingClientRect(), inside = e.clientX > r.left && e.clientX < r.right && e.clientY > r.top && e.clientY < r.bottom;
+    if (inside) { tx = 0; ty = 0; }
+    else { tx = Math.max(-1, Math.min(1, (e.clientX - (r.left + r.width / 2)) / 700)) * 7; ty = -Math.max(-1, Math.min(1, (e.clientY - (r.top + r.height / 2)) / 600)) * 5; }
+    kick();
+  });
+  stu.addEventListener('pointerleave', () => { tx = 0; ty = 0; kick(); });
 };
 
 /* ------------------------------------------------------------ first-run intro, inside the phone frame.
@@ -2975,8 +3189,41 @@ const ICON = {
   me: I('<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>'),
   check: I('<path d="M5 12.5l4.5 4.5L19 7"/>'),
   alert: I('<path d="M12 4 2.5 20h19Z"/><path d="M12 10v4M12 17v.5"/>'),
+  menu: I('<path d="M7 3v8a2 2 0 0 0 4 0V3M9 11v10M17 3c-2 2-3 5-3 8h3v10"/>'),
+  speak: I('<path d="M4 9.5h3.5L12 5v14l-4.5-4.5H4Z"/><path d="M15.5 9a4.5 4.5 0 0 1 0 6M18 6.5a8 8 0 0 1 0 11"/>'),
 };
-const TABS = { today: 'Today', report: 'Report', me: 'Me' };
+const TABS = { today: 'Today', menu: 'Menu', report: 'Report', me: 'Me' };
+/* Tomorrow's choices: patients who pick their own meals eat more energy and protein, and leave less (see docs/research.md). */
+const dishLike = (name, color, edge) => ({ name, color, edge });
+const CHOICES = {
+  breakfast: [
+    ['congee', dishLike('Chicken congee', '#F3EDDA', '#BFB28E'), 'Soft and easy to eat', 14],
+    ['toast', dishLike('Eggs and wholemeal toast', '#F6D365', '#C9A13B'), 'The most protein', 19],
+    ['oats', dishLike('Oats with banana', '#F7DC6F', '#C9A13B'), 'Light, a little sweet', 9],
+  ],
+  lunch: [
+    ['fish', dishLike('Steamed fish with ginger', '#EDE3D1', '#B8A88A'), 'High protein, mild', 24],
+    ['chicken', dishLike('Braised chicken and potato', '#B5652D', '#7A3F17'), 'Hearty, soft', 26],
+    ['tofu', dishLike('Tofu and vegetable soup', '#F4E7C8', '#C9B48A'), 'Light, if appetite is low', 13],
+  ],
+  dinner: [
+    ['chicken', dishLike('Braised chicken and potato', '#B5652D', '#7A3F17'), 'Hearty, soft', 26],
+    ['fish', dishLike('Fish porridge', '#F3EDDA', '#BFB28E'), 'Soft and warm', 18],
+    ['tofu', dishLike('Pan-fried tofu with rice', '#F4E7C8', '#C9B48A'), 'Vegetarian', 15],
+  ],
+};
+const SIZES = [['S', 'Small'], ['M', 'Regular'], ['L', 'Large']];
+/* Why a meal was left: the reasons patients give most (appetite, taste, portion, tiredness, pain, nausea). */
+const FEEL = ['😣', '🙁', '😐', '🙂', '😋'];
+const WHY = [['appetite', 'Not hungry'], ['taste', 'Didn’t taste right'], ['portion', 'Too much food'], ['tired', 'Too tired'], ['pain', 'In pain'], ['nausea', 'Felt sick']];
+const WHY_REPLY = {
+  appetite: 'Smaller portions more often can help. Your nurse can bring a snack between meals.',
+  taste: 'Illness can change how food tastes. The dietitian can add sauces or spices to your menu.',
+  portion: 'Tomorrow’s portions are set to Small. You can change that in Menu.',
+  tired: 'A nurse can help you sit up and open your tray next time.',
+  pain: 'Your nurse will check your pain relief before the next meal.',
+  nausea: 'Your nurse will ask the doctor about something for the nausea, and bring plain food.',
+};
 const me = () => H.patient(PL.S.care.me.patient) || PL.S.care.patients[0];
 const DAYS = () => [...new Set(me().log.map(l => l.day))];
 const sumN = recs => recs.reduce((o, r) => { Object.keys(o).forEach(k => { o[k] += r.n[k] || 0; }); return o; }, { kcal: 0, p: 0, c: 0, f: 0, na: 0 });
@@ -3004,7 +3251,7 @@ function mount(el) {
     <div class="phone" id="care-phone">
       <header class="phone-top" id="care-top"></header>
       <div class="phone-body" id="care-body"></div>
-      <nav class="phone-tabs three" role="tablist" aria-label="Loopi Care">${Object.keys(TABS).map(t => `<button role="tab" data-tab="${t}">${ICON[t]}${TABS[t]}</button>`).join('')}</nav>
+      <nav class="phone-tabs" role="tablist" aria-label="Loopi Care">${Object.keys(TABS).map(t => `<button role="tab" data-tab="${t}">${ICON[t]}${TABS[t]}</button>`).join('')}</nav>
     </div>
   </div>`;
   $$('.phone-tabs button', el).forEach(b => b.onclick = () => { ui.tab = b.dataset.tab; render(); $('#care-body').scrollTop = 0; });
@@ -3017,6 +3264,11 @@ function mount(el) {
     PL.notify($('#care-phone', root), { app: 'Loopi Care', icon: PL.V.loopi(ate(rec) >= .75 ? 'happy' : 'calm', 30), title: `${mealName(rec.meal)}: ${pct(ate(rec))} eaten`, text: `${rec.n.kcal} kcal and ${rec.n.p} g protein. Tap to see it dish by dish.`, onTap: () => { ui.tab = 'today'; render(); } });
   };
   $('#care-intro', el).onclick = intro;
+  PL.premium(el, { accent: '#0A84FF', glow: '#5AC8FA', who: 'Hospital patients, nurses and dietitians',
+    facts: [['29', '%', 'of inpatients in a Singapore hospital were malnourished, and stayed about two days longer.', 'Lim et al., Clinical Nutrition 2012'],
+      ['93', '%', 'of food charts filled in by staff were incomplete. Poor eaters get missed.', 'Clinical Nutrition 2015'],
+      ['31', '%', 'of hospital food is left on the plate, the median across studies.', 'Nutrients 2023 review']],
+    how: ['Every tray is measured, so no one fills in a chart', 'Patients choose tomorrow’s meals and portion size', 'Alerts reach the nurse with the patient’s own reason', 'Protein shown as recovery, with read-aloud'] });
   render();
   if (!PL.introSeen('care')) intro();
 }
@@ -3044,9 +3296,11 @@ function render(keep) {
   $('#care-serve', root).disabled = !next;
   $('#care-preset', root).value = ui.preset;
   ward();
-  $('#care-top', root).innerHTML = `${PL.V.avatar(P, 36)}<div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div>`;
+  $('#care-top', root).innerHTML = `${PL.V.avatar(P, 36)}<div><b>${esc(P.name)}</b><span>Room ${P.room} · ${H.DIETS[P.diet].name} diet</span></div><button class="speak" id="care-speak" aria-label="Read my day aloud" title="Read aloud">${ICON.speak}</button>`;
+  $('#care-speak', root).onclick = () => speak(P);
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
-  body.innerHTML = ({ today, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
+  body.innerHTML = ({ today, menu, report, meTab })[ui.tab === 'me' ? 'meTab' : ui.tab](P);
+  wireCare(P, body);
   const send = $('#send-report', body); if (send) send.onclick = () => PL.toast(`Report sent to ${P.doctor} and the ward dietitian (demo, nothing was sent).`);
   const pr = $('#print-report', body); if (pr) pr.onclick = () => print();
   $('#care-phone', root).classList.toggle('lg', !!P.big);
@@ -3073,7 +3327,7 @@ function ward() {
     ${rows.map(({ Q, frac, al }) => `<div class="ward-row ${al && !Q.ack ? 'alarm' : ''}">
       <button class="ward-who" data-open="${Q.id}" aria-pressed="${Q.id === me().id}">${PL.V.avatar(Q, 28)}<span><b>${esc(Q.name)}</b><small>${Q.room} · ${Math.round(frac * 100)}% of today’s energy</small></span><i class="wbar"><i style="width:${Math.min(100, Math.round(frac * 100))}%"></i></i></button>
       ${al ? (Q.ack ? `<p class="ward-done">✓ ${esc(Q.ack.who)} ${ACTIONS[Q.ack.act][1]} · ${Q.ack.t}</p>`
-        : `<p class="ward-al">${esc(al)}</p><div class="ward-acts">${Object.entries(ACTIONS).map(([k, a]) => `<button class="btn small" data-act="${k}" data-pid="${Q.id}">${a[0]}</button>`).join('')}</div>`) : ''}
+        : `<p class="ward-al">${esc(al)}${(() => { const l = Q.log.filter(x => x.day === H.TODAY && x.why).slice(-1)[0]; return l ? ` · says: ${esc(WHY.find(w => w[0] === l.why)[1].toLowerCase())}` : ''; })()}</p><div class="ward-acts">${Object.entries(ACTIONS).map(([k, a]) => `<button class="btn small" data-act="${k}" data-pid="${Q.id}">${a[0]}</button>`).join('')}</div>`) : ''}
     </div>`).join('')}`;
   $$('[data-open]', box).forEach(b => b.onclick = () => { PL.S.care.me.patient = b.dataset.open; PL.store.save('me'); });
   $$('[data-act]', box).forEach(b => b.onclick = () => {
@@ -3115,9 +3369,55 @@ function today(P) {
         : `<div class="mealc-wait">${id === next ? 'Next' : 'Later'}</div><span>${id === next ? `Arrives about ${t}` : `About ${t}`}</span>`}
     </div>`;
   }).join('')}</div></div>
+  ${last && ate(last) < .75 ? checkin(last) : ''}
   ${last ? `<div class="vcard"><h3>${mealName(last.meal)}, dish by dish</h3>${V.tray(H.wardMenu(last.meal, P.diet), last)}</div>` : ''}
   <div class="vcard"><h3>So far today <small>of your daily target</small></h3><div class="vrings">${V.ring(tot.kcal, D.target.kcal, 'Energy', 'kcal', 'aim')}${V.ring(tot.p, D.target.p, 'Protein', 'g', 'aim')}${V.ring(tot[third], D.target[third], third === 'c' ? 'Carbs' : 'Sodium', third === 'c' ? 'g' : 'mg', 'limit')}</div></div>
   <p class="foot">Daily targets for a ${D.name.toLowerCase()} diet, set by your care team.</p>`;
+}
+
+/** After a poor meal: how was it, and why? The answer goes to the nurse station with the alert. */
+function checkin(r) {
+  const name = mealName(r.meal).toLowerCase();
+  if (r.why) return `<div class="vcard checkin done"><div class="ck-h"><span class="ck-face">${FEEL[r.feel ?? 1]}</span><div><b>Thanks for telling us</b><span>${esc(WHY.find(w => w[0] === r.why)[1])} · your nurse can see this</span></div></div><p class="ck-reply">${esc(WHY_REPLY[r.why])}</p></div>`;
+  return `<div class="vcard checkin"><h3>How was ${name}?</h3>
+    <div class="ck-faces" role="radiogroup" aria-label="How was ${name}">${FEEL.map((f, i) => `<button role="radio" aria-checked="${r.feel === i}" data-feel="${i}" aria-label="${['Awful', 'Not good', 'Okay', 'Good', 'Great'][i]}">${f}</button>`).join('')}</div>
+    <p class="ck-q">What got in the way?</p>
+    <div class="ck-why">${WHY.map(([k, t]) => `<button data-why="${k}">${t}</button>`).join('')}</div></div>`;
+}
+/** Tomorrow's menu: one main per meal and a portion size, sent to the kitchen. */
+function menu(P) {
+  const o = P.order || (P.order = { breakfast: { pick: 'congee', size: 'M' }, lunch: { pick: 'fish', size: 'M' }, dinner: { pick: 'chicken', size: 'M' }, sent: null });
+  const prot = H.MEALS.reduce((a, [id]) => { const c = CHOICES[id].find(x => x[0] === o[id].pick); return a + c[3] * { S: .75, M: 1, L: 1.25 }[o[id].size]; }, 0);
+  const T = H.DIETS[P.diet].target;
+  return `
+  ${V.guide('point', o.sent ? `Tomorrow is sorted. The kitchen is cooking what you chose.` : 'Pick what you feel like eating tomorrow. Choosing your own meals helps you eat more.')}
+  ${H.MEALS.map(([id, name, t]) => `<div class="vcard menu-meal"><h3>${name} <small>tomorrow, ${t}</small></h3>
+    <div class="mm-opts">${CHOICES[id].map(([k, d, note, p]) => `<button class="mm-opt" data-meal="${id}" data-pick="${k}" aria-pressed="${o[id].pick === k}">${V.food(d, 40)}<b>${esc(d.name)}</b><span>${esc(note)}</span><em>${p} g protein</em></button>`).join('')}</div>
+    <div class="seg mm-size" role="group" aria-label="${name} portion">${SIZES.map(([k, l]) => `<button data-meal="${id}" data-size="${k}" aria-pressed="${o[id].size === k}">${l}</button>`).join('')}</div></div>`).join('')}
+  <div class="vcard mm-sum"><div class="mm-prot"><span>Protein tomorrow</span><b class="num">${Math.round(prot)} g</b><i><i style="width:${Math.min(100, prot / T.p * 100).toFixed(0)}%"></i></i><small>of ${T.p} g a day from meals, before snacks</small></div>
+    ${o.sent ? `<p class="mm-sent">${ICON.check} Sent to the kitchen at ${o.sent}</p>` : '<button class="btn primary mm-send" id="mm-send">Send to the kitchen</button>'}</div>
+  <p class="foot">The kitchen cooks to what patients choose, so less comes back uneaten.</p>`;
+}
+function wireCare(P, body) {
+  const last = P.log.filter(l => l.day === H.TODAY).slice(-1)[0];
+  $$('[data-feel]', body).forEach(b => b.onclick = () => { last.feel = +b.dataset.feel; render(true); });
+  $$('[data-why]', body).forEach(b => b.onclick = () => {
+    last.why = b.dataset.why; if (last.feel == null) last.feel = 1;
+    if (last.why === 'portion' && P.order) H.MEALS.forEach(([id]) => { P.order[id].size = 'S'; });
+    if (last.why === 'portion' && !P.order) { menu(P); H.MEALS.forEach(([id]) => { P.order[id].size = 'S'; }); }
+    PL.store.save('care'); PL.toast('Thanks. Your nurse can see this now.');
+  });
+  $$('.mm-opt', body).forEach(b => b.onclick = () => { P.order[b.dataset.meal].pick = b.dataset.pick; P.order.sent = null; PL.store.save('care'); });
+  $$('[data-size]', body).forEach(b => b.onclick = () => { P.order[b.dataset.meal].size = b.dataset.size; P.order.sent = null; PL.store.save('care'); });
+  const send = $('#mm-send', body); if (send) send.onclick = () => { P.order.sent = new Date().toTimeString().slice(0, 5); render(true); PL.store.save('care'); PL.toast('Tomorrow’s meals sent to the kitchen.'); };
+}
+/** Read the day aloud, for patients who find small text hard. */
+function speak(P) {
+  if (!('speechSynthesis' in window)) return PL.toast('Reading aloud isn’t available in this browser.');
+  const recs = P.log.filter(l => l.day === H.TODAY), tot = sumN(recs), T = H.DIETS[P.diet].target, next = H.nextMeal(P);
+  const text = `Hello ${P.name.split(' ')[0]}. ${recs.length ? `Today you have had ${recs.length} meal${recs.length > 1 ? 's' : ''}, and ${recs.filter(r => ate(r) >= .75).length} went well. You have had ${Math.round(tot.p)} grams of protein out of ${T.p}.` : 'Breakfast is on its way.'} ${next ? `Your next meal is ${mealName(next).toLowerCase()} at about ${H.MEALS.find(m => m[0] === next)[2]}.` : 'That is all your meals for today.'}`;
+  speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text); u.rate = .92; speechSynthesis.speak(u);
+  PL.toast('Reading your day aloud.');
 }
 
 /* ================================================================ Report: the healthcare report */
