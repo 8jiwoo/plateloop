@@ -162,6 +162,16 @@ const V = PL.V;
 const GOAL_ICON = { muscle: 'muscle', lose: 'scale', energy: 'bolt', balanced: 'plate' };
 const TONE = { warn: 'var(--orange)', good: 'var(--tint)', info: 'var(--blue)' };
 const TABS = { today: 'Today', report: 'Report', goals: 'Goals' };
+/* Pre-ordering at work leads to healthier picks and less waste, and the kitchen cooks to the orders (see docs/research.md). */
+const SLOTS = ['12:00', '12:15', '12:30', '12:45', '13:00'];
+const ticket = (w, line) => `${line}-${String(20 + (w.id.charCodeAt(1) * 37) % 70).padStart(3, '0')}`;
+/* The 1 to 3 pm dip is worse after carb-heavy lunches. Past days are estimated from the lunch; today is what you say. */
+const ENERGY = ['Drained', 'Low', 'Okay', 'Good', 'Sharp'];
+const carbShare = r => r.n.kcal ? r.n.c * 4 / r.n.kcal : 0;
+const REFINED = { A: true, C: true }; // white rice and fried noodles: the lunches that deepen the dip
+const energyOf = r => r.energy ?? clamp(Math.round({ A: 2.6, B: 4.1, C: 2.2 }[r.line] + (r.eggs ? .5 : 0) + ((r.day.charCodeAt(0) + r.day.charCodeAt(5)) % 3 - 1) * .4), 1, 5);
+/* Anonymous team challenge: only team totals, never names. */
+const TEAMS = [['Design team', .24], ['Engineering', .21], ['Finance', .18], ['Operations', .15], ['Sales', .12], ['People and HR', .09]];
 
 function mount(el) {
   root = el;
@@ -193,12 +203,18 @@ function mount(el) {
   $('#work-eggs', el).onchange = e => { ui.eggs = e.target.checked; };
   $('#work-scan', el).onclick = () => {
     const w = me(); if (todayRec(w)) return;
-    const line = ui.line || recommend(w)[0].line, like = PREFS[w.id].like, base = H.PRESETS[ui.preset], eggs = eggsOn(w);
+    const line = ui.line || (w.reserved && w.reserved.line) || recommend(w)[0].line, like = PREFS[w.id].like, base = H.PRESETS[ui.preset], eggs = w.reserved && !ui.line ? w.reserved.eggs : eggsOn(w);
     const rec = record(line, eggs, Object.fromEntries(menuOf(line, eggs).map(x => [x.id, base * Math.min(1.05, like[x.id] || 1) + (Math.random() - .5) * .08])), H.TODAY);
+    if (w.reserved) rec.pre = w.reserved.code;
     w.log.push(rec); PL.store.save('work');
     PL.notify($('#work-phone', root), { app: 'Loopi Work', icon: PL.V.loopi('happy', 30), title: `Lunch scanned: ${LINES[line].name}`, text: `${rec.n.kcal} kcal, ${rec.n.p} g protein. Tap for your feedback.`, onTap: () => { ui.tab = 'today'; render(); } });
   };
   $('#work-intro', el).onclick = intro;
+  PL.premium(el, { accent: '#5E5CE6', glow: '#7D7AFF', who: 'Office workers at a company canteen',
+    facts: [['6', 'in 10', 'Singapore residents usually eat out for lunch or dinner.', 'HPB National Nutrition Survey'],
+      ['51', '%', 'more fruit ordered when a canteen pre-order app nudged healthier picks.', 'Cafeteria Online trial, 2021'],
+      ['1–3', 'pm', 'is the post-lunch dip, and carb-heavy lunches make it worse.', 'Nutrients, 2025']],
+    how: ['A daily pick for your goal', 'Pre-order before 11:30 and skip the queue', 'A 3 pm energy check-in, linked to what you ate', 'Private by default: the company sees team totals only'] });
   render();
   if (!PL.introSeen('work')) intro();
 }
@@ -233,6 +249,7 @@ function render(keep) {
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   body.innerHTML = ({ today, report, goals })[ui.tab](w, rec);
   if (ui.tab === 'goals') wireGoals(w);
+  wireWork(w, body);
   const pr = $('#work-print', body); if (pr) pr.onclick = () => print();
   const sh = $('#work-share', body); if (sh) sh.onclick = () => PL.toast('Shared with the company health programme (demo, nothing was sent).');
   if (keep) body.scrollTop = y;
@@ -252,7 +269,9 @@ function today(w, rec) {
     const good = fb.length === 1 && fb[0][0] === 'good';
     return `
     ${V.guide(good ? 'cheer' : 'think', good ? `Right on target for ${G.for}. Same again tomorrow would be great.` : `Here's how lunch went against your goal: ${G.for}.`)}
+    ${energyCard(w, R)}
     <div class="vcard"><h3>Your lunch <small>${LINES[R.line].name}${R.eggs ? ' + eggs' : ''} · ${pct(1 - R.w)} eaten</small></h3>${V.tray(menu, R)}</div>
+    ${R.pre ? `<p class="pre-done">${ICON.check} Pre-ordered as ${R.pre}. You skipped the queue.</p>` : ''}
     ${good ? '' : tips(fb)}
     <div class="vcard"><h3>Against your lunch target</h3>${rings(R.n, T, ['kcal', 'p', 'fb', 'na'])}</div>
     <div class="vcard"><h3>Plate balance</h3>${V.healthyPlate(V.plateShares(menu, R.eaten))}</div>
@@ -265,6 +284,7 @@ function today(w, rec) {
     ${V.tray(bestMenu, null, { size: 36, tag: d => d.id === 'w_eggs' ? 'Add' : '' })}
     ${best.set.length ? `<ul class="tweaks">${best.set.map(t => `<li>${ICON.check}<span>${typeof t.say === 'function' ? t.say(best.line) : t.say}</span></li>`).join('')}</ul>` : ''}
     ${rings(best.n, T, keys)}</div>
+  ${preorder(w, best)}
   <div class="vcard"><h3>The other lines today</h3><div class="lines2">${rec.slice(1).map(o => { const [word, cls] = fitWord(o.plain), n0 = plateNutrients(o.line, { frac: {}, eggs: false, broth: null }); return `<div><div class="lthumbs">${LINES[o.line].dishes.slice(0, 3).map(x => V.food(x, 30)).join('')}</div><div><b>${o.line} · ${LINES[o.line].name}</b><small>${n0.kcal} kcal · ${n0.p} g protein · ${n0.na.toLocaleString('en-US')} mg sodium</small></div><span class="fit ${cls}">${word}</span></div>`; }).join('')}</div></div>
   <p class="foot">Your lunch target: ${T.kcal} kcal, ${T.p} g protein, ${T.fb} g fibre, under ${T.na} mg sodium. It comes from your goal on the Goals tab.</p>`;
 }
@@ -299,12 +319,63 @@ function report(w) {
   ${tips(recs)}
   <div class="vcard"><h3>Protein each lunch <small>share of target</small></h3>${H.dayBars(days, log.map(r => r.n.p / T.p), 'Protein each lunch')}</div>
   <div class="vcard"><h3>Calories each lunch <small>share of target</small></h3>${V.week(days, log.map(r => Math.min(1, r.n.kcal / T.kcal)), { good: .85 })}</div>
+  ${energyWeek(log)}
   <div class="vcard"><h3>Plate balance <small>all week</small></h3>${V.healthyPlate(V.plateShares(allDishes, grams))}</div>
+  ${teamRace(w)}
   <div class="vcard"><h3>What you picked</h3><div class="lines2">${lineCount.map(([k, c]) => `<div><div class="lthumbs">${LINES[k].dishes.slice(0, 3).map(x => V.food(x, 30)).join('')}</div><div><b>${k} · ${LINES[k].name}</b><small>${c} ${c === 1 ? 'day' : 'days'}</small></div><span class="fit ${fitWord(distance(plateNutrients(k, { frac: {}, eggs: false, broth: null }), T, w.goal))[1]}">${c}×</span></div>`).join('')}</div>
     <p class="hint" style="margin-top:10px">You left ${pct(waste)} of your food on average. The office average is ${pct(.17)}.</p></div>
   <div class="vcard"><h3>Average lunch, in detail</h3>${H.nutrientRows(avg, T, ['kcal', 'p', 'c', 'f', 'fb', 'na'], MINS)}</div>
   <div class="two-btn"><button class="btn primary" id="work-share">Share with health programme</button><button class="btn" id="work-print">Print</button></div>
   <p class="foot">Only you see this report unless you share it. Targets are estimates from your goal and body details, not medical advice.</p>`;
+}
+
+/** Pre-order the pick: a ticket, a pickup time, no queue. The kitchen cooks to the orders instead of guessing. */
+function preorder(w, best) {
+  const R = w.reserved, orders = 96 + (w.id.charCodeAt(1) * 13) % 40;
+  if (R) return `<div class="vcard ticket"><div class="tk-top"><div><span class="tk-k">Pre-ordered</span><b>${LINES[R.line].name}${R.eggs ? ' + eggs' : ''}</b><small>Line ${R.line} · pick up at ${R.t}</small></div><div class="tk-code num">${R.code}</div></div>
+    <div class="tk-cut" aria-hidden="true"></div>
+    <div class="tk-bot"><span>Show this at the <b>express counter</b>. Your tray is scanned as usual.</span><button class="linkish" id="pre-cancel">Cancel</button></div></div>`;
+  return `<div class="vcard pre"><h3>Pre-order this lunch <small>order by 11:30</small></h3>
+    <p class="hint">Skip the queue. ${orders} people have pre-ordered today, so the kitchen cooks less extra.</p>
+    <div class="pre-slots" role="radiogroup" aria-label="Pickup time">${SLOTS.map(t => `<button role="radio" data-slot="${t}" aria-checked="${(ui.slot || '12:30') === t}">${t}</button>`).join('')}</div>
+    <button class="btn primary pre-go" id="pre-go">Reserve ${LINES[best.line].name}${best.set.some(t => t.id === 'eggs') ? ' + eggs' : ''}</button></div>`;
+}
+/** 3 pm: how is your energy? One tap, saved with today's lunch. */
+function energyCard(w, R) {
+  const cs = carbShare(R);
+  if (R.energy) return `<div class="vcard energy done"><div class="en-h"><span class="bolt-big lv${R.energy}">${bolt(R.energy)}</span><div><b>${ENERGY[R.energy - 1]} at 3 pm</b><span>${cs > .5 ? `Lunch was ${pct(cs)} carbs. A lighter-carb lunch may help your afternoon.` : 'Saved. See how lunch and energy line up in your report.'}</span></div></div></div>`;
+  return `<div class="vcard energy"><h3>3 pm check-in <small>how is your energy?</small></h3>
+    <div class="en-opts">${ENERGY.map((e, i) => `<button data-energy="${i + 1}" class="lv${i + 1}">${bolt(i + 1)}<span>${e}</span></button>`).join('')}</div></div>`;
+}
+const bolt = lv => `<svg viewBox="0 0 24 30" aria-hidden="true"><rect x="3" y="4" width="18" height="24" rx="4" fill="none" stroke="currentColor" stroke-width="2"/><rect x="9" y="1" width="6" height="3" rx="1" fill="currentColor"/><rect x="6" y="${25 - lv * 4}" width="12" height="${lv * 4}" rx="1.5" fill="currentColor"/></svg>`;
+function energyWeek(log) {
+  const avg = rs => rs.reduce((s, r) => s + energyOf(r), 0) / (rs.length || 1);
+  const by = Object.keys(LINES).map(k => [k, log.filter(r => r.line === k)]).filter(x => x[1].length).map(([k, rs]) => [k, avg(rs)]).sort((a, b) => b[1] - a[1]);
+  const gap = by.length > 1 ? by[0][1] - by[by.length - 1][1] : 0;
+  return `<div class="vcard en-week"><h3>Lunch and your afternoon <small>3 pm energy</small></h3>
+    <div class="en-cols">${log.map((r, i) => `<div style="--h:${energyOf(r) * 20}%;--d:${i * 70}ms" class="${REFINED[r.line] ? 'carby' : ''}"><em>${ENERGY[energyOf(r) - 1]}</em><div class="en-bar"><i></i></div><b>${r.day.slice(0, 3)}</b><small>${LINES[r.line].name.split(' ')[0]}</small></div>`).join('')}</div>
+    <p class="hint">${gap >= .5 ? `Your 3 pm energy was best after ${LINES[by[0][0]].name.toLowerCase()} and lowest after ${LINES[by[by.length - 1][0]].name.toLowerCase()}. White rice and fried food make the afternoon dip worse.` : 'Your energy held steady this week. Keep the balance.'} ${log.some(r => r.energy == null) ? 'Days you didn’t check in are estimated from the lunch.' : ''}</p></div>`;
+}
+/** Teams compete on waste, anonymously. Joining is optional and only adds your trays to your team's total. */
+function teamRace(w) {
+  const rows = TEAMS.map(([t, r]) => [t, t === w.dept && w.team ? r + .02 : r]).sort((a, b) => b[1] - a[1]), max = rows[0][1];
+  const mine = rows.findIndex(r => r[0] === w.dept) + 1;
+  return `<div class="vcard race team"><div class="race-h"><div><h3>Team waste challenge <small>October</small></h3><p class="hint">Less food left than when each team started. The winners get a fruit box on Friday.</p></div></div>
+    <div class="race-rows">${rows.map(([t, r], i) => `<div class="race-row ${t === w.dept ? 'us' : ''}" style="--w:${(r / max * 100).toFixed(1)}%;--d:${i * 80}ms"><span class="num">${i + 1}</span><b>${esc(t)}</b><div class="race-bar"><i></i></div><em class="num">−${pct(r)}</em></div>`).join('')}</div>
+    <div class="race-foot"><p>${w.team ? `Your trays count for ${esc(w.dept)}, now #${mine}.` : `${esc(w.dept)} is #${mine}. Join to add your trays.`} Only team totals are shared, never names.</p>
+      <button class="cheer" id="team-join" aria-pressed="${!!w.team}">${w.team ? 'Joined' : 'Join'}</button></div></div>`;
+}
+function wireWork(w, body) {
+  $$('[data-slot]', body).forEach(b => b.onclick = () => { ui.slot = b.dataset.slot; $$('[data-slot]', body).forEach(x => x.setAttribute('aria-checked', String(x === b))); });
+  const go = $('#pre-go', body);
+  if (go) go.onclick = () => {
+    const best = recommend(w)[0];
+    w.reserved = { line: best.line, eggs: best.set.some(t => t.id === 'eggs'), t: ui.slot || '12:30', code: ticket(w, best.line) };
+    PL.store.save('work'); PL.toast(`Reserved. Pick up at ${w.reserved.t} from the express counter.`);
+  };
+  const cancel = $('#pre-cancel', body); if (cancel) cancel.onclick = () => { w.reserved = null; PL.store.save('work'); PL.toast('Pre-order cancelled.'); };
+  $$('[data-energy]', body).forEach(b => b.onclick = () => { todayRec(w).energy = +b.dataset.energy; PL.store.save('work'); });
+  const tj = $('#team-join', body); if (tj) tj.onclick = () => { w.team = !w.team; PL.store.save('work'); if (w.team) PL.toast(`You joined for ${w.dept}. Only the team total is shared.`); };
 }
 
 /* ---------------------------------------------------------------- Goals: the personalised system */
