@@ -12,16 +12,18 @@ People sign in with their face and scan their tray **before** the meal (what was
 |---|---|---|
 | **PlateLoop Prototype** | `dist/1-plateloop-scanner-3d.html` | A full-screen, cinematic 3D scanner: drag to turn, scroll to zoom, tap a glowing light on a part to fly to it and read how it works. The display's panel opens the working **Kiosk** on the scanner's own screen (face sign-in, before and after scans, nutrition, the Green Tree). Add `?kiosk` to open straight into the kiosk. |
 | **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: an Apple-style admin dashboard in dark mode: a short to-do list, trays scanned, share eaten, food wasted and CO₂ avoided with trends, tomorrow's order against the standard plan and stock, what comes back on trays by dish, the 30-day waste trend and insights. Plus live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
-| **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: a Tamagotchi fed by real lunches, their tray and healthy plate, class and school leaderboards |
-| **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, low-intake alerts, weekly healthcare report for the care team |
-| **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick, meal feedback and a weekly healthcare report |
+| **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: a Tamagotchi fed by real lunches, food groups instead of calories (numbers only if they switch them on), a weekly class race with cheers, and school leaderboards |
+| **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, choosing tomorrow's meals and portion size, an appetite check-in whose reason reaches the nurse station, read-aloud, and a weekly healthcare report for the care team |
+| **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick to pre-order with a pickup ticket, a 3 pm energy check-in linked to lunch, an anonymous team waste challenge and a weekly report |
 | **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person 3D game of one school lunch with PlateLoop, with low-poly characters and a foggy, rainy atmosphere: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the food waste bin, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
 
 ![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
 
+Each Loopi app is built from desk research on what that group struggles with at meals. The sources, and what each app does about them, are in [docs/research.md](docs/research.md); the apps show the key figures next to the phone.
+
 ## Pitch deck
 
-`pitch/index.html` is the judges' deck: 24 slides that follow design thinking (Empathise → Define → Ideate → Prototype → Test), then impact, business model, competition and the ask. The prototype slides embed the real apps live, the impact slide is a savings calculator, and the last slide has a QR code to the demo.
+`pitch/index.html` is the judges' deck: 25 slides that follow design thinking (Empathise → Define → Ideate → Prototype → Test), then impact, business model, competition and the ask. The prototype slides embed the real apps live, the impact slide is a savings calculator, and the last slide has a QR code to the demo.
 
 - **← →** or click the arrows to move, **N** for speaker notes, **F** for full screen. Add `#12` to the URL to open a slide.
 - Print to PDF from the browser for a static copy (one slide per page).
@@ -65,7 +67,7 @@ apps/                 source for the apps
   build.py            builds the standalone files in dist/
 dist/                 the standalone apps (generated, committed for convenience)
 hardware/             Blender scanner: build script, .blend, .glb, renders
-docs/                 project overview (with the system design) and screenshots
+docs/                 project overview (with the system design), research and screenshots
 pitch/                the pitch deck (one HTML file)
 ```
 
