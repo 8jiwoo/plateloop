@@ -74,6 +74,11 @@ function mount(el) {
   $$('.phone-tabs button', el).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.big = false; ui.sheet = null; ui.tab = b.dataset.tab; render(); $('#stu-body').scrollTop = 0; });
   el.onkeydown = e => { if (e.key === 'Escape' && ui.big) { ui.big = false; render(true); } };
   $('#stu-intro', el).onclick = intro;
+  PL.premium(el, { accent: '#30D158', glow: '#34C759', who: 'Secondary school and university students',
+    facts: [['13.6', '%', 'of university students in Singapore eat enough fruit and vegetables.', 'Chew et al., 2017'],
+      ['35', '%', 'less plate waste when classes compete and see their results.', 'Schools plate waste review, 2023'],
+      ['0', 'of 40', 'budget meals sampled in Singapore met My Healthy Plate.', 'CNA, 2024']],
+    how: ['Food groups, not calories', 'The right portion beats a clean plate', 'A weekly class race, with names only if you opt in', 'Try-it quests for the vegetable of the week'] });
   render();
   if (!PL.introSeen('loopi')) intro();
 }
@@ -216,7 +221,8 @@ function lunchTab(st, g) {
     const leftG = Math.round(sum(a.measured));
     out += `<div class="vcard"><h3>What you ate <small>${pct(1 - a.w)} of your tray</small></h3>${V.tray(MENU, a)}</div>
     <div class="vcard"><h3>Your plate today</h3>${V.healthyPlate(V.plateShares(MENU, eaten))}</div>
-    <div class="vcard"><h3>Nutrition</h3><div class="vrings">${V.ring(a.intake.kcal, PL.TARGET.kcal, 'Calories', 'kcal')}${V.ring(a.intake.p, PL.TARGET.p, 'Protein', 'g', 'aim')}${V.ring(a.intake.c, PL.TARGET.c, 'Carbs', 'g')}</div></div>
+    ${groups(a, eaten)}
+    ${st.showKcal ? `<div class="vcard"><h3>Numbers <small>you turned these on in Me</small></h3><div class="vrings">${V.ring(a.intake.kcal, PL.TARGET.kcal, 'Calories', 'kcal')}${V.ring(a.intake.p, PL.TARGET.p, 'Protein', 'g', 'aim')}${V.ring(a.intake.c, PL.TARGET.c, 'Carbs', 'g')}</div></div>` : ''}
     <div class="vtips">
       ${a.co2 > 0 ? V.tip('cloud', 'good', `You saved ${a.co2} g of CO₂`, 'Food that isn\'t wasted doesn\'t have to be grown, cooked and thrown away again.') : ''}
       ${leftG > 20 ? V.tip('recycle', 'info', `${leftG} g went into the food waste bin`, 'It shows up as crumbs in Loopi\'s room until you sweep them.') : V.tip('check', 'good', 'Hardly anything left', 'Your tray grew a fruit on the school\'s Green Tree.')}
@@ -226,6 +232,29 @@ function lunchTab(st, g) {
   out += `<div class="vcard"><h3>This week <small>share of lunch eaten</small></h3>${V.week(days.map(l => l.day), days.map(l => 1 - l.w), { today: days.findIndex(l => l.day.startsWith('Fri')) })}</div>
   <div class="vcard"><h3>${c.name.replace('Stir-fried ', '')} week <small>${tries} of 3 tries</small></h3><div class="tries">${[0, 1, 2].map(i => `<div class="${i < tries ? 'on' : ''}">${V.food(c, 42)}<span>${i < tries ? 'Tried!' : `Try ${i + 1}`}</span></div>`).join('')}</div></div>`;
   return out;
+}
+
+/** Food groups, not calories: did lunch cover grains, protein, vegetables and fruit? Counting calories can harm
+    young people, so the numbers stay hidden unless a student asks for them (see docs/research.md). */
+const GROUPS = [['grain', 'Grains', '#F2B33D'], ['protein', 'Protein', '#E4674B'], ['veg', 'Vegetables', '#4CAF50'], ['fruit', 'Fruit', '#F2545B']];
+function groups(a, eaten) {
+  const got = GROUPS.map(([k, n, col]) => {
+    const ds = MENU.filter(d => d.group === k), served = ds.reduce((t, d) => t + (a.served[d.id] || 0), 0), ate = ds.reduce((t, d) => t + Math.max(0, eaten[d.id] || 0), 0);
+    return { k, n, col, d: ds[0], f: served ? ate / served : 0 };
+  });
+  const n = got.filter(g => g.f >= .4).length;
+  return `<div class="vcard fgroups"><h3>Food groups <small>${n} of 4</small></h3>
+    <div class="fg-row">${got.map((g, i) => `<div class="fg ${g.f >= .4 ? 'on' : ''}" style="--fg:${g.col};--d:${i * 90}ms"><span class="fg-ic">${V.food(g.d, 34)}<i>${g.f >= .4 ? ICON.check : ''}</i></span><b>${g.n}</b><small>${g.f >= .4 ? 'Had it' : g.f > 0 ? 'A little' : 'Missed'}</small></div>`).join('')}</div>
+    <p class="hint">${n === 4 ? 'All four groups. That is a balanced lunch.' : `Try to get ${got.filter(g => g.f < .4).map(g => g.n.toLowerCase()).join(' and ')} in tomorrow.`}</p></div>`;
+}
+/** The weekly class race: which class cuts its waste most against its own usual. Friendly competition cut plate waste by a third in schools. */
+function classRace(st) {
+  const rows = PL.S.classes.map(c => ({ id: c.id, red: Math.max(0, (c.base - c.ret / c.served) / c.base) })).sort((x, y) => y.red - x.red);
+  const max = Math.max(...rows.map(r => r.red), .01), mine = rows.findIndex(r => r.id === st.cls) + 1, cls = PL.S.classes.find(c => c.id === st.cls), cheers = cls.streak * 4 + 6 + ((PL.S.cheers || {})[st.cls] || 0);
+  return `<div class="vcard race"><div class="race-h"><div><h3>Class race <small>this week</small></h3><p class="hint">Less waste than your class usually leaves. The winner picks next Friday’s fruit.</p></div><span class="race-left num">3<small>days left</small></span></div>
+    <div class="race-rows">${rows.map((r, i) => `<div class="race-row ${r.id === st.cls ? 'us' : ''}" style="--w:${(r.red / max * 100).toFixed(1)}%;--d:${i * 80}ms"><span class="num">${i + 1}</span><b>${r.id}</b><div class="race-bar"><i></i></div><em class="num">−${pct(r.red)}</em></div>`).join('')}</div>
+    <div class="race-foot"><p>${mine === 1 ? `Class ${st.cls} is in the lead!` : `Class ${st.cls} is ${['', '', 'second', 'third', 'fourth', 'fifth', 'sixth'][mine]}. ${pct(rows[mine - 2].red - rows[mine - 1].red)} behind ${rows[mine - 2].id}.`}</p>
+      <button class="cheer" id="cheer" ${st.cheered ? 'disabled' : ''}><span aria-hidden="true">📣</span> ${st.cheered ? 'Cheered' : `Cheer ${st.cls} on`}<b class="num">${cheers}</b></button></div></div>`;
 }
 
 /* ================================================================ Kitchen: cook, recipes, catch */
@@ -338,7 +367,7 @@ function ranksTab(st) {
     const all = PL.studentRows(), myRank = all.findIndex(s => s.id === st.id) + 1, top = all.slice(0, 3);
     const c = PL.S.classes.find(c => c.id === st.cls), cw = c.ret / c.served;
     const pod = [top[1], top[0], top[2]].map((s, i) => s ? `<div class="pod p${[2, 1, 3][i]}"><canvas width="${[48, 60, 48][i]}" height="${[40, 50, 40][i]}" data-pet="${s.id}"></canvas><b>${esc(nameFor(s, st).replace(' (you)', ''))}</b><small class="num">${s.week} pts</small><span class="step">${[2, 1, 3][i]}</span></div>` : '<div></div>').join('');
-    body = `
+    body = `${classRace(st)}
     <div class="vcard"><h3>Class ${st.cls} goal <small>under 20% waste</small></h3>
       <div class="goalbar ${cw < .2 ? 'done' : ''}"><i style="width:${Math.min(100, Math.max(4, (.4 - cw) / .2 * 100))}%"></i></div>
       <p class="hint" style="margin-top:8px">${cw < .2 ? `Goal reached! The class left ${pct(cw)} this week.` : `The class left ${pct(cw)} this week.`} You're #${myRank} in the class.</p></div>
@@ -374,6 +403,7 @@ function meTab(st, g) {
   <div class="vtips">
     <label class="switch-row"><span>Face sign-in<small class="sw-sub">${st.faceOff ? 'Off: you sign in with your class and register number' : 'On: just look at the scanner'}</small></span><input type="checkbox" role="switch" id="faceopt" ${st.faceOff ? '' : 'checked'}></label>
     <label class="switch-row"><span>Show my name on the class board</span><input type="checkbox" role="switch" id="optin" ${st.hideName ? '' : 'checked'}></label>
+    <label class="switch-row"><span>Show calories and grams<small class="sw-sub">Off by default. Loopi shows food groups instead of numbers.</small></span><input type="checkbox" role="switch" id="kcalopt" ${st.showKcal ? 'checked' : ''}></label>
   </div>
   <p class="foot">The scanner keeps a match code made from your face, never a photo. It's deleted when you leave the school.</p>`;
 }
@@ -440,6 +470,17 @@ function wire(st) {
   $$('[data-wear]', body).forEach(b => b.onclick = () => act(() => G.wear(me(), b.dataset.wear)));
   const opt = $('#optin', body);
   if (opt) opt.onchange = () => { st.hideName = !opt.checked; PL.store.save('optin'); };
+  const ko = $('#kcalopt', body);
+  if (ko) ko.onchange = () => { st.showKcal = ko.checked; PL.store.save('optin'); };
+  const ch = $('#cheer', body);
+  if (ch) ch.onclick = () => {
+    PL.S.cheers = PL.S.cheers || {}; PL.S.cheers[st.cls] = (PL.S.cheers[st.cls] || 0) + 1; st.cheered = true;
+    const r = ch.getBoundingClientRect(), ph = $('#phone', root).getBoundingClientRect();
+    for (let i = 0; i < 14; i++) { const e = document.createElement('i'); e.className = 'cheer-burst'; e.textContent = ['🎉', '💚', '⭐', '🥦'][i % 4];
+      e.style.cssText = `left:${r.left - ph.left + r.width / 2}px;top:${r.top - ph.top}px;--x:${(Math.random() - .5) * 220}px;--y:${-80 - Math.random() * 160}px;--r:${(Math.random() - .5) * 540}deg;animation-delay:${i * 18}ms`;
+      $('#phone', root).appendChild(e); setTimeout(() => e.remove(), 1400); }
+    PL.store.save('game'); PL.toast(`You cheered Class ${st.cls} on. Everyone in the class sees it.`);
+  };
   const fo = $('#faceopt', body);
   if (fo) fo.onchange = () => { st.faceOff = !fo.checked; PL.store.save('optin'); PL.toast(st.faceOff ? 'Face sign-in is off. Your match code has been deleted from the scanner.' : 'Face sign-in is on. Look at the scanner next time.'); };
 }
