@@ -345,6 +345,16 @@ table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;b
   @page{size:1600px 900px;margin:0}
 }
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;transition-duration:.01s!important}}
+/* research slide */
+.rs{display:flex;flex-direction:column;gap:14px;padding:26px 26px 24px;border-top:6px solid var(--rc)}
+.rs .rs-who{font-size:13px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--rc)}
+.rs .rs-n{font-size:64px;font-weight:800;letter-spacing:-.045em;line-height:1}
+.rs .rs-n small{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink3)}
+.rs .rs-t{margin:0;font-size:17.5px;line-height:1.4;color:var(--ink2)}
+.rs ul{list-style:none;margin:0;padding:12px 0 0;border-top:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;gap:8px}
+.rs li{font-size:16.5px;line-height:1.35;color:var(--ink2);padding-left:24px;position:relative}
+.rs li::before{content:"→";position:absolute;left:0;color:var(--rc);font-weight:800}
+.rs li b{color:var(--ink)}
 </style>
 </head>
 <body>
@@ -424,6 +434,28 @@ table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;b
   </div>
   <div class="src">Personas built from our observations of canteen lunches. Replace the quotes with lines from your own interviews if you have them.</div>
   <aside class="notes">We started by looking at who is actually affected by one canteen tray. There’s the student, who gets a standard scoop and feels pressure to finish it. There’s the canteen operator, who cooks by experience with no data. In hospitals, there’s the nurse who often finds out too late that a patient hasn’t been eating. And in offices, there’s the worker with a health goal who has no idea what’s on his plate. Same tray, four very different needs.</aside>
+</section>
+
+<!-- ============================================================ RESEARCH -->
+<section class="slide" data-title="What the research says" data-phase="0">
+  <div class="eyebrow" data-a>Empathise · desk research</div>
+  <h2 data-a style="--d:.1s">Each group needs something different from the same scan.</h2>
+  <div class="grid g3 mid">
+    <div class="card rs" data-a style="--d:.2s;--rc:#1E9E4A"><span class="rs-who">Students</span>
+      <div class="rs-n"><span class="count" data-to="13.6" data-dec="1">13.6</span><small>%</small></div>
+      <p class="rs-t">of university students eat enough fruit and vegetables. None of 40 budget meals sampled met My Healthy Plate, and calorie counting can harm teens.</p>
+      <ul><li><b>Food groups, not calories</b></li><li><b>Class race</b>: competition cut plate waste by 35%</li><li><b>Right portion</b> beats a clean plate</li></ul></div>
+    <div class="card rs" data-a style="--d:.32s;--rc:#0A84FF"><span class="rs-who">Hospital patients</span>
+      <div class="rs-n"><span class="count" data-to="29">29</span><small>%</small></div>
+      <p class="rs-t">of inpatients were malnourished and stayed longer. 93% of hand-filled food charts were incomplete, and a third of hospital food comes back.</p>
+      <ul><li><b>Every tray measured</b>, no charts</li><li><b>Choose tomorrow’s meals</b> and portion size</li><li><b>Alerts with the patient’s reason</b>: appetite, taste, too much, pain</li></ul></div>
+    <div class="card rs" data-a style="--d:.44s;--rc:#5E5CE6"><span class="rs-who">Office workers</span>
+      <div class="rs-n">6<small> in 10</small></div>
+      <p class="rs-t">eat out for lunch or dinner, and obesity rose from 10.5% to 12.7%. Carb-heavy lunches deepen the 1 to 3 pm dip.</p>
+      <ul><li><b>Pre-order</b>: 51% more fruit in one trial</li><li><b>3 pm energy check-in</b>, linked to lunch</li><li><b>Private by default</b>: teams, never names</li></ul></div>
+  </div>
+  <div class="src">Chew et al. 2017; CNA 2024; PMC10271086; Lim et al., Clinical Nutrition 2012; Clinical Nutrition 2015; HPB and MOH NPHS 2024; Nutrients 2025; Cafeteria Online (PMC8701129). Full list in docs/research.md.</div>
+  <aside class="notes">We didn’t want to guess what each group needs, so we read the research. Students in Singapore eat very little fruit and veg, budget meals rarely balance, and counting calories can harm teenagers, so Loopi shows food groups instead, and uses class competition, which cut plate waste by a third in school studies. In hospitals, almost a third of patients are malnourished and hand-written food charts are nearly always incomplete. Letting patients choose their own meals raises intake, so Loopi Care measures every tray, lets patients choose tomorrow’s meals, and sends the patient’s own reason to the nurse. In offices, most people eat out, and heavy-carb lunches make the afternoon slump worse. Pre-ordering leads to healthier choices, so Loopi Work adds pre-ordering and a 3 pm energy check-in, and keeps everything private.</aside>
 </section>
 
 <!-- ============================================================ 5 JOURNEY MAP -->
@@ -601,8 +633,8 @@ table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;b
       <div class="loop" data-a style="--d:.3s"><span>Eat lunch</span><em>→</em><span>Food in Loopi’s bowl</span><em>→</em><span>Hearts</span><em>→</em><span>Loopi grows</span></div>
       <ul>
         <li data-a style="--d:.4s"><b>Rewards the right portion,</b> not a clean plate: you’re compared with your own usual.</li>
-        <li data-a style="--d:.5s"><b>Leftovers become crumbs</b> to sweep up. Wasting food never pays.</li>
-        <li data-a style="--d:.6s"><b>Classes compete</b> on who wastes least. Names only if you opt in.</li>
+        <li data-a style="--d:.5s"><b>Food groups, not calories.</b> Numbers stay hidden unless you turn them on.</li>
+        <li data-a style="--d:.6s"><b>A weekly class race</b> on who wastes least, with cheers. Names only if you opt in.</li>
       </ul>
     </div>
     <div class="device tall" data-a="pop" style="--d:.2s;--ar:1.03;--vw:900px;--vh:874px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/4-loopi-student-app.html" target="_blank" rel="noopener">Open ↗</a><iframe data-src="../dist/4-loopi-student-app.html" title="Loopi, live demo"></iframe></div>
@@ -619,8 +651,8 @@ table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;b
       <p class="small" data-a style="--d:.2s">In hospitals the goal flips: food left on a tray usually means a patient isn’t eating enough.</p>
       <ul>
         <li data-a style="--d:.3s"><b>Intake against the prescribed diet:</b> high protein, diabetic or low sodium.</li>
-        <li data-a style="--d:.4s"><b>Nurse station alert</b> after two poor meals, with one-tap actions the patient can see.</li>
-        <li data-a style="--d:.5s"><b>Weekly report</b> for the doctor and dietitian. Larger text for patients.</li>
+        <li data-a style="--d:.4s"><b>Choose tomorrow’s meals</b> and portion size, which raises intake.</li>
+        <li data-a style="--d:.5s"><b>After a poor meal, patients say why.</b> The nurse station sees the reason with the alert.</li>
       </ul>
     </div>
     <div class="device tall" data-a="pop" style="--d:.2s;--ar:1.03;--vw:900px;--vh:874px"><span class="live-tag">LIVE</span><a class="open-full" href="../dist/5-loopi-care-hospital.html" target="_blank" rel="noopener">Open ↗</a><iframe data-src="../dist/5-loopi-care-hospital.html" title="Loopi Care, live demo"></iframe></div>
@@ -637,7 +669,7 @@ table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;b
       <p class="small" data-a style="--d:.2s">Personal targets from your goal, height, weight and activity.</p>
       <ul>
         <li data-a style="--d:.3s"><b>A daily pick</b> from the canteen that fits your goal, with small tweaks.</li>
-        <li data-a style="--d:.4s"><b>Feedback after lunch:</b> “Not enough protein: 21 of 31 g.”</li>
+        <li data-a style="--d:.4s"><b>Pre-order and skip the queue,</b> then a 3 pm energy check-in linked to lunch.</li>
         <li data-a style="--d:.5s"><b>Private by default.</b> Your employer only sees anonymous totals.</li>
       </ul>
     </div>
@@ -832,7 +864,7 @@ table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;b
   const load = s => s.querySelectorAll('iframe[data-src]:not([data-manual])').forEach(f => { if (!f.src) f.src = f.dataset.src; });
 
   // numbers count up when their slide opens
-  const fmt = (v, el) => el.dataset.fmt === 'comma' ? Math.round(v).toLocaleString('en-US') : String(Math.round(v));
+  const fmt = (v, el) => el.dataset.fmt === 'comma' ? Math.round(v).toLocaleString('en-US') : el.dataset.dec ? v.toFixed(+el.dataset.dec) : String(Math.round(v));
   const countUp = s => s.querySelectorAll('.count').forEach(el => {
     const to = +el.dataset.to, t0 = performance.now() + 300, dur = 1400;
     const f = now => { const k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 4); el.textContent = fmt(to * e, el); if (k < 1) requestAnimationFrame(f); };
