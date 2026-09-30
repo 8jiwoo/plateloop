@@ -9,7 +9,7 @@
 const { $, $$, pct, esc, MENU, DISH, FORMS } = PL;
 const G = PL.game, V = PL.V;
 
-const ui = { tab: 'loopi', seg: 'class', kseg: 'cook', big: false, modal: null, sheet: null, ovenMsg: '', seenScan: 0 };
+const ui = { tab: 'loopi', seg: 'class', kseg: 'cook', big: false, modal: null, sheet: null, ovenMsg: '', seenScan: 0, preset: 'Just right', chal: 'daily', busy: false, petMode: null, say: null };
 let root = null;
 
 const I = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
@@ -59,6 +59,11 @@ function mount(el) {
       <div class="loopi-brand"><span class="loopi-icon" aria-hidden="true">${V.loopi('happy', 46)}</span><div><b>Loopi</b><span>by PlateLoop · for teens and uni students</span></div></div>
       <p class="stu-note">Demo: pick a student</p>
       <div class="chips" id="stu-who"></div>
+      <div class="demo-box">
+        <label for="stu-preset">At the scanner</label>
+        <select id="stu-preset">${Object.keys(PL.PRESETS).map(p => `<option ${p === ui.preset ? 'selected' : ''}>${p}</option>`).join('')}</select>
+        <button class="btn primary" id="stu-scan"></button>
+      </div>
       <button class="linkish" id="stu-intro" style="font-size:13px;text-align:left">Show the first-run intro</button>
       <button class="linkish" data-reset style="font-size:13px;text-align:left">Reset demo</button>
     </aside>
@@ -74,6 +79,15 @@ function mount(el) {
   $$('.phone-tabs button', el).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.big = false; ui.sheet = null; ui.tab = b.dataset.tab; render(); $('#stu-body').scrollTop = 0; });
   el.onkeydown = e => { if (e.key === 'Escape' && ui.big) { ui.big = false; render(true); } };
   $('#stu-intro', el).onclick = intro;
+  $('#stu-preset', el).onchange = e => { ui.preset = e.target.value; };
+  $('#stu-scan', el).onclick = () => {
+    const st = me(), state = PL.scanState(st);
+    if (state === 'done' || ui.busy) return;
+    if (state === 'none') PL.scanBefore(st.id, 'M'); else PL.scanAfter(st.id, PL.PRESETS[ui.preset]);
+    ui.seenScan = PL.S.lastScan.at; ui.say = null; ui.big = false; ui.sheet = null; ui.tab = 'loopi';
+    PL.store.save('scan'); notifyScan(PL.S.lastScan);
+    $('#stu-body', root).scrollTop = 0;
+  };
   PL.premium(el, { accent: '#30D158', glow: '#34C759', who: 'Secondary school and university students',
     facts: [['13.6', '%', 'of university students in Singapore eat enough fruit and vegetables.', 'Chew et al., 2017'],
       ['35', '%', 'less plate waste when classes compete and see their results.', 'Schools plate waste review, 2023'],
@@ -102,11 +116,17 @@ function render(keepScroll) {
   const st = me(), g = G.ensure(st), body = $('#stu-body', root), scroll = body.scrollTop;
   $('#stu-who', root).innerHTML = PL.S.students.filter(s => s.named).map(s => `<button class="chip" data-sid="${s.id}" aria-pressed="${s.id === st.id}"><canvas width="26" height="22" data-pet="${s.id}"></canvas>${esc(s.name)}</button>`).join('');
   $$('#stu-who button', root).forEach(b => b.onclick = () => { if (Catch.running) Catch.stop(true); ui.modal = null; ui.big = false; ui.sheet = null; PL.S.me = b.dataset.sid; PL.store.save('me'); });
+  checkLevel(st, g);
+  const state = PL.scanState(st), sb = $('#stu-scan', root);
+  sb.textContent = state === 'none' ? 'Scan tray before lunch' : state === 'eating' ? 'Scan tray after lunch' : 'Lunch is done';
+  sb.disabled = state === 'done'; $('#stu-preset', root).disabled = state !== 'eating';
+  $('#phone', root).classList.toggle('home-mode', ui.tab === 'loopi');
   $('#stu-top', root).innerHTML = `<canvas width="40" height="34" data-pet="${st.id}"></canvas><div><b>${esc(st.name)}</b><span>Class ${st.cls} · ${PL.SCHOOL}</span></div><div class="pts"><b class="num">${st.week}</b><span>points</span></div><div class="gems" title="Gems">${GEM}<b class="num">${g.gems}</b></div>`;
   $$('.phone-tabs button', root).forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === ui.tab)));
   body.innerHTML = ({ loopi: loopiTab, lunch: lunchTab, kitchen: kitchenTab, ranks: ranksTab, me: meTab })[ui.tab](st, g);
   layer(st, g);
   wire(st);
+  wireHome(st, g);
   paint(0);
   wireRoom();
   if (ui.tab === 'kitchen' && ui.kseg === 'catch') Catch.attach();
@@ -117,33 +137,270 @@ function paint(t) {
   const st = me();
   PL.paintPets(root, t);
   $$('canvas[data-acc]', root).forEach(cv => { const o = PL.petOf(st); PL.drawPet(cv, { rows: 30, t, ...o, stage: o.stage === 'egg' ? 'baby' : o.stage, mood: 'happy', acc: cv.dataset.acc }); });
-  $$('canvas[data-evo]', root).forEach(cv => PL.drawPet(cv, { rows: 30, t, ...PL.petOf(st), mood: 'joy' }));
+  $$('canvas[data-evo]', root).forEach(cv => { const o = PL.petOf(st), [fill, mid] = BODY[o.stage === 'egg' ? 'egg' : o.form] || BODY.leafy; PL.drawPet(cv, { rows: 30, t, ...o, mood: 'joy', bg: 'none', noGround: true, fill, mid, ink: '#2B2B2E' }); });
 }
 
-/* ================================================================ Loopi: the Tamagotchi */
+/* ================================================================ Home: Loopi is the whole screen
+   The student's real lunch drives everything here: the scanner's two scans feed Loopi, less waste keeps it
+   healthy and earns hearts, clean trays in a row build a streak, and XP from each lunch levels it up. */
+const BODY = { leafy: ['#D7F2CB', '#A9D99A'], crystal: ['#D6ECFA', '#A9CFEA'], guardian: ['#F8E6C8', '#E2C290'], explorer: ['#FBDCCF', '#EDB39C'], egg: ['#FFF4DC', '#EAD9B0'] };
+const LV = 100; // XP per level
+const TRAY_G = 620; // a typical tray, for turning waste shares into grams
+const dayKey = () => new Date().toISOString().slice(0, 10);
+const levelOf = st => { const xp = st.pet.xp; return { lv: 1 + Math.floor(xp / LV), into: xp % LV, pct: (xp % LV) / LV }; };
+const shortDish = d => d.name.replace('Stir-fried ', '').replace('Braised ', '').toLowerCase();
+/** Four needs, each driven by something real: lunches fill Full, care fills Happy, low waste keeps Healthy, sweeping up leftovers keeps Clean. */
+function needs(st, g) {
+  const recent = st.log.slice(0, 5), avgW = recent.reduce((a, l) => a + l.w, 0) / (recent.length || 1);
+  return [
+    { k: 'full', icon: '🍙', name: 'Full', v: Math.max(0, g.hunger - (g.plate && !g.plate.eaten ? g.plate.gain : 0)) / G.hungerMax(g), why: 'Filled by the lunch you really eat' },
+    { k: 'happy', icon: '😊', name: 'Happy', v: st.pet.jo / 100, why: 'Pats, play and snacks' },
+    { k: 'health', icon: '💪', name: 'Healthy', v: PL.clamp(1 - (avgW - .05) / .45, .08, 1), why: 'Less food left this week' },
+    { k: 'clean', icon: '✨', name: 'Clean', v: PL.clamp(1 - g.mess.length / 8, .05, 1), why: 'Leftovers swept into the bin' },
+  ];
+}
+const moodOf = N => { const a = N.reduce((s, n) => s + n.v, 0) / N.length; return a >= .66 ? 'great' : a >= .42 ? 'ok' : 'low'; };
+/** What Loopi says: always the link between what the student did and how Loopi feels. */
+function petLine(st, g, mood) {
+  const a = st.after, c = craving();
+  if (g.plate && !g.plate.eaten) return g.plate.heart ? 'You hardly left anything! My lunch is ready. Feed me!' : 'Your lunch is in my bowl. Tap Feed!';
+  if (g.ready) return 'I feel funny… I think I’m about to grow! Tap the glowing button.';
+  if (a) return a.w < G.heartLine(st) ? `You left only ${pct(a.w)} today. I feel amazing!` : `You left ${pct(a.w)} today. A smaller scoop tomorrow gets me a heart!`;
+  if (st.before) return 'Enjoy lunch! Scan your tray again when you’re done and I get to eat too.';
+  if (g.mess.length > 3) return 'Can you help me tidy up? There’s food on my floor.';
+  if (g.hunger <= 1) return 'My tummy is rumbling… scan your lunch tray to feed me!';
+  return mood === 'great' ? `I’m ready for lunch! Will you try the ${shortDish(c)} today?` : 'Scan your tray before you eat, and I get your lunch after!';
+}
+const CRUMB_X = [26, 62, 40, 70, 33, 55, 47, 66], CRUMB_Y = [14, 10, 4, 22, 26, 2, 18, 8];
+const BIN = '<svg viewBox="0 0 32 36" aria-hidden="true"><path d="M5 10h22l-2 22a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3Z" fill="#34C759"/><path d="M3 7h26v4H3z" fill="#248A3D"/><path d="M12 7V4h8v3" fill="none" stroke="#248A3D" stroke-width="2.4"/><path d="M12 16v14M16 16v14M20 16v14" stroke="#1C6B2F" stroke-width="1.8" stroke-linecap="round"/><path d="M16 21.5a3 3 0 1 1-2.6 1.5l1-1.7" fill="none" stroke="#fff" stroke-width="1.6" stroke-linecap="round" opacity=".9"/></svg>';
+
 function loopiTab(st, g) {
-  const max = G.hungerMax(g), req = G.heartsReq(g), next = PL.STAGES[g.stage + 1];
-  const form = PL.formOf(st.pet), F = FORMS[form], joy = Math.round(st.pet.jo / 20);
-  const foot = g.ready ? '' : g.stage === 3 && g.hearts >= req
-    ? 'Loopi is fully grown.'
-    : `A tray with less than ${pct(G.heartLine(st))} left earns a heart. Your usual is ${pct(st.baseline)}.`;
+  const N = needs(st, g), mood = moodOf(N), L = levelOf(st), stg = PL.stuStage(st), F = FORMS[PL.formOf(st.pet)];
+  const lunch = g.plate && !g.plate.eaten, d = g.day && g.day.d === dayKey() ? g.day : { balls: 0, pets: 0 };
+  ui.heroMood = mood;
+  const say = ui.say && ui.say.until > Date.now() ? ui.say.text : petLine(st, g, mood), sayStill = say === ui.lastSay; ui.lastSay = say;
   return `
-  ${roomBlock(st, g, false)}
-  <div class="petstats">
-    <div>${V.icon('bowl', '#F2A516')}<span>Food</span>${pips(g.hunger, max, 'food')}<b class="num">${g.hunger}/${max}</b></div>
-    <div>${V.icon('smile', '#F28C28')}<span>Happy</span>${pips(joy, 5, 'joy')}<b class="num">${joy}/5</b></div>
-    <div>${V.icon('heart', '#FF2D55')}<span>Hearts</span><span class="hearts">${Array.from({ length: req }, (_, i) => HEART(i < g.hearts)).join('')}</span><b class="num">${g.hearts}/${req}</b></div>
+  <section class="hero mood-${mood}" id="hero" data-still>
+    <div class="hero-fx" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+    <header class="hero-hud">
+      <div class="lvl" style="--p:${Math.round(L.pct * 100)}" title="${LV - L.into} XP to level ${L.lv + 1}"><b class="num">${L.lv}</b><small>LV</small></div>
+      <div class="hero-id"><b>${esc(g.name)}</b><span>${stg.id === 'egg' ? 'An egg' : `${F.name} ${stg.name.toLowerCase()}`} · ${LV - L.into} XP to Lv ${L.lv + 1}</span></div>
+      <span class="hud-pill" title="Clean trays in a row">🔥<b class="num">${st.pet.streak}</b></span>
+      <span class="hud-pill" title="Gems">${GEM}<b class="num" id="hud-gems">${g.gems}</b></span>
+      <button class="hero-room" data-room="expand" aria-label="Open Loopi's room" title="Loopi's room">${ICON.expand}</button>
+    </header>
+    <p class="hero-say ${sayStill ? 'still' : ''}" id="hero-say">${esc(say)}</p>
+    <button class="pet-wrap" id="pet-wrap" aria-label="Pet ${esc(g.name)}"><canvas id="bigpet" width="300" height="260"></canvas></button>
+    <div class="stage-floor">
+      <button class="bowl ${lunch ? 'ready' : ''}" data-home="feed" aria-label="${lunch ? 'Lunch is in the bowl. Feed Loopi' : 'Loopi’s bowl'}"><span class="bowl-food">${lunch ? g.plate.food.slice(0, 4).map(id => V.food(DISH[id], 22)).join('') : ''}</span><i></i></button>
+      ${g.mess.slice(0, 8).map((id, i) => `<button class="crumb" data-crumb="${id}" style="left:${CRUMB_X[i]}%;bottom:${CRUMB_Y[i]}px" aria-label="Sweep up ${esc(DISH[id].name.toLowerCase())}">${V.food(DISH[id], 20)}</button>`).join('')}
+      <span class="bin" id="bin" title="Food waste bin: ${g.composted} scraps so far">${BIN}</span>
+    </div>
+  </section>
+  <div class="needs" data-still>${N.map(n => `<div class="nd ${n.v < .3 ? 'low' : n.v < .6 ? 'mid' : ''}" title="${n.why}"><span class="nd-ring" style="--p:${Math.round(n.v * 100)}"><em>${n.icon}</em></span><b>${n.name}</b><small class="num">${Math.round(n.v * 100)}%</small></div>`).join('')}</div>
+  <div class="acts">
+    <button data-home="feed" class="${lunch ? 'hot' : ''}"><span>🍱</span><b>${lunch ? 'Feed lunch' : 'Feed'}</b><small>${lunch ? 'from your tray' : g.snacks.length ? `${g.snacks.length} snack${g.snacks.length > 1 ? 's' : ''}` : 'no snacks'}</small></button>
+    <button data-home="play"><span>⚽</span><b>Play</b><small>${Math.max(0, G.BALLS_PER_DAY - d.balls)} left today</small></button>
+    <button data-home="clean" class="${g.mess.length > 3 ? 'warn' : ''}"><span>🧹</span><b>Clean</b><small>${g.mess.length ? `${g.mess.length} crumb${g.mess.length > 1 ? 's' : ''}` : 'all tidy'}</small></button>
+    <button data-home="dress"><span>🎀</span><b>Dress</b><small>${G.owned(st).size} items</small></button>
   </div>
-  ${g.ready ? `<button class="btn primary big" id="evolve">${next ? `Grow into ${/^[AEIOU]/.test(next.name) ? 'an' : 'a'} ${next.name.toLowerCase()}` : 'Loopi is ready to lay an egg!'}</button>` : `<p class="foot">${foot}</p>`}
+  ${g.ready ? `<button class="btn primary big glowbtn" id="evolve">✨ ${PL.STAGES[g.stage + 1] ? `Grow into ${/^[AEIOU]/.test(PL.STAGES[g.stage + 1].name) ? 'an' : 'a'} ${PL.STAGES[g.stage + 1].name.toLowerCase()}` : 'Loopi is ready to lay an egg!'}</button>` : ''}
   ${g.eggs.length ? `<button class="btn big eggbtn" id="hatch"><span class="egg-ic ${g.eggs[0]}"></span>Hatch the ${RARITY[g.eggs[0]].toLowerCase()} egg${g.eggs.length > 1 ? ` (+${g.eggs.length - 1} more)` : ''}</button>` : ''}
-  <div class="vcard snackcard"><h3>Snacks <small>${g.snacks.length ? 'tap to feed Loopi' : 'cook some in the Kitchen'}</small></h3>
-    ${g.snacks.length ? `<div class="snackrow">${g.snacks.map(sn => { const rc = G.RECIPES.find(r => r.id === sn.recipe); return `<button class="snk ${sn.golden ? 'golden' : ''}" data-snack="${sn.id}"><span class="snk-ic">${rc.seq.slice(0, 3).map(t => ING(t, 22)).join('')}</span><b>${esc(sn.name)}</b><small>+${sn.hunger} food</small></button>`; }).join('')}</div>` : `<button class="btn small" data-go="kitchen">Go to the Kitchen</button>`}</div>
-  <div class="two"><button class="btn" id="open-wardrobe">${V.icon('smile', 'var(--purple)')}Wardrobe</button><button class="btn" id="open-barn">${V.icon('heart', 'var(--orange)')}Barn · ${g.barn.length}</button></div>
-  <div class="vcard growcard">
-    <div class="stages">${PL.STAGES.map((s, i) => `<div class="${i < g.stage ? 'past' : i === g.stage ? 'now' : ''}"><canvas width="56" height="47" data-form="${form}" data-stage="${s.id}"></canvas><span>${s.name}</span></div>`).join('')}</div>
-    <p><b>${g.stage === 3 ? `${F.name} Loopi` : `Growing up ${F.name}`}</b> · ${st.pet.c[F.key]} ${F.why} so far. What you eat decides how Loopi looks.</p>
+  ${mission(st, g)}
+  ${weekStory(st, g)}
+  ${challenges(st, g)}
+  ${growth(st, g)}
+  ${g.snacks.length ? `<div class="vcard snackcard"><h3>Snack bag <small>tap to feed</small></h3><div class="snackrow">${g.snacks.map(sn => { const rc = G.RECIPES.find(r => r.id === sn.recipe); return `<button class="snk ${sn.golden ? 'golden' : ''}" data-snack="${sn.id}"><span class="snk-ic">${rc.seq.slice(0, 3).map(t => ING(t, 22)).join('')}</span><b>${esc(sn.name)}</b><small>+${sn.hunger} food</small></button>`; }).join('')}</div></div>` : ''}
+  <div class="tiles">
+    <button id="open-wardrobe"><span>🎀</span><b>Wardrobe</b><small>${G.owned(st).size} of ${G.ACCESSORIES.length}</small></button>
+    <button id="open-barn"><span>🏡</span><b>Barn</b><small>${g.barn.length} grown</small></button>
+    <button data-go="ranks"><span>🏆</span><b>Class race</b><small>Class ${st.cls}</small></button>
+    <button data-go="kitchen"><span>🍳</span><b>Cook</b><small>snacks</small></button>
   </div>`;
 }
+
+/** Today's lunch, as the steps that feed Loopi, then what the scan turned into. */
+function mission(st, g) {
+  const state = PL.scanState(st), fed = g.plate && g.plate.eaten, a = st.after;
+  const steps = [['🍱', 'Get lunch'], ['📷', 'Scan before'], ['😋', 'Eat'], ['📷', 'Scan after'], ['🐣', 'Feed Loopi']];
+  const at = state === 'none' ? 0 : state === 'eating' ? 2 : fed ? 5 : 4;
+  const line = [
+    'Get your lunch, then put your tray on the scanner before you eat. It sees what you were served.',
+    '', 'Enjoy lunch! Then scan your tray again. The difference is exactly what you ate.', '',
+    'Your lunch is in Loopi’s bowl. Tap Feed!', 'Loopi has eaten your lunch. Same time tomorrow!'][at];
+  let res = '';
+  if (a) {
+    const good = a.w < G.heartLine(st), p = g.plate || {}, xp = st.log[0] ? st.log[0].pts : 0;
+    const chips = [p.heart ? ['❤️', '+1 heart'] : null, ['🍙', `+${p.gain || 1} food`], ['⭐', `+${xp} XP`], p.gems ? ['💎', `+${p.gems} gems`] : null, a.co2 > 0 ? ['🌍', `${a.co2} g CO₂ saved`] : null].filter(Boolean);
+    res = `<div class="res ${good ? 'good' : ''}">
+      <div class="res-big"><b class="num">${pct(a.w)}</b><span>left on your tray<br><small>your usual is ${pct(st.baseline)}</small></span></div>
+      <div class="res-chips">${chips.map(([i, t], k) => `<span style="--d:${k * 90}ms">${i} ${t}</span>`).join('')}</div>
+      <p>${good ? `Less than your usual, so ${esc(g.name)} earned a heart.` : `${esc(g.name)} still got fed. Finishing a smaller scoop tomorrow earns a heart.`}</p></div>`;
+  }
+  return `<div class="vcard mission"><h3>Today’s lunch <small>${at >= 5 ? 'done' : `step ${Math.min(at, 4) + 1} of 5`}</small></h3>
+    <ol class="msteps">${steps.map(([ic, t], i) => `<li class="${i < at ? 'done' : i === at || (at === 0 && i === 1) || (at === 2 && i === 3) ? 'now' : ''}"><span>${i < at ? ICON.check : ic}</span><small>${t}</small></li>`).join('')}</ol>
+    ${line ? `<p class="mline">${line}</p>` : ''}${res}</div>`;
+}
+/** The week in Loopi terms, not in grams of guilt. */
+function weekStory(st, g) {
+  const days = st.log.slice(0, 5).reverse(), line = G.heartLine(st), L = levelOf(st);
+  const saved = Math.round(days.reduce((s, l) => s + Math.max(0, st.baseline - l.w) * TRAY_G, 0)), good = days.filter(l => l.w < line).length;
+  return `<div class="vcard story"><span class="story-k">This week</span>
+    <p class="story-t">${saved > 60 ? `You saved <b class="num">${saved} g</b> of food compared with your usual. That kept ${esc(g.name)} healthy all week, and it’s now <b>Level ${L.lv}</b>.` : `${esc(g.name)} is <b>Level ${L.lv}</b>. A few trays with less left would keep it healthy all week.`}</p>
+    <div class="story-days">${days.map(l => `<div class="${l.w < line ? 'good' : ''}"><em>${l.w < line ? '❤️' : ''}</em><i style="--h:${Math.round((1 - l.w) * 100)}%"></i><span>${l.day.slice(0, 3)}</span></div>`).join('')}</div>
+    <p class="hint">${good} of ${days.length} lunches earned a heart. Each bar is how much of that lunch you ate.</p></div>`;
+}
+/** Daily and weekly challenges. Rewards are claimed by tapping, so finishing one feels like something. */
+function challenges(st, g) {
+  const a = st.after, c = craving(), line = G.heartLine(st), d = g.day && g.day.d === dayKey() ? g.day : { balls: 0, pets: 0 };
+  const rank = PL.classRows().findIndex(r => r.c.id === st.cls) + 1, week = st.log.slice(0, 5);
+  const ateOf = id => a && a.served[id] ? 1 - (a.measured[id] || 0) / a.served[id] : 0;
+  const lists = {
+    daily: [
+      { id: 'scan2', icon: '📷', t: 'Scan your tray before and after lunch', n: (st.before || st.scanned ? 1 : 0) + (st.scanned ? 1 : 0), of: 2, gems: 10, xp: 10 },
+      { id: 'low', icon: '🍽️', t: `Leave less than ${pct(line)} on your tray`, n: a && a.w < line ? 1 : 0, of: 1, gems: 15, xp: 20 },
+      { id: 'veg', icon: '🥬', t: `Eat at least half your ${shortDish(c)}`, n: ateOf(c.id) >= .5 ? 1 : 0, of: 1, gems: 10, xp: 15 },
+      { id: 'care', icon: '🤗', t: `Pet or play with ${g.name} 3 times`, n: Math.min(3, d.balls + d.pets), of: 3, gems: 5, xp: 5 },
+    ],
+    weekly: [
+      { id: 'wlow', icon: '❤️', t: '4 low-waste lunches this week', n: Math.min(4, week.filter(l => l.w < line).length), of: 4, gems: 60, xp: 50 },
+      { id: 'wscan', icon: '🔥', t: 'Scan your lunch every school day', n: Math.min(5, week.length), of: 5, gems: 40, xp: 40 },
+      { id: 'wveg', icon: '🥦', t: 'Try the veggie of the week 3 times', n: Math.min(3, st.pet.quest), of: 3, gems: 30, xp: 30 },
+      { id: 'wcls', icon: '🏆', t: `Help Class ${st.cls} finish in the top 3`, n: rank <= 3 ? 1 : 0, of: 1, gems: 50, xp: 40 },
+    ],
+  };
+  const seg = ui.chal || 'daily', claimed = g.claimed || {}, key = ch => seg === 'daily' ? `${dayKey()}:${ch.id}` : `wk:${ch.id}`;
+  const left = lists[seg].filter(ch => !claimed[key(ch)]).length;
+  return `<div class="vcard chal"><div class="chal-h"><h3>Challenges <small>${left ? `${left} to go` : 'all done!'}</small></h3>
+    <div class="seg" id="chal-seg">${['daily', 'weekly'].map(k => `<button data-chal="${k}" aria-pressed="${seg === k}">${k === 'daily' ? 'Today' : 'This week'}</button>`).join('')}</div></div>
+    ${lists[seg].map(ch => { const done = ch.n >= ch.of, got = claimed[key(ch)];
+      return `<div class="ch ${done ? 'done' : ''} ${got ? 'got' : ''}"><span class="ch-ic">${ch.icon}</span><div class="ch-m"><b>${esc(ch.t)}</b><div class="ch-bar"><i style="width:${Math.round(ch.n / ch.of * 100)}%"></i></div></div>${got ? `<span class="ch-ok">${ICON.check}</span>` : done ? `<button class="ch-claim" data-claim="${key(ch)}" data-gems="${ch.gems}" data-xp="${ch.xp}">Claim<small>${GEM}${ch.gems}</small></button>` : `<span class="ch-rw"><small class="num">${ch.n}/${ch.of}</small>${GEM}${ch.gems}</span>`}</div>`; }).join('')}
+    <p class="hint">${seg === 'daily' ? 'New challenges every school day.' : 'Weekly challenges reset on Monday. Keep a streak going for bonus crates.'}</p></div>`;
+}
+/** Growing up: hearts come only from real trays, so the only way to evolve Loopi is to waste less. */
+function growth(st, g) {
+  const req = G.heartsReq(g), form = PL.formOf(st.pet), F = FORMS[form], next = PL.STAGES[g.stage + 1];
+  return `<div class="vcard evo growcard"><div class="evo-h"><h3>${next ? `Growing into ${/^[AEIOU]/.test(next.name) ? 'an' : 'a'} ${next.name.toLowerCase()}` : 'Fully grown'}</h3><span class="hearts">${Array.from({ length: req }, (_, i) => HEART(i < g.hearts)).join('')}</span></div>
+    <div class="stages">${PL.STAGES.map((s, i) => `<div class="${i < g.stage ? 'past' : i === g.stage ? 'now' : ''}"><canvas width="56" height="47" data-form="${form}" data-stage="${s.id}"></canvas><span>${s.name}</span></div>`).join('')}</div>
+    <p class="hint">${g.ready ? 'Hearts are full. Tap the glowing button above!' : `${req - g.hearts} more ${req - g.hearts === 1 ? 'heart' : 'hearts'} to ${next ? 'grow up' : 'lay an egg'}. A tray with less than ${pct(G.heartLine(st))} left earns one.`} ${esc(g.name)} is turning ${F.name.toLowerCase()} from ${st.pet.c[F.key]} ${F.why}.</p></div>`;
+}
+
+/* ---------------------------------------------------------------- home interactions */
+function drawBig(t) {
+  const cv = root && $('#bigpet', root); if (!cv) return;
+  const st = me(), o = PL.petOf(st), [fill, mid] = BODY[o.stage === 'egg' ? 'egg' : o.form] || BODY.leafy;
+  const base = o.mood === 'sleepy' ? 'sleepy' : { great: 'joy', ok: 'happy', low: 'meh' }[ui.heroMood] || 'happy';
+  const mood = ui.petMode === 'eat' ? (t % 2 ? 'joy' : 'meh') : ui.petMode === 'happy' ? 'joy' : base;
+  PL.drawPet(cv, { rows: 26, bg: 'none', noGround: true, t, ...o, mood, fill, mid, ink: '#2B2B2E' });
+}
+function say(text, ms = 3200) {
+  ui.say = { text, until: Date.now() + ms };
+  const el = root && $('#hero-say', root); if (!el) return;
+  ui.lastSay = text; el.textContent = text; el.classList.remove('pop', 'still'); void el.offsetWidth; el.classList.add('pop');
+}
+/** Emoji particles, drawn on the phone so they survive a re-render. */
+function burst(x, y, chars, n = 6, spread = 160) {
+  const ph = $('#phone', root); if (!ph || PL.reduceMotion) return;
+  const r = ph.getBoundingClientRect();
+  for (let i = 0; i < n; i++) {
+    const e = document.createElement('i'); e.className = 'cheer-burst'; e.textContent = chars[i % chars.length];
+    e.style.cssText = `left:${x - r.left}px;top:${y - r.top}px;--x:${(Math.random() - .5) * spread}px;--y:${-60 - Math.random() * spread * .8}px;--r:${(Math.random() - .5) * 180}deg;animation-delay:${i * 30}ms`;
+    ph.appendChild(e); setTimeout(() => e.remove(), 1500);
+  }
+}
+const centerOf = el => { const r = el.getBoundingClientRect(); return [r.left + r.width / 2, r.top + r.height / 2]; };
+/** Change the game after an animation: renders are held while it plays, then one save redraws everything. */
+function commit(fn, after = 0) {
+  ui.busy = true;
+  setTimeout(() => { const out = fn(); ui.busy = false; ui.petMode = null; PL.store.save('game'); if (typeof out === 'function') out(); }, after);
+}
+function petBounce(cls, ms) { const w = $('#pet-wrap', root); if (!w) return; w.classList.remove('squish', 'jump'); void w.offsetWidth; w.classList.add(cls); setTimeout(() => w.classList.remove(cls), ms); }
+
+function homeFeed(snackId) {
+  if (ui.busy) return;
+  const st = me(), g = G.ensure(st), lunch = !snackId && g.plate && !g.plate.eaten;
+  if (!lunch && !snackId) {
+    if (!g.snacks.length) return say(st.before ? 'My lunch comes after your second scan. Almost there!' : 'My lunch comes from your tray! Or cook me a snack in the Kitchen.');
+    snackId = g.snacks[0].id;
+  }
+  const sn = snackId && g.snacks.find(s => s.id === snackId); if (snackId && !sn) return;
+  if (!lunch && g.hunger >= G.hungerMax(g)) return say('I’m so full! Save the snack for later.');
+  const food = lunch ? g.plate.food : G.RECIPES.find(r => r.id === sn.recipe).seq.map(t => ({ rice: 'rice', veg: 'kailan', protein: 'chicken', fruit: 'melon' })[t]);
+  const bowl = $('.bowl', root), bf = $('.bowl-food', root);
+  bf.innerHTML = food.slice(0, 4).map(id => V.food(DISH[id], 22)).join('');
+  bowl.classList.add('serve'); ui.petMode = 'eat';
+  say(lunch ? 'Nom nom… this is your real lunch!' : `Yum, ${sn.name.toLowerCase()}!`, 4000);
+  const items = [...bf.children];
+  items.forEach((it, i) => setTimeout(() => { it.classList.add('gone'); petBounce('squish', 450); }, 700 + i * 420));
+  const end = 900 + items.length * 420;
+  setTimeout(() => { burst(...centerOf($('#pet-wrap', root)), lunch && g.plate.heart ? ['❤️', '💚', '✨'] : ['💚', '✨', '⭐'], 8); }, end - 200);
+  commit(() => {
+    const p = lunch ? G.serveLunch(st) : G.eatSnack(st, snackId);
+    return () => say(lunch ? (p && p.heart ? 'Best lunch ever! I got a heart! ❤️' : p && p.crumbs.length ? 'Thanks! Some leftovers fell on the floor. Help me sweep?' : 'Thanks for lunch!') : 'That hit the spot!', 4200);
+  }, end);
+}
+function homePlay() {
+  if (ui.busy) return;
+  const st = me(), g = G.ensure(st), d = g.day && g.day.d === dayKey() ? g.day : { balls: 0 };
+  if (d.balls >= G.BALLS_PER_DAY) return say('I’m tired of ball for today. Pat me instead?');
+  const hero = $('#hero', root), ball = document.createElement('i');
+  ball.className = 'hero-ball'; ball.textContent = '⚽'; hero.appendChild(ball);
+  ui.petMode = 'happy'; say('Wheee! Again!', 2600);
+  setTimeout(() => petBounce('jump', 1400), 350);
+  commit(() => { G.playBall(st); }, 1600);
+}
+function homeSweep(btns) {
+  if (ui.busy || !btns.length) return;
+  const bin = $('#bin', root), [bx, by] = centerOf(bin), st = me(), g = G.ensure(st), types = btns.map(b => b.dataset.crumb);
+  btns.forEach((b, i) => setTimeout(() => {
+    const [x, y] = centerOf(b); b.style.transform = `translate(${bx - x}px,${by - y}px) scale(.4) rotate(200deg)`; b.classList.add('fly');
+    setTimeout(() => { bin.classList.remove('gulp'); void bin.offsetWidth; bin.classList.add('gulp'); }, 480);
+  }, i * 140));
+  const all = btns.length === document.querySelectorAll('.crumb').length;
+  commit(() => {
+    types.forEach(t => G.sweep(st, t));
+    if (all) while (g.mess.length) G.sweep(st, g.mess[0]);
+    return () => say(g.mess.length ? 'Thanks! A bit more to go.' : 'Sparkly clean! The leftovers went in the food waste bin.');
+  }, 600 + btns.length * 140);
+}
+function claim(b) {
+  const st = me(), g = G.ensure(st), gems = +b.dataset.gems, xp = +b.dataset.xp;
+  burst(...centerOf(b), ['💎', '⭐', '✨'], 10, 200);
+  b.classList.add('claimed'); b.textContent = 'Claimed!';
+  commit(() => { g.claimed = g.claimed || {}; g.claimed[b.dataset.claim] = true; g.gems += gems; st.pet.xp += xp; return () => PL.toast(`+${gems} gems and +${xp} XP for ${g.name}!`); }, 650);
+}
+function wireHome(st, g) {
+  if (!$('#hero', root)) return;
+  drawBig(0);
+  $('#pet-wrap', root).onclick = e => {
+    if (ui.busy) return;
+    burst(e.clientX, e.clientY, ['💚', '❤️', '✨'], 5, 120); petBounce('squish', 450);
+    const doubleTap = Date.now() - (ui.lastPat || 0) < 350; ui.lastPat = Date.now();
+    say(doubleTap ? 'Wheee!' : ['Hehe, that tickles!', 'Again!', 'I like you!', `Hi ${st.name.split(' ')[0]}!`, '♥'][Math.floor(Math.random() * 5)], 2000);
+    ui.petMode = 'happy';
+    commit(() => { const gems = G.petLoopi(st); return gems ? () => { burst(...centerOf($('#hud-gems', root) || $('#hero', root)), ['💎'], 4, 80); PL.toast(`${g.name} found ${gems} gems!`); } : null; }, 420);
+  };
+  $$('[data-home]', root).forEach(b => b.onclick = () => {
+    const a = b.dataset.home;
+    if (a === 'feed') homeFeed();
+    else if (a === 'play') homePlay();
+    else if (a === 'clean') { const cs = $$('.crumb', root); if (!cs.length) say('My room is already tidy!'); else homeSweep(cs); }
+    else if (a === 'dress') { ui.sheet = 'wardrobe'; render(true); }
+  });
+  $$('.crumb', root).forEach(b => b.onclick = () => homeSweep([b]));
+  $$('[data-snack]', root).forEach(b => b.onclick = () => { $('#stu-body', root).scrollTo({ top: 0, behavior: 'smooth' }); homeFeed(b.dataset.snack); });
+  $$('[data-chal]', root).forEach(b => b.onclick = () => { ui.chal = b.dataset.chal; render(true); });
+  $$('[data-claim]', root).forEach(b => b.onclick = () => claim(b));
+}
+/** A level-up (from the XP a scanned lunch or a challenge earns) gets its own moment. */
+function checkLevel(st, g) {
+  const L = levelOf(st);
+  if (g.lvSeen == null) { g.lvSeen = L.lv; return; }
+  if (L.lv <= g.lvSeen) return;
+  g.lvSeen = L.lv; g.gems += 20;
+  setTimeout(() => { if (!root) return; PL.store.save('game'); modal(`Level ${L.lv}!`, `<canvas class="reveal" width="120" height="100" data-evo="1"></canvas><p class="center"><b>${esc(g.name)} levelled up.</b> Every lunch you scan earns XP, and less waste earns more.</p><p class="center lvl-gift">${GEM} +20 gems</p>`); const r = $('#phone', root).getBoundingClientRect(); burst(r.left + r.width / 2, r.top + r.height / 2, ['🎉', '⭐', '💚', '✨'], 16, 260); }, 500);
+}
+
 function roomBlock(st, g, big) {
   const stg = PL.stuStage(st), mess = g.mess.length, lunch = g.plate && !g.plate.eaten;
   return `
@@ -485,19 +742,21 @@ function wire(st) {
   if (fo) fo.onchange = () => { st.faceOff = !fo.checked; PL.store.save('optin'); PL.toast(st.faceOff ? 'Face sign-in is off. Your match code has been deleted from the scanner.' : 'Face sign-in is on. Look at the scanner next time.'); };
 }
 
+function notifyScan(ls) {
+  if (!root || !ls || ls.sid !== PL.S.me) return;
+  PL.notify($('#phone', root), ls.kind === 'before'
+    ? { app: 'Loopi', icon: V.loopi('happy', 30), title: 'Tray scanned. Enjoy your lunch!', text: 'Scan it again when you’re done, and Loopi gets to eat too.', buzz: true }
+    : { app: 'Loopi', icon: V.loopi('cheer', 30), title: `Lunch is in! +${ls.xp} XP`, text: 'Your lunch is waiting in Loopi’s bowl. Tap to feed it.', buzz: true, onTap: () => { ui.tab = 'loopi'; ui.big = false; render(); $('#stu-body').scrollTop = 0; } });
+}
+
 PL.apps.student = {
   title: 'Loopi',
   mount,
   unmount() { if (Catch.running) Catch.stop(true); ui.big = false; ui.sheet = null; root = null; },
   update(kind, fromSelf) {
     const ls = PL.S.lastScan;
-    if (!fromSelf && ls && ls.at > ui.seenScan) {
-      ui.seenScan = ls.at;
-      if (ls.sid === PL.S.me) PL.notify($('#phone', root), ls.kind === 'before'
-        ? { app: 'Loopi', icon: V.loopi('happy', 30), title: 'Tray scanned. Enjoy your lunch!', text: 'Come back to the scanner when you’re done.', buzz: true }
-        : { app: 'Loopi', icon: V.loopi('cheer', 30), title: `Lunch is in! +${ls.xp} points`, text: 'Loopi’s food is waiting in its bowl. Tap to see your tray.', buzz: true, onTap: () => { ui.tab = 'lunch'; render(); $('#stu-body').scrollTop = 0; } });
-    }
-    if (Catch.running) return;
+    if (!fromSelf && ls && ls.at > ui.seenScan) { ui.seenScan = ls.at; ui.say = null; notifyScan(ls); }
+    if (Catch.running || ui.busy) return;
     render(kind !== 'me');
   },
   tick(t) {
@@ -505,6 +764,7 @@ PL.apps.student = {
     PL.paintPets($('#stu-top', root), t);
     const pg = $('.petguide canvas', root); if (pg) PL.paintPets(pg.parentElement, t);
     if (ui.tab === 'me' || ui.sheet === 'wardrobe') paint(t);
+    if (ui.tab === 'loopi') drawBig(t);
   },
 };
 })();

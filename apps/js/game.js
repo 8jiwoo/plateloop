@@ -125,7 +125,7 @@ G.feedLunch = (st, r, menu = MENU) => {
   const gems = Math.round((gain * 5 + 5) * G.multiplier(g));
   g.gems += gems;
   g.plate = {
-    eaten: false, heart, gain,
+    eaten: false, heart, gain, gems,
     food: menu.filter(d => r.servedBy[d.id] - r.measured[d.id] > 10).map(d => d.id),
     crumbs: crumbsFrom(r.measured, menu),
   };
