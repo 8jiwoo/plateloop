@@ -15,10 +15,10 @@
 *{box-sizing:border-box}
 html,body{margin:0;background:#020403}
 body{font-family:"Inter",system-ui,sans-serif;color:var(--ink);-webkit-font-smoothing:antialiased;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-.poster{position:relative;width:3255px;height:4610px;margin:0 auto;overflow:hidden;padding:96px 110px 80px;display:flex;flex-direction:column;gap:40px;
+.poster{position:relative;width:3255px;height:4610px;margin:0 auto;overflow:hidden;padding:96px 110px 80px;display:flex;flex-direction:column;gap:36px;
   background:radial-gradient(1400px 900px at 85% -5%,rgba(48,209,88,.22),transparent 60%),radial-gradient(1200px 1000px at -10% 55%,rgba(48,209,88,.10),transparent 60%),radial-gradient(1300px 900px at 110% 95%,rgba(10,132,255,.08),transparent 60%),#040705}
 @media screen{body{padding:20px 0}.poster{zoom:.31}}
-@media print{body{padding:0}.poster{zoom:.68966}}
+@media print{html,body{padding:0;height:841mm;overflow:hidden}.poster{zoom:.6895}}
 h2{margin:0 0 30px;font-size:84px;font-weight:900;letter-spacing:-.035em;line-height:1;display:flex;align-items:center;gap:22px}
 h2 .n{display:inline-grid;place-items:center;width:74px;height:74px;border-radius:50%;background:var(--g);color:#03200E;font-size:40px;font-weight:900;letter-spacing:0}
 h2 small{margin-left:auto;font-size:30px;font-weight:600;letter-spacing:0;color:var(--ink3)}
@@ -218,15 +218,15 @@ header{display:grid;grid-template-columns:1fr auto;gap:40px;align-items:start}
     <div class="app" style="--c:#30D158"><div class="ph"><img src="../video/shots/4-loopi-lunch-phone.jpg" alt="Loopi student app"></div>
       <div class="who"><h4>Loopi</h4><span>Students</span></div>
       <ul><li>A <b>virtual pet</b> fed by the lunch you really ate.</li><li><b>Food groups</b>, not calories.</li><li><b>Class races</b>, streaks and challenges.</li></ul>
-      <div class="fact"><b>−35%</b>plate waste when classes compete (schools review)</div></div>
+      <div class="fact"><b>−35%</b>plate waste when classes weighed and posted their waste (Swedish school study, 2004)</div></div>
     <div class="app" style="--c:#0A84FF"><div class="ph"><img src="../video/shots/5-care-phone.jpg" alt="Loopi Care hospital app"></div>
       <div class="who"><h4>Loopi Care</h4><span>Hospitals</span></div>
       <ul><li><b>Every tray measured</b>, no food charts.</li><li>Patients <b>choose tomorrow’s meals</b>.</li><li>Alerts reach the nurse <b>with the reason</b>.</li></ul>
-      <div class="fact"><b>29%</b>of inpatients were malnourished (Singapore study)</div></div>
+      <div class="fact"><b>29%</b>of inpatients were malnourished (Lim et al., Clinical Nutrition 2012)</div></div>
     <div class="app" style="--c:#7D7AFF"><div class="ph"><img src="../video/shots/7-work-phone.jpg" alt="Loopi Work office app"></div>
       <div class="who"><h4>Loopi Work</h4><span>Offices</span></div>
       <ul><li>A <b>daily pick</b> for your health goal.</li><li><b>Pre-order</b> and skip the queue.</li><li><b>Private</b>: teams, never names.</li></ul>
-      <div class="fact"><b>+51%</b>fruit ordered with pre-order nudges (canteen trial)</div></div>
+      <div class="fact"><b>6 in 10</b>Singaporeans eat out at least 4 times a week (HPB)</div></div>
   </div>
 </section>
 
@@ -237,7 +237,7 @@ header{display:grid;grid-template-columns:1fr auto;gap:40px;align-items:start}
       <div><b>14.3 t</b><span>CO₂e avoided</span></div>
       <div><b>5.1×</b><span>return on the subscription</span></div>
       <div><b>2.4 mo</b><span>to pay back a year</span></div>
-      <p class="impact-note">Illustrative: 190 school days, 25% of food wasted today, PlateLoop cuts 30% of it, S$2.50 of ingredients per meal, 2.5 kg CO₂e per kg of food. To be validated in a pilot.</p>
+      <p class="impact-note">Evidence: 86 catering sites that measured their waste cut it 36% in a year, with a 6:1 return (Champions 12.3, 2018). Our estimate assumes a smaller 30% cut, 25% wasted today, S$2.50 a meal. To validate in a pilot.</p>
     </div></div>
   <div class="qr"><div class="code" id="qr"></div><div><b>Try it live</b><span>8jiwoo.github.io/<br>plateloop</span></div></div>
 </section>
