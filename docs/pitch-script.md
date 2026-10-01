@@ -8,7 +8,7 @@ Every figure is checked against its source in [research.md](research.md).
 
 Every school day in Singapore, thousands of lunch trays go back to the kitchen half full. Nobody writes down what was left. It goes straight into the bin, and tomorrow, the kitchen cooks the same amount again.
 
-We're [team name], and we built **PlateLoop** to break that loop.
+This is **PlateLoop**, and we built it to break that loop.
 
 In 2023, Singapore threw away **755,000 tonnes** of food. Only 18% of it was recycled. The rest was burnt, and the ash went to Semakau, our only landfill. Around the world, more than a quarter of all food waste comes from food service: canteens, caterers and restaurants. And wasted food causes **8 to 10%** of global greenhouse gas emissions.
 
