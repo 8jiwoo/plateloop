@@ -84,6 +84,7 @@ For one school serving 800 meals a day, assuming a smaller 30% cut (to validate 
 |---|---|
 | **[Explainer video](https://8jiwoo.github.io/plateloop/#video)** ([MP4](video/plateloop-explainer.mp4) · [WebM](video/plateloop-explainer.webm)) | about 3½ minutes, narrated, with subtitles. Source: `video/film.html`, built by `video/make.py`. |
 | **[Pitch deck](https://8jiwoo.github.io/plateloop/pitch/)** | 25 slides; the prototype slides run the real apps live. ← → to move, N for notes, F for full screen. |
+| **[Scale-up plan](https://8jiwoo.github.io/plateloop/pitch/scale-up.html)** ([PDF](pitch/plateloop-scale-up-plan.pdf)) | 13 slides: the pilot and its success criteria, growing through caterers, hospitals and offices, unit economics, impact at 150+ sites, funding, risks and the ask. |
 | **[A1 poster](poster/plateloop-poster-A1.pdf)** | print-ready PDF, plus versions split into A4 sheets: [8 sheets, borderless](poster/plateloop-poster-A1-in-8-A4.pdf) or [15 sheets for a home printer](poster/plateloop-poster-A1-home-printer.pdf). |
 
 ## Run it
