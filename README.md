@@ -60,15 +60,17 @@ Every app is one self-contained HTML file that works offline. They share one dem
 
 Each app answers what its users struggle with at meals ([full research and sources](docs/research.md)):
 
-- **Students:** only 13.6% of university students eat enough fruit and vegetables, and calorie counting can harm teens. Loopi shows food groups, and class competition cut plate waste by 35% in school studies.
+- **Students:** only 13.6% of university students eat enough fruit and vegetables, and calorie counting can harm teens. Loopi shows food groups, and class competition cut plate waste by 35% in a Swedish school study.
 - **Patients:** 29% of inpatients in a Singapore hospital were malnourished, and 93% of hand-filled food charts were incomplete. Choosing your own meals raises intake.
-- **Office workers:** 6 in 10 eat out, and carb-heavy lunches deepen the afternoon dip. Pre-order nudges gave 51% more fruit in one canteen trial.
+- **Office workers:** 6 in 10 eat out at least four times a week, and obesity rose to 12.7%. Ordering ahead leads to lighter lunches (690 office workers, VanEpps et al. 2016).
 
 We followed design thinking (Empathise, Define, Ideate, Prototype, Test), then walked every step until it broke. Six problems became features, from "face not recognised" to "is it filming me?". The [pitch deck](https://8jiwoo.github.io/plateloop/pitch/) tells the whole story.
 
 ## Impact
 
-For one school serving 800 meals a day, a year (illustrative, to validate in a pilot): **5.7 t** less food thrown away, **14.3 t** CO₂e avoided, **S$28,500** of ingredients saved, paying back a year of the subscription in **2.4 months**. Try your own numbers on the deck's impact calculator.
+**Measuring works:** when 86 catering sites in six countries, including Singapore, started measuring their food waste, they cut it by **36% in the first year** and got a **6:1 return** ([Champions 12.3, 2018](https://champions123.org/the-business-case-for-reducing-food-loss-and-waste-caterers/)).
+
+For one school serving 800 meals a day, assuming a smaller 30% cut (to validate in a pilot): **5.7 t** less food thrown away, **14.3 t** CO₂e avoided, **S$28,500** of ingredients saved, paying back a year of the subscription in **2.4 months**. Try your own numbers on the deck's impact calculator.
 
 ## Explainer video, pitch deck and poster
 
