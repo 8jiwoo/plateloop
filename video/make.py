@@ -155,6 +155,11 @@ def encode(fdir, wav):
                     '-vf', 'scale=out_range=tv,format=yuv420p', '-c:v', 'libx264', '-preset', 'slow', '-crf', '20', '-profile:v', 'high', '-level', '4.1', '-color_range', 'tv', '-c:a', 'aac', '-b:a', '160k', '-ar', '44100', '-ac', '2',
                     '-shortest', '-movflags', '+faststart', out], check=True)
     print('wrote', out, f'{os.path.getsize(out) / 1e6:.1f} MB')
+    # WebM too, for browsers without H.264 (some Chromium/Electron builds)
+    webm = out[:-4] + '.webm'
+    subprocess.run([ff, '-y', '-loglevel', 'error', '-framerate', str(FPS), '-i', os.path.join(fdir, '%05d.jpg'), '-i', wav, '-vf', 'scale=out_range=tv,format=yuv420p',
+                    '-c:v', 'libvpx-vp9', '-b:v', '0', '-crf', '34', '-row-mt', '1', '-deadline', 'good', '-cpu-used', '4', '-c:a', 'libopus', '-b:a', '128k', '-ar', '48000', '-ac', '2', '-shortest', webm], check=True)
+    print('wrote', webm, f'{os.path.getsize(webm) / 1e6:.1f} MB')
 
 if __name__ == '__main__':
     os.makedirs(BUILD, exist_ok=True)

@@ -77,11 +77,11 @@ nav .btn{padding:9px 16px;font-size:14px}
 .src{margin-top:14px;font-size:12.5px;color:var(--ink3)}
 
 /* equation + journey */
-.eq{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:40px}
+.eq{display:flex;align-items:center;gap:14px;margin-top:40px}
 .eq div{padding:20px 26px;border-radius:24px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);text-align:center;min-width:150px}
 .eq b{display:block;font-size:clamp(40px,5vw,60px);font-weight:900;letter-spacing:-.04em;line-height:1}
 .eq b small{font-size:.5em}
-.eq span{display:block;margin-top:6px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.eq div > span{display:block;margin-top:6px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
 .eq i{font-style:normal;font-size:40px;font-weight:800;color:var(--ink3)}
 .eq .res{background:var(--g);box-shadow:0 20px 50px -20px var(--g)}.eq .res b,.eq .res span{color:#03200E}
 .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:34px 0 0;padding:0;list-style:none;counter-reset:s}
@@ -174,7 +174,8 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
   nav .links{display:none}nav .btn{margin-left:auto}
   section{padding-top:80px}
 }
-@media (max-width:520px){.flow,.impact,.steps{grid-template-columns:1fr}.eq div{min-width:0;flex:1}.eq i{font-size:28px}}
+@media (max-width:700px){.eq{gap:8px}.eq div{min-width:0;flex:1;padding:16px 8px}.eq i{font-size:26px}}
+@media (max-width:520px){.flow,.impact,.steps{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -204,7 +205,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
 <section id="video" style="padding-top:20px">
   <div class="eyebrow rv">The whole idea in 3 minutes</div>
   <h2 class="rv">See it <em>in action.</em></h2>
-  <div class="video rv"><video controls preload="metadata" playsinline poster="docs/banner.jpg" src="video/plateloop-explainer.mp4"></video></div>
+  <div class="video rv"><video controls preload="metadata" playsinline poster="docs/banner.jpg"><source src="video/plateloop-explainer.webm" type="video/webm"><source src="video/plateloop-explainer.mp4" type="video/mp4">Your browser can’t play this video. <a href="video/plateloop-explainer.mp4">Download the MP4</a>.</video></div>
 </section>
 
 <section>
