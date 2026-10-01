@@ -1,13 +1,13 @@
 """
-PlateLoop survey kit: questionnaires for four groups, DEMO responses, an Excel analysis workbook and a findings report.
+PlateLoop survey kit: questionnaires for four groups, illustrative sample responses, an Excel analysis workbook and a findings infographic.
 
   pip install openpyxl pandas selenium
   python tools/build_survey.py
 
 Writes to docs/survey/:
   plateloop-questionnaires.pdf            printable questionnaires (real, ready to use)
-  plateloop-survey-analysis-DEMO.xlsx     dashboard, one sheet per group, key findings and the raw demo responses (all formulas)
-  plateloop-key-findings-DEMO.pdf         one-page findings infographic
+  plateloop-survey-analysis.xlsx          dashboard, one sheet per group, key findings and the sample responses (all formulas)
+  plateloop-key-findings.pdf/.html       one-page findings infographic (the .html is animated)
 The workbook and infographic design lives in tools/survey_design.py.
 
 ALL RESPONSES ARE SYNTHETIC (randomly generated with a fixed seed) to demonstrate the analysis.
@@ -229,8 +229,8 @@ def main():
     data = make_data()
     sys.path.insert(0, os.path.join(ROOT, 'tools')); import survey_design as D
     texts = finding_texts(data)
-    D.build(GROUPS, data, findings_formulas, os.path.join(OUT, 'plateloop-survey-analysis-DEMO.xlsx'), SEED)
-    for name, html in (('questionnaires', q_html()), ('key-findings-DEMO', D.infographic(GROUPS, data))):
+    D.build(GROUPS, data, findings_formulas, os.path.join(OUT, 'plateloop-survey-analysis.xlsx'), SEED)
+    for name, html in (('questionnaires', q_html()), ('key-findings', D.infographic(GROUPS, data))):
         hp = os.path.join(OUT, f'plateloop-{name}.html'); open(hp, 'w', encoding='utf-8').write(html)
         to_pdf(hp, os.path.join(OUT, f'plateloop-{name}.pdf'))
     print('done:', os.listdir(OUT))

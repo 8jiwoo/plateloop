@@ -87,7 +87,7 @@ def group_sheet(wb, G, A):
     ws.sheet_properties.tabColor = colour
     merge_write(ws, 'B1:O1', name, F(22, True, colour), LEFT)
     n_cell = 'B2'
-    ws['B2'] = f"=COUNTA('{G['sheet']}'!$A$2:$A${MAXROW})&\" responses · DEMO DATA · PlateLoop answer: {app}\""
+    ws['B2'] = f"=COUNTA('{G['sheet']}'!$A$2:$A${MAXROW})&\" responses · illustrative data · PlateLoop answer: {app}\""
     ws['B2'].font = F(10, False, INK3); ws.row_dimensions[1].height = 34
     A[(G['key'], 'n')] = f"COUNTA('{G['sheet']}'!$A$2:$A${MAXROW})"
     tiles_row = 4; ws.row_dimensions[tiles_row].height = 44; ws.row_dimensions[tiles_row + 1].height = 30
@@ -219,7 +219,7 @@ def build(groups, data, findings_fn, path, seed):
     # ---- dashboard
     setup(dash, [2] + [10.5] * 16)
     merge_write(dash, 'B1:Q1', 'PlateLoop survey · results at a glance', F(24, True), LEFT); dash.row_dimensions[1].height = 40
-    merge_write(dash, 'B2:Q2', 'DEMO DATA: synthetic responses for demonstration only. Not real survey results.', F(10, True, 'B42318'), LEFT, 'FDECEA')
+    merge_write(dash, 'B2:Q2', NOTE, F(9, False, INK3, True), LEFT)
     dash.row_dimensions[2].height = 22
     # response counts
     dash.row_dimensions[4].height = 40; dash.row_dimensions[5].height = 22
@@ -258,7 +258,7 @@ def build(groups, data, findings_fn, path, seed):
     k = wb.create_sheet('Key findings', 1)
     setup(k, [2, 16, 78, 52])
     merge_write(k, 'B1:D1', 'Key findings', F(22, True), LEFT); k.row_dimensions[1].height = 36
-    merge_write(k, 'B2:D2', 'DEMO DATA: calculated live from the responses; not real survey results.', F(10, True, 'B42318'), LEFT, 'FDECEA')
+    merge_write(k, 'B2:D2', 'Calculated live from the responses. ' + NOTE, F(9, False, INK3, True), LEFT)
     for j, h in enumerate(['Group', 'What the survey shows', 'What PlateLoop does about it'], 2):
         c = k.cell(4, j, h); c.font = F(10, True, 'FFFFFF'); c.fill = fill(INK); c.alignment = LEFT
     k.row_dimensions[4].height = 24
@@ -289,14 +289,14 @@ def build(groups, data, findings_fn, path, seed):
     ab = wb.create_sheet('About')
     setup(ab, [2, 26, 100])
     merge_write(ab, 'B1:C1', 'About this workbook', F(20, True), LEFT); ab.row_dimensions[1].height = 32
-    rows = [('Demo data', f'Every response is synthetic, generated with a fixed seed ({seed}) to show how the analysis works. Not real survey results.'),
+    rows = [('Illustrative data', f'The responses are sample answers generated with a fixed seed ({seed}) to show how the analysis works. They were not collected from real people. Replace them with real responses before drawing conclusions.'),
             ('Dashboard', 'Headline numbers and one chart per group.'), ('Key findings', 'Findings written as live formulas, each matched to a PlateLoop feature.'),
             ('Group sheets', 'Students, Kitchen, Hospital, Office: every question as a table with in-cell bars, plus charts.'),
             ('Data sheets', 'One row per respondent (blue text = input). To use real data, paste responses into these tables (same columns, up to row 1000) — every other sheet updates.'),
             ('Questionnaires', 'All questions, codes and answer options. Online version: https://8jiwoo.github.io/plateloop/survey/'),
             ('Scale questions', '1 = strongly disagree / not useful … 5 = strongly agree / very useful. "Agree" = share answering 4 or 5.')]
     for i, (a, b) in enumerate(rows, 3):
-        c = ab.cell(i, 2, a); c.font = F(10, True, 'B42318' if i == 3 else INK); c.alignment = TOP
+        c = ab.cell(i, 2, a); c.font = F(10, True); c.alignment = TOP
         c = ab.cell(i, 3, b); c.font = F(10); c.alignment = TOP; ab.row_dimensions[i].height = 30
     # order: Dashboard, Key findings, groups, data, questionnaires, about
     order = ['Dashboard', 'Key findings'] + [G['key'] for G in groups] + [G['sheet'] for G in groups] + ['Questionnaires', 'About']
@@ -306,64 +306,179 @@ def build(groups, data, findings_fn, path, seed):
     wb.save(path)
     return A
 
-# ================================================================ one-page infographic
+# ================================================================ one-page infographic (web: animated, PDF: still)
+BRAND = {'Students': '#30D158', 'Kitchen': '#FF9F0A', 'Hospital': '#0A84FF', 'Office': '#7D7AFF'}
+NOTE = 'Illustrative data: sample responses created to show how the analysis works, not collected from real people.'
+
+def loopi_svg(expr='happy', size=96):
+    """Loopi, the PlateLoop mascot (same drawing as apps/js/visual.js)."""
+    if expr == 'cheer':
+        eye = lambda x: f'<path d="M{x-7} 67q7-8 14 0" fill="none" stroke="#1F2A1D" stroke-width="3.4" stroke-linecap="round"/>'
+        mouth = '<path d="M49 80q11 16 22 0Z" fill="#1F2A1D"/><path d="M54 86q6 5 12 0" fill="#FF8FA0"/>'
+    else:
+        eye = lambda x: f'<g class="lp-eye"><ellipse cx="{x}" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="{x}" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="{x+1.6}" cy="65.6" r="1.4" fill="#fff"/></g>'
+        mouth = '<path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/>'
+    arm = lambda d, c='': f'<path class="{c}" d="{d}" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/>'
+    arms = {'cheer': arm('M26 76q-12-8-13-22') + arm('M94 76q12-8 13-22'),
+            'wave': arm('M26 82q-9 7-10 16') + arm('M94 76q13-6 14-22', 'lp-wave')}.get(expr, arm('M26 82q-9 7-10 16') + arm('M94 82q9 7 10 16'))
+    return (f'<svg class="loopi lp-{expr}" width="{size}" height="{size*1.08:.0f}" viewBox="0 0 120 130" role="img" aria-label="Loopi">'
+            '<ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.25)"/><g class="lp-body">'
+            '<ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/>' + arms +
+            '<path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/>'
+            '<path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/>'
+            '<ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/><path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/>'
+            '<path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/>'
+            '<circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/>'
+            + eye(47) + eye(73) + mouth + '</g></svg>')
+
+LOOPI_CSS = """.loopi{display:block;overflow:visible;flex:none}
+.loopi .lp-body{animation:lpbob 3.2s ease-in-out infinite;transform-origin:60px 120px}
+.loopi .lp-eye{animation:lpblink 5.5s infinite;transform-box:fill-box;transform-origin:center}
+.loopi .lp-wave{animation:lpwave 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+.loopi .lp-leaf{animation:lpleaf 2.6s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+.lp-cheer .lp-body{animation:lpjump 1.4s ease-in-out infinite}
+@keyframes lpbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lpjump{0%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}55%{transform:translateY(0)}}
+@keyframes lpblink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes lpwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+@keyframes lpleaf{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}"""
+
+INFO_CSS = """
+@page{size:A4;margin:0}
+:root{--bg:#040705;--card:#0D110F;--ink:#F5F5F7;--ink2:#AEB3B8;--ink3:#7A7F85;--line:rgba(255,255,255,.08);--g:#30D158;color-scheme:dark}
+*{box-sizing:border-box}
+html{background:var(--bg)}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+  background:radial-gradient(900px 600px at 92% -8%,rgba(48,209,88,.20),transparent 60%),radial-gradient(800px 700px at -15% 60%,rgba(48,209,88,.08),transparent 60%),radial-gradient(800px 600px at 110% 100%,rgba(10,132,255,.09),transparent 60%),var(--bg)}
+.page{position:relative;max-width:820px;margin:0 auto;padding:34px 30px 26px}
+.top{display:flex;align-items:center;gap:18px}
+.top .loopi{filter:drop-shadow(0 12px 24px rgba(48,209,88,.35))}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--g)}
+h1{margin:4px 0 0;font-size:46px;font-weight:900;letter-spacing:-.045em;line-height:.98}
+h1 em{font-style:normal;background:linear-gradient(90deg,#4ADE80,#30D158 60%,#9BE15D);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lede{margin:8px 0 0;font-size:13px;color:var(--ink2)}
+.tag{position:absolute;top:34px;right:30px;padding:6px 11px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--ink3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.counts{display:grid;grid-template-columns:1.25fr repeat(4,1fr);gap:8px;margin:20px 0 4px}
+.cnt{position:relative;overflow:hidden;padding:10px 12px 10px 14px;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.cnt::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,#fff)}
+.cnt b{display:block;font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1;color:var(--c,#fff);font-variant-numeric:tabular-nums}
+.cnt span{font-size:10.5px;font-weight:600;color:var(--ink2)}
+.cnt.all{background:linear-gradient(135deg,rgba(48,209,88,.24),rgba(48,209,88,.06));box-shadow:inset 0 0 0 1px rgba(48,209,88,.35)}
+.cnt.all::before{display:none}
+.grp{position:relative;overflow:hidden;margin-top:10px;padding:14px 16px 11px;border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.grp::after{content:"";position:absolute;right:-80px;top:-90px;width:280px;height:230px;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 24%,transparent),transparent);pointer-events:none}
+.grp header{display:flex;align-items:center;gap:9px}
+.dot{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c)}
+h2{margin:0;font-size:16px;font-weight:800;letter-spacing:-.02em}
+.nresp{font-size:11px;color:var(--ink3);font-weight:600}
+.app{margin-left:auto;position:relative;z-index:1;padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.body{display:grid;grid-template-columns:1fr 272px;gap:16px;margin-top:10px;position:relative;z-index:1}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.big{display:flex;align-items:baseline;gap:1px;color:var(--c)}
+.big b{font-size:34px;font-weight:900;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.st p{margin:5px 0 0;font-size:11px;line-height:1.35;color:var(--ink2)}
+.st p b{color:var(--ink);font-weight:700}
+.chart h3{margin:0 0 6px;font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.row{display:grid;grid-template-columns:134px 1fr 30px;align-items:center;gap:7px;height:16px}
+.row span{font-size:9.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row em{font-style:normal;font-size:9.5px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.track{height:7px;border-radius:7px;background:rgba(255,255,255,.06);overflow:hidden}
+.track i{display:block;height:100%;width:var(--w);border-radius:7px;background:color-mix(in srgb,var(--c) 50%,transparent)}
+.row.lead .track i{background:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 60%,transparent)}
+.row.lead span{color:var(--ink);font-weight:600}
+.grp footer{display:flex;gap:8px;align-items:baseline;margin-top:10px;padding-top:9px;border-top:1px solid var(--line);position:relative;z-index:1}
+.arrow{color:var(--c);font-weight:900}
+.grp footer p{margin:0;font-size:11.5px;line-height:1.4;color:var(--ink2)}
+.grp footer b{color:var(--c)}
+.foot{display:flex;justify-content:space-between;gap:14px;margin-top:12px;font-size:9.5px;color:var(--ink3)}
+.foot b{color:var(--ink2);white-space:nowrap}
+@media screen and (prefers-reduced-motion:no-preference){
+  .top,.cnt,.grp{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+  .cnt{animation-delay:calc(.15s + var(--k,0)*.07s)}
+  .grp{animation-delay:calc(.4s + var(--i)*.15s);transition:transform .25s,box-shadow .25s}
+  .track i{animation:grow 1.2s cubic-bezier(.2,.8,.2,1) var(--d) both}
+  .dot{animation:pulse 2.4s ease-in-out infinite}
+  .grp:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
+}
+@keyframes rise{from{opacity:0;transform:translateY(22px)}}
+@keyframes grow{from{width:0}}
+@keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 18%,transparent),0 0 16px var(--c)}}
+@media print{*{animation:none!important}.page{max-width:none;width:210mm;height:297mm;padding:12mm 12mm 8mm}.tag{top:12mm;right:12mm}}
+@media (max-width:700px){.page{padding:52px 16px 22px}.tag{top:16px;right:16px}.top{gap:12px}h1{font-size:34px}.lede{font-size:12.5px}.counts{grid-template-columns:repeat(4,1fr)}.counts .all{grid-column:1/-1}
+  .body{grid-template-columns:1fr}.stats{gap:8px}.big b{font-size:28px}.top .loopi{width:64px;height:auto}.app{display:none}.foot{flex-direction:column}}
+"""
+
+INFO_JS = """
+(() => {
+  document.querySelectorAll('.cnt').forEach((c, k) => c.style.setProperty('--k', k));
+  if (navigator.webdriver || matchMedia('print').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const els = [...document.querySelectorAll('[data-to]')];
+  addEventListener('beforeprint', () => els.forEach(e => e.textContent = (+e.dataset.to).toFixed(+e.dataset.dec)));
+  els.forEach(e => {
+    const to = +e.dataset.to, dec = +e.dataset.dec, grp = e.closest('.grp');
+    const delay = grp ? 550 + (+grp.style.getPropertyValue('--i')) * 150 : 250, dur = 1300;
+    e.textContent = (0).toFixed(dec);
+    setTimeout(() => {
+      const t0 = performance.now();
+      const step = t => { const p = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - p, 3);
+        e.textContent = (to * ease).toFixed(dec); if (p < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step);
+    }, delay);
+  });
+})();
+"""
+
 def infographic(groups, data):
     S, K, H, O = (data[k] for k in ('Students', 'Kitchen', 'Hospital', 'Office'))
     sh = lambda df, c, o: (df[c] == o).mean(); ag = lambda df, c: (df[c] >= 4).mean()
     reasons = S.S3.value_counts(normalize=True); order = groups[0]['qs'][2][3]
     top = max(order, key=lambda o: reasons.get(o, 0))
-    half = lambda v: f'{Decimal(str(v)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)}'
-    whole = lambda v: f'{Decimal(str(v)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)}'
-    def bars(items, colour):
-        mx = max(v for _, v in items) or 1; rh = 19; lw = 8 + 5.4 * max(len(l) for l, _ in items); W = lw + 140
-        g = ''.join(f'<text x="0" y="{i*rh+13}" font-size="9.5" fill="#4E5A54">{lab}</text><rect x="{lw}" y="{i*rh+3}" width="{(W-lw-34)*v/mx:.1f}" height="12" rx="3" fill="#{colour}" opacity="{1 if i == 0 else .55}"/><text x="{lw+(W-lw-34)*v/mx+5:.1f}" y="{i*rh+13}" font-size="9.5" font-weight="700" fill="#1B2420">{P(v)}</text>' for i, (lab, v) in enumerate(items))
-        return f'<svg viewBox="0 0 {W} {len(items)*rh}" width="100%" font-family="Inter, Arial">{g}</svg>'
-    def ranked(df, code, opts):
-        return sorted([(o, sh(df, code, o)) for o in opts], key=lambda x: -x[1])
-    q = lambda G, code: next(x for x in G['qs'] if x[0] == code)
+    rnd = lambda v, q='1': Decimal(str(v)).quantize(Decimal(q), rounding=ROUND_HALF_UP)
+    pc = lambda v: (int(rnd(v * 100)), '%', 0)          # (number, suffix, decimals)
     gs = {G['key']: G for G in groups}
+    opts = lambda k, c: next(x for x in gs[k]['qs'] if x[0] == c)[3]
+    ranked = lambda df, c, o: sorted([(x, sh(df, c, x)) for x in o], key=lambda t: -t[1])
     bands = [
-        ('Students', len(S), [(P(sh(S, 'S3', top)), f'leave food mainly because: <b>{top.lower()}</b>'), (P(sh(S, 'S7', 'Food groups')), 'would rather see <b>food groups</b> than calories'), (half(S.S8.mean()), 'out of 5: interest in the <b>Loopi pet</b>')],
-         'Main reason for leaving food', ranked(S, 'S3', order)),
-        ('Kitchen', len(K), [(P(sh(K, 'K4', 'Yes, accurately')), 'know accurately <b>which dishes come back</b>'), (f'{whole(K.K3.mean())}%', 'of cooked food is <b>thrown away</b> (their estimate)'), (P(ag(K, 'K7')), 'want <b>waste shown by dish</b>')],
-         'How quantities are decided', ranked(K, 'K2', q(gs['Kitchen'], 'K2')[3])),
-        ('Hospital', len(H), [(P(ag(H, 'H3')), '<b>trust</b> their intake records'), (whole(H.H4.mean()), '<b>minutes a shift</b> on intake records'), (P(ag(H, 'H7')), 'want <b>automatic intake</b> records')],
-         'When a patient who stops eating is noticed', [(o, sh(H, 'H5', o)) for o in q(gs['Hospital'], 'H5')[3]]),
-        ('Office', len(O), [(P(sh(O, 'O5', 'Often') + sh(O, 'O5', 'Daily')), 'feel an <b>afternoon energy dip</b> often or daily'), (P(ag(O, 'O4')), '<b>know the nutrients</b> in their lunch'), (P(sh(O, 'O6', 'Yes')), 'would <b>pre-order</b> to skip the queue')],
-         'Share meal data with employer?', [(o, sh(O, 'O8', o)) for o in q(gs['Office'], 'O8')[3]]),
+        ('Students', len(S), [(pc(sh(S, 'S3', top)), f'leave food mainly because: <b>{top.lower()}</b>'),
+                              (pc(sh(S, 'S7', 'Food groups')), 'would rather see <b>food groups</b> than calories'),
+                              ((float(rnd(S.S8.mean(), '0.1')), '/5', 1), 'interest in feeding the <b>Loopi pet</b>')],
+         'Main reason for leaving food', ranked(S, 'S3', order), True),
+        ('Kitchen', len(K), [(pc(sh(K, 'K4', 'Yes, accurately')), 'know accurately <b>which dishes come back</b>'),
+                             ((int(rnd(K.K3.mean())), '%', 0), 'of cooked food is <b>thrown away</b>, by their estimate'),
+                             (pc(ag(K, 'K7')), 'want <b>waste shown by dish</b>')],
+         'How quantities are decided', ranked(K, 'K2', opts('Kitchen', 'K2')), True),
+        ('Hospital', len(H), [(pc(ag(H, 'H3')), '<b>trust</b> their intake records'),
+                              ((int(rnd(H.H4.mean())), ' min', 0), 'a shift spent <b>writing intake records</b>'),
+                              (pc(ag(H, 'H7')), 'want <b>automatic intake</b> records')],
+         'When a patient who stops eating is noticed', [(o, sh(H, 'H5', o)) for o in opts('Hospital', 'H5')], False),
+        ('Office', len(O), [(pc(sh(O, 'O5', 'Often') + sh(O, 'O5', 'Daily')), 'feel an <b>afternoon energy dip</b> often or daily'),
+                            (pc(ag(O, 'O4')), '<b>know the nutrients</b> in their lunch'),
+                            (pc(sh(O, 'O6', 'Yes')), 'would <b>pre-order</b> to skip the queue')],
+         'Share meal data with employer?', [(o, sh(O, 'O8', o)) for o in opts('Office', 'O8')], False),
     ]
     total = sum(b[1] for b in bands)
-    html_bands = ''
-    for key, n, stats, ctitle, items in bands:
-        colour, tint, name, app = THEME[key]
-        st = ''.join(f'<div class="st"><b style="color:#{colour}">{v}</b><span>{lab}</span></div>' for v, lab in stats)
-        html_bands += f'''<section class="band" style="--c:#{colour};--t:#{tint}">
-          <div class="who"><b>{name}</b><span>{n} responses</span></div>
-          <div class="stats">{st}</div>
-          <div class="mini"><small>{ctitle}</small>{bars(items, colour)}</div>
-          <div class="so">→ <b>{app}</b>: {MEANS[key]}</div></section>'''
-    return f'''<!doctype html><html><head><meta charset="utf-8"><title>PlateLoop survey: what we heard (demo)</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
-<style>
-@page{{size:A4;margin:12mm}}*{{box-sizing:border-box}}
-body{{margin:0;font-family:Inter,Arial,sans-serif;color:#1B2420;-webkit-print-color-adjust:exact;print-color-adjust:exact}}
-.head{{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:12px}}
-h1{{margin:0;font-size:30pt;font-weight:900;letter-spacing:-.03em;line-height:1}}
-.sub{{margin:6px 0 0;font-size:10.5pt;color:#4E5A54}}
-.demo{{flex:none;padding:6px 12px;border-radius:99px;background:#FDECEA;color:#B42318;font-size:8.5pt;font-weight:800;letter-spacing:.05em}}
-.count{{display:grid;grid-template-columns:1.2fr repeat(4,1fr);gap:6px;margin:14px 0 18px}}
-.count div{{border-radius:10px;padding:8px 10px;color:#fff}}.count b{{display:block;font-size:18pt;font-weight:900;line-height:1}}.count span{{font-size:8pt;font-weight:600;opacity:.9}}
-.band{{display:grid;grid-template-columns:92px 1fr 236px;grid-template-rows:auto auto;gap:6px 14px;padding:15px 16px 12px;margin-bottom:12px;border-radius:14px;background:var(--t);border-left:6px solid var(--c);page-break-inside:avoid}}
-.who b{{display:block;font-size:12pt;font-weight:800;color:var(--c);line-height:1.15}}.who span{{font-size:8pt;color:#8A938E}}
-.stats{{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}}
-.st>b{{display:block;font-size:24pt;font-weight:900;letter-spacing:-.03em;line-height:1}}
-.st span{{display:block;margin-top:4px;font-size:8.5pt;line-height:1.3;color:#4E5A54}}.st span b{{font-size:inherit;color:#1B2420;font-weight:700}}
-.mini small{{display:block;font-size:7.5pt;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#8A938E;margin-bottom:4px}}
-.so{{grid-column:2/4;font-size:9pt;color:#4E5A54;padding-top:6px;border-top:1px solid rgba(0,0,0,.07)}}.so b{{color:var(--c)}}
-.foot{{margin-top:6px;font-size:7.5pt;color:#8A938E}}
-</style></head><body>
-<div class="head"><div><h1>What we heard</h1><p class="sub">PlateLoop survey · students, school kitchen staff, hospital staff and office workers</p></div><span class="demo">DEMO DATA</span></div>
-<div class="count"><div style="background:#1B2420"><b>{total}</b><span>responses</span></div>{''.join(f'<div style="background:#{THEME[k][0]}"><b>{n}</b><span>{THEME[k][2]}</span></div>' for k, n, *_ in bands)}</div>
-{html_bands}
-<p class="foot">Demo data: synthetic responses generated to demonstrate the analysis; not real survey results. With groups this small, one response moves a percentage by several points. Full analysis: plateloop-survey-analysis-DEMO.xlsx.</p>
-</body></html>'''
+    def num(v, suf, dec):
+        return f'<b data-to="{v}" data-dec="{dec}">{v:.{dec}f}</b><small>{suf}</small>'
+    cards = ''
+    for gi, (key, n, stats, ctitle, items, lead_first) in enumerate(bands):
+        colour = BRAND[key]; name, app = THEME[key][2], THEME[key][3]; mx = max(v for _, v in items) or 1
+        st = ''.join(f'<div class="st"><div class="big">{num(*v)}</div><p>{lab}</p></div>' for v, lab in stats)
+        rows = ''.join(f'<div class="row{" lead" if lead_first and j == 0 else ""}"><span>{lab.replace(" standard portion", " portion")}</span><div class="track"><i style="--w:{v / mx * 100:.1f}%;--d:{.7 + gi * .15 + j * .08:.2f}s"></i></div><em>{P(v)}</em></div>'
+                       for j, (lab, v) in enumerate(items))
+        cards += (f'<section class="grp" style="--c:{colour};--i:{gi}">'
+                  f'<header><span class="dot"></span><h2>{name}</h2><span class="nresp">{n} responses</span><span class="app">{app}</span></header>'
+                  f'<div class="body"><div class="stats">{st}</div><div class="chart"><h3>{ctitle}</h3>{rows}</div></div>'
+                  f'<footer><span class="arrow">→</span><p><b>{app}</b> {MEANS[key]}</p></footer></section>\n')
+    counts = f'<div class="cnt all"><b data-to="{total}" data-dec="0">{total}</b><span>responses</span></div>' + ''.join(
+        f'<div class="cnt" style="--c:{BRAND[k]}"><b data-to="{n}" data-dec="0">{n}</b><span>{THEME[k][2]}</span></div>' for k, n, *_ in bands)
+    return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
+            '<title>PlateLoop survey findings</title><meta name="theme-color" content="#040705">'
+            '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
+            '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">'
+            f'<style>{LOOPI_CSS}{INFO_CSS}</style></head><body><div class="page"><span class="tag">Illustrative data</span>'
+            f'<div class="top">{loopi_svg("cheer", 88)}<div><div class="eyebrow">PlateLoop survey · findings</div><h1>What we <em>heard.</em></h1>'
+            '<p class="lede">Students, kitchen staff, hospital staff and office workers on lunch, leftovers and nutrition.</p></div></div>'
+            f'<div class="counts">{counts}</div>\n{cards}'
+            f'<div class="foot"><span>{NOTE} With groups this small, one answer moves a percentage by several points.</span><b>8jiwoo.github.io/plateloop</b></div>'
+            f'</div><script>{INFO_JS}</script></body></html>')
