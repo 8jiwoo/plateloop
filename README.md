@@ -2,7 +2,7 @@
 
 <p align="center">
   <a href="https://8jiwoo.github.io/plateloop/"><img alt="Live demo" src="https://img.shields.io/badge/Live_demo-open-30D158?style=for-the-badge"></a>
-  <a href="https://8jiwoo.github.io/plateloop/#video"><img alt="Explainer video" src="https://img.shields.io/badge/Video-3_min_explainer-111?style=for-the-badge"></a>
+  <a href="https://8jiwoo.github.io/plateloop/#video"><img alt="Explainer video" src="https://img.shields.io/badge/Video-3½_min_explainer-111?style=for-the-badge"></a>
   <a href="https://8jiwoo.github.io/plateloop/pitch/"><img alt="Pitch deck" src="https://img.shields.io/badge/Pitch_deck-25_slides-111?style=for-the-badge"></a>
   <a href="poster/plateloop-poster-A1.pdf"><img alt="A1 poster" src="https://img.shields.io/badge/Poster-A1_PDF-111?style=for-the-badge"></a>
 </p>
@@ -82,7 +82,7 @@ For one school serving 800 meals a day, assuming a smaller 30% cut (to validate 
 
 | | |
 |---|---|
-| **[Explainer video](https://8jiwoo.github.io/plateloop/#video)** ([MP4](video/plateloop-explainer.mp4) · [WebM](video/plateloop-explainer.webm)) | about 3 minutes, narrated, with subtitles. Source: `video/film.html`, built by `video/make.py`. |
+| **[Explainer video](https://8jiwoo.github.io/plateloop/#video)** ([MP4](video/plateloop-explainer.mp4) · [WebM](video/plateloop-explainer.webm)) | about 3½ minutes, narrated, with subtitles. Source: `video/film.html`, built by `video/make.py`. |
 | **[Pitch deck](https://8jiwoo.github.io/plateloop/pitch/)** | 25 slides; the prototype slides run the real apps live. ← → to move, N for notes, F for full screen. |
 | **[A1 poster](poster/plateloop-poster-A1.pdf)** | print-ready PDF, plus versions split into A4 sheets: [8 sheets, borderless](poster/plateloop-poster-A1-in-8-A4.pdf) or [15 sheets for a home printer](poster/plateloop-poster-A1-home-printer.pdf). |
 
