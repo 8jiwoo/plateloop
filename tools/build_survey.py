@@ -95,6 +95,31 @@ GROUPS = [
       'I don’t want HR to see what I eat.', 'Afternoon slump after noodles.', ''])]),
 ]
 
+# extra open-text comments, so every illustrative respondent has one
+MORE_COMMENTS = {
+    'S11': ['Lunch is too rushed, I only get 20 minutes.', 'I like the chicken rice but the portion is huge.', 'I would scan my tray if it gave me points.',
+            'Please label the dishes, I never know what the curry is.', 'I skip vegetables when they are overcooked.', 'Smaller portions should cost less.',
+            'Friends would compete if there was a class leaderboard.', 'I get hungry again by 3 pm.', 'I want to know if my lunch has enough protein for sport.',
+            'The canteen throws away so much food at the end of the day.', 'Fine as it is, just less oily please.', 'More choice for vegetarians.'],
+    'K11': ['Fridays are always quieter, we still cook the same.', 'Rice is the thing we throw away most.', 'Students leave the greens every time.',
+            'Writing things down takes too long during service.', 'If it tells me how much to cook, I will use it.', 'Rainy days mean more students eat in.',
+            'We guess from yesterday and hope.', 'A simple screen would be better than an app.'],
+    'H10': ['Intake charts are often blank by the end of the day.', 'We only find out a patient isn’t eating when the family tells us.',
+            'Dietitians need protein numbers, not just “half eaten”.', 'Night staff don’t see what was eaten at lunch.', 'Anything automatic would save time.',
+            'Older patients struggle to open packets, so food comes back untouched.'],
+    'O10': ['I eat at my desk most days.', 'The salad bar runs out by 12:30.', 'Would love to see protein per dish.', 'Pre-order would stop me wasting my lunch break in the queue.',
+            'Keep my data away from my manager.', 'Mixed rice portions are random.', 'I get sleepy after the noodles.', 'Calorie counts would be nice, optional though.'],
+}
+
+def fill_comments(data):
+    rnd = random.Random(SEED + 100)
+    for G in GROUPS:
+        code = next(q[0] for q in G['qs'] if q[2] == 'text')
+        pool = [c for c in next(q[4] for q in G['qs'] if q[0] == code) if c] + MORE_COMMENTS[code]
+        df = data[G['key']]
+        df[code] = [v if v else rnd.choice(pool) for v in df[code]]
+    return data
+
 # ================================================================ demo data
 def make_data():
     rnd = random.Random(SEED); data = {}
@@ -226,7 +251,7 @@ def write_questions_js():
 def main():
     os.makedirs(OUT, exist_ok=True)
     write_questions_js()
-    data = make_data()
+    data = fill_comments(make_data())
     sys.path.insert(0, os.path.join(ROOT, 'tools')); import survey_design as D
     texts = finding_texts(data)
     D.build(GROUPS, data, findings_formulas, os.path.join(OUT, 'plateloop-survey-analysis.xlsx'), SEED)
