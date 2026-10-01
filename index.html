@@ -89,6 +89,13 @@ nav .btn{padding:9px 16px;font-size:14px}
 .steps li::before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--gs);color:var(--g);font-weight:900;font-size:14px;margin-bottom:12px}
 .steps b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
 
+/* what a scan measures */
+.meas{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:22px}
+.meas .card{padding:24px}
+.meas i{display:block;font-style:normal;font-size:30px}
+.meas b{display:block;margin-top:10px;font-size:19px}
+.meas p{margin:6px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink2)}
+@media (max-width:960px){.meas{grid-template-columns:1fr}}
 /* system flow */
 .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}
 .fcol{padding:22px;border-radius:24px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column;gap:10px}
@@ -190,7 +197,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
     <div class="eyebrow">EcoLoop Hackathon · Singapore</div>
     <h1 style="margin-top:14px">Plate<span>Loop</span></h1>
     <p class="tag">Know what’s eaten. <em>Waste less.</em></p>
-    <p class="lede">An AI tray scanner that measures what is served, eaten and left, so canteens cook the right amount and cut waste, cost and carbon. And everyone who eats gets their own feedback, in an app made for schools, hospitals or offices.</p>
+    <p class="lede">An AI tray scanner that recognises every dish and measures what is served, eaten and left, down to the nutrients, so canteens cook the right amount and cut waste, cost and carbon. And everyone who eats gets their own feedback, in an app made for schools, hospitals or offices.</p>
     <div class="cta"><a class="btn primary" href="#video">▶ Watch the 3-minute video</a><a class="btn ghost" href="dist/1-plateloop-scanner-3d.html">Explore the scanner in 3D</a></div>
   </div>
   <div class="hero-art">
@@ -223,8 +230,14 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
 <section id="how">
   <div class="eyebrow rv">How it works</div>
   <h2 class="rv">One scanner. <em>Two scans.</em></h2>
-  <p class="sub rv">Look at the camera and put your tray down before you eat, then again after. The difference is exactly what you ate, dish by dish, in about two seconds. Nobody types anything or carries a card.</p>
+  <p class="sub rv">Look at the camera and put your tray down before you eat, then again after. The AI sees which dishes you had, how much of each you ate and the nutrients in it, in about two seconds. Nobody types anything or carries a card.</p>
   <div class="eq rv"><div><b><span class="count" data-to="620">620</span><small>g</small></b><span>Served</span></div><i>−</i><div><b><span class="count" data-to="95">95</span><small>g</small></b><span>Left</span></div><i>=</i><div class="res"><b><span class="count" data-to="525">525</span><small>g</small></b><span>Eaten</span></div></div>
+  <div class="meas">
+    <div class="card rv"><i>🍱</i><b>Food type</b><p>The AI recognises each dish on the tray: rice, chicken, kailan, soup, fruit.</p></div>
+    <div class="card rv" style="--d:.06s"><i>⚖️</i><b>Amount</b><p>Grams served, grams left and grams eaten, for every dish and every person.</p></div>
+    <div class="card rv" style="--d:.12s"><i>🧪</i><b>Nutrients</b><p>Energy, protein, carbs, fat, fibre and sodium actually eaten, plus food groups against My Healthy Plate.</p></div>
+  </div>
+  <p class="src rv">A proven method: research systems that scan trays before and after the meal with a depth camera identify about 89% of foods, and their nutrient estimates closely match the real values (Pfisterer et al., <i>JMIR Aging</i> 2022; Lu et al., 2020).</p>
   <ol class="steps">
     <li class="rv"><b>Serve</b>Ask for more or less of each dish.</li>
     <li class="rv" style="--d:.05s"><b>Scan before</b>Look at the camera, tray down.</li>

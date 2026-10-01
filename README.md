@@ -7,7 +7,7 @@
   <a href="poster/plateloop-poster-A1.pdf"><img alt="A1 poster" src="https://img.shields.io/badge/Poster-A1_PDF-111?style=for-the-badge"></a>
 </p>
 
-**PlateLoop is an AI food scanner that measures what is served, eaten and left on every tray, so canteens cook the right amount, cut food waste and cost, and track their carbon. Everyone who eats gets their own feedback, in an app made for schools, hospitals or offices.**
+**PlateLoop is an AI food scanner that recognises every dish and measures what is served, eaten and left on every tray, down to the nutrients, so canteens cook the right amount, cut food waste and cost, and track their carbon. Everyone who eats gets their own feedback, in an app made for schools, hospitals or offices.**
 
 Built for the **EcoLoop sustainability hackathon** in Singapore, with local menus, HPB nutrition guidance and the Singapore grid's emission factor.
 
@@ -30,7 +30,13 @@ Canteens cook by guesswork, because nobody measures what people actually eat. Bi
 3. **Eat**, taking what you'll finish.
 4. **Scan after**: what's left is weighed into the food waste bin.
 
-**620 g served − 95 g left = 525 g eaten**, dish by dish, in about two seconds. That one measurement feeds everything below.
+**620 g served − 95 g left = 525 g eaten**, in about two seconds. Every scan measures three things:
+
+- **Food type:** the AI recognises each dish on the tray.
+- **Amount:** grams served, left and eaten, per dish and per person.
+- **Nutrients:** energy, protein, carbs, fat, fibre and sodium actually eaten, plus food groups against My Healthy Plate.
+
+It's a proven method: research systems that scan trays before and after the meal with a depth camera identify about 89% of foods, and their nutrient estimates closely match the real values (Pfisterer et al., *JMIR Aging* 2022; Lu et al., 2020).
 
 <br clear="right">
 
