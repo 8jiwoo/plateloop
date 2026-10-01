@@ -98,8 +98,8 @@ def gantt():
 def hub():
     W, H, cx, cy, R = 760, 560, 380, 280, 220
     g = ''
-    for i in range(10):
-        a = -math.pi / 2 + i * 2 * math.pi / 10
+    for i in range(8):
+        a = -math.pi / 2 + i * 2 * math.pi / 8
         x, y = cx + R * math.cos(a), cy + R * math.sin(a)
         g += (f'<line x1="{cx}" y1="{cy}" x2="{x:.1f}" y2="{y:.1f}" stroke="var(--green)" stroke-width="3" stroke-dasharray="8 8" data-a="fade" style="--d:{.3+i*.05:.2f}s"/>'
               f'<g data-a="pop" style="--d:{.4+i*.06:.2f}s"><circle cx="{x:.1f}" cy="{y:.1f}" r="38" fill="var(--card)" stroke="var(--mint)" stroke-width="4"/>'
@@ -185,134 +185,143 @@ def kpi(big, label, src='', d=0, cls=''):
     return f'<div class="kpi {cls}" data-a style="--d:{d}s"><b>{big}</b><span>{label}</span>{f"<em>{src}</em>" if src else ""}</div>'
 
 S = []
-S.append(slide('Scaling PlateLoop', f'''  <div class="title-grid">
-    <div><div class="eyebrow" data-a>Scale-up plan · 2026–2029</div>
-      <h1 data-a style="--d:.1s" class="t1">1 canteen<br><span>→ 150.</span></h1>
-      <div class="trio" data-a style="--d:.3s"><div><b>3</b><span>years</span></div><div><b>4</b><span>phases</span></div><div><b>855 t</b><span>food saved a year</span></div></div></div>
-    <div class="t-chart" data-a="fade" style="--d:.2s">{growth_curve(small=True)}</div>
-  </div>''', True, 'Our plan takes PlateLoop from one canteen to 150 in three years, in four phases. At full scale, that saves about 855 tonnes of food every year.'))
+IMG = lambda name, cls='', alt='': f'<img class="{cls}" src="../video/shots/{name}" alt="{alt}" loading="eager">'
 
-S.append(slide('The problem is growing', f'''  <div class="eyebrow" data-a>The problem</div>
-  <h2 data-a style="--d:.1s">Singapore’s food waste isn’t falling.</h2>
-  <div class="chart-wrap" data-a="fade" style="--d:.15s">{waste_bars()}</div>
-  <div class="legend"><span><i style="background:#4B5450"></i>Thrown away</span><span><i style="background:var(--glow)"></i>Recycled</span><span class="pill">Recycling stuck at 18–19%</span></div>
-  <div class="src">NEA, food waste statistics 2021–2025.</div>''', True, 'Singapore\'s food waste is not falling: 790,000 tonnes in 2025, up from 755,000 in 2023, and the share recycled has been stuck at 18 to 19 percent for five years. Recycling alone isn\'t solving it; we need less waste in the first place.'))
+def canteen_flow():
+    """Where the scanners go in one school canteen: serve → scan → eat → scan → bin, data to the kitchen."""
+    W, H = 1060, 420
+    nodes = [(90, 'Serve', '🍱'), (300, 'Scan before', '📷'), (510, 'Eat', '🍽️'), (720, 'Scan after', '📷'), (930, 'Food bin', '♻️')]
+    g = f'<path d="M90 150 H930" stroke="var(--line)" stroke-width="6" stroke-linecap="round"/><path d="M90 150 H930" stroke="var(--green)" stroke-width="6" stroke-linecap="round" data-a="draw" style="--d:.3s"/>'
+    for i, (x, lab, ic) in enumerate(nodes):
+        scan = 'Scan' in lab
+        g += (f'<g data-a="pop" style="--d:{.2+i*.15:.2f}s"><circle cx="{x}" cy="150" r="{62 if scan else 52}" fill="{"var(--green)" if scan else "var(--card)"}" stroke="{"var(--mint)" if scan else "var(--line)"}" stroke-width="6"/>'
+              f'<text x="{x}" y="166" text-anchor="middle" style="font-size:44px">{ic}</text></g>'
+              f'<text x="{x}" y="252" text-anchor="middle" class="lbl">{lab}</text>')
+    # both scans feed the kitchen and the student's app
+    g += ('<path d="M300 215 C300 320 480 330 510 340" fill="none" stroke="var(--green)" stroke-width="3" stroke-dasharray="7 8" data-a="fade" style="--d:1s"/>'
+          '<path d="M720 215 C720 320 540 330 510 340" fill="none" stroke="var(--green)" stroke-width="3" stroke-dasharray="7 8" data-a="fade" style="--d:1s"/>'
+          '<g data-a="pop" style="--d:1.2s"><rect x="330" y="330" width="360" height="74" rx="20" fill="var(--ink)"/>'
+          '<text x="510" y="376" text-anchor="middle" style="font:800 24px var(--font);fill:#fff">Kitchen dashboard + Loopi</text></g>')
+    return svg(W, H, g)
 
-S.append(slide('Measuring works', f'''  <div class="eyebrow" data-a>The evidence</div>
-  <h2 data-a style="--d:.1s">Measuring waste cuts it.</h2>
-  <div class="ev-grid">
-    <div class="ev-bars" data-a style="--d:.2s">
-      <div class="evb"><span>Before</span><i data-a="grow" style="--d:.3s;width:100%"></i><b>100</b></div>
-      <div class="evb g"><span>After 1 year</span><i data-a="grow" style="--d:.5s;width:64%"></i><b>64</b></div>
-      <div class="ev-big"><b>−36%</b><span>food waste at 86 catering sites</span></div>
+def staircase():
+    steps = [('1', 'One school canteen', 'Kitchen + Loopi'), ('2', 'The caterer’s canteens', 'one dashboard, many sites'),
+             ('3', 'More schools and campuses', 'Loopi'), ('4', 'Hospitals', 'Loopi Care'), ('5', 'Offices', 'Loopi Work'), ('6', 'Everyone, everywhere', 'personal app · region')]
+    return '<div class="stairs">' + ''.join(
+        f'<div class="st-step" data-a style="--d:{.2+i*.12:.2f}s;--h:{190+i*56}px"><div class="st-top"><span>{n}</span><b>{t}</b><em>{a}</em></div><i></i></div>'
+        for i, (n, t, a) in enumerate(steps)) + '</div>'
+
+def reuse_table():
+    cols = ['School', 'Caterer', 'Campus', 'Hospital', 'Office', 'Everyone']
+    rows = [('Scanner', ['●'] * 5 + ['📱']), ('Kitchen dashboard', ['●'] * 5 + ['—']),
+            ('App for the eater', ['Loopi', 'Loopi', 'Loopi', 'Loopi Care', 'Loopi Work', 'Personal app'])]
+    head = '<tr><th></th>' + ''.join(f'<th>{c}</th>' for c in cols) + '</tr>'
+    body = ''.join(f'<tr data-a style="--d:{.25+i*.15:.2f}s"><td class="rl">{r}</td>' + ''.join(f'<td class="{"dot" if v == "●" else ""}">{v}</td>' for v in vals) + '</tr>' for i, (r, vals) in enumerate(rows))
+    return f'<table class="reuse">{head}{body}</table>'
+
+S.append(slide('PlateLoop growth plan', f'''  <div class="title-grid">
+    <div><div class="eyebrow" data-a>Growth plan</div>
+      <h1 data-a style="--d:.1s;font-size:118px" class="t1">Start with<br><span>one canteen.</span></h1>
+      <p class="lede" data-a style="--d:.3s;color:var(--night-ink2)">Then follow the tray: to every canteen a caterer runs, to more schools and campuses, then hospitals, offices and beyond.</p></div>
+    <div class="hero-img" data-a="pop" style="--d:.2s"><img src="../apps/render_scanner_hero.png" alt="The PlateLoop scanner"></div>
+  </div>''', True, 'This is how PlateLoop grows. We start with one school canteen, and then follow the tray: to every canteen a caterer runs, to more schools and campuses, then into hospitals and offices, and eventually beyond Singapore.'))
+
+S.append(slide('What PlateLoop is', f'''  <div class="eyebrow" data-a>What PlateLoop is</div>
+  <h2 data-a style="--d:.1s">An AI scanner that sees what’s eaten.</h2>
+  <div class="what">
+    <div class="what-img" data-a="pop" style="--d:.2s"><img src="../apps/render_scanner_hero.png" alt="The PlateLoop scanner"></div>
+    <div class="what-r">
+      <div class="m3" data-a style="--d:.3s"><i>🍱</i><div><b>Food type</b><span>recognises every dish</span></div></div>
+      <div class="m3" data-a style="--d:.42s"><i>⚖️</i><div><b>Amount</b><span>grams served, left and eaten</span></div></div>
+      <div class="m3" data-a style="--d:.54s"><i>🧪</i><div><b>Nutrients</b><span>energy, protein, carbs, fat, fibre, sodium</span></div></div>
+      <div class="eqs" data-a style="--d:.7s"><span>620 g served</span><em>−</em><span>95 g left</span><em>=</em><b>525 g eaten</b></div>
     </div>
-    <div class="rings">
-      <div class="rg" data-a style="--d:.3s">{ring(.64, d=.4)}<b>64%</b><span>paid back in year 1</span></div>
-      <div class="rg" data-a style="--d:.4s">{ring(.79, d=.5)}<b>79%</b><span>spent under US$10k</span></div>
-      <div class="rg" data-a style="--d:.5s"><div class="ratio">6:1</div><span>return on investment</span></div>
-      <div class="rg" data-a style="--d:.6s">{ring(.89, color='#1B6BD1', d=.7)}<b>89%</b><span>foods recognised by tray scans</span></div>
+  </div>''', False, 'PlateLoop is an AI scanner for canteens. Every tray is scanned before and after the meal, and it works out three things: which foods are on the tray, how much of each was eaten, and the nutrients in it.'))
+
+S.append(slide('How it works', f'''  <div class="eyebrow" data-a>How it works in a canteen</div>
+  <h2 data-a style="--d:.1s">Two scans. Two people helped.</h2>
+  <div class="flow-wrap">{canteen_flow()}</div>
+  <div class="two-out">
+    <div class="out-k" data-a style="--d:1.3s">{IMG('3-kitchen.jpg', 'kimg')}<div><b>The kitchen</b><span>cooks to what people really eat</span></div></div>
+    <div class="out-k" data-a style="--d:1.45s">{IMG('4-loopi-lunch-phone.jpg', 'pimg')}<div><b>The person</b><span>sees their own meal and nutrients</span></div></div>
+  </div>''', False, 'In a canteen, students take their food and scan the tray before eating, then again after, before scraping leftovers into the bin. Those two scans help two people: the kitchen, which plans tomorrow from what was really eaten, and the student, who sees their own meal in Loopi.'))
+
+S.append(slide('The expansion path', f'''  <div class="eyebrow" data-a>The expansion path</div>
+  <h2 data-a style="--d:.1s">Six steps. Same scanner.</h2>
+  {staircase()}''', True, 'Here is the whole path in six steps. One school canteen first. Then every canteen that school\'s caterer runs. Then more schools and university campuses. Then hospitals with Loopi Care, offices with Loopi Work, and finally a personal app for everyone and other countries. The scanner stays the same at every step.'))
+
+S.append(slide('Step 1: one school canteen', f'''  <div class="eyebrow" data-a>Step 1 · where we start</div>
+  <h2 data-a style="--d:.1s">One school canteen.</h2>
+  <div class="step-grid">
+    <div class="step-l">
+      <div class="m3" data-a style="--d:.2s"><i>📍</i><div><b>Set up</b><span>scanners where trays are collected and returned</span></div></div>
+      <div class="m3" data-a style="--d:.3s"><i>🧑‍🍳</i><div><b>The canteen operator</b><span>uses the Kitchen dashboard every day</span></div></div>
+      <div class="m3" data-a style="--d:.4s"><i>🧒</i><div><b>Students</b><span>feed their Loopi by scanning lunch</span></div></div>
+      <div class="m3" data-a style="--d:.5s"><i>📊</i><div><b>We learn</b><span>real waste numbers, and whether it works day to day</span></div></div>
     </div>
-  </div>
-  <div class="src">Champions 12.3 (WRAP &amp; WRI), Business Case for Reducing Food Loss and Waste: Catering, 2018 · Pfisterer et al., JMIR Aging 2022.</div>''', False, 'The evidence that this works: 86 catering sites that started measuring their waste cut it by 36% in a year. 64% paid back their investment in the first year, most spent under 10,000 US dollars, and the average return was six to one. And tray-scanning systems like ours already recognise about 89% of foods.'))
+    <div class="step-r shots2">{IMG('3-kitchen.jpg', 'kimg big', 'Kitchen dashboard')}{IMG('4-loopi-lunch-phone.jpg', 'pimg over', 'Loopi')}</div>
+  </div>''', False, 'We start in one school canteen. Scanners go where trays are collected and returned. The canteen operator uses the Kitchen dashboard every day, and students feed their Loopi by scanning their lunch. This first canteen gives us real numbers and shows us how it works day to day.'))
 
-S.append(slide('The market', f'''  <div class="eyebrow" data-a>The opportunity</div>
-  <h2 data-a style="--d:.1s">317 school canteens. 150 in 3 years.</h2>
-  <div class="mk-grid">
-    <div class="dots-wrap">{school_dots()}</div>
-    <div class="mk-side">
-      <div class="lg"><span><i style="background:var(--glow)"></i>Pilot · 1</span><span><i style="background:#2BB45A"></i>Year 1 · 10</span><span><i style="background:#1E8C46"></i>Year 2 · 50</span><span><i style="background:#17663A"></i>Year 3 · 150</span></div>
-      {kpi('177 + ~140', 'primary + secondary schools', 'MOE, 2024', .3, 'w')}
-      {kpi('2024→25', 'caterers must separate food waste', 'NEA, Resource Sustainability Act', .4, 'w')}
-      {kpi('80%', 'of project costs co-funded', 'NEA 3R Fund', .5, 'w')}
-    </div>
-  </div>''', True, 'Each dot is one of Singapore\'s 317 MOE primary and secondary schools, and each has a canteen. We aim to reach 150 of them in three years. The timing is right: caterers now have to separate their food waste, and NEA\'s 3R Fund co-funds up to 80% of projects like ours.'))
-
-S.append(slide('Roadmap', f'''  <div class="eyebrow" data-a>Roadmap</div>
-  <h2 data-a style="--d:.1s">Prove. Partner. Expand. Scale.</h2>
-  <div class="chart-wrap">{growth_curve()}</div>
-  <div class="phases"><div><b>Prove</b><span>1 school pilot</span></div><div><b>Partner</b><span>1 caterer’s canteens</span></div><div><b>Expand</b><span>+ hospital + office</span></div><div><b>Scale</b><span>+ region · B2C app</span></div></div>''', False, 'Four phases. Prove it in one school. Partner with a caterer to reach ten canteens. Expand to fifty sites including a hospital ward and an office canteen. Then scale to 150 and into the region.'))
-
-S.append(slide('Phase 1: pilot', f'''  <div class="eyebrow" data-a>Phase 1 · the pilot</div>
-  <h2 data-a style="--d:.1s">12 weeks. 6 targets.</h2>
-  <div class="chart-wrap" style="margin-top:20px">{gantt()}</div>
-  <div class="targets">
-    {kpi('−20%', 'plate waste', '', .3)}{kpi('−10%', 'food cooked', '', .38)}{kpi('90%', 'trays scanned', '', .46)}{kpi('≤3 s', 'per scan', '', .54)}{kpi('85%', 'dishes recognised', '', .62)}{kpi('4/5', 'liked it', '', .7)}
-  </div>''', False, 'The pilot runs for 12 weeks in one school canteen. Two weeks of baseline, scanning only, tell us today\'s waste. Then eight weeks of full PlateLoop. Success means 20% less plate waste, 10% less food cooked, nine in ten trays scanned, under three seconds a scan, 85% of dishes recognised, and people liking it.'))
-
-S.append(slide('Phase 2: caterers', f'''  <div class="eyebrow" data-a>Phase 2 · year 1</div>
-  <h2 data-a style="--d:.1s">1 contract. 10 canteens.</h2>
+S.append(slide('Step 2: the caterer’s canteens', f'''  <div class="eyebrow" data-a>Step 2</div>
+  <h2 data-a style="--d:.1s">Then every canteen that caterer runs.</h2>
   <div class="hub-grid">
     <div>{hub()}</div>
     <div class="hub-side">
-      {kpi('10×', 'reach per partnership', '', .3)}
-      {kpi('6:1', 'return for caterers who measure waste', 'Champions 12.3, 2018', .4)}
-      {kpi('Required', 'food waste separation for caterers', 'NEA, from 2024–25', .5)}
+      <div class="m3" data-a style="--d:.3s"><i>🤝</i><div><b>One partner</b><span>a contract caterer already runs many school canteens</span></div></div>
+      <div class="m3" data-a style="--d:.4s"><i>🖥️</i><div><b>One dashboard</b><span>all their canteens side by side</span></div></div>
+      <div class="m3" data-a style="--d:.5s"><i>⚖️</i><div><b>A reason to act</b><span>caterers must now separate food waste</span><em>NEA, Resource Sustainability Act</em></div></div>
     </div>
-  </div>''', False, 'In year one we grow through a contract caterer, because one contract opens about ten canteens. Caterers that measure waste see a six-to-one return, and they are now required to separate their food waste.'))
+  </div>''', False, 'Next, we go to the company behind that canteen. A contract caterer runs canteens in many schools, so one partnership brings PlateLoop to all of them, with one dashboard for every site. Caterers also now have to separate their food waste, which gives them a reason to measure it.'))
 
-S.append(slide('Phase 3: new sectors', f'''  <div class="eyebrow" data-a>Phase 3 · year 2</div>
-  <h2 data-a style="--d:.1s">Same scanner. 3 new markets.</h2>
-  <div class="sect">
-    <div class="sc" data-a style="--d:.2s;--c:#1B6BD1"><small>Hospitals</small><div class="rgw">{ring(.30, 180, 18, '#1B6BD1', d=.3)}<b>30%</b></div><span>hospital food left on the plate</span><em>median of 32 studies</em></div>
-    <div class="sc" data-a style="--d:.32s;--c:#5046C8"><small>Offices</small><div class="rgw">{ring(.6, 180, 18, '#5046C8', d=.4)}<b>6 in 10</b></div><span>eat out 4+ times a week</span><em>HPB, 2010</em></div>
-    <div class="sc" data-a style="--d:.44s;--c:var(--green)"><small>Universities</small><div class="rgw">{ring(.136, 180, 18, 'var(--green)', d=.5)}<b>13.6%</b></div><span>students eat enough fruit and veg</span><em>Chew et al., 2017</em></div>
-  </div>''', False, 'In year two the same scanner enters three new markets. Hospitals leave about 30% of food on the plate. Six in ten Singaporeans eat out at least four times a week. And only 13.6% of university students eat enough fruit and vegetables.'))
-
-S.append(slide('Unit economics', f'''  <div class="eyebrow" data-a>Unit economics · one 800-meal site</div>
-  <h2 data-a style="--d:.1s">5× for them. Break-even in 8 months for us.</h2>
-  <div class="ue">
-    <div class="ue-l">
-      <div class="cmpbar"><span>Customer saves</span><i data-a="grow" style="--d:.2s;width:100%"></i><b>{money(SAVE_MONTH)}/mo</b></div>
-      <div class="cmpbar o"><span>Customer pays</span><i data-a="grow" style="--d:.35s;width:{PRICE/SAVE_MONTH*100:.1f}%"></i><b>{money(PRICE)}/mo</b></div>
-      <div class="ue-big" data-a style="--d:.5s"><b>5×</b><span>return for the customer</span></div>
+S.append(slide('Step 3: more schools and campuses', f'''  <div class="eyebrow" data-a>Step 3</div>
+  <h2 data-a style="--d:.1s">More schools. Then university campuses.</h2>
+  <div class="mk-grid">
+    <div class="dots-wrap light">{school_dots()}</div>
+    <div class="mk-side">
+      {kpi('317', 'MOE primary and secondary schools, each with a canteen', 'MOE, 2024', .3)}
+      {kpi('13.6%', 'of university students eat enough fruit and veg', 'Chew et al., 2017', .4)}
+      <div class="m3" data-a style="--d:.5s"><i>🎓</i><div><b>Same Loopi app</b><span>for teens and uni students</span></div></div>
     </div>
-    <div class="ue-r" data-a="fade" style="--d:.2s">{payback()}<p class="cap">PlateLoop’s cash per site: −{money(HW)} scanner, then +{money(PRICE-RUN)} a month</p></div>
-  </div>
-  <div class="src">Estimates: 800 meals × 190 days, 25% wasted, a 30% cut, S$2.50 of ingredients a meal; scanner ~S$3,000 and ~S$80/month to run. To confirm in the pilot.</div>''', False, 'For the customer, a school saves about 2,375 dollars a month and pays 470: a five-times return. For us, each scanner costs about 3,000 dollars, and after running costs each site brings in about 390 a month, so we break even in month eight.'))
+  </div>''', False, 'Then we spread to more schools. There are 317 MOE primary and secondary schools, each with a canteen. University campuses come next: big dining halls, and students who mostly don\'t eat enough fruit and vegetables. They use the same Loopi app.'))
 
-S.append(slide('Revenue', f'''  <div class="eyebrow" data-a>Revenue · Pro plan, per year</div>
-  <h2 data-a style="--d:.1s">From {money(PRICE*12)} to {money(150*PRICE*12)} a year.</h2>
-  <div class="chart-wrap">{revenue()}</div>
-  <div class="src">Illustrative: sites × S${PRICE}/month × 12. Add-on programmes (Loopi, Loopi Care, Loopi Work) not included.</div>''', False, 'At our Pro price, one pilot site is worth about 5,600 dollars a year, ten sites 56,000, fifty sites 282,000, and 150 sites about 846,000 dollars a year, before add-on programmes.'))
-
-S.append(slide('Impact at scale', f'''  <div class="eyebrow" data-a>Impact · per year</div>
-  <h2 data-a style="--d:.1s">855 tonnes of food saved a year.</h2>
-  <div class="imp">
-    <div class="chart-wrap" data-a="fade" style="--d:.1s">{impact_bars()}</div>
-    <div class="imp-side">
-      {kpi(f'{150*FOOD_T*1000/0.5/1e6:.1f}M', 'meals’ worth of food', '', .3, 'w')}
-      {kpi(f'{150*CO2_T:,.0f} t', 'CO₂e avoided', '', .4, 'w')}
-      {kpi(f'S${150*MONEY/1e6:.1f}M', 'ingredients saved', '', .5, 'w')}
+S.append(slide('Step 4: hospitals', f'''  <div class="eyebrow" data-a style="color:#1B6BD1">Step 4 · hospitals</div>
+  <h2 data-a style="--d:.1s">Hospitals: Loopi Care.</h2>
+  <div class="sector">
+    <div class="sec-img" data-a="pop" style="--d:.2s">{IMG('5-care-phone.jpg', 'pimg', 'Loopi Care')}</div>
+    <div class="sec-r">
+      <div class="facts2">{kpi('29%', 'of inpatients malnourished', 'Lim et al., Clinical Nutrition 2012', .3, 'b')}{kpi('93%', 'of food charts incomplete', 'Palmer et al., 2015', .4, 'b')}</div>
+      <div class="m3" data-a style="--d:.5s"><i>🛏️</i><div><b>What changes</b><span>every patient’s tray is scanned, so nobody fills in a food chart</span></div></div>
+      <div class="m3" data-a style="--d:.6s"><i>🩺</i><div><b>Who it helps</b><span>nurses get an alert, with the patient’s reason, when meals go uneaten</span></div></div>
     </div>
-  </div>
-  <div class="src">Per site: 5.7 t food, 14 t CO₂e, S$28,500 a year (estimate, 0.5 kg per meal, 2.5 kg CO₂e per kg). The pilot sets the real number.</div>''', True, 'At 150 sites we save about 855 tonnes of food a year. That\'s 1.7 million meals\' worth, over 2,100 tonnes of CO2, and about 4.3 million dollars of ingredients.'))
+  </div>''', False, 'In hospitals, the same scanner becomes Loopi Care. Almost three in ten inpatients in one Singapore study were malnourished, and most hand-written food charts are incomplete. Every patient\'s tray is scanned instead, and nurses get an alert with the patient\'s reason when meals go uneaten.'))
 
-S.append(slide('Funding', f'''  <div class="eyebrow" data-a>Pilot budget</div>
-  <h2 data-a style="--d:.1s">A {money(sum(v for _, v, _ in BUDGET))} pilot. We raise {money(sum(v for _, v, _ in BUDGET)*.2)}.</h2>
-  <div class="bud-wrap">{budget_bar()}</div>
-  <div class="team">
-    <div data-a style="--d:1.1s"><i>🎓</i><b>Now</b><span>our student team</span></div>
-    <div data-a style="--d:1.2s"><i>🔧</i><b>Next</b><span>hardware engineer</span></div>
-    <div data-a style="--d:1.3s"><i>🧠</i><b>Next</b><span>ML engineer</span></div>
-    <div data-a style="--d:1.4s"><i>🤝</i><b>Then</b><span>partnerships lead</span></div>
-    <div data-a style="--d:1.5s"><i>🩺</i><b>Then</b><span>dietitian adviser</span></div>
-  </div>
-  <div class="src">NEA 3R Fund: up to 80% of qualifying costs (cap S$1M), food waste prioritised. Budget is an estimate.</div>''', False, 'The pilot costs about 10,000 dollars, mostly the two scanners. NEA\'s 3R Fund can cover 80%, so we need to raise about 2,000. Next we add a hardware engineer and a machine-learning engineer, then a partnerships lead and a dietitian adviser.'))
-
-risk_rows = ''.join(f'<div class="rk" data-a style="--d:{.3+k*.1:.2f}s"><span>{k+1}</span><div><b>{lab}</b><em>{fix}</em></div></div>' for k, (lab, _, _, fix) in enumerate(RISKS))
-S.append(slide('Risks', f'''  <div class="eyebrow" data-a>Risks</div>
-  <h2 data-a style="--d:.1s">5 risks. 5 fixes.</h2>
-  <div class="risk-grid"><div>{risk_matrix()}</div><div class="rks">{risk_rows}</div></div>''', False, 'Five risks, each with a fix: mixed dishes are handled by the known menu and the weighing platform; Loopi only eats if students scan; scans take about two seconds; no photos leave the scanner; and the pilot measures savings before we set prices.'))
-
-S.append(slide('Our ask', f'''  <div class="body" style="justify-content:center">
-    <div class="eyebrow" data-a>Our ask</div>
-    <h2 data-a style="--d:.1s;font-size:110px;line-height:.95;letter-spacing:-.05em">1 canteen.<br><span style="color:var(--glow)">12 weeks.</span></h2>
-    <div class="ask3">
-      <div data-a style="--d:.3s"><i>🏫</i><b>1 canteen</b><span>to host 2 scanners</span></div>
-      <div data-a style="--d:.4s"><i>📝</i><b>1 co-applicant</b><span>for NEA’s 3R Fund</span></div>
-      <div data-a style="--d:.5s"><i>🤝</i><b>1 introduction</b><span>to a contract caterer</span></div>
+S.append(slide('Step 5: offices', f'''  <div class="eyebrow" data-a style="color:#5046C8">Step 5 · offices</div>
+  <h2 data-a style="--d:.1s">Offices: Loopi Work.</h2>
+  <div class="sector">
+    <div class="sec-img" data-a="pop" style="--d:.2s">{IMG('7-work-phone.jpg', 'pimg', 'Loopi Work')}</div>
+    <div class="sec-r">
+      <div class="facts2">{kpi('6 in 10', 'Singaporeans eat out 4+ times a week', 'HPB, National Nutrition Survey', .3, 'i')}{kpi('12.7%', 'of residents are obese, and rising', 'MOH, NPHS 2024', .4, 'i')}</div>
+      <div class="m3" data-a style="--d:.5s"><i>🍽️</i><div><b>What changes</b><span>workers pre-order a pick for their health goal</span></div></div>
+      <div class="m3" data-a style="--d:.6s"><i>🔒</i><div><b>Who it helps</b><span>the kitchen cooks to orders; the company sees team totals, never names</span></div></div>
     </div>
-  </div>''', True, 'Our ask: one canteen for twelve weeks to host two scanners, a partner to co-apply for NEA\'s 3R Fund, and an introduction to a contract caterer.'))
+  </div>''', False, 'In offices, it becomes Loopi Work. Six in ten Singaporeans eat out at least four times a week, and obesity is rising. Workers pre-order a lunch that fits their health goal, the kitchen cooks to the orders, and the company only ever sees team totals.'))
+
+S.append(slide('Step 6: everyone, everywhere', f'''  <div class="eyebrow" data-a>Step 6</div>
+  <h2 data-a style="--d:.1s">Everyone, everywhere.</h2>
+  <div class="grid g2 mid">
+    <div class="card big6" data-a style="--d:.2s"><i>📱</i><b>A personal app</b><span>Photograph a meal before and after, anywhere, to see what you ate and its nutrients.</span></div>
+    <div class="card big6" data-a style="--d:.32s"><i>🌏</i><b>Beyond Singapore</b><span>Countries with big school-lunch programmes, like Japan and South Korea.</span></div>
+  </div>''', False, 'Finally, everyone. A personal app lets anyone photograph a meal before and after eating, anywhere, to see what they ate and its nutrients. And the canteen system can go to countries with big school-lunch programmes, like Japan and South Korea.'))
+
+S.append(slide('Same core at every step', f'''  <div class="eyebrow" data-a>Why it scales</div>
+  <h2 data-a style="--d:.1s">Same core. A new app for each place.</h2>
+  <div class="mid">{reuse_table()}</div>''', False, 'This is why it can grow. The scanner and the Kitchen dashboard are the same everywhere. Each new place only needs the app made for the people eating there: Loopi, Loopi Care or Loopi Work.'))
+
+S.append(slide('It starts with one canteen', f'''  <div class="body" style="justify-content:center">
+    <div class="eyebrow" data-a>First step</div>
+    <h2 data-a style="--d:.1s;font-size:110px;line-height:.95;letter-spacing:-.05em">It starts with<br><span style="color:var(--glow)">one canteen.</span></h2>
+    <p class="lede" data-a style="--d:.3s;color:var(--night-ink2)">PlateLoop: know what’s eaten. Waste less.</p>
+  </div>''', True, 'It all starts with one canteen. PlateLoop: know what\'s eaten, waste less.'))
 
 CSS = '''
 /* ---- scale-up deck: visual components */
@@ -409,6 +418,49 @@ CSS = '''
 .ask3{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px}
 .ask3 div{padding:28px;border-radius:28px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
 .ask3 i{font-style:normal;font-size:44px}.ask3 b{display:block;margin-top:10px;font-size:38px;font-weight:800;letter-spacing:-.03em;color:#fff}.ask3 span{font-size:20px;color:var(--night-ink2)}
+.hero-img{border-radius:30px;overflow:hidden;background:#F2F3F2;box-shadow:0 40px 80px -30px rgba(0,0,0,.8),0 0 0 2px rgba(61,220,115,.3)}
+.hero-img img{display:block;width:100%;height:520px;object-fit:cover;object-position:46% 60%}
+.what{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:center;margin:auto 0}
+.what-img{border-radius:30px;overflow:hidden;background:#F2F3F2;box-shadow:0 30px 60px -30px rgba(0,0,0,.4)}
+.what-img img{display:block;width:100%;height:520px;object-fit:cover;object-position:46% 60%}
+.what-r{display:flex;flex-direction:column;gap:16px}
+.m3{display:flex;gap:20px;align-items:center;padding:18px 22px;border-radius:22px;background:var(--card);box-shadow:0 20px 40px -28px rgba(0,0,0,.25)}
+.m3 > i{flex:none;font-style:normal;font-size:40px;width:64px;height:64px;border-radius:18px;display:grid;place-items:center;background:var(--mint)}
+.m3 b{display:block;font-size:26px;letter-spacing:-.02em}.m3 span{display:block;margin-top:2px;font-size:19px;color:var(--ink2);line-height:1.35}
+.m3 em{display:block;margin-top:4px;font-style:normal;font-size:13px;color:var(--ink3)}
+.eqs{display:flex;align-items:center;gap:12px;margin-top:6px;font-size:22px;font-weight:700;color:var(--ink2)}
+.eqs em{font-style:normal;color:var(--ink3)}.eqs b{padding:10px 18px;border-radius:14px;background:var(--green);color:#fff}
+.two-out{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:-10px}
+.out-k{display:flex;gap:22px;align-items:center;padding:16px 20px;border-radius:24px;background:var(--card);box-shadow:0 20px 40px -28px rgba(0,0,0,.25)}
+.out-k b{display:block;font-size:26px}.out-k span{font-size:19px;color:var(--ink2)}
+.kimg{width:200px;height:125px;object-fit:cover;object-position:top left;border-radius:12px;box-shadow:0 0 0 1px var(--line)}
+.pimg{height:150px;width:auto;border-radius:18px}
+.flow-wrap{width:1100px;margin:10px auto 0}
+.two-out .pimg{height:110px}.two-out .kimg{width:170px;height:106px}
+.stairs{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;align-items:end;margin-top:auto;height:560px}
+.st-step{display:flex;flex-direction:column;justify-content:flex-start;height:var(--h);border-radius:22px 22px 8px 8px;background:linear-gradient(180deg,rgba(61,220,115,.22),rgba(61,220,115,.06));box-shadow:inset 0 0 0 1px rgba(61,220,115,.3);padding:18px}
+.st-top span{display:grid;place-items:center;width:44px;height:44px;border-radius:50%;background:var(--glow);color:#0B100D;font-weight:800;font-size:20px}
+.st-top b{display:block;margin-top:12px;font-size:23px;letter-spacing:-.02em;line-height:1.15;color:#fff}
+.st-top em{display:block;margin-top:6px;font-style:normal;font-size:16px;color:var(--glow);font-weight:700}
+.step-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;margin:auto 0}
+.step-l{display:flex;flex-direction:column;gap:14px}
+.shots2{position:relative;height:540px}
+.shots2 .big{position:absolute;left:0;top:30px;width:100%;height:auto;border-radius:18px;box-shadow:0 30px 60px -30px rgba(0,0,0,.5)}
+.shots2 .over{position:absolute;right:-10px;bottom:-20px;height:420px;width:auto;filter:drop-shadow(0 30px 40px rgba(0,0,0,.45))}
+.dots-wrap.light{width:690px;padding:24px;border-radius:26px;background:var(--night)}
+.sector{display:grid;grid-template-columns:auto 1fr;gap:60px;align-items:center;margin:auto 0}
+.sec-img .pimg{height:600px;filter:drop-shadow(0 30px 40px rgba(0,0,0,.35))}
+.sec-r{display:flex;flex-direction:column;gap:16px}
+.facts2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.kpi.b b{color:#1B6BD1}.kpi.i b{color:#5046C8}
+.big6{display:flex;flex-direction:column;gap:12px;padding:40px}.big6 i{font-style:normal;font-size:64px}.big6 b{font-size:40px;letter-spacing:-.03em}.big6 span{font-size:22px;color:var(--ink2);line-height:1.45}
+.reuse{width:100%;border-collapse:separate;border-spacing:10px}
+.reuse th{font-size:20px;font-weight:800;color:var(--ink2);padding:0 0 6px}
+.reuse td{height:100px;text-align:center;font-size:22px;font-weight:800;border-radius:18px;background:var(--card);box-shadow:0 20px 40px -28px rgba(0,0,0,.25)}
+.reuse td.dot{color:var(--green);font-size:34px}
+.reuse td.rl{text-align:left;padding:0 22px;background:var(--ink);color:#fff;font-size:22px;width:250px}
+.reuse tr:last-child td:not(.rl){background:var(--mint);color:var(--green)}
+
 '''
 
 def build():
