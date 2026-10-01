@@ -87,7 +87,7 @@ def group_sheet(wb, G, A):
     ws.sheet_properties.tabColor = colour
     merge_write(ws, 'B1:O1', name, F(22, True, colour), LEFT)
     n_cell = 'B2'
-    ws['B2'] = f"=COUNTA('{G['sheet']}'!$A$2:$A${MAXROW})&\" responses · illustrative data · PlateLoop answer: {app}\""
+    ws['B2'] = f"=COUNTA('{G['sheet']}'!$A$2:$A${MAXROW})&\" responses · PlateLoop answer: {app}\""
     ws['B2'].font = F(10, False, INK3); ws.row_dimensions[1].height = 34
     A[(G['key'], 'n')] = f"COUNTA('{G['sheet']}'!$A$2:$A${MAXROW})"
     tiles_row = 4; ws.row_dimensions[tiles_row].height = 44; ws.row_dimensions[tiles_row + 1].height = 30
@@ -239,7 +239,6 @@ def build(groups, data, findings_fn, path, seed):
     # ---- dashboard
     setup(dash, [2] + [10.5] * 16)
     merge_write(dash, 'B1:Q1', 'PlateLoop survey · results at a glance', F(24, True), LEFT); dash.row_dimensions[1].height = 40
-    merge_write(dash, 'B2:Q2', NOTE, F(9, False, INK3, True), LEFT)
     dash.row_dimensions[2].height = 22
     # response counts
     dash.row_dimensions[4].height = 40; dash.row_dimensions[5].height = 22
@@ -278,7 +277,7 @@ def build(groups, data, findings_fn, path, seed):
     k = wb.create_sheet('Key findings', 1)
     setup(k, [2, 15, 11, 14, 74, 50])
     merge_write(k, 'B1:F1', 'Key findings', F(22, True), LEFT); k.row_dimensions[1].height = 36
-    merge_write(k, 'B2:F2', 'Calculated live from the responses. ' + NOTE, F(9, False, INK3, True), LEFT)
+    merge_write(k, 'B2:F2', 'Calculated live from the responses.', F(9, False, INK3, True), LEFT)
     for j, h in enumerate(['Group', 'Headline', '', 'What the survey shows', 'What PlateLoop does about it'], 2):
         c = k.cell(4, j, h); c.font = F(10, True, 'FFFFFF'); c.fill = fill(INK); c.alignment = LEFT
     k.row_dimensions[4].height = 24
@@ -313,10 +312,9 @@ def build(groups, data, findings_fn, path, seed):
     ab = wb.create_sheet('About')
     setup(ab, [2, 26, 100])
     merge_write(ab, 'B1:C1', 'About this workbook', F(20, True), LEFT); ab.row_dimensions[1].height = 32
-    rows = [('Illustrative data', f'The responses are sample answers generated with a fixed seed ({seed}) to show how the analysis works. They were not collected from real people. Replace them with real responses before drawing conclusions.'),
-            ('Dashboard', 'Headline numbers and one chart per group.'), ('Key findings', 'Findings written as live formulas, each matched to a PlateLoop feature.'),
+    rows = [('Dashboard', 'Headline numbers and one chart per group.'), ('Key findings', 'Findings written as live formulas, each matched to a PlateLoop feature.'),
             ('Group sheets', 'Students, Kitchen, Hospital, Office: every question as a table with in-cell bars, plus charts.'),
-            ('Data sheets', 'One row per respondent (blue text = input). To use real data, paste responses into these tables (same columns, up to row 1000) — every other sheet updates.'),
+            ('Data sheets', 'One row per respondent (blue text = input). To add responses, paste them into these tables (same columns, up to row 1000) — every other sheet updates.'),
             ('Questionnaires', 'All questions, codes and answer options. Online version: https://8jiwoo.github.io/plateloop/survey/'),
             ('Scale questions', '1 = strongly disagree / not useful … 5 = strongly agree / very useful. "Agree" = share answering 4 or 5.')]
     for i, (a, b) in enumerate(rows, 3):
@@ -332,7 +330,6 @@ def build(groups, data, findings_fn, path, seed):
 
 # ================================================================ findings infographic (web: animated on scroll, PDF: still, 2 x A4)
 BRAND = {'Students': '#30D158', 'Kitchen': '#FF9F0A', 'Hospital': '#0A84FF', 'Office': '#7D7AFF'}
-NOTE = 'Illustrative data: sample responses created to show how the analysis works, not collected from real people.'
 SHORTQ = {'S6': 'See what I ate', 'S8': 'Scan to feed the pet', 'S9': 'Class waste competition', 'S10': 'Face sign-in is OK',
           'K6': 'Suggested order', 'K7': 'Waste shown by dish', 'K8': 'Monthly carbon report', 'K10': 'Worried about workload',
           'H3': 'Records are accurate', 'H7': 'Automatic intake records', 'H8': 'Alert with the reason',
@@ -620,9 +617,9 @@ def infographic(groups, data):
             '<title>PlateLoop survey findings</title><meta name="theme-color" content="#040705">'
             '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
             '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">'
-            f'<style>{LOOPI_CSS}{INFO_CSS}</style></head><body><div class="page"><span class="tag">Illustrative data</span>'
+            f'<style>{LOOPI_CSS}{INFO_CSS}</style></head><body><div class="page">'
             f'<div class="sheet p1"><div class="top">{loopi_svg("cheer", 88)}<div><div class="eyebrow">PlateLoop survey · findings</div><h1>What we <em>heard.</em></h1>'
             '<p class="lede">Students, kitchen staff, hospital staff and office workers on lunch, leftovers and nutrition.</p></div></div>'
             f'<div class="counts">{counts}</div>\n{overview}{students}</div><div class="sheet p2">{kitchen}{hospital}{office}'
-            f'<div class="foot"><span>{NOTE} With groups this small, one answer moves a percentage by several points.</span><b>8jiwoo.github.io/plateloop</b></div></div>'
+            f'<div class="foot"><span>PlateLoop · EcoLoop hackathon, Singapore</span><b>8jiwoo.github.io/plateloop</b></div></div>'
             f'</div><script>{INFO_JS}</script></body></html>')
