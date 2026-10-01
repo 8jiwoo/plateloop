@@ -10,6 +10,15 @@ Desk research behind the scanner and the Loopi apps: the size of the problem, th
 | **1.05 billion tonnes** of food wasted worldwide in 2022: 60% in households, **28% in food service**, 12% in retail | UNEP, [Food Waste Index Report 2024](https://www.unep.org/resources/publication/food-waste-index-report-2024) |
 | Food loss and waste causes **8–10%** of global greenhouse gas emissions | UNEP, Food Waste Index Report 2024 |
 
+## The scanner's method is proven
+
+PlateLoop recognises each dish, measures how much was eaten and works out the nutrients from depth-camera images of the tray before and after the meal. Research systems built this way already work:
+
+- **AFINI-T** used overhead RGB-depth images of plated meals: food classification reached **88.9%** top-1 accuracy, and nutrient intake estimated from volume agreed very closely with estimates from weight (r² = 0.92–0.99). Source: Pfisterer et al., "Automated Food Imaging and Nutrient Intake Tracking (AFINI-T)", *JMIR Aging*, 2022 ([PMC9716425](https://pmc.ncbi.nlm.nih.gov/articles/PMC9716425/)).
+- A hospital system from the University of Bern estimated each patient's nutrient intake from RGB-depth image pairs taken before and after the meal; estimates correlated above 0.91 with the true values, with mean relative errors under 20%. Source: Lu et al., "An Artificial Intelligence-Based System to Assess Nutrient Intake for Hospitalised Patients", 2020 ([arXiv 2003.08273](https://arxiv.org/abs/2003.08273)).
+
+The nutrients PlateLoop reports are energy, protein, carbohydrate, fat, fibre and sodium, plus food groups against HPB's My Healthy Plate.
+
 ## The core evidence: measuring food waste cuts it
 
 - A review of **86 catering sites in six countries (China, Ireland, Norway, Singapore, Sweden, UK)** found that sites which measured and acted on their food waste cut it by **36% by weight in the first year** on average. Nearly all achieved a positive return, averaging **6:1**; 64% recouped their investment within the first year, and 79% spent under US$10,000. Source: Champions 12.3 (WRAP and WRI), [*The Business Case for Reducing Food Loss and Waste: Catering*](https://champions123.org/the-business-case-for-reducing-food-loss-and-waste-caterers/), June 2018.
