@@ -1,11 +1,10 @@
 """
-PlateLoop survey kit: questionnaires for four groups, illustrative sample responses, an Excel analysis workbook and a findings infographic.
+PlateLoop survey kit: the online survey's questions for four groups, illustrative sample responses, an Excel analysis workbook and a findings infographic.
 
   pip install openpyxl pandas selenium
   python tools/build_survey.py
 
-Writes to docs/survey/:
-  plateloop-questionnaires.pdf            printable questionnaires (real, ready to use)
+Writes survey/questions.js (the online survey's questions) and, in docs/survey/:
   plateloop-survey-analysis.xlsx          dashboard, one sheet per group, key findings and the sample responses (all formulas)
   plateloop-key-findings.pdf/.html       one-page findings infographic (the .html is animated)
 The workbook and infographic design lives in tools/survey_design.py.
@@ -23,7 +22,7 @@ SEED = 35  # a demo draw that resembles a typical real survey (see README); chan
 MAXROW = 1000  # analysis formulas cover rows 2..1000 so real data can be pasted in
 
 L5 = {'agree': ['1 Strongly disagree', '2', '3', '4', '5 Strongly agree']}
-# ================================================================ questionnaires (single source of truth)
+# ================================================================ survey questions (single source of truth; the online survey reads them)
 # question: (code, text, type, options or None, demo distribution)
 #   type 'cat'   -> one option; dist = weights per option
 #   type 'lik'   -> 1-5 scale; dist = weights for 1..5; options = (low label, high label)
@@ -171,35 +170,10 @@ def findings_formulas(A):
     ]
     return findings
 
-# ================================================================ PDFs (questionnaires + findings)
+# ================================================================ findings PDF
 def P(v):
     """Percent rounded half-up, the same way Excel's TEXT(x,"0%") does, so the PDF and the workbook agree."""
     return f'{int(Decimal(str(v * 100)).quantize(Decimal(0), rounding=ROUND_HALF_UP))}%'
-
-CSS = '''@page{size:A4;margin:16mm 16mm 16mm}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;color:#16201A;font-size:10pt;line-height:1.45;-webkit-print-color-adjust:exact;print-color-adjust:exact}
-h1{font-size:20pt;margin:0 0 4px}h2{font-size:13pt;margin:0 0 4px;color:#1E7A44}.sub{color:#4B5550;margin:0 0 14px}
-.grp{page-break-before:always}.grp:first-of-type{page-break-before:auto}
-.q{border-top:1px solid #E3E6E3;padding:9px 0 8px;page-break-inside:avoid}.q b{display:block;margin-bottom:6px}.q b span{color:#1E7A44;margin-right:6px}
-.opts{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:9.5pt;color:#4B5550}.opts i{display:inline-block;width:11px;height:11px;border:1.4px solid #4B5550;border-radius:50%;margin-right:5px;vertical-align:-1px}
-.scale{display:flex;gap:10px;align-items:center;font-size:9pt;color:#8A928D}.scale i{display:inline-grid;place-items:center;width:22px;height:22px;border:1.4px solid #4B5550;border-radius:50%;font-style:normal;color:#16201A;font-size:9pt}
-.line{border-bottom:1px solid #B9C0BB;height:22px;width:60%}.box{border:1px solid #B9C0BB;height:48px}
-.demo{background:#FFF2CC;border-left:4px solid #C9741C;padding:8px 12px;margin:0 0 14px;font-size:9.5pt}
-.fd{display:grid;grid-template-columns:28px 1fr;gap:10px;border-top:1px solid #E3E6E3;padding:9px 0;page-break-inside:avoid}.fd .n{font-weight:800;color:#1E7A44}.fd em{display:block;font-style:normal;color:#1E7A44;font-size:9pt;margin-top:3px}
-.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px 22px;margin:10px 0}.cap{font-size:8.5pt;color:#8A928D;margin:2px 0 8px}
-.kf{display:grid;grid-template-columns:repeat(4,1fr);border:1px solid #E3E6E3;margin:8px 0 14px}.kf div{padding:10px 12px;border-right:1px solid #E3E6E3}.kf div:last-child{border-right:0}.kf b{display:block;font-size:17pt;color:#1E7A44}.kf span{font-size:8.5pt;color:#4B5550}'''
-
-def q_html():
-    out = ['<h1>PlateLoop questionnaires</h1><p class="sub">Four short surveys: students, canteen and kitchen staff, hospital staff, and office workers. Each takes about four minutes and is anonymous.</p>']
-    for G in GROUPS:
-        out.append(f'<section class="grp"><h2>{G["title"]}</h2><p class="sub">{G["intro"]}</p>')
-        for code, text, typ, opts, _ in G['qs']:
-            if typ == 'cat': body = '<div class="opts">' + ''.join(f'<span><i></i>{o}</span>' for o in opts) + '</div>'
-            elif typ == 'lik': body = f'<div class="scale">{opts[0]} ' + ''.join(f'<i>{v}</i>' for v in range(1, 6)) + f' {opts[1]}</div>'
-            elif typ == 'num': body = '<div class="line"></div>'
-            else: body = '<div class="box"></div>'
-            out.append(f'<div class="q"><b><span>{code}</span>{text}</b>{body}</div>')
-        out.append('</section>')
-    return f'<!doctype html><html><head><meta charset="utf-8"><title>PlateLoop questionnaires</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"><style>{CSS}</style></head><body>{"".join(out)}</body></html>'
 
 def finding_texts(data):
     """The same findings as the workbook's formulas, computed in Python for the PDF."""
@@ -255,9 +229,8 @@ def main():
     sys.path.insert(0, os.path.join(ROOT, 'tools')); import survey_design as D
     texts = finding_texts(data)
     D.build(GROUPS, data, findings_formulas, os.path.join(OUT, 'plateloop-survey-analysis.xlsx'), SEED)
-    for name, html in (('questionnaires', q_html()), ('key-findings', D.infographic(GROUPS, data))):
-        hp = os.path.join(OUT, f'plateloop-{name}.html'); open(hp, 'w', encoding='utf-8').write(html)
-        to_pdf(hp, os.path.join(OUT, f'plateloop-{name}.pdf'))
+    hp = os.path.join(OUT, 'plateloop-key-findings.html'); open(hp, 'w', encoding='utf-8').write(D.infographic(GROUPS, data))
+    to_pdf(hp, os.path.join(OUT, 'plateloop-key-findings.pdf'))
     print('done:', os.listdir(OUT))
     for t, _ in texts: print(' -', t)
 
