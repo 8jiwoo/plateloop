@@ -24,4 +24,4 @@ Responses are saved in the browser they were submitted from. Open https://8jiwoo
 
 ## Analysing the responses
 
-Paste the rows (without the header) into the matching tab of `plateloop-survey-analysis-DEMO.xlsx` (`Students_Data`, `Kitchen_Data`, `Hospital_Data`, `Office_Data`), replacing the demo rows. The Dashboard, the group sheets, their charts and Key findings all update automatically. Rename the file to drop "DEMO" once it holds real data.
+Paste the rows (without the header) into the matching tab of `plateloop-survey-analysis.xlsx` (`Students_Data`, `Kitchen_Data`, `Hospital_Data`, `Office_Data`), replacing the illustrative sample rows. The Dashboard, the group sheets, their charts and Key findings all update automatically. Once it holds only real responses, remove the "Illustrative data" notes on the Dashboard, Key findings and About sheets.
