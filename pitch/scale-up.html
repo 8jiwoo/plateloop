@@ -1,0 +1,702 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlateLoop · Scale-up plan</title>
+<meta name="description" content="PlateLoop pitch deck: an AI food scanner that measures what is served, eaten and left, told through design thinking.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+/* ================================================================ tokens */
+:root{
+  --paper:#F3F4F1; --card:#FFFFFF; --ink:#101512; --ink2:#565E58; --ink3:#8A918C; --line:rgba(16,21,18,.1);
+  --green:#1E9E4A; --green2:#34C759; --mint:#E3F5E7; --orange:#D9730D; --orange-soft:#FDEEDC; --red:#D93A2B; --blue:#1B6BD1; --blue-soft:#E4EEFB; --indigo:#5046C8; --indigo-soft:#ECEBFB;
+  --night:#0B100D; --night2:#151C18; --night-ink:#F2F5F1; --night-ink2:#A6B0A9; --glow:#3DDC73;
+  --font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:#050806;overflow:hidden;font-family:var(--font);-webkit-font-smoothing:antialiased;color:var(--ink)}
+button{font:inherit;color:inherit;cursor:pointer}
+
+/* ================================================================ stage: a 1600×900 canvas scaled to fit */
+.viewport{position:fixed;inset:0;display:grid;place-items:center}
+.stage{width:1600px;height:900px;position:relative;transform-origin:center;flex:none}
+.slide{position:absolute;inset:0;background:var(--paper);border-radius:6px;overflow:hidden;padding:84px 100px 70px;display:flex;flex-direction:column;
+  opacity:0;visibility:hidden;transform:translateX(40px) scale(.985);transition:opacity .55s cubic-bezier(.2,.8,.2,1),transform .55s cubic-bezier(.2,.8,.2,1),visibility 0s .55s}
+.slide.past{transform:translateX(-40px) scale(.985)}
+.slide.on{opacity:1;visibility:visible;transform:none;transition:opacity .55s cubic-bezier(.2,.8,.2,1),transform .55s cubic-bezier(.2,.8,.2,1),visibility 0s}
+.slide.dark{background:radial-gradient(120% 90% at 80% 10%,#15251B,var(--night) 60%);color:var(--night-ink)}
+.notes{display:none}
+
+/* entrance animations: anything with data-a animates when its slide opens; --d delays it */
+[data-a]{opacity:0}
+.slide.on [data-a]{animation:rise .8s cubic-bezier(.2,.8,.2,1) var(--d,0s) both}
+.slide.on [data-a="left"]{animation-name:fromleft}
+.slide.on [data-a="right"]{animation-name:fromright}
+.slide.on [data-a="pop"]{animation:pop .7s cubic-bezier(.2,.9,.3,1.25) var(--d,0s) both}
+.slide.on [data-a="fade"]{animation-name:fadein;animation-duration:1.2s}
+.slide.on [data-a="grow"]{animation:grow 1s cubic-bezier(.2,.8,.2,1) var(--d,0s) both;transform-origin:left center}
+@keyframes rise{from{opacity:0;transform:translateY(26px)}to{opacity:1;transform:none}}
+@keyframes fromleft{from{opacity:0;transform:translateX(-40px)}to{opacity:1;transform:none}}
+@keyframes fromright{from{opacity:0;transform:translateX(40px)}to{opacity:1;transform:none}}
+@keyframes pop{from{opacity:0;transform:scale(.7)}to{opacity:1;transform:none}}
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes grow{from{opacity:1;transform:scaleX(0)}to{opacity:1;transform:none}}
+@keyframes floaty{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+/* ================================================================ type */
+.eyebrow{font-size:17px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--green);margin-bottom:14px}
+.dark .eyebrow{color:var(--glow)}
+h1,h2,h3{margin:0;letter-spacing:-.035em;line-height:1.02}
+h1{font-size:112px;font-weight:800}
+h2{font-size:64px;font-weight:800;max-width:1250px}
+h3{font-size:28px;font-weight:700;letter-spacing:-.02em;line-height:1.15}
+.lede{font-size:28px;line-height:1.35;color:var(--ink2);max-width:1080px;margin-top:20px;letter-spacing:-.01em}
+.dark .lede{color:var(--night-ink2)}
+.small{font-size:19px;color:var(--ink2);line-height:1.45}
+.dark .small{color:var(--night-ink2)}
+.src{position:absolute;left:100px;bottom:34px;font-size:14px;color:var(--ink3)}
+.dark .src{color:#6F7A73}
+.g{color:var(--green)}.dark .g{color:var(--glow)}
+.o{color:var(--orange)}
+.hl{background:linear-gradient(transparent 62%,rgba(52,199,89,.28) 62%);padding:0 4px}
+.mid{margin-top:auto!important;margin-bottom:auto!important}
+.body{flex:1;display:flex;flex-direction:column;justify-content:center;min-height:0}
+.row{display:flex;gap:28px}
+.grid{display:grid;gap:22px}
+.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}.g5{grid-template-columns:repeat(5,1fr)}.g6{grid-template-columns:repeat(3,1fr)}
+.card{background:var(--card);border-radius:26px;padding:28px 30px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 20px 40px -28px rgba(0,0,0,.25)}
+.dark .card{background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.card p{margin:8px 0 0;font-size:19px;line-height:1.45;color:var(--ink2)}
+.dark .card p{color:var(--night-ink2)}
+.tag{display:inline-block;font-size:14px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:16px;font-weight:600;padding:7px 14px;border-radius:99px;background:var(--mint);color:var(--green)}
+
+/* ================================================================ chrome: phase tracker, counter, progress, nav */
+.phase{position:absolute;top:34px;right:100px;display:flex;gap:6px;z-index:5}
+.phase span{font-size:13px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:6px 12px;border-radius:99px;color:var(--ink3);background:rgba(16,21,18,.05);transition:background .4s,color .4s}
+.phase span.on{background:var(--green);color:#fff}
+.phase span.done{color:var(--green)}
+.dark .phase span{background:rgba(255,255,255,.07);color:#77837B}.dark .phase span.on{background:var(--glow);color:#06200F}.dark .phase span.done{color:var(--glow)}
+.brandmark{position:absolute;top:36px;left:100px;display:flex;align-items:center;gap:10px;font-weight:800;font-size:19px;letter-spacing:-.02em;z-index:5}
+.brandmark i{width:22px;height:22px;border-radius:7px;background:conic-gradient(from 200deg,var(--green2),#9BE5AE,var(--green2))}
+.num-badge{position:absolute;right:100px;bottom:30px;font-size:15px;font-weight:600;color:var(--ink3);font-variant-numeric:tabular-nums}
+.dark .num-badge{color:#6F7A73}
+.progress{position:fixed;left:0;top:0;height:3px;background:var(--glow);z-index:20;transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.nav{position:fixed;left:50%;transform:translateX(-50%);top:12px;z-index:20;display:flex;gap:6px;opacity:.35;transition:opacity .25s}
+.nav:hover,.nav:focus-within{opacity:1}
+.nav button{border:0;background:rgba(255,255,255,.12);color:#fff;width:40px;height:40px;border-radius:12px;backdrop-filter:blur(10px);font-size:18px;display:grid;place-items:center}
+.nav button:hover{background:rgba(255,255,255,.22)}
+.help{position:fixed;left:18px;bottom:18px;z-index:20;color:rgba(255,255,255,.4);font-size:12.5px;transition:opacity .4s}
+.notes-panel{position:fixed;left:0;right:0;bottom:0;z-index:30;background:rgba(10,14,12,.94);color:#E9EEEA;padding:18px 28px 22px;font-size:17px;line-height:1.55;max-height:38vh;overflow:auto;transform:translateY(100%);transition:transform .35s cubic-bezier(.2,.8,.2,1);backdrop-filter:blur(16px)}
+.notes-panel.open{transform:none}
+.notes-panel b{color:var(--glow);font-size:13px;letter-spacing:.06em;text-transform:uppercase;display:block;margin-bottom:6px}
+
+/* ================================================================ slide parts */
+.loopi-svg .lp-body{animation:lpbob 3.2s ease-in-out infinite;transform-origin:60px 120px}
+.loopi-svg .lp-eye{animation:lpblink 5.5s infinite;transform-box:fill-box;transform-origin:center}
+.loopi-svg .lp-wave{animation:lpwave 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
+@keyframes lpbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+@keyframes lpblink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+@keyframes lpwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
+
+/* 1 title */
+.title-wrap{display:grid;grid-template-columns:1fr 760px;align-items:center;gap:40px;flex:1}
+.title-wrap h1{font-size:150px;letter-spacing:-.05em}
+.title-wrap .tagline{font-size:42px;font-weight:700;letter-spacing:-.03em;margin-top:14px;line-height:1.1}
+.title-art{position:relative;height:640px;border-radius:40px;overflow:hidden;background:#EEF0EE}
+.title-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:54% 42%;transform:scale(1.1)}
+.title-art .loopi-svg{position:absolute;left:26px;bottom:14px;animation:floaty 4s ease-in-out infinite;filter:drop-shadow(0 16px 24px rgba(0,0,0,.25))}
+.meta-line{margin-top:44px;display:flex;gap:12px;flex-wrap:wrap}
+.meta-line span{font-size:17px;font-weight:600;color:var(--night-ink2);border:1px solid rgba(255,255,255,.14);border-radius:99px;padding:8px 16px}
+
+/* 2 hook */
+.bigstat{font-size:190px;font-weight:800;letter-spacing:-.06em;line-height:.9;color:var(--glow);font-variant-numeric:tabular-nums}
+.bigstat small{display:block;font-size:52px;letter-spacing:-.03em;color:var(--night-ink);line-height:1;margin-top:12px}
+.hook-grid{display:grid;grid-template-columns:1.25fr 1fr;gap:60px;align-items:end;flex:1}
+.hook-side{display:flex;flex-direction:column;gap:18px}
+.hook-side .card{padding:24px 28px}
+.hook-side b{font-size:52px;font-weight:800;letter-spacing:-.04em;display:block;line-height:1;color:#fff}
+
+/* 3 process */
+.process{display:grid;grid-template-columns:repeat(5,1fr);gap:22px;margin:auto 0;position:relative}
+.process::before{content:"";position:absolute;left:52px;right:52px;top:52px;height:4px;background:var(--line);border-radius:4px}
+.process .line{position:absolute;left:52px;top:52px;height:4px;width:calc(100% - 104px);background:var(--green);border-radius:4px;transform-origin:left}
+.step{position:relative;text-align:left}
+.step .dot{width:108px;height:108px;border-radius:32px;background:var(--card);display:grid;place-items:center;box-shadow:0 12px 30px -18px rgba(0,0,0,.4);position:relative;z-index:1;margin-bottom:22px}
+.step .dot svg{width:52px;height:52px;color:var(--green)}
+.step h3{font-size:36px}
+.step p{font-size:21px;color:var(--ink2);line-height:1.45;margin:10px 0 0}
+
+/* 4 personas */
+.persona{display:flex;flex-direction:column;gap:6px;padding:26px 26px 24px}
+.persona .who{display:flex;align-items:center;gap:14px;margin-bottom:10px}
+.persona .av{width:60px;height:60px;border-radius:50%;display:grid;place-items:center;font-weight:800;font-size:22px;color:#fff;flex:none}
+.persona .who b{font-size:23px;letter-spacing:-.02em;display:block}
+.persona .who span{font-size:15px;color:var(--ink3)}
+.persona .need,.persona .pain{font-size:17.5px;line-height:1.45;color:var(--ink2);padding:12px 14px;border-radius:14px}
+.persona .need{background:var(--mint)}.persona .pain{background:var(--orange-soft)}
+.persona .need b,.persona .pain b{display:block;font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.persona .need b{color:var(--green)}.persona .pain b{color:var(--orange)}
+.persona q{font-size:21px;font-weight:600;letter-spacing:-.01em;line-height:1.35;margin:4px 0 8px;quotes:"“" "”"}
+
+/* 5 journey map */
+.jmap{position:relative;margin-top:30px;flex:1;display:flex;flex-direction:column}
+.jmap .stages{display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.jmap .stage-c{background:var(--card);border-radius:20px;padding:20px 22px;box-shadow:0 12px 30px -24px rgba(0,0,0,.35)}
+.jmap .stage-c b{font-size:22px;display:block;letter-spacing:-.02em}
+.jmap .stage-c span{font-size:16.5px;color:var(--ink2);line-height:1.4;display:block;margin-top:6px}
+.jmap svg.curve{width:100%;height:320px;margin-top:16px;overflow:visible}
+.curve .path{fill:none;stroke:var(--orange);stroke-width:5;stroke-linecap:round;stroke-dasharray:1600;stroke-dashoffset:1600}
+.slide.on .curve .path{animation:draw 2.2s cubic-bezier(.4,.1,.2,1) .5s forwards}
+@keyframes draw{to{stroke-dashoffset:0}}
+.curve .axis{stroke:var(--line);stroke-width:2;stroke-dasharray:4 8}
+.curve text{font:600 15px var(--font);fill:var(--ink3)}
+.curve .pt{fill:var(--card);stroke:var(--orange);stroke-width:4}
+.curve .pain-t{font:700 18px var(--font);fill:var(--orange)}
+.curve .ok-t{font:600 17px var(--font);fill:var(--green)}
+
+/* 6 define */
+.pov{font-size:50px;font-weight:700;letter-spacing:-.03em;line-height:1.15;max-width:1300px}
+.pov .who{color:var(--green)}
+.hmw{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:50px}
+.hmw .card{border-top:6px solid var(--green)}
+.hmw .card b{font-size:15px;letter-spacing:.06em;text-transform:uppercase;color:var(--green);display:block;margin-bottom:8px}
+.hmw .card div{font-size:24px;font-weight:600;letter-spacing:-.015em;line-height:1.3}
+
+/* 7 why now */
+.stat3 .card .big{font-size:100px;font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--orange);margin:6px 0 8px}
+.stat3 .card h3{font-size:24px}
+
+/* 8 ideate table */
+table.cmp{width:100%;border-collapse:separate;border-spacing:0;margin-top:36px;background:var(--card);border-radius:24px;overflow:hidden;box-shadow:0 20px 40px -30px rgba(0,0,0,.3)}
+.cmp th,.cmp td{padding:17px 20px;text-align:center;font-size:19px;border-bottom:1px solid var(--line)}
+.cmp th{font-size:14.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--ink3);background:#FAFBF9}
+.cmp td:first-child,.cmp th:first-child{text-align:left}
+.cmp td:first-child b{display:block;font-size:20px}
+.cmp td:first-child span{font-size:15px;color:var(--ink3)}
+.cmp tr:last-child td{border-bottom:0;background:var(--mint)}
+.cmp .y,.cmp .n,.cmp .m{display:inline-grid;place-items:center;width:34px;height:34px;border-radius:50%;font-weight:800;font-size:18px}
+.cmp .y{background:var(--green);color:#fff}.cmp .n{background:#EFE9E4;color:#B39B8A}.cmp .m{background:#FFF1D6;color:#B07A00}
+.slide.on .cmp tbody tr{animation:rise .6s cubic-bezier(.2,.8,.2,1) both}
+.slide.on .cmp tbody tr:nth-child(2){animation-delay:.1s}.slide.on .cmp tbody tr:nth-child(3){animation-delay:.2s}.slide.on .cmp tbody tr:nth-child(4){animation-delay:.3s}.slide.on .cmp tbody tr:nth-child(5){animation-delay:.55s}
+
+/* 9 equation */
+.eqn{display:flex;align-items:center;justify-content:center;gap:34px;margin-top:40px}
+.eqn .term{background:rgba(255,255,255,.06);border-radius:34px;padding:34px 44px;text-align:center;min-width:330px;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.eqn .term.res{background:var(--glow);color:#05200E;box-shadow:0 30px 80px -30px rgba(61,220,115,.7)}
+.eqn .term b{font-size:108px;font-weight:800;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
+.eqn .term b small{font-size:46px}
+.eqn .term > span{display:block;font-size:22px;font-weight:600;margin-top:10px;color:var(--night-ink2)}
+.eqn .term.res > span{color:#0A4A22}
+.eqn .op{font-size:90px;font-weight:300;color:var(--night-ink2)}
+.eq-foot{display:flex;justify-content:center;gap:14px;margin-top:46px;flex-wrap:wrap}
+.eq-foot span{font-size:19px;font-weight:600;padding:10px 20px;border-radius:99px;background:rgba(255,255,255,.07);color:var(--night-ink)}
+
+/* 10 hardware */
+.hw{display:grid;grid-template-columns:1fr 520px;gap:40px;flex:1;min-height:0;margin-top:20px}
+.hw-art{position:relative;border-radius:30px;overflow:hidden;background:#EEF0EE;aspect-ratio:16/11;align-self:center;width:100%}
+.hw-art img,.hw-art iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0}
+.hw-art .callout{position:absolute;width:40px;height:40px;margin:-20px 0 0 -20px;border-radius:50%;background:var(--green);color:#fff;font-weight:800;display:grid;place-items:center;font-size:18px;box-shadow:0 0 0 6px rgba(30,158,74,.22)}
+.slide.on .hw-art .callout{animation:pop .6s cubic-bezier(.2,.9,.3,1.3) var(--d) both,ping 2.4s ease-out calc(var(--d) + .6s) infinite}
+@keyframes ping{0%{box-shadow:0 0 0 0 rgba(30,158,74,.45)}70%,100%{box-shadow:0 0 0 18px rgba(30,158,74,0)}}
+.hw-list{display:flex;flex-direction:column;gap:12px;justify-content:center}
+.hw-list div{display:grid;grid-template-columns:40px 1fr;gap:14px;align-items:start;background:var(--card);border-radius:18px;padding:14px 18px}
+.hw-list i{width:40px;height:40px;border-radius:50%;background:var(--green);color:#fff;font-style:normal;font-weight:800;display:grid;place-items:center}
+.hw-list b{font-size:20px;display:block}.hw-list span{font-size:15.5px;color:var(--ink2);line-height:1.4}
+.btn3d{position:absolute;right:18px;bottom:18px;border:0;background:rgba(16,21,18,.85);color:#fff;font-weight:600;font-size:16px;padding:10px 16px;border-radius:99px;z-index:2}
+
+/* 11 architecture */
+.arch{display:grid;grid-template-columns:1fr 70px 1fr 110px 1fr 70px 1fr;margin-top:40px;align-items:stretch}
+.arch .col{display:flex;flex-direction:column;gap:12px}
+.arch h4{margin:0 0 4px;font-size:14px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink3)}
+.arch .n{background:var(--card);border-radius:18px;padding:15px 18px;font-size:20px;font-weight:700;letter-spacing:-.01em;box-shadow:0 10px 24px -20px rgba(0,0,0,.4)}
+.arch .n small{display:block;font-weight:500;font-size:14.5px;color:var(--ink2);margin-top:3px;line-height:1.35}
+.arch .n.core{background:var(--green);color:#fff}.arch .n.core small{color:rgba(255,255,255,.88)}
+.arch .ar{position:relative;display:flex;align-items:center;justify-content:center}
+.arch .ar::before{content:"";position:absolute;left:8px;right:12px;top:50%;height:4px;margin-top:-2px;background:radial-gradient(circle,var(--green) 2px,transparent 2.4px) 0 50%/12px 4px repeat-x;animation:flowx .8s linear infinite}
+.arch .ar::after{content:"";position:absolute;right:2px;top:50%;margin-top:-8px;border:8px solid transparent;border-left:11px solid var(--green)}
+.arch .ar span{position:absolute;top:calc(50% + 16px);font-size:14px;font-weight:600;color:var(--ink2);text-align:center;line-height:1.3}
+@keyframes flowx{to{background-position:12px 50%}}
+.arch-foot{display:flex;gap:14px;margin-top:34px}
+.arch-foot .pill{font-size:17px}
+
+/* 12–17 live demos */
+.demo{display:grid;grid-template-columns:470px 1fr;gap:44px;flex:1;min-height:0;margin-top:18px}
+.demo-text{display:flex;flex-direction:column;justify-content:center;gap:16px}
+.demo-text ul{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-direction:column;gap:12px}
+.demo-text li{font-size:20px;line-height:1.4;color:var(--ink2);padding-left:34px;position:relative}
+.demo-text li::before{content:"";position:absolute;left:0;top:5px;width:20px;height:20px;border-radius:50%;background:var(--mint);box-shadow:inset 0 0 0 6px var(--green)}
+.demo-text li b{color:var(--ink)}
+.dark .demo-text li{color:var(--night-ink2)}.dark .demo-text li::before{background:rgba(61,220,115,.15);box-shadow:inset 0 0 0 6px var(--glow)}
+.demo-kpis{display:flex;gap:14px;margin-top:6px}
+.demo-kpis div{background:var(--card);border-radius:18px;padding:14px 18px;flex:1}
+.demo-kpis b{font-size:40px;font-weight:800;letter-spacing:-.04em;display:block;line-height:1;color:var(--green)}
+.demo-kpis span{font-size:14.5px;color:var(--ink2)}
+.device{position:relative;border-radius:26px;overflow:hidden;background:#000;box-shadow:0 0 0 10px #1B201D,0 40px 80px -40px rgba(0,0,0,.6);align-self:center;width:100%;aspect-ratio:var(--ar,1.6)}
+.device.tall{height:660px;width:auto;justify-self:center}
+.device iframe{position:absolute;left:0;top:0;border:0;width:var(--vw,1280px);height:var(--vh,800px);transform-origin:0 0;background:#000}
+.device .ph{position:absolute;inset:0;z-index:1;display:grid;place-items:center;color:#8A958D;font-size:18px;text-align:center;background:radial-gradient(80% 70% at 50% 40%,#1D2A22,#0B100D)}
+.device .ph button{margin-top:14px;border:0;background:var(--glow);color:#05200E;font-weight:700;font-size:19px;padding:14px 26px;border-radius:99px}
+.live-tag{position:absolute;left:14px;bottom:14px;z-index:2;background:rgba(0,0,0,.6);color:#fff;font-size:13px;font-weight:700;letter-spacing:.05em;padding:6px 11px 6px 26px;border-radius:99px;pointer-events:none}
+.live-tag::before{content:"";position:absolute;left:11px;top:50%;width:8px;height:8px;margin-top:-4px;border-radius:50%;background:#FF453A;animation:blink 1.4s infinite}
+@keyframes blink{50%{opacity:.25}}
+.open-full{position:absolute;right:14px;bottom:14px;z-index:2;background:rgba(0,0,0,.6);color:#fff;font-size:13px;font-weight:600;padding:6px 12px;border-radius:99px;text-decoration:none}
+.loop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:4px}
+.loop span{background:var(--card);border-radius:99px;padding:8px 14px;font-size:16px;font-weight:600}
+.loop em{font-style:normal;color:var(--green);font-weight:800}
+
+/* 18 test: before → after */
+.iters{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:34px}
+.iter{background:var(--card);border-radius:24px;padding:28px 28px;display:flex;flex-direction:column;gap:10px}
+.iter .was{font-size:19px;color:var(--ink2);line-height:1.4;padding-left:26px;position:relative}
+.iter .was::before{content:"✕";position:absolute;left:0;top:0;color:var(--orange);font-weight:800}
+.iter .now{font-size:20.5px;font-weight:600;line-height:1.4;padding-left:26px;position:relative}
+.iter .now::before{content:"✓";position:absolute;left:0;top:0;color:var(--green);font-weight:800}
+.iter h3{font-size:26px}
+
+/* 19 privacy */
+.priv{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.priv .card{display:flex;flex-direction:column;gap:6px}
+.priv .ic{width:62px;height:62px;border-radius:18px;background:var(--mint);display:grid;place-items:center;margin-bottom:10px}
+.priv .ic svg{width:32px;height:32px;color:var(--green)}
+
+/* 20 impact calculator */
+.calc{display:grid;grid-template-columns:520px 1fr;gap:40px;margin-top:34px;flex:1;min-height:0}
+.calc .inputs{background:var(--card);border-radius:26px;padding:28px 30px;display:flex;flex-direction:column;gap:24px}
+.calc label{display:block;font-size:16px;font-weight:600;color:var(--ink2);margin-bottom:10px}
+.calc label b{float:right;color:var(--ink);font-size:20px;font-variant-numeric:tabular-nums}
+.calc input[type=range]{width:100%;accent-color:var(--green);height:28px}
+.calc .outs{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-content:center}
+.calc .out{background:var(--card);border-radius:26px;padding:26px 28px}
+.calc .out b{font-size:64px;font-weight:800;letter-spacing:-.05em;line-height:1;display:block;font-variant-numeric:tabular-nums}
+.calc .out span{font-size:17px;color:var(--ink2);display:block;margin-top:8px}
+.calc .out.hero{grid-column:1/-1;background:var(--green);color:#fff}
+.calc .out.hero span{color:rgba(255,255,255,.85)}
+.calc .out.hero b{font-size:96px}
+.calc .note{font-size:14px;color:var(--ink3);line-height:1.4}
+
+/* 21 business */
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:40px}
+.tier{background:var(--card);border-radius:26px;padding:28px 30px;display:flex;flex-direction:column;gap:6px;position:relative}
+.tier.best{box-shadow:0 0 0 3px var(--green),0 30px 60px -36px rgba(30,158,74,.6)}
+.tier .price{font-size:58px;font-weight:800;letter-spacing:-.04em;line-height:1;margin:6px 0}
+.tier .price small{font-size:20px;font-weight:600;color:var(--ink3);letter-spacing:0}
+.tier ul{margin:10px 0 0;padding-left:20px;font-size:17.5px;line-height:1.6;color:var(--ink2)}
+.tier .badge{position:absolute;top:-14px;right:24px;background:var(--green);color:#fff;font-size:13px;font-weight:700;padding:6px 12px;border-radius:99px;letter-spacing:.04em;text-transform:uppercase}
+.biz-foot{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-top:22px}
+.biz-foot div{font-size:18px;color:var(--ink2);line-height:1.45}
+.biz-foot b{display:block;color:var(--ink);font-size:20px;margin-bottom:2px}
+
+/* 22 competition 2×2 */
+.pos{display:grid;grid-template-columns:720px 1fr;gap:50px;margin-top:26px;flex:1;min-height:0;align-items:center}
+.quad{position:relative;height:560px;border-radius:26px;background:var(--card);overflow:hidden}
+.quad::before,.quad::after{content:"";position:absolute;background:var(--line)}
+.quad::before{left:50%;top:40px;bottom:40px;width:2px}
+.quad::after{top:50%;left:40px;right:40px;height:2px}
+.quad .ax{position:absolute;font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+.quad .dotc{position:absolute;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center}
+.quad .dotc i{width:26px;height:26px;border-radius:50%;background:#C9CFCB}
+.quad .dotc b{font-size:18px}.quad .dotc span{font-size:13.5px;color:var(--ink3);max-width:170px;line-height:1.3}
+.quad .dotc.us i{width:44px;height:44px;background:var(--green);box-shadow:0 0 0 10px rgba(30,158,74,.18)}
+.quad .dotc.us b{font-size:24px;color:var(--green)}
+.slide.on .quad .dotc.us i{animation:ping 2.2s ease-out 1s infinite}
+.diff{display:flex;flex-direction:column;gap:14px}
+.diff div{background:var(--card);border-radius:18px;padding:16px 20px;font-size:18px;line-height:1.4;color:var(--ink2)}
+.diff b{color:var(--ink);display:block;font-size:20px}
+
+/* 23 roadmap */
+.road{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:22px;margin:auto 0}
+.road::before{content:"";position:absolute;left:0;right:0;top:22px;height:4px;background:var(--line);border-radius:4px}
+.road .fill{position:absolute;left:0;top:22px;height:4px;width:20%;background:var(--green);border-radius:4px;transform-origin:left}
+.road .m{position:relative;padding-top:60px}
+.road .m::before{content:"";position:absolute;left:0;top:10px;width:28px;height:28px;border-radius:50%;background:var(--card);box-shadow:inset 0 0 0 4px var(--line)}
+.road .m.now::before{background:var(--green);box-shadow:0 0 0 8px rgba(30,158,74,.2)}
+.road .m small{font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green)}
+.road .m b{display:block;font-size:29px;letter-spacing:-.02em;margin:4px 0 6px}
+.road .m span{font-size:19.5px;color:var(--ink2);line-height:1.45;display:block}
+.ask{background:var(--night);color:var(--night-ink);border-radius:28px;padding:30px 36px;display:flex;align-items:center;justify-content:space-between;gap:30px}
+.ask b{font-size:36px;letter-spacing:-.03em;line-height:1.15}
+.ask span{font-size:19px;color:var(--night-ink2);max-width:520px;line-height:1.45}
+
+/* 24 close */
+.close{display:grid;grid-template-columns:1fr 360px;gap:60px;align-items:center;flex:1}
+.close h2{font-size:96px}
+.qr{background:#fff;border-radius:28px;padding:24px;display:flex;flex-direction:column;align-items:center;gap:12px;color:var(--ink)}
+.qr #qr{width:300px;height:300px;display:grid;place-items:center}
+.qr #qr svg,.qr #qr img{width:300px;height:300px}
+.qr span{font-size:16px;font-weight:600;text-align:center}
+.links{display:flex;flex-direction:column;gap:10px;margin-top:36px}
+.links a{color:var(--night-ink);font-size:22px;font-weight:600;text-decoration:none;display:flex;gap:12px;align-items:center}
+.links a i{font-style:normal;color:var(--glow)}
+
+/* phones: the stage still scales; keep the chrome out of the way */
+@media (max-width:700px){.help{display:none}}
+@media print{
+  html,body{overflow:visible;height:auto;background:#fff}
+  .viewport{position:static;display:block}
+  .stage{transform:none!important;width:1600px;height:auto}
+  .slide{position:relative;opacity:1;visibility:visible;transform:none;page-break-after:always;height:900px;border-radius:0}
+  [data-a]{opacity:1!important;animation:none!important}
+  .nav,.help,.progress,.notes-panel{display:none}
+  @page{size:1600px 900px;margin:0}
+}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01s!important;animation-delay:0s!important;transition-duration:.01s!important}}
+/* research slide */
+.rs{display:flex;flex-direction:column;gap:14px;padding:26px 26px 24px;border-top:6px solid var(--rc)}
+.rs .rs-who{font-size:13px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--rc)}
+.rs .rs-n{font-size:64px;font-weight:800;letter-spacing:-.045em;line-height:1}
+.rs .rs-n small{font-size:24px;font-weight:700;letter-spacing:-.01em;color:var(--ink3)}
+.rs .rs-t{margin:0;font-size:17.5px;line-height:1.4;color:var(--ink2)}
+.rs ul{list-style:none;margin:0;padding:12px 0 0;border-top:1px solid rgba(0,0,0,.08);display:flex;flex-direction:column;gap:8px}
+.rs li{font-size:16.5px;line-height:1.35;color:var(--ink2);padding-left:24px;position:relative}
+.rs li::before{content:"→";position:absolute;left:0;color:var(--rc);font-weight:800}
+.rs li b{color:var(--ink)}
+
+/* ---- scale-up deck additions */
+.ph-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin:auto 0}
+.ph{position:relative;background:var(--card);border-radius:26px;padding:28px 26px 26px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 20px 40px -28px rgba(0,0,0,.25);display:flex;flex-direction:column;gap:10px}
+.ph .n{display:grid;place-items:center;width:46px;height:46px;border-radius:50%;background:var(--mint);color:var(--green);font-weight:800;font-size:21px}
+.ph.on .n{background:var(--green);color:#fff}
+.ph small{font-size:14px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--green)}
+.ph b{font-size:28px;letter-spacing:-.02em;line-height:1.1}
+.ph ul{margin:4px 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+.ph li{font-size:17.5px;line-height:1.4;color:var(--ink2);padding-left:22px;position:relative}
+.ph li::before{content:"";position:absolute;left:0;top:8px;width:9px;height:9px;border-radius:50%;background:var(--green)}
+.ph .sites{margin-top:auto;padding-top:12px;border-top:1px solid var(--line);font-size:30px;font-weight:800;letter-spacing:-.03em}
+.ph .sites span{font-size:15px;font-weight:600;color:var(--ink3);margin-left:6px;letter-spacing:0}
+.ph-arrow{position:absolute;right:-17px;top:50%;width:14px;height:14px;border-top:3px solid var(--green);border-right:3px solid var(--green);transform:translateY(-50%) rotate(45deg);z-index:2}
+.tbl{width:100%;border-collapse:separate;border-spacing:0;background:var(--card);border-radius:24px;overflow:hidden;box-shadow:0 20px 40px -28px rgba(0,0,0,.25)}
+.tbl th,.tbl td{text-align:left;padding:18px 26px;font-size:21px;border-bottom:1px solid var(--line);vertical-align:top}
+.tbl th{font-size:14px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);background:rgba(0,0,0,.02)}
+.tbl tr:last-child td{border-bottom:0}
+.tbl td b{display:block;font-size:21px}
+.tbl td span{color:var(--ink2);font-size:19px;line-height:1.4}
+.tbl td.goal{font-weight:800;color:var(--green);font-size:24px;white-space:nowrap}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:36px;margin:auto 0;align-items:start}
+.panel{background:var(--card);border-radius:28px;padding:36px 38px;box-shadow:0 20px 40px -28px rgba(0,0,0,.25)}
+.panel h3{margin:0 0 20px;font-size:30px;letter-spacing:-.02em}
+.panel p{margin:0 0 10px;font-size:19px;line-height:1.45;color:var(--ink2)}
+.ticks{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.ticks li{font-size:22px;line-height:1.4;color:var(--ink2);padding-left:38px;position:relative}
+.ticks li::before{content:"✓";position:absolute;left:0;top:0;width:24px;height:24px;border-radius:50%;background:var(--mint);color:var(--green);font-weight:900;font-size:14px;display:grid;place-items:center}
+.ticks li b{color:var(--ink)}
+.stat4{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin:auto 0 0}
+.st{border-radius:26px;padding:26px 28px;background:rgba(255,255,255,.06);box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.st b{display:block;font-size:66px;font-weight:800;letter-spacing:-.05em;line-height:1;color:var(--glow)}
+.st b small{font-size:28px;letter-spacing:-.02em}
+.st p{margin:12px 0 6px;font-size:18px;line-height:1.4;color:var(--night-ink)}
+.st em{font-style:normal;font-size:13px;color:var(--night-ink2)}
+.scale{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin:30px 0 0;align-items:end;flex:1}
+.sc-col{display:flex;flex-direction:column;align-items:stretch;gap:10px;height:100%;justify-content:flex-end}
+.sc-bar{border-radius:18px 18px 8px 8px;background:linear-gradient(180deg,var(--green),#17803C);min-height:14px;transform-origin:bottom;animation:grow-y 1.2s cubic-bezier(.2,.8,.2,1) both}
+.sc-col:nth-child(2) .sc-bar{animation-delay:.15s}.sc-col:nth-child(3) .sc-bar{animation-delay:.3s}.sc-col:nth-child(4) .sc-bar{animation-delay:.45s}
+@keyframes grow-y{from{transform:scaleY(0)}}
+.sc-col h4{margin:0;font-size:15px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--green)}
+.sc-col .v{font-size:40px;font-weight:800;letter-spacing:-.04em;line-height:1}
+.sc-col .v small{font-size:18px;color:var(--ink3);font-weight:600;letter-spacing:0}
+.sc-col .s{font-size:16px;color:var(--ink2);line-height:1.4}
+.econ{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;margin-top:30px;flex:1;min-height:0}
+.flow3{display:flex;flex-direction:column;gap:14px}
+.fl{display:flex;justify-content:space-between;align-items:baseline;gap:16px;padding:18px 24px;border-radius:20px;background:var(--card)}
+.fl span{font-size:19px;color:var(--ink2)}
+.fl b{font-size:34px;font-weight:800;letter-spacing:-.03em;white-space:nowrap}
+.fl.g{background:var(--green);color:#fff}.fl.g span{color:rgba(255,255,255,.85)}
+.ask2{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px}
+.ask2 .st b{font-size:40px;color:#fff}
+
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<div class="viewport"><div class="stage" id="stage">
+
+<!-- ============================================================ 1 TITLE -->
+<!-- ============================================================ 1 TITLE -->
+<section class="slide dark" data-title="Scaling PlateLoop">
+  <div class="body" style="justify-content:center">
+    <div class="eyebrow" data-a>Scale-up plan · 2026–2029</div>
+    <h1 data-a style="--d:.1s;font-size:150px;letter-spacing:-.05em;line-height:.95;margin:18px 0 0">From one canteen<br><span style="color:var(--glow)">to every tray.</span></h1>
+    <p class="lede" data-a style="--d:.3s;color:var(--night-ink2)">How PlateLoop grows from a working prototype to hundreds of canteens: prove it in one school, scale through caterers, then expand into hospitals and offices.</p>
+  </div>
+  <aside class="notes">This is our plan to take PlateLoop from a prototype to hundreds of canteens. It has four phases: prove it in one school, grow through a caterer partner, expand into hospitals and offices, and then scale across Singapore and the region.</aside>
+</section>
+
+<!-- ============================================================ 2 TODAY -->
+<section class="slide" data-title="Where we are today">
+  <div class="eyebrow" data-a>Starting point</div>
+  <h2 data-a style="--d:.1s">The product works. Now we need real canteens.</h2>
+  <div class="grid g3 mid">
+    <div class="card" data-a style="--d:.2s"><div class="tag">Built</div><h3 style="font-size:28px;margin:0">A full working prototype</h3>
+      <ul class="ticks" style="margin-top:16px"><li>3D scanner with its kiosk</li><li>Kitchen dashboard and three Loopi apps</li><li>Live demo, deck, video and poster</li></ul></div>
+    <div class="card" data-a style="--d:.32s"><div class="tag">Proven elsewhere</div><h3 style="font-size:28px;margin:0">The method is backed by evidence</h3>
+      <ul class="ticks" style="margin-top:16px"><li><b>36%</b> less food waste when caterers measure it</li><li><b>~89%</b> of foods identified from tray scans</li><li><b>6:1</b> return on waste reduction</li></ul></div>
+    <div class="card" data-a style="--d:.44s;background:var(--night);color:var(--night-ink)"><div class="tag" style="color:var(--glow)">Missing</div><h3 style="font-size:28px;margin:0">Data from a real canteen</h3>
+      <p style="color:var(--night-ink2)">Our savings figures are estimates. A pilot turns them into measured results that caterers, hospitals and funders will trust.</p></div>
+  </div>
+  <div class="src">Champions 12.3, 2018 (86 catering sites); Pfisterer et al., JMIR Aging 2022; Lu et al., 2020.</div>
+  <aside class="notes">Today we have a complete working prototype, and the method behind it is already proven: caterers that measure waste cut it by 36%, and research systems that scan trays identify about 89% of foods. What we don't have yet is data from a real canteen, so that is the first thing our plan delivers.</aside>
+</section>
+
+<!-- ============================================================ 3 OPPORTUNITY -->
+<section class="slide dark" data-title="The opportunity in Singapore">
+  <div class="body">
+    <div class="eyebrow" data-a>The opportunity</div>
+    <h2 data-a style="--d:.1s">Hundreds of canteens, new rules, and money to help.</h2>
+    <div class="stat4">
+      <div class="st" data-a style="--d:.2s"><b><span class="count" data-to="317">317</span></b><p>MOE primary and secondary schools, each with a canteen</p><em>MOE, 2024: 177 primary, ~140 secondary</em></div>
+      <div class="st" data-a style="--d:.3s"><b>2024<small>→25</small></b><p>Caterers and large food premises must now separate food waste</p><em>NEA, Resource Sustainability Act</em></div>
+      <div class="st" data-a style="--d:.4s"><b>80<small>%</small></b><p>of a waste-reduction project’s costs can be co-funded, with food waste prioritised</p><em>NEA 3R Fund (cap S$1M per project)</em></div>
+      <div class="st" data-a style="--d:.5s"><b><span class="count" data-to="755000" data-fmt="comma">755,000</span><small> t</small></b><p>of food wasted in Singapore in a year, only 18% recycled</p><em>NEA, 2023</em></div>
+    </div>
+  </div>
+  <aside class="notes">The opportunity is large and the timing is right. There are over 300 MOE primary and secondary schools, each with a canteen. Under the Resource Sustainability Act, caterers and large food premises now have to separate their food waste, so they need better data. And NEA's 3R Fund co-funds up to 80% of waste reduction projects, with food waste a priority.</aside>
+</section>
+
+<!-- ============================================================ 4 ROADMAP -->
+<section class="slide" data-title="The roadmap">
+  <div class="eyebrow" data-a>The plan at a glance</div>
+  <h2 data-a style="--d:.1s">Four phases. Each one earns the next.</h2>
+  <div class="ph-grid">
+    <div class="ph on" data-a style="--d:.2s"><span class="n">1</span><small>Next term</small><b>Prove it</b><ul><li>One school canteen</li><li>Two scanners</li><li>Measure the real savings</li></ul><div class="sites">1<span>site</span></div><i class="ph-arrow"></i></div>
+    <div class="ph" data-a style="--d:.32s"><span class="n">2</span><small>Year 1</small><b>Partner</b><ul><li>One contract caterer</li><li>Its school canteens</li><li>Multi-site dashboard</li></ul><div class="sites">10<span>sites</span></div><i class="ph-arrow"></i></div>
+    <div class="ph" data-a style="--d:.44s"><span class="n">3</span><small>Year 2</small><b>Expand</b><ul><li>More caterers and schools</li><li>First hospital ward</li><li>First office canteen</li></ul><div class="sites">50<span>sites</span></div><i class="ph-arrow"></i></div>
+    <div class="ph" data-a style="--d:.56s"><span class="n">4</span><small>Year 3+</small><b>Scale</b><ul><li>Universities and hospitals</li><li>Region: Malaysia, Korea, Japan</li><li>Personal app for everyone</li></ul><div class="sites">150+<span>sites</span></div></div>
+  </div>
+  <aside class="notes">Here is the whole plan. Phase one proves it in a single school canteen next term. Phase two partners with one contract caterer to reach about ten canteens. Phase three expands to around fifty sites, including our first hospital ward and office canteen. And phase four scales past 150 sites and into the region, where school lunch programmes are big, like Korea and Japan.</aside>
+</section>
+
+<!-- ============================================================ 5 PILOT -->
+<section class="slide" data-title="Phase 1: the pilot">
+  <div class="eyebrow" data-a>Phase 1 · next term</div>
+  <h2 data-a style="--d:.1s">A pilot designed to prove one thing: it saves food.</h2>
+  <div class="two" style="grid-template-columns:.9fr 1.1fr">
+    <div class="panel" data-a style="--d:.2s"><h3>How it runs</h3>
+      <ul class="ticks"><li><b>1 school canteen</b>, about 800 lunches a day</li><li><b>2 scanners</b>, so the queue keeps moving</li><li><b>Weeks 1–2: baseline.</b> Scan only, no feedback, to measure today’s waste</li><li><b>Weeks 3–10: full PlateLoop.</b> Kitchen forecasts, Loopi and class races on</li><li><b>Consent first:</b> students and parents opt in; no photos leave the scanner</li></ul></div>
+    <table class="tbl" data-a style="--d:.3s">
+      <thead><tr><th>We measure</th><th>Success means</th></tr></thead>
+      <tbody>
+        <tr><td><b>Plate waste</b><span>kg left per tray, vs the baseline</span></td><td class="goal">−20% or more</td></tr>
+        <tr><td><b>Food cooked</b><span>kg prepared vs the old plan</span></td><td class="goal">−10% or more</td></tr>
+        <tr><td><b>Scan rate</b><span>trays scanned before and after</span></td><td class="goal">90%+</td></tr>
+        <tr><td><b>Speed</b><span>time per scan</span></td><td class="goal">≤ 3 s</td></tr>
+        <tr><td><b>Accuracy</b><span>dishes correctly recognised</span></td><td class="goal">85%+</td></tr>
+        <tr><td><b>Liked it</b><span>students and canteen staff</span></td><td class="goal">4 / 5</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <aside class="notes">The pilot is designed to prove one thing: that PlateLoop saves food. We run two weeks of baseline, scanning without any feedback, so we know exactly how much is wasted today. Then eight weeks with the full system. Success means at least 20% less plate waste, 10% less food cooked, nine in ten trays scanned, scans under three seconds, and dishes recognised correctly at least 85% of the time.</aside>
+</section>
+
+<!-- ============================================================ 6 CATERERS -->
+<section class="slide" data-title="Phase 2: grow through caterers">
+  <div class="eyebrow" data-a>Phase 2 · year 1</div>
+  <h2 data-a style="--d:.1s">One caterer partnership opens many canteens.</h2>
+  <div class="two">
+    <div class="panel" data-a style="--d:.2s"><h3>Why caterers first</h3>
+      <ul class="ticks"><li><b>One contract, many sites:</b> a caterer runs canteens in many schools</li><li><b>They already have to act:</b> food waste segregation is now required for large food premises</li><li><b>They keep the savings:</b> ingredients are their biggest cost, and measuring waste returns about 6:1</li></ul></div>
+    <div class="panel" data-a style="--d:.32s"><h3>What we give them</h3>
+      <ul class="ticks"><li><b>Scanners on lease</b>, nothing to buy upfront</li><li><b>One dashboard for every site:</b> waste, orders and nutrition side by side</li><li><b>Carbon and waste reports</b> ready for regulators and ESG reporting</li><li><b>Loopi for each school</b>, so students help cut waste too</li></ul></div>
+  </div>
+  <div class="src">NEA, Resource Sustainability Act; Champions 12.3, 2018.</div>
+  <aside class="notes">After the pilot, we grow through contract caterers, because one partnership opens many canteens at once. Caterers now have to separate their food waste, ingredients are their biggest cost, and measuring waste pays back about six to one. We lease them the scanners and give them one dashboard across all their sites, with carbon and waste reports ready for regulators.</aside>
+</section>
+
+<!-- ============================================================ 7 NEW SECTORS -->
+<section class="slide" data-title="Phase 3: new sectors">
+  <div class="eyebrow" data-a>Phase 3 · year 2</div>
+  <h2 data-a style="--d:.1s">Same scanner. Three new places to save food.</h2>
+  <div class="grid g3 mid">
+    <div class="card" data-a style="--d:.2s"><div class="tag" style="color:#0A84FF">Hospitals</div><h3 style="font-size:28px;margin:0">Loopi Care on one ward</h3><p>Run with the ward’s dietitians. Measure whether tracking every tray catches poor eaters earlier: 29% of inpatients in one Singapore study were malnourished.</p></div>
+    <div class="card" data-a style="--d:.32s"><div class="tag" style="color:#5E5CE6">Offices</div><h3 style="font-size:28px;margin:0">Loopi Work in a corporate canteen</h3><p>Pre-orders let the kitchen cook to real demand, and workers get a daily pick for their goal. Private by default.</p></div>
+    <div class="card" data-a style="--d:.44s"><div class="tag">Universities</div><h3 style="font-size:28px;margin:0">Loopi for campuses</h3><p>Large dining halls with thousands of meals a day, and students who eat too little fruit and veg: only 13.6% meet the recommendation.</p></div>
+  </div>
+  <div class="src">Lim et al., Clinical Nutrition 2012; Chew et al., 2017.</div>
+  <aside class="notes">In year two we bring the same scanner to three new places. On a hospital ward, run with the dietitians, Loopi Care can catch patients who aren't eating enough. In an office canteen, Loopi Work's pre-orders help the kitchen cook to real demand. And university dining halls serve thousands of meals a day to students who mostly don't eat enough fruit and veg.</aside>
+</section>
+
+<!-- ============================================================ 8 TECH AT SCALE -->
+<section class="slide" data-title="Making it scale">
+  <div class="eyebrow" data-a>Technology</div>
+  <h2 data-a style="--d:.1s">Built to roll out, not just to demo.</h2>
+  <div class="grid g4 mid">
+    <div class="card" data-a style="--d:.2s"><div class="tag">Hardware</div><h3 style="font-size:24px;margin:0">Off-the-shelf parts</h3><p>Depth camera, load cell, tablet and an edge AI module. A contract manufacturer builds the casing.</p></div>
+    <div class="card" data-a style="--d:.3s"><div class="tag">New menus</div><h3 style="font-size:24px;margin:0">Learns new dishes fast</h3><p>Each canteen’s menu is known in advance, so the AI only chooses between today’s dishes. New dishes are added from labelled trays.</p></div>
+    <div class="card" data-a style="--d:.4s"><div class="tag">Cloud</div><h3 style="font-size:24px;margin:0">One platform, many sites</h3><p>Every scanner syncs grams per dish to one cloud, so a caterer sees all its canteens together. Works offline too.</p></div>
+    <div class="card" data-a style="--d:.5s"><div class="tag">Privacy</div><h3 style="font-size:24px;margin:0">PDPA by design</h3><p>No photos leave the scanner. Faces become a match code. Data is deleted on schedule, and consent comes first.</p></div>
+  </div>
+  <aside class="notes">We designed PlateLoop to roll out. The hardware uses off-the-shelf parts, so a contract manufacturer can build it. The AI only has to choose between the dishes on today's menu, which keeps it fast and accurate, and new dishes are learned from labelled trays. Every scanner syncs to one cloud, so a caterer sees all its sites together. And privacy is built in: no photos ever leave the scanner.</aside>
+</section>
+
+<!-- ============================================================ 9 ECONOMICS -->
+<section class="slide" data-title="Unit economics">
+  <div class="eyebrow" data-a>Unit economics · one 800-meal site</div>
+  <h2 data-a style="--d:.1s">The customer saves more than it pays, from month one.</h2>
+  <div class="econ">
+    <div class="flow3" data-a style="--d:.2s">
+      <div class="fl g"><span>Customer saves on ingredients</span><b>S$2,375 / mo</b></div>
+      <div class="fl"><span>Customer pays (Pro plan)</span><b>S$470 / mo</b></div>
+      <div class="fl"><span>Return for the customer</span><b>5×</b></div>
+      <div class="fl"><span>Customer pays back a year in</span><b>2.4 months</b></div>
+    </div>
+    <div class="flow3" data-a style="--d:.32s">
+      <div class="fl"><span>Scanner hardware (est.)</span><b>~S$3,000</b></div>
+      <div class="fl"><span>Our cost to run a site (cloud + support, est.)</span><b>~S$80 / mo</b></div>
+      <div class="fl g"><span>We recover the hardware in</span><b>~8 months</b></div>
+      <div class="fl"><span>Basic plan, no forecasts</span><b>S$200 / mo</b></div>
+    </div>
+  </div>
+  <div class="src">Estimates: 800 meals × 190 days, 25% wasted, a 30% cut, S$2.50 of ingredients a meal; hardware and running costs are early estimates. Prices illustrative. To be confirmed in the pilot.</div>
+  <aside class="notes">The economics work for both sides. A school serving 800 meals a day saves about 2,400 dollars a month in ingredients and pays 470, a five-times return, so it pays back a year of the subscription in under three months. On our side, a scanner costs around three thousand dollars to build and about 80 a month to run, so we recover the hardware in roughly eight months. These are estimates we'll confirm in the pilot.</aside>
+</section>
+
+<!-- ============================================================ 10 IMPACT AT SCALE -->
+<section class="slide" data-title="Impact at scale">
+  <div class="eyebrow" data-a>Impact at scale · per year</div>
+  <h2 data-a style="--d:.1s">Every site we add saves about 5.7 tonnes of food.</h2>
+  <div class="scale">
+    <div class="sc-col"><h4>Pilot · 1 site</h4><div class="v">5.7<small> t food</small></div><div class="s">14 t CO₂e · S$28.5k saved</div><div class="sc-bar" style="height:2%"></div></div>
+    <div class="sc-col"><h4>Year 1 · 10 sites</h4><div class="v">57<small> t food</small></div><div class="s">140 t CO₂e · S$285k saved</div><div class="sc-bar" style="height:7%"></div></div>
+    <div class="sc-col"><h4>Year 2 · 50 sites</h4><div class="v">285<small> t food</small></div><div class="s">710 t CO₂e · S$1.4M saved</div><div class="sc-bar" style="height:33%"></div></div>
+    <div class="sc-col"><h4>Year 3 · 150 sites</h4><div class="v">855<small> t food</small></div><div class="s">2,100 t CO₂e · S$4.3M saved</div><div class="sc-bar" style="height:100%"></div></div>
+  </div>
+  <div class="src">Same assumptions as one 800-meal school (5.7 t food, 14 t CO₂e, S$28,500 a year), multiplied by sites. Real sites vary; the pilot sets the true number.</div>
+  <aside class="notes">Each 800-meal site saves about 5.7 tonnes of food a year. So ten sites save 57 tonnes, fifty save 285, and at 150 sites we're saving 855 tonnes of food, over 2,000 tonnes of carbon, and more than four million dollars of ingredients every year. The pilot will tell us the real number per site.</aside>
+</section>
+
+<!-- ============================================================ 11 FUNDING + TEAM -->
+<section class="slide" data-title="Funding and team">
+  <div class="eyebrow" data-a>Resources</div>
+  <h2 data-a style="--d:.1s">What it takes to get there.</h2>
+  <div class="two">
+    <div class="panel" data-a style="--d:.2s"><h3>Funding</h3>
+      <ul class="ticks"><li><b>Pilot (~S$10k):</b> two scanners, cloud and installation. Apply to NEA’s 3R Fund, which co-funds up to 80%</li><li><b>Year 1:</b> lease income from the caterer, plus innovation grants</li><li><b>Year 2:</b> a seed round to build scanners in volume and enter hospitals</li></ul></div>
+    <div class="panel" data-a style="--d:.32s"><h3>Team</h3>
+      <ul class="ticks"><li><b>Today:</b> our student team, who designed and built the prototype</li><li><b>Next:</b> a hardware engineer and a machine-learning engineer</li><li><b>Then:</b> a partnerships lead for caterers, and a dietitian adviser for hospitals</li><li><b>Mentors:</b> a canteen operator and a school sustainability lead</li></ul></div>
+  </div>
+  <div class="src">NEA 3R Fund: up to 80% of qualifying costs, capped at S$1M per project; food waste projects prioritised. Pilot budget is an estimate.</div>
+  <aside class="notes">The pilot needs about ten thousand dollars for two scanners, the cloud and installation, and NEA's 3R Fund can co-fund up to 80% of it. In year one, lease income from the caterer and innovation grants carry us, and in year two a seed round lets us build scanners in volume. On the team side, we'd add a hardware engineer and a machine-learning engineer next, then a partnerships lead and a dietitian adviser.</aside>
+</section>
+
+<!-- ============================================================ 12 RISKS -->
+<section class="slide" data-title="Risks">
+  <div class="eyebrow" data-a>Risks</div>
+  <h2 data-a style="--d:.1s">What could go wrong, and what we’ll do.</h2>
+  <table class="tbl" data-a style="--d:.2s;margin-top:30px">
+    <thead><tr><th style="width:34%">Risk</th><th>How we handle it</th></tr></thead>
+    <tbody>
+      <tr><td><b>Mixed dishes are hard to recognise</b></td><td><span>Compartment trays, a known daily menu, and the weighing platform to check every estimate.</span></td></tr>
+      <tr><td><b>Students forget to scan after lunch</b></td><td><span>Loopi only eats if you scan; reminders on the scanner; the kitchen sees trays still out.</span></td></tr>
+      <tr><td><b>Queues get slower</b></td><td><span>About 2 seconds a scan, and one scanner for roughly every 400 diners.</span></td></tr>
+      <tr><td><b>Privacy concerns</b></td><td><span>No photos leave the scanner, consent on day one, face sign-in can be switched off.</span></td></tr>
+      <tr><td><b>Savings smaller than expected</b></td><td><span>The pilot measures them first; pricing stays below the measured saving.</span></td></tr>
+    </tbody>
+  </table>
+  <aside class="notes">We've thought about what could go wrong. Mixed dishes like curry are harder to recognise, so we use compartment trays, the known daily menu and the weighing platform. If students forget to scan, Loopi only eats when they do, and the kitchen can send reminders. Queues stay fast at about two seconds a scan. Privacy is protected because no photos leave the scanner. And if savings are smaller than we expect, the pilot will show it first, and we'll price below the real saving.</aside>
+</section>
+
+<!-- ============================================================ 13 ASK -->
+<section class="slide dark" data-title="Our ask">
+  <div class="body" style="justify-content:center">
+    <div class="eyebrow" data-a>Our ask</div>
+    <h2 data-a style="--d:.1s;font-size:96px;line-height:1;letter-spacing:-.045em">One school canteen.<br><span style="color:var(--glow)">One term.</span></h2>
+    <div class="ask2">
+      <div class="st" data-a style="--d:.25s"><b>A canteen</b><p>to host two scanners for ten weeks</p></div>
+      <div class="st" data-a style="--d:.35s"><b>A partner</b><p>to co-apply for NEA’s 3R Fund with us</p></div>
+      <div class="st" data-a style="--d:.45s"><b>An introduction</b><p>to a contract caterer for Phase 2</p></div>
+    </div>
+    <p class="lede" data-a style="--d:.6s;color:var(--night-ink2)">We’ll bring the scanners and the apps, and share every number with the school and the canteen. <b style="color:#fff">PlateLoop: know what’s eaten. Waste less.</b></p>
+  </div>
+  <aside class="notes">So our ask is simple: one school canteen for one term, to host two scanners for ten weeks. A partner to apply for NEA's 3R Fund with us. And an introduction to a contract caterer for phase two. We'll bring everything else, and share every number with the school and the canteen.</aside>
+</section>
+
+</div></div>
+
+<div class="nav" aria-label="Slide controls"><button id="prev" aria-label="Previous slide">←</button><button id="notes-btn" aria-label="Speaker notes">N</button><button id="fs" aria-label="Full screen">⤢</button><button id="next" aria-label="Next slide">→</button></div>
+<div class="help" id="help">← → to move · N notes · F full screen</div>
+<div class="notes-panel" id="notes" aria-live="polite"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+<script>
+(() => {
+  const stage = document.getElementById('stage');
+  const slides = [...document.querySelectorAll('.slide')];
+  const PHASES = ['Empathise', 'Define', 'Ideate', 'Prototype', 'Test'];
+  let cur = -1;
+
+  // chrome on every slide: brand, design-thinking tracker (where it applies) and the slide number
+  slides.forEach((s, i) => {
+    if (i > 0) s.insertAdjacentHTML('afterbegin', '<div class="brandmark"><i></i>PlateLoop</div>');
+    if (s.dataset.phase !== undefined) {
+      const p = +s.dataset.phase;
+      s.insertAdjacentHTML('afterbegin', `<div class="phase">${PHASES.map((n, j) => `<span class="${j === p ? 'on' : j < p ? 'done' : ''}">${n}</span>`).join('')}</div>`);
+    }
+    s.insertAdjacentHTML('beforeend', `<div class="num-badge">${i + 1} / ${slides.length}</div>`);
+  });
+
+  // fit the 1600×900 stage to the window
+  const fit = () => { const k = Math.min(innerWidth / 1600, innerHeight / 900); stage.style.transform = `scale(${k})`; };
+  addEventListener('resize', fit); fit();
+
+  // live embeds: scale each app to its frame, and load it the first time its slide opens
+  const sizeFrames = s => s.querySelectorAll('.device').forEach(d => {
+    const f = d.querySelector('iframe'); if (!f) return;
+    const vw = parseFloat(getComputedStyle(d).getPropertyValue('--vw')) || 1280;
+    f.style.transform = `scale(${d.clientWidth / vw})`;
+  });
+  const load = s => s.querySelectorAll('iframe[data-src]:not([data-manual])').forEach(f => { if (!f.src) f.src = f.dataset.src; });
+
+  // numbers count up when their slide opens
+  const fmt = (v, el) => el.dataset.fmt === 'comma' ? Math.round(v).toLocaleString('en-US') : el.dataset.dec ? v.toFixed(+el.dataset.dec) : String(Math.round(v));
+  const countUp = s => s.querySelectorAll('.count').forEach(el => {
+    const to = +el.dataset.to, t0 = performance.now() + 300, dur = 1400;
+    const f = now => { const k = Math.min(1, Math.max(0, (now - t0) / dur)), e = 1 - Math.pow(1 - k, 4); el.textContent = fmt(to * e, el); if (k < 1) requestAnimationFrame(f); };
+    el.textContent = fmt(0, el); requestAnimationFrame(f);
+    setTimeout(() => { el.textContent = fmt(to, el); }, 2000);
+  });
+
+  const notes = document.getElementById('notes');
+  function go(i, push = true) {
+    i = Math.max(0, Math.min(slides.length - 1, i));
+    if (i === cur) return;
+    slides.forEach((s, j) => { s.classList.toggle('on', j === i); s.classList.toggle('past', j < i); s.setAttribute('aria-hidden', String(j !== i)); });
+    cur = i;
+    const s = slides[i];
+    // restart the entrance animations each time a slide opens
+    s.querySelectorAll('[data-a], .cmp tbody tr, .curve .path').forEach(el => { el.style.animation = 'none'; void el.offsetWidth; el.style.animation = ''; });
+    load(s); sizeFrames(s); countUp(s);
+    document.getElementById('progress').style.width = `${(i + 1) / slides.length * 100}%`;
+    const n = s.querySelector('.notes');
+    notes.innerHTML = `<b>Speaker notes · ${i + 1}. ${s.dataset.title || ''}</b>${n ? n.innerHTML : ''}`;
+    document.title = `${s.dataset.title || 'PlateLoop'} · PlateLoop Scale-up`;
+    if (push) history.replaceState(null, '', '#' + (i + 1));
+    // warm up the next slide's embeds so they're ready
+    if (slides[i + 1]) setTimeout(() => load(slides[i + 1]), 900);
+  }
+  const next = () => go(cur + 1), prev = () => go(cur - 1);
+  addEventListener('keydown', e => {
+    if (e.target.closest && e.target.closest('input,select,textarea')) return;
+    if (['ArrowRight', 'PageDown', ' ', 'Enter'].includes(e.key)) { e.preventDefault(); next(); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(e.key)) { e.preventDefault(); prev(); }
+    else if (e.key === 'Home') go(0); else if (e.key === 'End') go(slides.length - 1);
+    else if (e.key === 'n' || e.key === 'N') notes.classList.toggle('open');
+    else if (e.key === 'f' || e.key === 'F') toggleFs();
+  });
+  const toggleFs = () => { if (document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen && document.documentElement.requestFullscreen().catch(() => {}); };
+  document.getElementById('next').onclick = next; document.getElementById('prev').onclick = prev;
+  document.getElementById('fs').onclick = toggleFs;
+  document.getElementById('notes-btn').onclick = () => notes.classList.toggle('open');
+  // swipe on touch screens
+  let tx = null; addEventListener('touchstart', e => { tx = e.touches[0].clientX; }, { passive: true });
+  addEventListener('touchend', e => { if (tx == null) return; const dx = e.changedTouches[0].clientX - tx; if (Math.abs(dx) > 50) dx < 0 ? next() : prev(); tx = null; });
+  setTimeout(() => { const h = document.getElementById('help'); if (h) h.style.opacity = 0; }, 6000);
+  addEventListener('resize', () => sizeFrames(slides[cur]));
+
+  go(Math.max(0, (parseInt(location.hash.slice(1), 10) || 1) - 1), false);
+})();
+</script>
+</body>
+</html>
