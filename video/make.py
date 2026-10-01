@@ -1,11 +1,11 @@
 """
 Build the PlateLoop explainer video (video/plateloop-explainer.mp4).
 
-  pip install selenium pillow numpy imageio-ffmpeg
+  pip install selenium pillow numpy imageio-ffmpeg kokoro-onnx soundfile
   python video/make.py            # everything
   python video/make.py --no-frames  # narration + timeline only (for previewing film.html in a browser)
 
-1. Narration: each sentence is spoken by the Windows voice (System.Speech) into its own WAV.
+1. Narration: each sentence is spoken by Kokoro (open-source neural TTS, runs locally) into its own WAV.
 2. Timeline: scene and subtitle times come from the real length of each sentence (build/timeline.js).
 3. Frames: film.html is one long CSS animation; headless Chrome seeks it frame by frame.
 4. Audio: narration + a soft generated pad, mixed with numpy.
@@ -18,54 +18,56 @@ HERE = os.path.dirname(os.path.abspath(__file__))
 ROOT = os.path.dirname(HERE)
 BUILD = os.path.join(HERE, 'build')
 FPS = 30
-VOICE = 'Microsoft Zira Desktop'
-SR = 22050
+VOICE = 'af_heart'   # Kokoro: warm American female
+SPEED = 0.98
+SR = 24000
 
-# (scene id, [(spoken, subtitle)]) — subtitles are what's shown; spoken spells out numbers and names for the voice
+# (scene id, [(spoken, subtitle)]): subtitles are shown on screen; the spoken line spells out numbers and names for the voice.
+# Every number is checked against its source in docs/research.md, and the film shows the source on screen.
 SCENES = [
-    ('title', [("This is PlateLoop.", "This is PlateLoop."),
-               ("An AI food scanner that knows what's eaten, so canteens can waste less.", "An AI food scanner that knows what’s eaten, so canteens can waste less.")]),
-    ('problem', [("In 2023, Singapore threw away seven hundred and fifty-five thousand tonnes of food.", "In 2023, Singapore threw away 755,000 tonnes of food."),
-                 ("Canteens cook by guesswork, because nobody measures what people actually eat.", "Canteens cook by guesswork, because nobody measures what people actually eat.")]),
-    ('people', [("A student is told to finish a scoop that's too big.", "A student is told to finish a scoop that’s too big."),
-                ("A canteen operator watches half the vegetables come back.", "A canteen operator watches half the vegetables come back."),
-                ("And a nurse finds out too late that a patient isn't eating.", "And a nurse finds out too late that a patient isn’t eating.")]),
-    ('scanner', [("PlateLoop fixes this with one scanner and two scans.", "PlateLoop fixes this with one scanner and two scans."),
-                 ("Look at the camera, and put your tray down before you eat, and again after.", "Look at the camera, and put your tray down before you eat, and again after."),
-                 ("Six hundred and twenty grams served, ninety-five left. That's five hundred and twenty-five grams eaten, dish by dish, in about two seconds.", "620 g served, 95 g left: 525 g eaten, dish by dish, in about two seconds.")]),
-    ('kitchen', [("Every scan flows into PlateLoop Kitchen.", "Every scan flows into PlateLoop Kitchen."),
-                 ("The canteen sees which dishes come back, and gets tomorrow's order from real attendance, weather and events.", "The canteen sees which dishes come back, and gets tomorrow’s order from real attendance, weather and events."),
-                 ("A carbon ledger tracks the emissions it avoided.", "A carbon ledger tracks the emissions it avoided.")]),
-    ('loopi', [("For students, there's Loopy, a virtual pet that only eats the lunch you really ate.", "For students, there’s Loopi: a virtual pet that only eats the lunch you really ate."),
-               ("Less waste keeps it healthy, earns hearts and levels it up.", "Less waste keeps it healthy, earns hearts and levels it up."),
-               ("It shows food groups, not calories, and classes race each week to waste the least.", "It shows food groups, not calories, and classes race each week to waste the least.")]),
-    ('care', [("In hospitals, food left on a tray is a warning sign.", "In hospitals, food left on a tray is a warning sign."),
-              ("Loopy Care measures every meal, lets patients choose tomorrow's food, and alerts the nurse with the patient's own reason.", "Loopi Care measures every meal, lets patients choose tomorrow’s food, and alerts the nurse with the patient’s own reason.")]),
-    ('work', [("In offices, Loopy Work turns a health goal into a daily pick from the canteen.", "In offices, Loopi Work turns a health goal into a daily pick from the canteen."),
-              ("Workers pre-order to skip the queue, and a three p.m. check-in shows which lunches leave them flat. It's private by default.", "Workers pre-order to skip the queue, and a 3 pm check-in shows which lunches leave them flat. Private by default.")]),
-    ('process', [("Every feature comes from research and testing.", "Every feature comes from research and testing."),
-                 ("We read the studies on each group, then walked through every step until it broke, and fixed what we found.", "We read the studies on each group, then walked through every step until it broke, and fixed what we found.")]),
-    ('impact', [("For one school serving eight hundred meals a day, that's about five point seven tonnes less food wasted,", "For one school serving 800 meals a day, that’s about 5.7 tonnes less food wasted,"),
-                ("fourteen tonnes of carbon avoided, and twenty-eight thousand dollars saved, every year.", "14 tonnes of CO₂e avoided, and S$28,500 saved, every year.")]),
+    ('hook', [("Every school day, thousands of lunch trays come back half full.", "Every school day, thousands of lunch trays come back half full."),
+              ("Nobody writes down what was left. It just goes in the bin.", "Nobody writes down what was left. It just goes in the bin."),
+              ("And tomorrow, the kitchen cooks the same amount again.", "And tomorrow, the kitchen cooks the same amount again.")]),
+    ('problem', [("In 2023, Singapore threw away seven hundred and fifty-five thousand tonnes of food. Only eighteen percent was recycled.", "In 2023, Singapore threw away 755,000 tonnes of food. Only 18% was recycled."),
+                 ("Around the world, more than a quarter of food waste comes from canteens, caterers and restaurants.", "Around the world, more than a quarter of food waste comes from canteens, caterers and restaurants."),
+                 ("The problem isn't that people don't care. It's that nobody can see what's actually being eaten.", "The problem isn’t that people don’t care. It’s that nobody can see what’s actually being eaten.")]),
+    ('people', [("Wei Ling gets the same big scoop as everyone else, and she's told to finish it.", "Wei Ling gets the same big scoop as everyone else, and she’s told to finish it."),
+                ("Mrs Lim runs the school canteen. She cooks by feel, and watches half the vegetables come back.", "Mrs Lim runs the school canteen. She cooks by feel, and watches half the vegetables come back."),
+                ("And on a hospital ward, a nurse finds out days later that a patient has stopped eating.", "And on a hospital ward, a nurse finds out days later that a patient has stopped eating.")]),
+    ('scanner', [("So we built PlateLoop. One scanner, two scans.", "So we built PlateLoop. One scanner, two scans."),
+                 ("You look at the camera, and put your tray down before you eat, then again after.", "You look at the camera, and put your tray down before you eat, then again after."),
+                 ("Six hundred and twenty grams served. Ninety-five left. That's five hundred and twenty-five grams eaten, dish by dish, in about two seconds.", "620 g served. 95 g left. That’s 525 g eaten, dish by dish, in about two seconds.")]),
+    ('evidence', [("And measuring works.", "And measuring works."),
+                  ("When eighty-six catering sites started tracking their food waste, they cut it by thirty-six percent in the first year, and got six dollars back for every dollar they spent.", "When 86 catering sites started tracking their food waste, they cut it by 36% in the first year, and got $6 back for every $1 spent.")]),
+    ('kitchen', [("PlateLoop Kitchen does that tracking automatically, on every single tray.", "PlateLoop Kitchen does that tracking automatically, on every single tray."),
+                 ("It shows which dishes come back, and plans tomorrow's order from real attendance, the weather and school events.", "It shows which dishes come back, and plans tomorrow’s order from real attendance, the weather and school events."),
+                 ("And it keeps a carbon ledger of every kilogram saved.", "And it keeps a carbon ledger of every kilogram saved.")]),
+    ('loopi', [("For students, there's Loopy. A virtual pet that only eats the lunch you really ate.", "For students, there’s Loopi: a virtual pet that only eats the lunch you really ate."),
+               ("Waste less, and it stays healthy, earns hearts and levels up. It shows food groups, not calories, because counting calories can harm teenagers.", "Waste less, and it stays healthy, earns hearts and levels up. It shows food groups, not calories, because counting calories can harm teenagers."),
+               ("And classes compete. In one school study, that alone cut plate waste by thirty-five percent.", "And classes compete. In one school study, that alone cut plate waste by 35%.")]),
+    ('care', [("In hospitals, almost three in ten patients are malnourished, and hand-written food charts miss most of it.", "In hospitals, almost 3 in 10 patients are malnourished, and hand-written food charts miss most of it."),
+              ("Loopy Care measures every tray, lets patients choose tomorrow's meals, and tells the nurse why a meal wasn't eaten.", "Loopi Care measures every tray, lets patients choose tomorrow’s meals, and tells the nurse why a meal wasn’t eaten.")]),
+    ('work', [("And six in ten Singaporeans eat out most days.", "And 6 in 10 Singaporeans eat out most days."),
+              ("Loopy Work turns a health goal into a daily pick from the office canteen. Pre-order to skip the queue, and a quick check-in at three p.m. shows which lunches leave you flat.", "Loopi Work turns a health goal into a daily pick from the office canteen. Pre-order to skip the queue, and a 3 pm check-in shows which lunches leave you flat.")]),
+    ('impact', [("For one school serving eight hundred meals a day, a thirty percent cut, less than those caterers achieved, means five point seven tonnes of food saved,", "For one school serving 800 meals a day, a 30% cut, less than those caterers achieved, means 5.7 tonnes of food saved,"),
+                ("and over twenty-eight thousand dollars back every year. PlateLoop pays for itself in under three months.", "and over S$28,000 back every year. PlateLoop pays for itself in under three months.")]),
     ('end', [("PlateLoop. Know what's eaten. Waste less.", "PlateLoop. Know what’s eaten. Waste less."),
-             ("Try the live demo today.", "Try the live demo today.")]),
+             ("Try the live demo, and see it for yourself.", "Try the live demo, and see it for yourself.")]),
 ]
 LEAD, GAP, TAIL = 0.7, 0.35, 0.9  # seconds before the first sentence, between sentences, after the last
 
 def tts():
-    """Speak every sentence into build/tts/<scene>_<n>.wav with one PowerShell call."""
+    """Speak every sentence into build/tts/<scene>_<n>.wav with Kokoro, an open-source neural voice that runs locally.
+    Model files (kokoro-v1.0.onnx, voices-v1.0.bin) go in build/models; see the kokoro-onnx project's releases."""
+    import soundfile as sf
+    from kokoro_onnx import Kokoro
     out = os.path.join(BUILD, 'tts'); os.makedirs(out, exist_ok=True)
-    lines = ["Add-Type -AssemblyName System.Speech", "$s = New-Object System.Speech.Synthesis.SpeechSynthesizer",
-             f"$s.SelectVoice('{VOICE}')", "$s.Rate = -1",
-             f"$fmt = New-Object System.Speech.AudioFormat.SpeechAudioFormatInfo({SR}, [System.Speech.AudioFormat.AudioBitsPerSample]::Sixteen, [System.Speech.AudioFormat.AudioChannel]::Mono)"]
+    k = Kokoro(os.path.join(BUILD, 'models', 'kokoro-v1.0.onnx'), os.path.join(BUILD, 'models', 'voices-v1.0.bin'))
     for sid, sents in SCENES:
         for i, (say, _) in enumerate(sents):
-            path = os.path.join(out, f'{sid}_{i}.wav').replace("'", "''")
-            text = say.replace("'", "''")
-            lines += [f"$s.SetOutputToWaveFile('{path}', $fmt)", f"$s.Speak('{text}')"]
-    lines.append("$s.SetOutputToNull()")
-    ps1 = os.path.join(BUILD, 'tts.ps1'); open(ps1, 'w', encoding='utf-8-sig').write('\n'.join(lines))
-    subprocess.run(['powershell', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', ps1], check=True)
+            x, sr = k.create(say, voice=VOICE, speed=SPEED, lang='en-us')
+            sf.write(os.path.join(out, f'{sid}_{i}.wav'), x, sr, subtype='PCM_16')
+            print('  voice', sid, i, f'{len(x) / sr:.1f}s')
 
 def wav_len(p):
     with wave.open(p) as w: return w.getnframes() / w.getframerate()
@@ -112,6 +114,7 @@ def audio(tl):
             with wave.open(os.path.join(BUILD, 'tts', s['wav'])) as w:
                 x = np.frombuffer(w.readframes(w.getnframes()), dtype=np.int16).astype(np.float64) / 32768
             a = int(s['t'] * SR); voice[a:a + len(x)] += x[:max(0, n - a)]
+    voice *= 0.89 / max(1e-9, np.abs(voice).max())  # even level across the neural voice
     music = pad(total + 1)
     # duck the music under the voice
     env = np.convolve(np.abs(voice), np.ones(SR // 4) / (SR // 4), mode='same')
