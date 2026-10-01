@@ -23,7 +23,7 @@ from openpyxl.utils import get_column_letter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(ROOT, 'docs', 'survey')
-SEED = 2026
+SEED = 35  # a demo draw that resembles a typical real survey (see README); change it to draw another
 MAXROW = 1000  # analysis formulas cover rows 2..1000 so real data can be pasted in
 
 L5 = {'agree': ['1 Strongly disagree', '2', '3', '4', '5 Strongly agree']}
@@ -34,10 +34,10 @@ L5 = {'agree': ['1 Strongly disagree', '2', '3', '4', '5 Strongly agree']}
 #   type 'num'   -> number; dist = (mean, sd, min, max)
 #   type 'text'  -> free text; dist = list of demo comments
 GROUPS = [
- dict(key='Students', sheet='Students_Data', n=120, title='Students (secondary school and university)',
+ dict(key='Students', sheet='Students_Data', n=30, title='Students (secondary school and university)',
       intro='About your school or campus canteen lunch. Takes about 4 minutes. Anonymous.',
       qs=[
-   ('S1', 'Which are you?', 'cat', ['Secondary school', 'University'], [.58, .42]),
+   ('S1', 'Which are you?', 'cat', ['Secondary school', 'University'], [.75, .25]),
    ('S2', 'How often do you leave food on your tray?', 'cat', ['Never', 'Rarely', 'Sometimes', 'Often', 'Almost always'], [.08, .20, .37, .25, .10]),
    ('S3', 'What is the main reason you leave food?', 'cat', ['Portion too big', 'Don’t like the taste', 'Not hungry', 'Ran out of time', 'Didn’t recognise the dish'], [.38, .27, .15, .12, .08]),
    ('S4', 'Would you take a smaller portion if you could ask for one easily?', 'cat', ['Yes', 'Maybe', 'No'], [.58, .27, .15]),
@@ -51,7 +51,7 @@ GROUPS = [
       'The rice portion is always too big for me.', 'I would eat more vegetables if they tasted better.', 'Sometimes I don’t know what the dish is.',
       'Queues are too long so I rush my food.', 'A pet game would be fun if it is not too childish.', 'I don’t want my name on a leaderboard.',
       'More fruit options please.', 'I prefer not to use face scanning.', 'Being told to finish everything makes me feel bad.', ''])]),
- dict(key='Kitchen', sheet='Kitchen_Data', n=24, title='Canteen and kitchen staff',
+ dict(key='Kitchen', sheet='Kitchen_Data', n=8, title='Canteen and kitchen staff',
       intro='About how your canteen plans food and handles leftovers. Takes about 4 minutes.',
       qs=[
    ('K1', 'What is your role?', 'cat', ['Canteen operator', 'Cook', 'Kitchen assistant'], [.25, .42, .33]),
@@ -67,7 +67,7 @@ GROUPS = [
    ('K11', 'Anything else?', 'text', None, [
       'We cook the same amount every day regardless of attendance.', 'Vegetables come back the most.', 'Exam weeks and trips change everything.',
       'I don’t have time to fill in forms.', 'If it saves money the boss will like it.', 'Soup is always wasted.', ''])]),
- dict(key='Hospital', sheet='Hospital_Data', n=36, title='Hospital staff (nurses, dietitians, ward managers)',
+ dict(key='Hospital', sheet='Hospital_Data', n=6, title='Hospital staff (nurses, dietitians, ward managers)',
       intro='About how patients’ food intake is tracked on your ward. Takes about 4 minutes.',
       qs=[
    ('H1', 'What is your role?', 'cat', ['Nurse', 'Dietitian', 'Ward manager'], [.67, .22, .11]),
@@ -82,7 +82,7 @@ GROUPS = [
    ('H10', 'Anything else?', 'text', None, [
       'Food charts are filled in at the end of the shift from memory.', 'Elderly patients often leave most of their tray.', 'We need to know protein intake for wound healing.',
       'Alerts must not create more paperwork.', 'Patients would like more choice.', ''])]),
- dict(key='Office', sheet='Office_Data', n=80, title='Office workers',
+ dict(key='Office', sheet='Office_Data', n=6, title='Office workers',
       intro='About lunch at your workplace canteen. Takes about 4 minutes. Anonymous.',
       qs=[
    ('O1', 'Your age group', 'cat', ['20–29', '30–39', '40–49', '50+'], [.30, .35, .22, .13]),
@@ -280,20 +280,24 @@ def build_workbook(data, path):
     for j, h in enumerate(['#', 'Group', 'Finding (calculated from the Analysis sheet)', 'What it means for PlateLoop'], 1):
         c = k.cell(3, j, h); c.font = F(bold=True, color='FFFFFF'); c.fill = HEAD
     P = lambda key, fmt='0%': f'TEXT({A[key]},"{fmt}")'
+    s3 = GROUPS[0]['qs'][2][3]
+    first, last = A[('S3', s3[0])], A[('S3', s3[-1])]
+    SH = first.split('!')[0] + '!' + first.split('!')[1] + ':' + last.split('!')[1]
+    LB = SH.replace('$C$', '$A$')
     findings = [
-     ('Students', f'="Portion size is the top reason for leaving food: "&{P(("S3","Portion too big"))}&" chose it, and "&{P(("S4","Yes"))}&" would take a smaller portion if they could ask easily."', 'The before scan and right-portion rewards in Loopi: a small plate finished counts fully.'),
-     ('Students', f'="More students prefer food groups ("&{P(("S7","Food groups"))}&") than calories ("&{P(("S7","Calories"))}&") when seeing what they ate."', 'Loopi shows food groups by default; calories stay optional.'),
-     ('Students', f'="A virtual pet appeals more to secondary students (average "&{P("S8sec","0.0")}&"/5) than to university students ("&{P("S8uni","0.0")}&"/5)."', 'Lead with the Loopi pet in schools; emphasise nutrition feedback on campuses.'),
-     ('Students', f'="Only "&{P(("S10","agree"))}&" are comfortable with face sign-in."', 'Keep the class-and-number alternative and make face sign-in optional.'),
-     ('Kitchen', f'="Most staff plan by experience or headcount ("&TEXT({A[("K2","Past experience")]}+{A[("K2","Headcount × standard portion")]},"0%")&"), and only "&{P(("K4","Yes, accurately"))}&" know accurately which dishes come back."', 'Kitchen dashboard: waste by dish and a forecast from real eating data.'),
-     ('Kitchen', f'="Staff estimate "&{P(("K3","Average"),"0")}&"% of cooked food is thrown away, and spend "&{P(("K9","Average"),"0")}&" minutes a day planning quantities."', 'Tomorrow’s suggested order saves planning time and cuts over-preparation.'),
-     ('Kitchen', f'="A suggested order is rated useful by "&{P(("K6","agree"))}&" and waste by dish by "&{P(("K7","agree"))}&", but "&{P(("K10","agree"))}&" worry about extra workload."', 'Automatic measurement only: no forms or manual entry for kitchen staff.'),
-     ('Hospital', f'="Only "&{P(("H3","agree"))}&" of hospital staff trust their intake records, and staff spend "&{P(("H4","Average"),"0")}&" minutes a shift documenting intake."', 'Loopi Care records every tray automatically.'),
-     ('Hospital', f'="Patients who stop eating are noticed the same day in only "&{P(("H5","Same day"))}&" of cases."', 'Nurse-station alerts after poor meals, the same day.'),
+     ('Students', f'="The most common reason for leaving food is \'"&INDEX({LB},MATCH(MAX({SH}),{SH},0))&"\' ("&TEXT(MAX({SH}),"0%")&"); "&{P(("S4","Yes"))}&" would take a smaller portion if they could ask easily."', 'The before scan and right-portion rewards in Loopi: a small plate finished counts fully.'),
+     ('Students', f'="When seeing what they ate, "&{P(("S7","Food groups"))}&" would rather see food groups and "&{P(("S7","Calories"))}&" calories."', 'Loopi shows food groups by default; calories stay optional.'),
+     ('Students', f'="Interest in scanning trays to feed a virtual pet averages "&{P(("S8","avg"),"0.0")}&" out of 5; "&{P(("S8","agree"))}&" agree."', 'The Loopi pet as the reason students scan.'),
+     ('Students', f'={P(("S10","agree"))}&" of students are comfortable with face sign-in."', 'Keep the class-and-number alternative; face sign-in stays optional.'),
+     ('Kitchen', f'=TEXT({A[("K2","Past experience")]}+{A[("K2","Headcount × standard portion")]},"0%")&" of kitchen staff decide quantities by experience or headcount; "&{P(("K4","Yes, accurately"))}&" know accurately which dishes come back."', 'Kitchen dashboard: waste by dish and a forecast from real eating data.'),
+     ('Kitchen', f'="Kitchen staff estimate "&{P(("K3","Average"),"0")}&"% of cooked food is thrown away and spend "&{P(("K9","Average"),"0")}&" minutes a day planning quantities."', 'A suggested order for tomorrow saves planning time and cuts over-preparation.'),
+     ('Kitchen', f'="A suggested order is rated useful by "&{P(("K6","agree"))}&" and waste by dish by "&{P(("K7","agree"))}&"; "&{P(("K10","agree"))}&" worry about extra workload."', 'Measurement is automatic: no forms or manual entry for kitchen staff.'),
+     ('Hospital', f'={P(("H3","agree"))}&" of hospital staff trust their intake records; documenting intake takes "&{P(("H4","Average"),"0")}&" minutes a shift."', 'Loopi Care records every tray automatically.'),
+     ('Hospital', f'="Staff say a patient who stops eating is noticed the same day in "&{P(("H5","Same day"))}&" of cases."', 'Nurse-station alerts after poor meals, the same day.'),
      ('Hospital', f'="Automatic intake records are rated useful by "&{P(("H7","agree"))}&"; "&{P(("H9","Yes"))}&" say patients would benefit from choosing tomorrow’s meals."', 'Loopi Care: per-tray intake and patient meal choice.'),
-     ('Office', f'="Only "&{P(("O4","agree"))}&" of office workers know the nutrients in their lunch, and "&TEXT({A[("O5","Often")]}+{A[("O5","Daily")]},"0%")&" feel an afternoon energy dip often or daily."', 'Loopi Work: nutrients per lunch and a 3 pm energy check-in.'),
-     ('Office', f'="{"{}"}"&{P(("O6","Yes"))}&" would pre-order lunch to skip a typical "&{P(("O9","Average"),"0")}&"-minute queue."', 'Pre-ordering in Loopi Work; kitchens cook to orders.'),
-     ('Office', f'="Only "&{P(("O8","Yes"))}&" would share meal data with their employer; "&{P(("O8","Only anonymous totals"))}&" would share anonymous totals only."', 'Private by default: employers see team totals, never names.'),
+     ('Office', f'={P(("O4","agree"))}&" of office workers know the nutrients in their lunch; "&TEXT({A[("O5","Often")]}+{A[("O5","Daily")]},"0%")&" feel an afternoon energy dip often or daily."', 'Loopi Work: nutrients per lunch and a 3 pm energy check-in.'),
+     ('Office', f'={P(("O6","Yes"))}&" would pre-order lunch to skip a typical "&{P(("O9","Average"),"0")}&"-minute queue."', 'Pre-ordering in Loopi Work; kitchens cook to orders.'),
+     ('Office', f'={P(("O8","Yes"))}&" would share meal data with their employer; "&{P(("O8","Only anonymous totals"))}&" would share anonymous totals only."', 'Private by default: employers see team totals, never names.'),
     ]
     for i, (grp, f, mean) in enumerate(findings, 4):
         k.cell(i, 1, i - 3).font = F(bold=True)
@@ -346,6 +350,7 @@ def bars(items, fmt=lambda v: f'{P(v)}', width=330, color='#1E7A44', mx=None):
 
 def findings_html(data, texts):
     S, K, Hh, O = (data[k] for k in ('Students', 'Kitchen', 'Hospital', 'Office'))
+    _sh = S.S3.value_counts(normalize=True); top = max(GROUPS[0]['qs'][2][3], key=lambda o: _sh.get(o, 0))
     share = lambda df, c, o: (df[c] == o).mean()
     agree = lambda df, c: (df[c] >= 4).mean()
     charts = [
@@ -356,7 +361,7 @@ def findings_html(data, texts):
         ('Office workers: share of meal data with employer', bars([(o, share(O, 'O8', o)) for o in GROUPS[3]['qs'][7][3]], color='#5046C8')),
         ('Share who agree (4–5) by statement', bars([('Kitchen: suggested order', agree(K, 'K6')), ('Kitchen: waste by dish', agree(K, 'K7')), ('Hospital: automatic intake', agree(Hh, 'H7')), ('Hospital: alert with reason', agree(Hh, 'H8')), ('Office: daily pick for goal', agree(O, 'O7')), ('Students: class competition', agree(S, 'S9'))], width=330)),
     ]
-    kf = f'''<div class="kf"><div><b>{P(share(S,'S3','Portion too big'))}</b><span>of students leave food mainly because the portion is too big</span></div>
+    kf = f'''<div class="kf"><div><b>{P(share(S,'S3',top))}</b><span>of students chose ‘{top}’ as their main reason for leaving food</span></div>
       <div><b>{P(share(K,'K4','Yes, accurately'))}</b><span>of kitchen staff know accurately which dishes come back</span></div>
       <div><b>{P(agree(Hh,'H3'))}</b><span>of hospital staff trust their intake records</span></div>
       <div><b>{P(share(O,'O8','Only anonymous totals')+share(O,'O8','No'))}</b><span>of office workers want meal data kept private or anonymous</span></div></div>'''
@@ -365,30 +370,32 @@ def findings_html(data, texts):
     n = ', '.join(f"{G['key'].lower()} {G['n']}" for G in GROUPS)
     return f'''<!doctype html><html><head><meta charset="utf-8"><title>PlateLoop survey key findings (demo)</title><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap"><style>{CSS}</style></head><body>
     <h1>PlateLoop survey: key findings</h1><p class="sub">Students, canteen and kitchen staff, hospital staff and office workers.</p>
-    <div class="demo"><b>Demo data.</b> These results come from synthetic responses ({n}) generated to demonstrate the analysis. They are not real survey results and should not be quoted as evidence. The questionnaires and analysis workbook are ready for real responses.</div>
+    <div class="demo"><b>Demo data.</b> These results come from synthetic responses ({n}) generated to demonstrate the analysis. They are not real survey results and should not be quoted as evidence; with groups this small, each response moves a percentage by several points. The questionnaires and analysis workbook are ready for real responses.</div>
     {kf}<div class="grid2">{figs}</div><p class="cap">Figures computed from the demo responses in plateloop-survey-analysis-DEMO.xlsx.</p>
     <h2 style="margin-top:12px">Findings and what they mean for PlateLoop</h2>{fds}</body></html>'''
 
 def finding_texts(data):
     """The same findings as the workbook's formulas, computed in Python for the PDF."""
     S, K, Hh, O = (data[k] for k in ('Students', 'Kitchen', 'Hospital', 'Office'))
-    sh = lambda df, c, o: f'{P((df[c] == o).mean())}'; ag = lambda df, c: f'{P((df[c] >= 4).mean())}'
-    m = lambda s: f'{s.mean():.1f}'
-    sec, uni = S[S.S1 == 'Secondary school'], S[S.S1 == 'University']
+    sh = lambda df, c, o: P((df[c] == o).mean()); ag = lambda df, c: P((df[c] >= 4).mean())
+    shares = S.S3.value_counts(normalize=True); order = GROUPS[0]['qs'][2][3]
+    top = max(order, key=lambda o: shares.get(o, 0))  # first option wins a tie, like Excel's MATCH
+    half = lambda v: f'{Decimal(str(v)).quantize(Decimal("0.1"), rounding=ROUND_HALF_UP)}'
+    whole = lambda v: f'{Decimal(str(v)).quantize(Decimal("1"), rounding=ROUND_HALF_UP)}'
     return [
-     (f'Portion size is the top reason for leaving food: {sh(S,"S3","Portion too big")} chose it, and {sh(S,"S4","Yes")} would take a smaller portion if they could ask easily.', 'The before scan and right-portion rewards in Loopi: a small plate finished counts fully.'),
-     (f'More students prefer food groups ({sh(S,"S7","Food groups")}) than calories ({sh(S,"S7","Calories")}).', 'Loopi shows food groups by default; calories stay optional.'),
-     (f'A virtual pet appeals more to secondary students (average {m(sec.S8)}/5) than to university students ({m(uni.S8)}/5).', 'Lead with the Loopi pet in schools; emphasise nutrition feedback on campuses.'),
-     (f'Only {ag(S,"S10")} of students are comfortable with face sign-in.', 'Keep the class-and-number alternative; face sign-in stays optional.'),
-     (f'Most kitchen staff plan by experience or headcount ({P(((K.K2=="Past experience")|(K.K2=="Headcount × standard portion")).mean())}), and only {sh(K,"K4","Yes, accurately")} know accurately which dishes come back.', 'Kitchen dashboard: waste by dish and a forecast from real eating data.'),
-     (f'Staff estimate {K.K3.mean():.0f}% of cooked food is thrown away, and spend {K.K9.mean():.0f} minutes a day planning quantities.', 'A suggested order for tomorrow saves planning time and cuts over-preparation.'),
-     (f'A suggested order is rated useful by {ag(K,"K6")} and waste by dish by {ag(K,"K7")}, but {ag(K,"K10")} worry about extra workload.', 'Measurement is automatic: no forms or manual entry for kitchen staff.'),
-     (f'Only {ag(Hh,"H3")} of hospital staff trust their intake records, and they spend {Hh.H4.mean():.0f} minutes a shift documenting intake.', 'Loopi Care records every tray automatically.'),
-     (f'Patients who stop eating are noticed the same day in only {sh(Hh,"H5","Same day")} of cases.', 'Nurse-station alerts after poor meals, the same day.'),
+     (f'The most common reason for leaving food is ‘{top}’ ({P(shares.get(top, 0))}); {sh(S,"S4","Yes")} would take a smaller portion if they could ask easily.', 'The before scan and right-portion rewards in Loopi: a small plate finished counts fully.'),
+     (f'When seeing what they ate, {sh(S,"S7","Food groups")} would rather see food groups and {sh(S,"S7","Calories")} calories.', 'Loopi shows food groups by default; calories stay optional.'),
+     (f'Interest in scanning trays to feed a virtual pet averages {half(S.S8.mean())} out of 5; {ag(S,"S8")} agree.', 'The Loopi pet as the reason students scan.'),
+     (f'{ag(S,"S10")} of students are comfortable with face sign-in.', 'Keep the class-and-number alternative; face sign-in stays optional.'),
+     (f'{P(((K.K2=="Past experience")|(K.K2=="Headcount × standard portion")).mean())} of kitchen staff decide quantities by experience or headcount; {sh(K,"K4","Yes, accurately")} know accurately which dishes come back.', 'Kitchen dashboard: waste by dish and a forecast from real eating data.'),
+     (f'Kitchen staff estimate {whole(K.K3.mean())}% of cooked food is thrown away and spend {whole(K.K9.mean())} minutes a day planning quantities.', 'A suggested order for tomorrow saves planning time and cuts over-preparation.'),
+     (f'A suggested order is rated useful by {ag(K,"K6")} and waste by dish by {ag(K,"K7")}; {ag(K,"K10")} worry about extra workload.', 'Measurement is automatic: no forms or manual entry for kitchen staff.'),
+     (f'{ag(Hh,"H3")} of hospital staff trust their intake records; documenting intake takes {whole(Hh.H4.mean())} minutes a shift.', 'Loopi Care records every tray automatically.'),
+     (f'Staff say a patient who stops eating is noticed the same day in {sh(Hh,"H5","Same day")} of cases.', 'Nurse-station alerts after poor meals, the same day.'),
      (f'Automatic intake records are rated useful by {ag(Hh,"H7")}; {sh(Hh,"H9","Yes")} say patients would benefit from choosing tomorrow’s meals.', 'Loopi Care: per-tray intake and patient meal choice.'),
-     (f'Only {ag(O,"O4")} of office workers know the nutrients in their lunch, and {P(((O.O5=="Often")|(O.O5=="Daily")).mean())} feel an afternoon energy dip often or daily.', 'Loopi Work: nutrients per lunch and a 3 pm energy check-in.'),
-     (f'{sh(O,"O6","Yes")} would pre-order lunch to skip a typical {O.O9.mean():.0f}-minute queue.', 'Pre-ordering in Loopi Work; kitchens cook to orders.'),
-     (f'Only {sh(O,"O8","Yes")} would share meal data with their employer; {sh(O,"O8","Only anonymous totals")} would share anonymous totals only.', 'Private by default: employers see team totals, never names.'),
+     (f'{ag(O,"O4")} of office workers know the nutrients in their lunch; {P(((O.O5=="Often")|(O.O5=="Daily")).mean())} feel an afternoon energy dip often or daily.', 'Loopi Work: nutrients per lunch and a 3 pm energy check-in.'),
+     (f'{sh(O,"O6","Yes")} would pre-order lunch to skip a typical {whole(O.O9.mean())}-minute queue.', 'Pre-ordering in Loopi Work; kitchens cook to orders.'),
+     (f'{sh(O,"O8","Yes")} would share meal data with their employer; {sh(O,"O8","Only anonymous totals")} would share anonymous totals only.', 'Private by default: employers see team totals, never names.'),
     ]
 
 def to_pdf(html_path, pdf_path):
