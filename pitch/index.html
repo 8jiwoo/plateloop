@@ -22,7 +22,7 @@ html,body{margin:0;height:100%;background:#050806;overflow:hidden;font-family:va
 button{font:inherit;color:inherit;cursor:pointer}
 
 /* ================================================================ stage: a 1600×900 canvas scaled to fit */
-.viewport{position:fixed;inset:0;display:grid;place-items:center}
+.viewport{position:fixed;inset:0;display:grid;place-items:center;grid-template:100% / 100%}
 .stage{width:1600px;height:900px;position:relative;transform-origin:center;flex:none}
 .slide{position:absolute;inset:0;background:var(--paper);border-radius:6px;overflow:hidden;padding:84px 100px 70px;display:flex;flex-direction:column;
   opacity:0;visibility:hidden;transform:translateX(40px) scale(.985);transition:opacity .55s cubic-bezier(.2,.8,.2,1),transform .55s cubic-bezier(.2,.8,.2,1),visibility 0s .55s}
