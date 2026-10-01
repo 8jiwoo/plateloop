@@ -1570,6 +1570,34 @@ body:has(.kx){background:#000}
 .kx-seg button{flex:1;border:0;background:none;color:var(--label);font:500 13px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;padding:6px 8px;border-radius:7px;transition:background .2s}
 .kx-seg button[aria-pressed="true"]{background:#636366;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .kx-select{width:100%;height:34px;border:0;border-radius:9px;background:var(--fill);color:var(--label);font:500 13.5px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;padding:0 10px}
+/* ---- grocery list */
+.kx-grid-sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 20px;margin:4px 0 14px}
+.kx-slider{display:flex;flex-direction:column;gap:4px}
+.kx-slider-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
+.kx-slider-t b{font-size:14px;font-weight:600;color:var(--label)}
+.kx-slider-t span{color:var(--label2);font-variant-numeric:tabular-nums}
+.kx-buy.clickable{cursor:pointer;border-radius:10px}
+.kx-buy.clickable .kx-buy-n{display:flex;align-items:center;gap:6px;white-space:normal}
+.kx-buy.clickable .kx-buy-n svg{width:12px;height:12px;flex:none;color:var(--label3);transition:transform .2s}
+.kx-buy.open .kx-buy-n svg{transform:rotate(90deg)}
+.kx-buy.clickable .kx-buy-n-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.kx-buy.clickable .kx-buy-n .pill{flex:none}
+.kx-vendors{margin:2px 0 14px;padding:12px;background:var(--fill);border-radius:14px}
+.kx-vendors-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:2px}
+.kx-vendor-card{scroll-snap-align:start;flex:none;width:180px;background:var(--bg2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px;box-shadow:var(--shadow-s);border:1.5px solid transparent}
+.kx-vendor-card.sel{border-color:var(--blue)}
+.kx-vendor-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.kx-vendor-top b{font-size:13.5px;line-height:1.25}
+.kx-vendor-price{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.kx-vendor-price span{font-size:12px;font-weight:500;color:var(--label2)}
+.kx-vendor-row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--label2)}
+.kx-vendor-row svg{width:13px;height:13px;flex:none}
+.kx-dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--label3)}
+.kx-dot.ok{background:var(--tint)}.kx-dot.low{background:var(--orange)}.kx-dot.bad{background:var(--red)}
+.kx-vendor-badges{display:flex;flex-wrap:wrap;gap:5px;min-height:20px}
+.kx-vendor-badges .pill{padding:2px 8px;font-size:10.5px}
+.kx-vendor-card .kx-btn{margin-top:2px}
+.kx-vendors + .kx-buy{border-top:.5px solid var(--sep)}
 .kx-menu{display:grid;grid-template-columns:160px 1fr 92px;gap:14px;align-items:center;padding:10px 0}
 .kx-menu + .kx-menu{border-top:.5px solid var(--sep)}
 .kx-menu-t b{display:block;font-size:14.5px;font-weight:600}.kx-menu-t span{font-size:12px;color:var(--label3)}
@@ -3183,7 +3211,8 @@ G.drawSprite = (ctx, name, x, y, s) => {
 /* ---- js/kitchen.js ---- */
 /* PlateLoop Kitchen: the admin side of PlateLoop. What the scanners measured today (served, eaten, wasted),
    which dishes come back, and what to buy for tomorrow, planned from what people really eat.
-   Pages: overview, purchasing (plan & order), waste by dish, nutrition, carbon and reports. */
+   Pages: overview, purchasing (plan & order), grocery list (week/month, by food group), waste by dish,
+   nutrition, carbon and reports. */
 (() => {
 'use strict';
 const { $, $$, pct, fmt1, money, esc, MENU, rng, clamp } = PL;
@@ -3208,15 +3237,69 @@ const TRACK = (() => { const r = rng(23); return Array.from({ length: 20 }, (_, 
 const FC_ERR = (first, last) => TRACK.slice(first, last).reduce((a, d) => a + Math.abs(d.fc - d.actual) / d.actual, 0) / (last - first);
 const INVENTORY = { 'Rice (raw)': 60, 'Onion': 8, 'Soy sauce': 10, 'Cooking oil': 15, 'Sesame oil': 2, 'Curry paste': 3 };
 const ENROLLED = 840;
+const DAYS_PER_MONTH = 20;
 const MAPE = TOMORROW.reduce((a, d) => a + d.err, 0) / TOMORROW.length;
 const SEED_MIX = { S: 35, M: 84, L: 21 }; // portion sizes of the 140 trays scanned before the demo starts
+const CAT_LABEL = { veg: 'Vegetables', protein: 'Protein', grain: 'Grains', soup: 'Soup', fruit: 'Fruit', dairy: 'Dairy', drink: 'Supplement drinks' };
+const PERIODS = { week: { days: 5, label: 'This week' }, month: { days: DAYS_PER_MONTH, label: 'This month' } };
 
-const ui = { view: 'overview', plan: { att: 812, weather: 'sunny', event: 'normal' }, seen: null, prev: {} };
+/* ---- the other two verticals PlateLoop serves. Each deployment is one location with its own
+   menu, census and stockroom — this preset switch is a demo stand-in for picking which one you're in. */
+const OFFICE_DISHES = [
+  { id: 'wrap', name: 'Chicken wrap', std: 220, learned: 178, err: .06, tags: ['protein', 'grain'], bom: [['Tortilla wrap', .28, 1.1], ['Chicken breast', .32, 9.5], ['Mixed greens', .14, 4.2]] },
+  { id: 'salad', name: 'Garden salad bowl', std: 240, learned: 132, err: .10, tags: ['veg'], bom: [['Mixed salad greens', .55, 3.6], ['Cherry tomato', .25, 3.2], ['Cucumber', .20, 2.2]] },
+  { id: 'soup2', name: 'Soup of the day', std: 230, learned: 121, err: .09, tags: ['soup'], bom: [['Mixed vegetables', .35, 2.6], ['Stock base', .40, 1.4]] },
+  { id: 'fruitcup', name: 'Fruit cup', std: 130, learned: 120, err: .04, tags: ['fruit'], bom: [['Mixed fruit', 1.0, 3.6]] },
+  { id: 'yogurt', name: 'Greek yogurt', std: 150, learned: 96, err: .08, tags: ['dairy'], bom: [['Greek yogurt', 1.0, 4.3]] },
+];
+const HOSPITAL_DISHES = [
+  { id: 'softdiet', name: 'Soft diet tray', std: 320, learned: 231, err: .06, tags: ['protein', 'grain'], bom: [['Minced chicken', .24, 8.4], ['Mashed potato', .30, 1.3], ['Soft rice', .24, 2.1]] },
+  { id: 'puree', name: 'Pureed vegetables', std: 110, learned: 51, err: .13, tags: ['veg'], bom: [['Mixed vegetables', 1.0, 2.7]] },
+  { id: 'broth', name: 'Clear broth', std: 180, learned: 99, err: .11, tags: ['soup'], bom: [['Chicken stock', 1.0, 1.5]] },
+  { id: 'jelly', name: 'Fruit jelly', std: 90, learned: 85, err: .04, tags: ['fruit'], bom: [['Fruit jelly mix', 1.0, 3.0]] },
+  { id: 'shake', name: 'Nutrition shake', std: 200, learned: 190, err: .03, tags: ['drink'], bom: [['Supplement powder', .12, 15.0]] },
+];
+const INVENTORY_OFFICE = { 'Tortilla wrap': 4, 'Mixed greens': 1.5 };
+const INVENTORY_HOSPITAL = { 'Chicken stock': 5, 'Soft rice': 8 };
+const LOCATIONS = {
+  school: { key: 'school', label: 'School canteen', sub: 'Harbourlight Secondary · weekday lunch', person: 'students', enrolled: ENROLLED, dishes: TOMORROW, inventory: INVENTORY },
+  office: { key: 'office', label: 'Office pantry', sub: 'Loopi Work HQ · weekday lunch', person: 'employees', enrolled: 320, dishes: OFFICE_DISHES, inventory: INVENTORY_OFFICE },
+  hospital: { key: 'hospital', label: 'Hospital kitchen', sub: 'Loopi Care wards · all-day trays', person: 'patients', enrolled: 180, dishes: HOSPITAL_DISHES, inventory: INVENTORY_HOSPITAL },
+};
+
+/* ---- vendor comparison, shown when an ingredient row is opened */
+const VENDOR_POOL = ['Golden Harvest Supplies', 'Metro Wholesale Foods', 'FreshCo Distribution', 'Harbour Bay Market', 'Greenline Produce Co.', 'Sunrise Foodservice', 'Pacific Staples Trading'];
+const VENDOR_AVAIL = [['In stock', 'ok', 'green'], ['Limited stock', 'low', 'orange'], ['3–5 day backorder', 'bad', 'red']];
+const VENDOR_SPEED = ['Next-day delivery', '2-day delivery', '3–4 day delivery'];
+const vendorKey = (loc, ing) => `${loc}::${ing}`;
+/** Three vendor quotes for one ingredient, stable across re-renders (seeded on the ingredient name).
+    The first is always the supplier already baked into today's price — everyone else is a "what if". */
+function vendorOptions(ing, basePrice) {
+  const r = rng(seedOf('vendor:' + ing)), pool = [...VENDOR_POOL], picks = [];
+  for (let i = 0; i < 3; i++) picks.push(pool.splice(Math.floor(r() * pool.length), 1)[0]);
+  const speedRank = { 'Next-day delivery': 0, '2-day delivery': 1, '3–4 day delivery': 2 };
+  const opts = picks.map((name, i) => {
+    const mult = i === 0 ? 1 : .82 + r() * .4, avail = VENDOR_AVAIL[Math.floor(r() * VENDOR_AVAIL.length)];
+    return { name, current: i === 0, price: +(basePrice * mult).toFixed(2), avail: avail[0], availTone: avail[1], availColor: avail[2], speed: VENDOR_SPEED[Math.floor(r() * VENDOR_SPEED.length)], rating: +(3.6 + r() * 1.3).toFixed(1), moq: [5, 10, 20, 25][Math.floor(r() * 4)] };
+  });
+  const minPrice = Math.min(...opts.map(o => o.price)), minSpeed = Math.min(...opts.map(o => speedRank[o.speed]));
+  opts.forEach(o => { o.cheapest = o.price === minPrice; o.fastest = speedRank[o.speed] === minSpeed; });
+  return opts;
+}
+/** The price actually used for an ingredient: the chosen vendor's quote, or today's baked-in price. */
+function effectivePrice(loc, ing, basePrice) {
+  const sel = ui.grocery.vendor[vendorKey(loc, ing)]; if (!sel) return basePrice;
+  const v = vendorOptions(ing, basePrice).find(o => o.name === sel);
+  return v ? v.price : basePrice;
+}
+
+const ui = { view: 'overview', plan: { att: 812, weather: 'sunny', event: 'normal' }, grocery: { period: 'week', loc: 'school', attFrac: .97, overrides: {}, solve: null, range: '12w', vendor: {}, expanded: null }, seen: null, prev: {} };
 let root = null;
 const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
 const NAV = [
   ['overview', 'Overview', SV('<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>')],
   ['plan', 'Purchasing', SV('<path d="M3 4h2l2.5 11h11L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>')],
+  ['grocery', 'Grocery list', SV('<path d="M6 8h12l-1.5 11a2 2 0 0 1-2 1.8H9.5a2 2 0 0 1-2-1.8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>')],
   ['dishes', 'Dishes', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
   ['nutrition', 'Nutrition', SV('<path d="M12 21c-4.5-2.5-8-6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 11c0 4-3.5 7.5-8 10Z"/>')],
   ['carbon', 'Carbon', SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/><path d="M9.5 14.5h5"/>')],
@@ -3228,6 +3311,8 @@ const IC = {
   bin: SV('<path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/>'),
   cloud: SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/>'),
   cart: SV('<path d="M3 4h2l2.5 11h11L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>'),
+  basket: SV('<path d="M6 8h12l-1.5 11a2 2 0 0 1-2 1.8H9.5a2 2 0 0 1-2-1.8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'),
+  truck: SV('<path d="M3 7h11v9H3zM14 11h4l3 3v2h-7z"/><circle cx="7.5" cy="18" r="1.6"/><circle cx="17" cy="18" r="1.6"/>'),
   scan: SV('<path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2M4 12h16"/>'),
   spark: SV('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8Z"/>'),
   chev: SV('<path d="M9 6l6 6-6 6"/>'), up: SV('<path d="M7 14l5-5 5 5"/>'), down: SV('<path d="M7 10l5 5 5-5"/>'),
@@ -3275,7 +3360,7 @@ function go(view) {
   render(true);
   scrollTo({ top: 0, behavior: PL.reduceMotion ? 'auto' : 'smooth' });
 }
-const VIEWS = () => ({ overview, dishes, nutrition, carbon, plan, report });
+const VIEWS = () => ({ overview, dishes, nutrition, carbon, plan, grocery, report });
 /** A new view renders fresh (and slides in); live updates to the overview patch it in place. */
 function render(force) {
   if (!root) return;
@@ -3480,7 +3565,7 @@ const GREEN = 'var(--green)', ORANGE = 'var(--orange)', BLUE = 'var(--blue)', RE
 /* ================================================================ Purchasing: tomorrow's order from what people really eat */
 function plan() {
   const p = ui.plan;
-  return `${head('Monday 28 September', 'Purchasing', `<span class="kx-chip">${IC.spark}Forecast error ${(MAPE * 100).toFixed(1)}%</span>`)}
+  return `${head('Monday 28 September', 'Purchasing', `<span class="kx-chip">${IC.spark}Forecast error ${(MAPE * 100).toFixed(1)}%</span><button class="kx-link" data-go="grocery">Grocery list${IC.chev}</button>`)}
   <section class="kx-group kx-controls">
     <div class="kx-ctl"><div class="kx-ctl-t"><b>Attendance</b><span id="att-v">${p.att} of ${ENROLLED}</span></div><input type="range" id="att" min="600" max="840" step="1" value="${p.att}" aria-label="Attendance"></div>
     <div class="kx-ctl"><div class="kx-ctl-t"><b>Weather</b></div><div class="kx-seg" id="weather">${['sunny', 'rainy', 'hot'].map(w => `<button data-w="${w}" aria-pressed="${p.weather === w}">${w[0].toUpperCase() + w.slice(1)}</button>`).join('')}</div></div>
@@ -3515,6 +3600,161 @@ function planOut() {
       ${ap ? `<div class="kx-approved"><span class="kx-ok">${IC.check}Approved at ${ap.at}</span><button class="kx-btn" id="unapprove">Undo</button></div><p class="kx-note">In a live system this goes to the supplier. Nothing is sent from this demo.</p>`
         : `<button class="kx-btn prim wide" id="approve">Approve order · ${money(f.orderTotal)}</button><p class="kx-note">Supplier cut-off 14:00.</p>`}`)}
   </section>`;
+}
+
+/* ================================================================ Grocery list: a week or a month ahead, by food group */
+/** A short, deterministic hash so each (location, tag) pair gets its own stable random seed. */
+function seedOf(str) { let h = 0; for (let i = 0; i < str.length; i++) h = (Math.imul(h, 31) + str.charCodeAt(i)) | 0; return h >>> 0; }
+/** A dish's demand multiplier from the scenario sliders: the product of every tag override it carries. */
+const dishMult = (d, overrides) => d.tags.reduce((m, t) => m * (overrides[t] ?? 1), 1);
+/** Roll a location's dishes up by food group, applying any "what if" sliders on top of the
+    learned-vs-standard ratio — the same demand signal Purchasing uses for tomorrow's order. */
+function groceryCategories(loc, overrides) {
+  const byTag = {};
+  LOCATIONS[loc].dishes.forEach(d => { const ratio = clamp(d.learned / d.std * dishMult(d, overrides), 0, 2); d.tags.forEach(tag => (byTag[tag] = byTag[tag] || []).push({ d, ratio })); });
+  return Object.entries(byTag).map(([tag, items]) => ({
+    tag, label: CAT_LABEL[tag] || tag, items,
+    avg: items.reduce((a, x) => a + x.ratio, 0) / items.length,
+  })).sort((a, b) => a.avg - b.avg);
+}
+/** Scales a location's per-ingredient forecast to a week or a month, nets off what's already in the
+    store, and flags ingredients that can be skipped because stock already covers the demand. */
+function groceryData(loc, period, attFrac, overrides) {
+  const prof = LOCATIONS[loc], days = PERIODS[period].days, attendance = Math.round(prof.enrolled * attFrac);
+  const need = {}, needStd = {}, ingTags = {};
+  prof.dishes.forEach(d => {
+    const mult = dishMult(d, overrides), newKg = attendance * Math.max(0, d.learned * mult) * (1 + Math.max(.04, d.err + .01)) / 1000, stdKg = prof.enrolled * d.std / 1000;
+    d.bom.forEach(([ing, ratio, price]) => {
+      need[ing] = need[ing] || { kg: 0, price }; need[ing].kg += newKg * ratio;
+      needStd[ing] = (needStd[ing] || 0) + stdKg * ratio;
+      (ingTags[ing] = ingTags[ing] || new Set()); d.tags.forEach(t => ingTags[ing].add(t));
+    });
+  });
+  const rows = Object.entries(need).map(([ing, o]) => {
+    const periodKg = o.kg * days, stdPeriodKg = needStd[ing] * days, inv = prof.inventory[ing] || 0;
+    const order = Math.max(0, periodKg - inv), stdOrder = Math.max(0, stdPeriodKg - inv);
+    const price = effectivePrice(loc, ing, o.price);
+    return { ing, tags: [...ingTags[ing]], periodKg, inv, order, basePrice: o.price, price, cost: order * price, stdCost: stdOrder * price, skip: order === 0 };
+  }).sort((a, b) => b.cost - a.cost);
+  const orderTotal = rows.reduce((a, r) => a + r.cost, 0), stdTotal = rows.reduce((a, r) => a + r.stdCost, 0);
+  return { loc, prof, period, days, attendance, rows, categories: groceryCategories(loc, overrides), orderTotal, savings: stdTotal - orderTotal, skipped: rows.filter(r => r.skip) };
+}
+/** Gross ingredient cost for one food group, holding every other tag's override fixed — used to
+    solve "what demand would it take to hit this budget" without netting off existing stock. */
+function tagGrossCost(loc, period, attFrac, overrides, tag) {
+  const prof = LOCATIONS[loc], days = PERIODS[period].days, attendance = Math.round(prof.enrolled * attFrac);
+  let total = 0;
+  prof.dishes.filter(d => d.tags.includes(tag)).forEach(d => {
+    const newKg = attendance * Math.max(0, d.learned * dishMult(d, overrides)) * (1 + Math.max(.04, d.err + .01)) / 1000;
+    d.bom.forEach(([, ratio, price]) => { total += newKg * ratio * days * price; });
+  });
+  return total;
+}
+/** Goal-seek: given a target spend on one food group, solve the demand multiplier that would produce it. */
+function solveTagMultiplier(loc, period, attFrac, overrides, tag, targetCost) {
+  const unitCost = tagGrossCost(loc, period, attFrac, { ...overrides, [tag]: 1 }, tag);
+  return unitCost > 0 ? clamp(targetCost / unitCost, .1, 2.5) : 1;
+}
+/** A synthetic but stable history for one food group's average eaten ratio, ending at today's value —
+    stands in for weeks/months of scanned trays until there's enough real history to chart. */
+function trendSeries(loc, tag, baseline, range) {
+  const n = 12, r = rng(seedOf(loc + ':' + tag));
+  const vals = Array.from({ length: n }, () => 0);
+  vals[n - 1] = baseline;
+  for (let i = n - 2; i >= 0; i--) vals[i] = clamp(vals[i + 1] + (r() - .5) * (range === '12w' ? .05 : .09), .12, .98);
+  return vals;
+}
+function grocery() {
+  const g0 = ui.grocery;
+  return `${head('Planning ahead', 'Grocery list', `<div class="kx-seg" id="gloc" style="width:300px">${Object.values(LOCATIONS).map(l => `<button data-loc="${l.key}" aria-pressed="${g0.loc === l.key}">${l.label.replace(' canteen', '').replace(' pantry', '').replace(' kitchen', '')}</button>`).join('')}</div><div class="kx-seg" id="gperiod" style="width:140px">${Object.entries(PERIODS).map(([k]) => `<button data-p="${k}" aria-pressed="${g0.period === k}">${k[0].toUpperCase() + k.slice(1)}</button>`).join('')}</div>`)}
+  <p class="hint" style="margin:-10px 0 18px;color:var(--label2)">Built from the same demand signal Purchasing uses — what people actually finish, not the standard portion — scaled ahead and netted against the store. One PlateLoop deployment serves one location; switch presets here to see how the same engine reads a school canteen, an office pantry or a hospital kitchen.</p>
+  <div id="grocery-out">${groceryOut()}</div>`;
+}
+function groceryOut() {
+  const { loc, period, attFrac, overrides, solve, range } = ui.grocery, prof = LOCATIONS[loc];
+  const g = groceryData(loc, period, attFrac, overrides);
+  const maxKg = Math.max(...g.rows.map(r => r.periodKg), 1);
+  const tags = [...new Set(prof.dishes.flatMap(d => d.tags))];
+  return `<p class="hint" style="margin:-4px 0 16px">${prof.sub}</p>
+  <section class="kx-widgets three">
+    ${widget(IC.basket, BLUE, 'To buy', money(g.orderTotal), '', `${g.rows.filter(r => r.order > 0).length} of ${g.rows.length} ingredients`)}
+    ${widget(IC.spark, GREEN, 'Saved vs the standard plan', money(g.savings), '', 'by buying to real demand, not the roster')}
+    ${widget(IC.check, CYAN, 'Skipped this ' + period, g.skipped.length, '', g.skipped.length ? 'stock already covers it' : 'nothing fully stocked')}
+  </section>
+
+  ${card('Test a scenario', `Nudge demand per food group and see the order change live · ${g.attendance} of ${prof.enrolled} ${prof.person} assumed`, `
+    <div class="kx-slider" style="margin-bottom:14px"><div class="kx-slider-t"><b>${prof.person[0].toUpperCase() + prof.person.slice(1)} present</b><span>${g.attendance} of ${prof.enrolled}</span></div><input type="range" id="gatt" min="50" max="100" step="1" value="${Math.round(attFrac * 100)}" aria-label="${prof.person} present"></div>
+    <div class="kx-grid-sliders">${tags.map(t => {
+      const m = overrides[t] ?? 1, cur = g.categories.find(c => c.tag === t);
+      return `<div class="kx-slider"><div class="kx-slider-t"><b>${esc(CAT_LABEL[t] || t)}</b><span>${pct(cur ? cur.avg : m)} eaten</span></div><input type="range" class="gmult" data-tag="${t}" min="50" max="150" step="1" value="${Math.round(m * 100)}" aria-label="${esc(CAT_LABEL[t] || t)} demand"></div>`;
+    }).join('')}</div>
+    <button class="kx-link" id="greset" type="button">Reset to measured demand</button>
+  `)}
+
+  ${card('Work backwards from a budget', 'Pick a target spend for one food group and solve for the demand it implies', `
+    <div class="row" style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;margin-bottom:${solve ? '14px' : '0'}">
+      <div style="flex:1;min-width:140px"><label class="hint" style="display:block;margin-bottom:4px">Food group</label><select id="stag" class="kx-select">${tags.map(t => `<option value="${t}" ${solve && solve.tag === t ? 'selected' : ''}>${esc(CAT_LABEL[t] || t)}</option>`).join('')}</select></div>
+      <div style="width:120px"><label class="hint" style="display:block;margin-bottom:4px">Target, ${period}</label><input id="scost" type="number" min="1" class="kx-select" value="${solve ? Math.round(solve.targetCost) : ''}" placeholder="S$"></div>
+      <button class="kx-btn prim" id="ssolve" type="button">Solve</button>
+    </div>
+    ${solve ? `<p class="kx-note">To spend about ${money(solve.targetCost)} on ${esc(CAT_LABEL[solve.tag] || solve.tag).toLowerCase()} ${period === 'month' ? 'this month' : 'this week'}, demand would need to average ${pct(solve.impliedRatio)} eaten — ${solve.impliedRatio < solve.baseRatio ? 'down' : 'up'} from ${pct(solve.baseRatio)} today. Applied to the scenario above — fine-tune it with the sliders.</p>` : `<p class="hint">Ignores stock already on hand, so it's a quick directional estimate, not the exact order.</p>`}
+  `)}
+
+  ${card('What demand is telling us', `Average eaten vs the standard portion, by food group · ${g.days} day${g.days === 1 ? '' : 's'} ahead`, `<div class="kx-list">${g.categories.map(c => {
+    const low = c.avg < .65, high = c.avg > .9, tone = low ? 'low' : high ? 'ok' : '';
+    const verb = low ? 'Buy less' : high ? 'Keep buying' : 'Buy as planned';
+    const names = c.items.map(x => `${x.d.name.toLowerCase()} (${pct(x.ratio)})`).join(', ');
+    const note = low
+      ? `Demand has stayed low — cut ${period === 'month' ? 'monthly' : 'weekly'} ${c.label.toLowerCase()} purchases by about ${Math.round((1 - c.avg) * 55)}% and work down what’s already in the store before reordering more.`
+      : high ? `Comes back empty most days. No sign of leftover stock piling up.`
+      : `Close to what the standard plan assumes — no change needed yet.`;
+    return `<div class="kx-li">${tone ? `<span class="kx-tag ${tone}">${verb}</span>` : `<span class="kx-tag" style="background:var(--fill);color:var(--label2)">${verb}</span>`}<div><b>${esc(c.label)} · ${pct(c.avg)} eaten of what’s served</b><span>${esc(names)}. ${esc(note)}</span></div></div>`;
+  }).join('')}</div>`)}
+
+  ${card('Shopping list', `${g.days} day${g.days === 1 ? '' : 's'} ahead, minus what’s already in stock · tap an ingredient to compare vendors`, `<div class="kx-list">${g.rows.map(r => {
+    const open = ui.grocery.expanded === r.ing, picked = ui.grocery.vendor[vendorKey(loc, r.ing)];
+    const row = `<div class="kx-buy clickable${open ? ' open' : ''}" data-vendor-toggle="${esc(r.ing)}" role="button" tabindex="0" aria-expanded="${open}">
+      <span class="kx-buy-n">${IC.chev}<span class="kx-buy-n-text">${esc(r.ing)}${r.tags.includes('veg') ? ' 🥬' : ''}</span>${picked ? `<em class="pill" style="font-size:10px;padding:1px 7px" title="${esc(picked)}">${esc(picked.split(' ')[0])}</em>` : ''}</span>
+      <span class="kx-buy-bar"><i class="need" style="width:${(r.periodKg / maxKg * 100).toFixed(1)}%"></i><i class="stock" style="width:${(Math.min(r.inv, r.periodKg) / maxKg * 100).toFixed(1)}%"></i></span><b>${r.order > 0 ? fmt1(r.order) + ' kg' : 'Skip'}</b><em>${r.order > 0 ? money(r.cost) : 'enough in stock'}</em></div>`;
+    return open ? row + vendorPanel(loc, r.ing, r.basePrice) : row;
+  }).join('')}</div>
+    <div class="kx-key"><span><i class="stock"></i>In stock</span><span><i class="need"></i>Needed for the ${period}</span></div>
+    <div class="kx-total"><span>Total</span><b>${money(g.orderTotal)}</b></div>
+    <p class="kx-note">Low-demand ingredients (🥬) are scaled down with the dish, not just flagged — so a slow run for vegetables means a smaller order, automatically. Pick a vendor on any line and its quote replaces the baked-in price above.</p>`)}
+
+  ${card('Demand over time', `${esc(prof.label)} · average eaten per food group`, `
+    <div class="kx-seg" id="grange" style="width:170px;margin-bottom:12px">${[['12w', '12 weeks'], ['12m', '12 months']].map(([k, l]) => `<button data-r="${k}" aria-pressed="${range === k}">${l}</button>`).join('')}</div>
+    ${trendChart(loc, g.categories, range)}`)}`;
+}
+/** A small multi-line chart, one line per food group, so a buyer can see a vegetable (or any
+    other) slump as a trend rather than a single day's number. */
+function trendChart(loc, categories, range) {
+  const W = 640, H = 220, l = 34, r2 = 14, t = 12, b = 22, iw = W - l - r2, ih = H - t - b, n = 12;
+  const X = i => l + i / (n - 1) * iw, Y = v => t + ih - clamp(v, 0, 1) * ih;
+  const colors = [GREEN, ORANGE, BLUE, RED, CYAN, PURPLE, GREY];
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Average eaten per food group over time">`;
+  [0, .25, .5, .75, 1].forEach(v => { s += `<line class="gridline" x1="${l}" x2="${W - r2}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${l - 6}" y="${Y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`; });
+  const series = categories.map((c, i) => ({ c, color: colors[i % colors.length], vals: trendSeries(loc, c.tag, c.avg, range) }));
+  series.forEach(({ vals, color }) => { const d = vals.map((v, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(v).toFixed(1)}`).join(' '); s += `<path d="${d}" fill="none" stroke="${color}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round"/><circle cx="${X(n - 1).toFixed(1)}" cy="${Y(vals[n - 1]).toFixed(1)}" r="3" fill="${color}"/>`; });
+  const label = range === '12w' ? i => `W-${11 - i}` : i => i === 11 ? 'Now' : `M-${11 - i}`;
+  [0, 5, 11].forEach(i => s += `<text class="axis" x="${X(i)}" y="${H - 4}" text-anchor="${i === 0 ? 'start' : i === 11 ? 'end' : 'middle'}">${label(i)}</text>`);
+  s += '</svg>';
+  const key = series.map(({ c, color }) => `<span><i style="background:${color}"></i>${esc(c.label)}</span>`).join('');
+  return `${s}<div class="kx-key">${key}</div>`;
+}
+/** The vendor carousel that drops open under a tapped ingredient row. */
+function vendorPanel(loc, ing, basePrice) {
+  const opts = vendorOptions(ing, basePrice), sel = ui.grocery.vendor[vendorKey(loc, ing)];
+  return `<div class="kx-vendors"><div class="kx-vendors-track">${opts.map(o => `
+    <div class="kx-vendor-card${sel === o.name ? ' sel' : ''}">
+      <div class="kx-vendor-top"><b>${esc(o.name)}</b>${o.current ? '<span class="pill">Current</span>' : ''}</div>
+      <div class="kx-vendor-price">${money(o.price)}<span>/kg</span></div>
+      <div class="kx-vendor-row"><span class="kx-dot ${o.availTone}"></span>${esc(o.avail)}</div>
+      <div class="kx-vendor-row">${IC.truck}${esc(o.speed)}</div>
+      <div class="kx-vendor-row">★ ${o.rating} · MOQ ${o.moq} kg</div>
+      <div class="kx-vendor-badges">${o.cheapest ? '<span class="pill green">Cheapest</span>' : ''}${o.fastest ? '<span class="pill">Fastest</span>' : ''}</div>
+      <button class="kx-btn small${sel === o.name ? ' prim' : ''}" data-vendor-pick="${esc(o.name)}" data-vendor-ing="${esc(ing)}" type="button">${sel === o.name ? 'Selected' : 'Choose vendor'}</button>
+    </div>`).join('')}</div></div>`;
 }
 
 /* ================================================================ Waste: what comes back, dish by dish */
@@ -3574,7 +3814,7 @@ function nutrition() {
 const EF_FOOD = { rice: 2.7, chicken: 6.1, kailan: 1.2, cabbage: .6, melon: .5, soup: 1.8 };
 const EF_DISPOSAL = .58;
 const OPS = [['Electricity', 'kitchen, fridges, dishwashers', 9800, 'kWh', .41], ['Cooking gas', 'stoves and steamers', 1450, 'm³', 2.2], ['Water', 'cooking and washing', 310, 'm³', .34], ['Deliveries', '22 supplier trips', 396, 'truck-km', .9]];
-const DAYS_PER_MONTH = 20, BEFORE = 1.18, GOAL = .12;
+const BEFORE = 1.18, GOAL = .12;
 const CARBON_TREND = [1.16, 1.12, 1.07, 1.05, 1.02, 1];
 function carbonData() {
   const w = PL.todayTotals().w, meals = ENROLLED * .97 * DAYS_PER_MONTH;
@@ -3683,6 +3923,39 @@ function wireOrder(scope) {
   const un = $('#unapprove', scope); if (un) un.onclick = () => { PL.S.order.approved = null; PL.store.save('order'); };
 }
 function refreshPlan() { const out = $('#plan-out'); if (!out) return; out.innerHTML = planOut(); wireOrder(out); }
+function refreshGrocery() { const out = $('#grocery-out'); if (!out) return; out.innerHTML = groceryOut(); wireGroceryOut(out); }
+/** Everything inside #grocery-out gets rebuilt on every change, so its controls are rewired each time. */
+function wireGroceryOut(scope) {
+  const gatt = $('#gatt', scope);
+  if (gatt) gatt.oninput = e => { ui.grocery.attFrac = +e.target.value / 100; refreshGrocery(); };
+  $$('.gmult', scope).forEach(s => s.oninput = e => { ui.grocery.overrides[e.target.dataset.tag] = +e.target.value / 100; ui.grocery.solve = null; refreshGrocery(); });
+  const greset = $('#greset', scope);
+  if (greset) greset.onclick = () => { ui.grocery.overrides = {}; ui.grocery.attFrac = .97; ui.grocery.solve = null; refreshGrocery(); };
+  const ssolve = $('#ssolve', scope);
+  if (ssolve) ssolve.onclick = () => {
+    const tag = $('#stag', scope).value, cost = +$('#scost', scope).value;
+    if (!cost || cost <= 0) return;
+    const { loc, period, attFrac, overrides } = ui.grocery;
+    const baseRatio = groceryCategories(loc, { ...overrides, [tag]: 1 }).find(c => c.tag === tag).avg;
+    const mult = solveTagMultiplier(loc, period, attFrac, overrides, tag, cost);
+    ui.grocery.overrides[tag] = mult;
+    ui.grocery.solve = { tag, targetCost: cost, baseRatio, impliedRatio: clamp(baseRatio * mult, 0, 2) };
+    refreshGrocery();
+  };
+  const gr = $('#grange', scope);
+  if (gr) $$('button', gr).forEach(b => b.onclick = () => { ui.grocery.range = b.dataset.r; $$('button', gr).forEach(x => x.setAttribute('aria-pressed', String(x === b))); refreshGrocery(); });
+  $$('[data-vendor-toggle]', scope).forEach(row => {
+    const toggle = () => { const ing = row.dataset.vendorToggle; ui.grocery.expanded = ui.grocery.expanded === ing ? null : ing; refreshGrocery(); };
+    row.onclick = toggle;
+    row.onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); } };
+  });
+  $$('[data-vendor-pick]', scope).forEach(b => b.onclick = e => {
+    e.stopPropagation();
+    const ing = b.dataset.vendorIng, name = b.dataset.vendorPick, key = vendorKey(ui.grocery.loc, ing);
+    ui.grocery.vendor[key] = ui.grocery.vendor[key] === name ? null : name;
+    refreshGrocery();
+  });
+}
 function wire(main) {
   const att = $('#att', main);
   if (att) {
@@ -3690,6 +3963,11 @@ function wire(main) {
     $$('#weather button', main).forEach(b => b.onclick = () => { ui.plan.weather = b.dataset.w; $$('#weather button', main).forEach(x => x.setAttribute('aria-pressed', String(x === b))); refreshPlan(); });
     $('#event', main).onchange = e => { ui.plan.event = e.target.value; refreshPlan(); };
   }
+  const gl = $('#gloc', main);
+  if (gl) $$('button', gl).forEach(b => b.onclick = () => { ui.grocery.loc = b.dataset.loc; ui.grocery.overrides = {}; ui.grocery.attFrac = .97; ui.grocery.solve = null; ui.grocery.expanded = null; $$('button', gl).forEach(x => x.setAttribute('aria-pressed', String(x === b))); refreshGrocery(); });
+  const gp = $('#gperiod', main);
+  if (gp) $$('button', gp).forEach(b => b.onclick = () => { ui.grocery.period = b.dataset.p; $$('button', gp).forEach(x => x.setAttribute('aria-pressed', String(x === b))); refreshGrocery(); });
+  if ($('#grocery-out', main)) wireGroceryOut(main);
   wireOrder(main);
   $$('[data-go]', main).forEach(b => b.onclick = () => go(b.dataset.go));
   $$('[data-todo]', main).forEach(b => b.onclick = () => {

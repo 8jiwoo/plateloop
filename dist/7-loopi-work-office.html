@@ -1570,6 +1570,34 @@ body:has(.kx){background:#000}
 .kx-seg button{flex:1;border:0;background:none;color:var(--label);font:500 13px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;padding:6px 8px;border-radius:7px;transition:background .2s}
 .kx-seg button[aria-pressed="true"]{background:#636366;box-shadow:0 2px 6px rgba(0,0,0,.3)}
 .kx-select{width:100%;height:34px;border:0;border-radius:9px;background:var(--fill);color:var(--label);font:500 13.5px -apple-system,BlinkMacSystemFont,"Inter",sans-serif;padding:0 10px}
+/* ---- grocery list */
+.kx-grid-sliders{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px 20px;margin:4px 0 14px}
+.kx-slider{display:flex;flex-direction:column;gap:4px}
+.kx-slider-t{display:flex;justify-content:space-between;align-items:baseline;gap:8px;font-size:13px}
+.kx-slider-t b{font-size:14px;font-weight:600;color:var(--label)}
+.kx-slider-t span{color:var(--label2);font-variant-numeric:tabular-nums}
+.kx-buy.clickable{cursor:pointer;border-radius:10px}
+.kx-buy.clickable .kx-buy-n{display:flex;align-items:center;gap:6px;white-space:normal}
+.kx-buy.clickable .kx-buy-n svg{width:12px;height:12px;flex:none;color:var(--label3);transition:transform .2s}
+.kx-buy.open .kx-buy-n svg{transform:rotate(90deg)}
+.kx-buy.clickable .kx-buy-n-text{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+.kx-buy.clickable .kx-buy-n .pill{flex:none}
+.kx-vendors{margin:2px 0 14px;padding:12px;background:var(--fill);border-radius:14px}
+.kx-vendors-track{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x proximity;padding-bottom:2px}
+.kx-vendor-card{scroll-snap-align:start;flex:none;width:180px;background:var(--bg2);border-radius:12px;padding:12px;display:flex;flex-direction:column;gap:7px;box-shadow:var(--shadow-s);border:1.5px solid transparent}
+.kx-vendor-card.sel{border-color:var(--blue)}
+.kx-vendor-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.kx-vendor-top b{font-size:13.5px;line-height:1.25}
+.kx-vendor-price{font-size:19px;font-weight:700;font-variant-numeric:tabular-nums}
+.kx-vendor-price span{font-size:12px;font-weight:500;color:var(--label2)}
+.kx-vendor-row{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--label2)}
+.kx-vendor-row svg{width:13px;height:13px;flex:none}
+.kx-dot{width:7px;height:7px;border-radius:50%;flex:none;background:var(--label3)}
+.kx-dot.ok{background:var(--tint)}.kx-dot.low{background:var(--orange)}.kx-dot.bad{background:var(--red)}
+.kx-vendor-badges{display:flex;flex-wrap:wrap;gap:5px;min-height:20px}
+.kx-vendor-badges .pill{padding:2px 8px;font-size:10.5px}
+.kx-vendor-card .kx-btn{margin-top:2px}
+.kx-vendors + .kx-buy{border-top:.5px solid var(--sep)}
 .kx-menu{display:grid;grid-template-columns:160px 1fr 92px;gap:14px;align-items:center;padding:10px 0}
 .kx-menu + .kx-menu{border-top:.5px solid var(--sep)}
 .kx-menu-t b{display:block;font-size:14.5px;font-weight:600}.kx-menu-t span{font-size:12px;color:var(--label3)}
