@@ -16,6 +16,13 @@ const TOMORROW = [
   { id: 'cucumber', name: 'Cucumber salad', std: 40, learned: 22, err: .10, tags: ['veg'], bom: [['Cucumber', 1.0, 2.2]] },
   { id: 'fruit', name: 'Papaya', std: 85, learned: 81, err: .03, tags: ['fruit'], bom: [['Papaya', 1.0, 2.0]] },
 ];
+/* share of trays that include each dish (from the before scans, last 4 weeks) */
+const TAKE = { kailan: .71, cabbage: .58, melon: .93, rice: .98, chicken: .96, soup: .84 };
+/* the last 20 school days: what the standard plan cooked, what the forecast said, and what was actually eaten (kg) */
+const TRACK = (() => { const r = rng(23); return Array.from({ length: 20 }, (_, i) => {
+  const actual = 505 + Math.sin(i * .9) * 26 + (r() - .5) * 30, err = (.17 - i * .006) * (r() < .5 ? -1 : 1) * (.6 + r() * .4);
+  return { day: i + 1, std: 651, actual, fc: actual * (1 + err) }; }); })();
+const FC_ERR = (first, last) => TRACK.slice(first, last).reduce((a, d) => a + Math.abs(d.fc - d.actual) / d.actual, 0) / (last - first);
 const INVENTORY = { 'Rice (raw)': 60, 'Onion': 8, 'Soy sauce': 10, 'Cooking oil': 15, 'Sesame oil': 2, 'Curry paste': 3 };
 const ENROLLED = 840;
 const MAPE = TOMORROW.reduce((a, d) => a + d.err, 0) / TOMORROW.length;
@@ -27,7 +34,7 @@ const SV = p => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stro
 const NAV = [
   ['overview', 'Overview', SV('<rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/>')],
   ['plan', 'Purchasing', SV('<path d="M3 4h2l2.5 11h11L21 8H6.2"/><circle cx="9" cy="19.5" r="1.5"/><circle cx="17" cy="19.5" r="1.5"/>')],
-  ['dishes', 'Waste', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
+  ['dishes', 'Dishes', SV('<path d="M4 20V10M10 20V4M16 20v-8M22 20H2"/>')],
   ['nutrition', 'Nutrition', SV('<path d="M12 21c-4.5-2.5-8-6-8-10a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 11c0 4-3.5 7.5-8 10Z"/>')],
   ['carbon', 'Carbon', SV('<path d="M7 18a4 4 0 0 1-.7-7.9A6 6 0 0 1 17.7 9 4.5 4.5 0 0 1 17 18Z"/><path d="M9.5 14.5h5"/>')],
   ['report', 'Reports', SV('<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h5"/>')],
@@ -158,6 +165,8 @@ function overview() {
   return `
   ${head('Friday 25 September', 'Overview')}
 
+  ${needHero(f)}
+
   ${todo.length ? `<section class="kx-group kx-todo" aria-label="To do">${todo.map(x => `<div class="kx-row"><span class="kx-ic" data-tone="${x.tone}">${x.icon}</span><div class="kx-row-t"><b>${x.t}</b><span>${x.s}</span></div>${x.btn ? `<button class="kx-btn ${x.tone === 'blue' ? 'prim' : ''}" data-todo="${x.id}" ${x.go ? `data-go="${x.go}"` : ''}>${x.btn}</button>` : ''}</div>`).join('')}</section>` : ''}
 
   <section class="kx-widgets">
@@ -166,6 +175,8 @@ function overview() {
     <div class="kx-w" style="--wc:var(--orange)"><div class="kx-w-h">${IC.bin}<span>Food wasted</span></div><div class="kx-w-n"><b data-live="waste">${fmt1(tot.lf / 1000)}</b><em>kg</em></div><div class="kx-w-f"><span>${money(tot.val)} of ingredients</span>${spark(wasteTrend, tot.w <= last[0])}</div></div>
     <div class="kx-w" style="--wc:#64D2FF"><div class="kx-w-h">${IC.cloud}<span>CO₂ avoided</span></div><div class="kx-w-n"><b data-live="co2">${fmt1(co2)}</b><em>kg</em></div><div class="kx-w-f"><span>vs the usual leftovers</span>${spark([7.1, 8.4, 8.0, 9.2, 10.1, 10.6, co2], true)}</div></div>
   </section>
+
+  ${loopStrip(trays, tot, f)}
 
   <section class="kx-duo">
     <div class="kx-card">
@@ -180,7 +191,7 @@ function overview() {
       <div class="kx-order-cta">${PL.S.order.approved ? `<span class="kx-ok">${IC.check}Approved at ${PL.S.order.approved.at}</span>` : `<button class="kx-btn prim wide" data-go="plan">Review and approve</button>`}</div>
     </div>
     <div class="kx-card">
-      <div class="kx-card-h"><div><h2>Left on trays</h2><p>Share of each dish that came back today</p></div><button class="kx-link" data-go="dishes">Waste${IC.chev}</button></div>
+      <div class="kx-card-h"><div><h2>Left on trays</h2><p>Share of each dish that came back today</p></div><button class="kx-link" data-go="dishes">Dishes${IC.chev}</button></div>
       <div class="kx-list">${stats.map(r => `<div class="kx-waste"><span class="kx-waste-n">${PL.V.food(r.d, 26)}${esc(SHORT[r.d.id])}</span><span class="kx-waste-bar"><i class="${r.e < .6 ? 'hi' : r.e < .8 ? 'mid' : 'lo'}" style="width:${((1 - r.e) * 100).toFixed(1)}%"></i></span><b data-live="w-${r.d.id}">${pct(1 - r.e)}</b></div>`).join('')}</div>
     </div>
   </section>
@@ -192,6 +203,72 @@ function overview() {
       <div class="kx-list">${ins.map(x => `<div class="kx-ins">${PL.V.food(x.d, 34)}<div><b>${esc(x.d.name)} · ${pct(x.e)} eaten</b><span>${esc(x.tip)}</span></div></div>`).join('')}</div>
     </div>
   </section>`;
+}
+
+/** The whole point, in one picture: what the standard plan thinks we need vs what people actually eat. */
+function needHero(f) {
+  const kgSaved = f.tStd - f.tNew, money0 = f.costStd - f.cost, co2 = kgSaved * PL.CO2_PER_KG, frac = f.tNew / f.tStd;
+  return `<section class="kx-need" aria-label="How much food do we need tomorrow?">
+    <div class="kx-need-q"><p class="kx-need-k">Tomorrow · Monday · ${f.att} diners expected</p>
+      <h2>How much food do we <s>think</s> we need?<br><span>How much do we <em>actually</em> need?</span></h2></div>
+    <div class="kx-need-bars">
+      <div class="kx-need-row"><span class="kx-need-l"><b>What we’d cook</b><small>standard portion × ${ENROLLED} enrolled</small></span><span class="kx-need-bar think"><i style="width:100%"></i></span><b class="kx-need-v">${fmt1(f.tStd)}<em>kg</em></b></div>
+      <div class="kx-need-row"><span class="kx-need-l"><b>What people eat</b><small>learned from four weeks of scanned trays</small></span><span class="kx-need-bar need"><i style="width:${(frac * 100).toFixed(1)}%"></i><s style="left:${(frac * 100).toFixed(1)}%"></s></span><b class="kx-need-v">${fmt1(f.tNew)}<em>kg</em></b></div>
+    </div>
+    <div class="kx-need-save">
+      <div><b>${fmt1(kgSaved)}<em>kg</em></b><span>less food cooked</span></div>
+      <div><b>${money(money0)}</b><span>less spent on ingredients</span></div>
+      <div><b>${Math.round(co2)}<em>kg</em></b><span>CO₂e avoided</span></div>
+      <button class="kx-btn prim" data-go="plan">${PL.S.order.approved ? 'See the order' : 'Review the order'}${IC.chev}</button>
+    </div>
+  </section>`;
+}
+/** Scanner → kitchen → person → food saved, with today's numbers. */
+function loopStrip(trays, tot, f) {
+  const savedKg = Math.max(0, (PL.SCHOOL_BASELINE - tot.w) * tot.sv / 1000), fed = PL.S.today.trays;
+  const steps = [
+    [IC.scan, 'The scanner collects', `${trays}`, 'trays scanned today'],
+    [IC.cart, 'The kitchen decides', `${fmt1(f.tStd - f.tNew)} kg`, 'less cooked tomorrow'],
+    [IC.leaf, 'People get feedback', `${fed}`, 'nutrition reports sent'],
+    [IC.check, 'Food is saved', `${fmt1(savedKg)} kg`, 'kept out of the bin today'],
+  ];
+  return `<section class="kx-loop" aria-label="The PlateLoop feedback loop">${steps.map(([ic, t, v, s2], i) => `<div class="kx-loop-s" style="--i:${i}"><span class="kx-loop-ic">${ic}</span><div><span>${t}</span><b>${v}</b><small>${s2}</small></div></div>${i < 3 ? '<i class="kx-loop-a" aria-hidden="true"></i>' : ''}`).join('')}<span class="kx-loop-back" aria-hidden="true">↺ and every meal makes the next plan better</span></section>`;
+}
+/** Popular vs finished: where each dish sits, and what that means for the menu. */
+function dishMap() {
+  const rows = dishStats();
+  const zone = r => r.e >= .75 ? (TAKE[r.d.id] >= .8 ? ['star', 'Keep it'] : ['niche', 'Promote it']) : (TAKE[r.d.id] >= .8 ? ['portion', 'Smaller portion'] : ['recipe', 'Rethink the recipe']);
+  const X = v => clamp((v - .55) / .5 * 100, 4, 94).toFixed(1), Y = v => clamp((e => (e - .45) / .6 * 100)(v), 6, 92).toFixed(1); // midlines = the 80% taken and 75% eaten thresholds
+  return card('Dish performance', 'How many people take each dish, and how much of it they finish · live from today’s scans', `
+    <div class="kx-map">
+      <div class="kx-q tl"><b>Promote it</b><span>finished, but few take it</span></div><div class="kx-q tr"><b>Stars</b><span>popular and finished</span></div>
+      <div class="kx-q bl"><b>Rethink the recipe</b><span>few take it, and it comes back</span></div><div class="kx-q br"><b>Portion too big</b><span>popular, but left behind</span></div>
+      ${rows.map(r => { const [z] = zone(r); return `<div class="kx-dot2 ${z}" style="left:${X(TAKE[r.d.id])}%;bottom:${Y(r.e)}%" title="${esc(r.d.name)}: taken by ${pct(TAKE[r.d.id])}, ${pct(r.e)} eaten">${PL.V.food(r.d, 34)}<em>${esc(SHORT[r.d.id])}</em></div>`; }).join('')}
+      <span class="kx-ax x">Taken by more people →</span><span class="kx-ax y">More of it eaten →</span>
+    </div>
+    <div class="kx-list">${[...rows].sort((a, b) => a.e - b.e).map(r => { const [z, act] = zone(r); return `<div class="kx-li"><span class="kx-tag ${z}">${act}</span><div><b>${esc(r.d.name)} · ${pct(r.e)} eaten · taken by ${pct(TAKE[r.d.id])}</b><span>${esc(TREND[r.d.id][2])}</span></div></div>`; }).join('')}</div>`);
+}
+/** Forecast vs reality: the standard plan never changes; the forecast learns. */
+function trackChart() {
+  const W = 640, H = 230, l = 40, r = 14, t = 12, b = 26, iw = W - l - r, ih = H - t - b, lo = 360, hi = 700;
+  const X = i => l + i / (TRACK.length - 1) * iw, Y = v => t + ih - (v - lo) / (hi - lo) * ih;
+  const path = k => TRACK.map((d, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)},${Y(d[k]).toFixed(1)}`).join(' ');
+  let g = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Standard plan, forecast and actual food eaten over 20 school days">`;
+  [400, 500, 600, 700].forEach(v => { g += `<line class="gridline" x1="${l}" x2="${W - r}" y1="${Y(v)}" y2="${Y(v)}"/><text class="axis" x="${l - 8}" y="${Y(v) + 4}" text-anchor="end">${v}</text>`; });
+  g += `<path d="${path('std')}" fill="none" stroke="#8E8E93" stroke-width="2" stroke-dasharray="6 6"/><text class="axis" x="${W - r}" y="${Y(651) - 8}" text-anchor="end">Standard plan</text>`;
+  g += `<path d="${path('actual')} L${X(19)},${Y(lo)} L${X(0)},${Y(lo)} Z" fill="rgba(48,209,88,.12)"/><path d="${path('actual')}" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linejoin="round"/>`;
+  g += `<path d="${path('fc')}" fill="none" stroke="var(--blue)" stroke-width="2.5" stroke-linejoin="round"/>`;
+  [0, 9, 19].forEach(i => g += `<text class="axis" x="${X(i)}" y="${H - 6}" text-anchor="${i === 0 ? 'start' : i === 19 ? 'end' : 'middle'}">Day ${i + 1}</text>`);
+  g += '</svg>';
+  const e1 = FC_ERR(0, 5), e2 = FC_ERR(15, 20), over = TRACK.reduce((a, d) => a + d.std - d.actual, 0);
+  return card('Forecast vs reality', 'Kg of food per day, last 20 school days', `${g}
+    <div class="kx-key"><span><i style="background:#8E8E93"></i>Standard plan (what we think)</span><span><i style="background:var(--blue)"></i>PlateLoop forecast</span><span><i style="background:var(--green)"></i>Actually eaten</span></div>
+    <div class="kx-order-sum" style="margin-top:14px">
+      <div><span>Forecast error, first week</span><b>${Math.round(e1 * 100)}%</b></div>
+      <div><span>Forecast error, this week</span><b class="good">${Math.round(e2 * 100)}%</b></div>
+      <div><span>Cooked but not needed (standard plan)</span><b>${Math.round(over)} kg</b></div>
+    </div>
+    <p class="kx-note">Every scanned tray teaches the forecast, so it gets closer to what people really eat. The standard plan never learns.</p>`);
 }
 
 function chartTrend() {
@@ -227,11 +304,14 @@ function plan() {
     <div class="kx-ctl"><div class="kx-ctl-t"><b>School calendar</b></div><select id="event" class="kx-select">${[['normal', 'Normal day'], ['trip', 'Sec 4 learning journey (−138)'], ['sports', 'Sports day']].map(([v, l]) => `<option value="${v}" ${p.event === v ? 'selected' : ''}>${l}</option>`).join('')}</select></div>
   </section>
   <div id="plan-out">${planOut()}</div>
+  <section class="kx-duo">
+  ${trackChart()}
   ${card('Recipe tweaks that cut waste', 'From four weeks of before and after scans', `<div class="kx-list">${[
     [GREEN, IC.leaf, 'Kailan with oyster sauce', 'Eaten 64% vs 52% plain in the class A/B test. Make it the default.'],
     [BLUE, IC.tray, 'Soup: 150 ml ladle, refills allowed', 'Cuts soup waste from 42% to 24% with no drop in satisfaction.'],
     [ORANGE, IC.bin, 'Cabbage: 25 g default portion', 'Most students leave 10–15 g of a 35 g serving.'],
-  ].map(([c, ic, t, s]) => `<div class="kx-li"><span class="kx-ic" style="--c:${c}">${ic}</span><div><b>${t}</b><span>${s}</span></div></div>`).join('')}</div>`)}`;
+  ].map(([c, ic, t, s]) => `<div class="kx-li"><span class="kx-ic" style="--c:${c}">${ic}</span><div><b>${t}</b><span>${s}</span></div></div>`).join('')}</div>`)}
+  </section>`;
 }
 function planOut() {
   const f = forecast(), saved = f.tStd - f.tNew, dollars = f.costStd - f.cost, ap = PL.S.order.approved;
@@ -258,13 +338,14 @@ function planOut() {
 function dishes() {
   const rows = dishStats(), mix = portionMix(), tot = PL.todayTotals(), maxKg = Math.max(...rows.map(r => r.served));
   const byWaste = [...rows].sort((a, b) => a.e - b.e);
-  return `${head('Today', 'Waste')}
+  return `${head('Today', 'Dishes')}
   <section class="kx-widgets">
     ${widget(IC.bin, ORANGE, 'Left on trays', fmt1(tot.lf / 1000), 'kg', `${money(tot.val)} of ingredients`)}
     ${widget(IC.spark, tot.w < PL.SCHOOL_BASELINE ? GREEN : ORANGE, 'Plate waste', Math.round(tot.w * 100), '%', `baseline ${pct(PL.SCHOOL_BASELINE)}`)}
     ${widget(IC.leaf, GREEN, 'Eaten', fmt1((tot.sv - tot.lf) / 1000), 'kg', `of ${fmt1(tot.sv / 1000)} kg served`)}
     ${widget(IC.check, CYAN, 'Clean trays', Math.round(PL.zeroRate() * 100), '%', `${T().zero} with zero leftovers`)}
   </section>
+  ${dishMap()}
   ${card('Served, eaten and left', 'Before scans against after scans, today', `<div class="kx-list">${byWaste.map(r => { const [, tr] = TREND[r.d.id];
     return `<div class="kx-dish"><span class="kx-dish-n">${PL.V.food(r.d, 28)}<b>${esc(r.d.name)}</b></span>
       <span class="kx-stackbar" style="width:${(r.served / maxKg * 100).toFixed(1)}%"><i style="flex:${r.eaten};background:${GREEN}"></i><i style="flex:${r.left};background:${ORANGE}"></i></span>
@@ -275,8 +356,7 @@ function dishes() {
     ${card('Portion sizes', 'Measured by the before scan', `<div class="kx-mix">${['S', 'M', 'L'].map((q, i) => `<i style="flex:${mix.m[q]};background:${[CYAN, GREEN, ORANGE][i]}"></i>`).join('')}</div>
       <div class="kx-list">${['S', 'M', 'L'].map((q, i) => `<div class="kx-li"><span class="kx-dot" style="background:${[CYAN, GREEN, ORANGE][i]}"></span><div><b>${{ S: 'Small', M: 'Regular', L: 'Large' }[q]}</b></div><em>${pct(mix.m[q] / mix.tot)}</em></div>`).join('')}</div>
       <p class="kx-note">People who take Small leave about half as much as those who take Large.</p>`)}
-  </section>
-  ${card('What to change', 'One suggestion per dish, least finished first', `<div class="kx-list">${byWaste.map(r => `<div class="kx-li">${PL.V.food(r.d, 30)}<div><b>${esc(r.d.name)}</b><span>${esc(TREND[r.d.id][2])}</span></div><em>${pct(r.e)}</em></div>`).join('')}</div>`)}`;
+  </section>`;
 }
 
 /* ================================================================ Nutrition: what people ate, against the lunch target */
