@@ -4,246 +4,335 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PlateLoop</title>
-<meta name="description" content="An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions.">
+<meta name="description" content="An AI tray scanner that measures what is served, eaten and left, so canteens cook the right amount, cut food waste and cost, and track their carbon. Apps for schools, hospitals and offices.">
+<meta property="og:title" content="PlateLoop: know what's eaten, waste less">
+<meta property="og:description" content="An AI tray scanner and four apps that cut canteen food waste. EcoLoop hackathon, Singapore.">
+<meta property="og:image" content="https://8jiwoo.github.io/plateloop/docs/banner.jpg">
+<meta name="theme-color" content="#030504">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">
 <style>
-:root{--bg:#F5F5F7;--card:#FFFFFF;--label:#1D1D1F;--label2:#6E6E73;--sep:rgba(60,60,67,.13);--tint:#34C759;--tint-ink:#248A3D;--blue:#0066CC;--orange:#C45D00;
-  --font:-apple-system,BlinkMacSystemFont,"SF Pro Text","Inter","Segoe UI",system-ui,sans-serif;color-scheme:light}
-@media (prefers-color-scheme:dark){:root{--bg:#000;--card:#1C1C1E;--label:#F5F5F7;--label2:#AEAEB2;--sep:rgba(84,84,88,.6);--tint:#30D158;--tint-ink:#30D158;--blue:#2997FF;--orange:#FF9F0A;color-scheme:dark}}
+:root{--g:#30D158;--g2:#1E9E4A;--gs:rgba(48,209,88,.14);--ink:#F5F5F7;--ink2:#AEB3B8;--ink3:#7A7F85;--card:#0F1311;--card2:#151A17;--line:rgba(255,255,255,.08);--blue:#0A84FF;--indigo:#7D7AFF;--orange:#FF9F0A;--font:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;color-scheme:dark}
 *{box-sizing:border-box}
-body{margin:0;background:var(--bg);color:var(--label);font:17px/1.47 var(--font);letter-spacing:-.01em;-webkit-font-smoothing:antialiased}
-main{max-width:980px;margin:0 auto;padding:64px 16px 48px}
-h1{font-size:clamp(40px,7vw,64px);line-height:1.05;letter-spacing:-.03em;margin:0}
-.lede{font-size:clamp(19px,2.4vw,24px);color:var(--label2);max-width:760px;margin:14px 0 0;line-height:1.35}
-h2{font-size:clamp(26px,3.6vw,34px);letter-spacing:-.025em;margin:64px 0 8px;line-height:1.15}
-.sub{color:var(--label2);max-width:720px;margin:0 0 20px}
-.grid2,.grid3{display:grid;gap:14px}
-.grid2{grid-template-columns:repeat(2,minmax(0,1fr))}
-.grid3{grid-template-columns:repeat(3,minmax(0,1fr))}
-.card{background:var(--card);border-radius:20px;padding:22px}
-.card b{display:block;font-size:18px;letter-spacing:-.015em;margin-bottom:4px}
-.card p{margin:0;color:var(--label2);font-size:15px}
-.big{font-size:40px;font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:8px;color:var(--tint-ink)}
-.big.warn{color:var(--orange)}
-.app{display:flex;flex-direction:column;gap:6px;text-decoration:none;color:inherit;transition:transform .15s}
-.app:hover{transform:translateY(-2px)}
-.tag{font-size:12.5px;font-weight:600;color:var(--tint-ink)}
-.app h3{font-size:22px;letter-spacing:-.02em;margin:0}
-.app span{margin-top:auto;padding-top:10px;color:var(--blue);font-size:15px;font-weight:500}
-.soon{border:1.5px dashed var(--sep);background:transparent}
-ol{margin:0;padding-left:22px;color:var(--label2)}
-ol li{margin:6px 0}
-ol b{color:var(--label)}
-.all{display:inline-block;margin-top:18px;background:var(--tint);color:#fff;text-decoration:none;font-weight:600;padding:12px 22px;border-radius:999px}
-footer{margin-top:64px;padding-top:18px;border-top:.5px solid var(--sep);font-size:13px;color:var(--label2)}
-.hero{display:grid;grid-template-columns:1.1fr .9fr;gap:24px;align-items:center}
-.hero-art{position:relative;border-radius:28px;background:radial-gradient(120% 90% at 70% 30%,#EAF7EA,#F5F5F7 70%);aspect-ratio:1.1;overflow:hidden}
-.hero-art img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:62% 40%}
-.hero-art .loopi{position:absolute;left:4%;bottom:4%;filter:drop-shadow(0 8px 16px rgba(0,0,0,.12))}
-.icon-big{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;margin-bottom:12px;background:color-mix(in srgb,var(--c) 14%,transparent);color:var(--c)}
-.icon-big svg{width:28px;height:28px}
-.who{display:flex;align-items:flex-end;justify-content:center;height:108px;margin:-22px -22px 14px;border-radius:20px 20px 0 0;background:var(--band)}
-.who .loopi{margin-bottom:-6px}
-.loopi .lp-body{animation:lpbob 3.2s ease-in-out infinite;transform-origin:60px 120px}
-.loopi .lp-eye{animation:lpblink 5.5s infinite;transform-box:fill-box;transform-origin:center}
-.loopi .lp-wave{animation:lpwave 1.1s ease-in-out infinite;transform-box:fill-box;transform-origin:0% 100%}
-@keyframes lpbob{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
-@keyframes lpblink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
-@keyframes lpwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
-@media (prefers-reduced-motion:reduce){.loopi *{animation:none!important}}
-@media (max-width:760px){.hero{grid-template-columns:1fr}}
-@media (prefers-color-scheme:dark){.hero-art{background:radial-gradient(120% 90% at 70% 30%,#16301B,#111 70%)}}
-.card.game{display:block;margin-bottom:18px;background:#12161C;color:#fff}.card.game .tag{color:#FFD60A}.card.game p{color:#B8BEC6}
-@media (max-width:760px){main{padding-top:40px}.grid2,.grid3{grid-template-columns:1fr}}
-/* how it works: the system as a flow, left to right (top to bottom on phones) */
-.flow{display:grid;grid-template-columns:1fr 44px 1fr 78px 1fr 44px 1fr;align-items:stretch;margin-top:8px}
-.fcol{display:flex;flex-direction:column;gap:8px}
-.fcol h4{margin:0 0 2px;font-size:12.5px;font-weight:600;color:var(--label2);text-transform:uppercase;letter-spacing:.05em}
-.node{background:var(--card);border-radius:14px;padding:11px 13px;font-weight:600;font-size:15px;line-height:1.25;box-shadow:0 0 0 .5px var(--sep)}
-.node small{display:block;font-weight:400;font-size:12.5px;color:var(--label2);margin-top:2px}
-.node.core{background:var(--tint);color:#fff}.node.core small{color:rgba(255,255,255,.88)}
-.farrow{position:relative;display:flex;align-items:center;justify-content:center}
-.farrow::before{content:"";position:absolute;left:6px;right:6px;top:50%;height:3px;margin-top:-1.5px;border-radius:3px;background:radial-gradient(circle,var(--tint) 1.4px,transparent 1.6px) 0 50%/9px 3px repeat-x;animation:flowx 1s linear infinite}
-.farrow::after{content:"";position:absolute;right:2px;top:50%;margin-top:-5px;border:5px solid transparent;border-left:7px solid var(--tint)}
-.farrow span{position:relative;top:-26px;font-size:11px;white-space:nowrap;color:var(--label2);text-align:center;line-height:1.2;background:var(--bg);padding:0 2px}
-@keyframes flowx{to{background-position:9px 50%}}
-.equation{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:10px 16px;margin:22px 0 0;font-weight:700;font-size:clamp(18px,2.6vw,24px)}
-.equation .eq{background:var(--card);border-radius:14px;padding:10px 16px;box-shadow:0 0 0 .5px var(--sep)}
-.equation .eq small{display:block;font-size:12px;font-weight:500;color:var(--label2)}
-.equation .res{background:var(--tint);color:#fff}.equation .res small{color:rgba(255,255,255,.85)}
-/* one tray's journey */
-.journey{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(6,1fr);gap:10px;position:relative;counter-reset:j}
-.journey::before{content:"";position:absolute;left:8%;right:8%;top:21px;height:3px;background:var(--sep);border-radius:3px}
-.journey::after{content:"";position:absolute;left:8%;top:21px;height:3px;width:0;background:var(--tint);border-radius:3px;transition:width 2.2s cubic-bezier(.3,.7,.2,1) .2s}
-.journey.in::after{width:84%}
-.journey li{position:relative;text-align:center;font-size:14px;color:var(--label2);line-height:1.35}
-.journey li::before{counter-increment:j;content:counter(j);display:grid;place-items:center;width:44px;height:44px;margin:0 auto 10px;border-radius:50%;background:var(--card);color:var(--label);font-weight:700;box-shadow:0 0 0 .5px var(--sep);position:relative;z-index:1;transition:background .3s,color .3s}
-.journey.in li::before{background:var(--tint);color:#fff}
-.journey li:nth-child(2)::before{transition-delay:.45s}.journey li:nth-child(3)::before{transition-delay:.8s}.journey li:nth-child(4)::before{transition-delay:1.15s}.journey li:nth-child(5)::before{transition-delay:1.5s}.journey li:nth-child(6)::before{transition-delay:1.85s}
-.journey.in li:first-child::before{transition-delay:.1s}
-.journey b{display:block;color:var(--label);font-size:15px}
-/* when things go wrong, privacy */
-.cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.case .tag{color:var(--orange)}
-.case .fix{margin-top:8px;font-size:14px;color:var(--tint-ink);font-weight:600}
-.priv .card b::before{content:"";display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--tint);margin-right:8px;vertical-align:2px}
-.cta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}
-.all.alt{background:var(--card);color:var(--label);box-shadow:0 0 0 .5px var(--sep)}
-/* scroll reveal */
-.rv{opacity:0;transform:translateY(22px);transition:opacity .7s cubic-bezier(.2,.8,.2,1),transform .7s cubic-bezier(.2,.8,.2,1)}
+html{scroll-behavior:smooth}
+body{margin:0;background:#030504;color:var(--ink);font-family:var(--font);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+img{max-width:100%}
+.wrap{max-width:1200px;margin:0 auto;padding:0 24px}
+section{padding:110px 0 0}
+.eyebrow{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--g)}
+h2{margin:12px 0 0;font-size:clamp(36px,5.2vw,64px);font-weight:900;letter-spacing:-.04em;line-height:1.02}
+h2 em{font-style:normal;color:var(--g)}
+.sub{margin:18px 0 0;max-width:720px;font-size:19px;line-height:1.55;color:var(--ink2)}
+.card{border-radius:26px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+
+/* nav */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;transition:background .3s,backdrop-filter .3s}
+nav.solid{background:rgba(3,5,4,.72);-webkit-backdrop-filter:blur(20px) saturate(1.6);backdrop-filter:blur(20px) saturate(1.6);box-shadow:0 1px 0 var(--line)}
+nav .wrap{display:flex;align-items:center;gap:26px;height:62px}
+.logo{display:flex;align-items:center;gap:10px;font-weight:900;font-size:20px;letter-spacing:-.03em;text-decoration:none}
+.logo .w span{color:var(--g)}.logo svg{width:30px;height:auto}
+nav .links{display:flex;gap:22px;margin-left:auto;font-size:14px;font-weight:600}
+nav .links a{text-decoration:none;color:var(--ink2)}nav .links a:hover{color:var(--ink)}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 22px;border-radius:99px;font-weight:700;font-size:15px;text-decoration:none;transition:transform .2s cubic-bezier(.3,1.6,.5,1),background .2s;border:0;cursor:pointer;font-family:inherit}
+.btn:active{transform:scale(.96)}
+.btn.primary{background:var(--g);color:#03200E;box-shadow:0 14px 34px -14px var(--g)}
+.btn.primary:hover{background:#4ADE6E}
+.btn.ghost{background:rgba(255,255,255,.08);color:var(--ink);box-shadow:inset 0 0 0 1px rgba(255,255,255,.12)}
+.btn.ghost:hover{background:rgba(255,255,255,.14)}
+nav .btn{padding:9px 16px;font-size:14px}
+
+/* hero */
+.hero{position:relative;min-height:100vh;display:flex;align-items:center;padding:110px 0 70px;overflow:hidden;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:-20% -10% auto;height:120%;z-index:-1;background:radial-gradient(40% 45% at 72% 42%,rgba(48,209,88,.30),transparent 70%),radial-gradient(35% 40% at 12% 80%,rgba(10,132,255,.10),transparent 70%)}
+.hero .wrap{display:grid;grid-template-columns:1.05fr .95fr;gap:40px;align-items:center}
+.hero h1{margin:0;font-size:clamp(64px,10vw,132px);font-weight:900;letter-spacing:-.06em;line-height:.88}
+.hero h1 span{color:var(--g)}
+.hero .tag{margin:20px 0 0;font-size:clamp(26px,3.4vw,40px);font-weight:800;letter-spacing:-.03em}
+.hero .tag em{font-style:normal;color:var(--g);white-space:nowrap}
+.hero .lede{margin:20px 0 0;max-width:560px;font-size:19px;line-height:1.55;color:var(--ink2)}
+.hero .cta{display:flex;flex-wrap:wrap;gap:12px;margin-top:32px}
+.hero-art{position:relative}
+.hero-art .render{border-radius:34px;overflow:hidden;background:#F2F3F2;box-shadow:0 50px 100px -40px rgba(0,0,0,.9),0 0 0 1px rgba(48,209,88,.35);aspect-ratio:1.16;animation:floaty 7s ease-in-out infinite}
+.hero-art .render img{display:block;width:100%;height:100%;object-fit:cover;object-position:46% 60%}
+.hero-art .mascot{position:absolute;left:-34px;bottom:-30px;width:150px;filter:drop-shadow(0 20px 30px rgba(0,0,0,.5));animation:bob 2.6s ease-in-out infinite}
+.hero-art .mascot svg{width:100%;height:auto}
+.hero-art .badge{position:absolute;right:-14px;top:30px;padding:12px 16px;border-radius:18px;background:rgba(15,19,17,.86);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);box-shadow:inset 0 0 0 1px var(--line),0 20px 40px -20px #000;font-size:13px;font-weight:700;animation:floaty 6s ease-in-out -2s infinite}
+.hero-art .badge b{display:block;font-size:26px;font-weight:900;letter-spacing:-.03em;color:var(--g)}
+@keyframes floaty{50%{transform:translateY(-10px)}}
+@keyframes bob{50%{transform:translateY(-12px) rotate(-3deg)}}
+.scroll{position:absolute;left:50%;bottom:24px;transform:translateX(-50%);font-size:12px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3)}
+
+/* video */
+.video{margin-top:34px;border-radius:30px;overflow:hidden;box-shadow:0 0 0 1px var(--line),0 60px 120px -50px rgba(48,209,88,.45);background:#000}
+.video video{display:block;width:100%;height:auto;aspect-ratio:16/9}
+
+/* stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.stat{padding:30px 30px 28px;background:linear-gradient(160deg,rgba(48,209,88,.13),rgba(48,209,88,.02) 60%),var(--card)}
+.stat b{display:block;font-size:clamp(46px,6vw,72px);font-weight:900;letter-spacing:-.05em;line-height:1;color:var(--g)}
+.stat p{margin:12px 0 0;font-size:16px;line-height:1.45;color:var(--ink2)}
+.stat p strong{color:var(--ink)}
+.src{margin-top:14px;font-size:12.5px;color:var(--ink3)}
+
+/* equation + journey */
+.eq{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin-top:40px}
+.eq div{padding:20px 26px;border-radius:24px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);text-align:center;min-width:150px}
+.eq b{display:block;font-size:clamp(40px,5vw,60px);font-weight:900;letter-spacing:-.04em;line-height:1}
+.eq b small{font-size:.5em}
+.eq span{display:block;margin-top:6px;font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.eq i{font-style:normal;font-size:40px;font-weight:800;color:var(--ink3)}
+.eq .res{background:var(--g);box-shadow:0 20px 50px -20px var(--g)}.eq .res b,.eq .res span{color:#03200E}
+.steps{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;margin:34px 0 0;padding:0;list-style:none;counter-reset:s}
+.steps li{position:relative;padding:22px 18px;border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:14.5px;line-height:1.45;color:var(--ink2);counter-increment:s}
+.steps li::before{content:counter(s);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--gs);color:var(--g);font-weight:900;font-size:14px;margin-bottom:12px}
+.steps b{display:block;color:var(--ink);font-size:16px;margin-bottom:4px}
+
+/* system flow */
+.flow{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:40px}
+.fcol{padding:22px;border-radius:24px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);display:flex;flex-direction:column;gap:10px}
+.fcol h4{margin:0 0 4px;font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--g)}
+.node{padding:12px 14px;border-radius:14px;background:var(--card2);font-size:14.5px;font-weight:700}
+.node small{display:block;margin-top:3px;font-weight:500;font-size:12.5px;color:var(--ink3);line-height:1.4}
+.node.core{background:var(--gs);box-shadow:inset 0 0 0 1px rgba(48,209,88,.35)}
+
+/* apps */
+.apps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:40px}
+.app{position:relative;display:flex;flex-direction:column;overflow:hidden;text-decoration:none;transition:transform .35s cubic-bezier(.2,.8,.2,1),box-shadow .35s}
+.app:hover{transform:translateY(-6px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 55%,transparent),0 40px 80px -40px color-mix(in srgb,var(--c) 60%,transparent)}
+.app .shot{height:360px;display:flex;justify-content:center;align-items:flex-end;padding-top:26px;background:radial-gradient(60% 70% at 50% 85%,color-mix(in srgb,var(--c) 40%,transparent),transparent 70%)}
+.app .shot img{height:100%;width:auto;filter:drop-shadow(0 20px 30px rgba(0,0,0,.6));transition:transform .5s cubic-bezier(.2,.8,.2,1)}
+.app:hover .shot img{transform:translateY(-8px) scale(1.02)}
+.app .body{padding:22px 24px 24px}
+.app .who{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.app h3{margin:6px 0 0;font-size:28px;font-weight:900;letter-spacing:-.03em}
+.app p{margin:10px 0 0;font-size:15px;line-height:1.5;color:var(--ink2)}
+.app .go{display:inline-block;margin-top:14px;font-weight:700;font-size:14px;color:var(--c)}
+.app.wide{grid-column:span 3;display:grid;grid-template-columns:1.5fr 1fr;align-items:center}
+.app.wide .shot{height:auto;padding:26px 0 26px 26px;align-items:center}
+.app.wide .shot img{width:100%;height:auto;border-radius:16px;box-shadow:0 0 0 1px rgba(255,255,255,.1)}
+.app.wide .body{padding:30px}
+.more{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+.more a{display:grid;grid-template-columns:200px 1fr;gap:20px;align-items:center;padding:16px;text-decoration:none;transition:transform .3s}
+.more a:hover{transform:translateY(-4px)}
+.more img{width:100%;aspect-ratio:16/10;object-fit:cover;border-radius:16px}
+.more b{display:block;font-size:20px;font-weight:800;letter-spacing:-.02em}
+.more p{margin:6px 0 0;font-size:14px;line-height:1.45;color:var(--ink2)}
+
+/* research */
+.facts{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:40px}
+.fact{padding:28px}
+.fact .who{font-size:12px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--c)}
+.fact b{display:block;margin-top:10px;font-size:54px;font-weight:900;letter-spacing:-.045em;line-height:1;color:var(--c)}
+.fact p{margin:10px 0 0;font-size:15px;line-height:1.5;color:var(--ink2)}
+.fact ul{margin:16px 0 0;padding:16px 0 0;border-top:1px solid var(--line);list-style:none;display:flex;flex-direction:column;gap:8px}
+.fact li{font-size:14.5px;font-weight:600;padding-left:22px;position:relative}
+.fact li::before{content:"✓";position:absolute;left:0;color:var(--c);font-weight:900}
+
+/* cases + privacy */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:40px}
+.case{padding:24px}
+.case .k{font-size:12px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--orange)}
+.case b{display:block;margin-top:8px;font-size:18px}
+.case p{margin:8px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink2)}
+.case .fix{margin-top:12px;font-size:13px;font-weight:700;color:var(--g)}
+.case .fix::before{content:"✓ "}
+
+/* impact + business */
+.impact{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:40px}
+.impact div{padding:28px}
+.impact b{display:block;font-size:clamp(38px,4.6vw,56px);font-weight:900;letter-spacing:-.045em;line-height:1;color:var(--g)}
+.impact span{display:block;margin-top:10px;font-size:15px;color:var(--ink2)}
+.biz{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:16px}
+.biz div{padding:24px}.biz b{font-size:18px}.biz p{margin:8px 0 0;font-size:14.5px;line-height:1.5;color:var(--ink2)}
+
+/* demo + downloads */
+.demo{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:40px}
+.demo ol{margin:0;padding:28px 28px 28px 50px;font-size:15.5px;line-height:1.6;color:var(--ink2)}
+.demo ol li{margin-bottom:10px}.demo ol b{color:var(--ink)}
+.dl{display:flex;flex-direction:column;gap:12px}
+.dl a{display:flex;align-items:center;gap:16px;padding:18px 20px;text-decoration:none;transition:transform .25s}
+.dl a:hover{transform:translateX(4px)}
+.dl a i{flex:none;width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--gs);font-style:normal;font-size:22px}
+.dl a b{display:block;font-size:16.5px}.dl a span{display:block;font-size:13.5px;color:var(--ink3);margin-top:2px}
+footer{margin-top:110px;padding:40px 0 60px;border-top:1px solid var(--line);font-size:14px;color:var(--ink3)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:16px;justify-content:space-between}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1);transition-delay:var(--d,0s)}
 .rv.in{opacity:1;transform:none}
-.grid3 > .rv:nth-child(2),.cases > .rv:nth-child(2){transition-delay:.08s}.grid3 > .rv:nth-child(3),.cases > .rv:nth-child(3){transition-delay:.16s}
-.cases > .rv:nth-child(5){transition-delay:.08s}.cases > .rv:nth-child(6){transition-delay:.16s}
-@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.farrow::before{animation:none}.journey::after{transition:none}}
-@media (max-width:860px){
-  .flow{grid-template-columns:1fr}
-  .farrow{height:42px}
-  .farrow::before{left:50%;right:auto;top:4px;bottom:4px;width:3px;height:auto;margin:0 0 0 -1.5px;background:radial-gradient(circle,var(--tint) 1.4px,transparent 1.6px) 50% 0/3px 9px repeat-y;animation:flowy 1s linear infinite}
-  .farrow::after{right:auto;left:50%;top:auto;bottom:0;margin:0 0 0 -5px;border:5px solid transparent;border-top:7px solid var(--tint)}
-  .farrow span{top:0;left:30px;position:absolute;text-align:left}
-  .journey{grid-template-columns:1fr;gap:14px}
-  .journey::before,.journey::after{display:none}
-  .journey li{display:grid;grid-template-columns:44px 1fr;gap:12px;text-align:left;align-items:center}
-  .journey li::before{margin:0}
-  .cases{grid-template-columns:1fr}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.hero-art .render,.hero-art .mascot,.hero-art .badge{animation:none}}
+
+@media (max-width:960px){
+  .hero .wrap{grid-template-columns:1fr}.hero{min-height:auto;padding-top:100px}
+  .hero-art{max-width:560px;margin:20px auto 0}.hero-art .mascot{left:-6px;width:110px}.hero-art .badge{right:6px}
+  .stats,.facts,.apps,.cases,.biz{grid-template-columns:1fr}
+  .app.wide{grid-column:auto;grid-template-columns:1fr}.app.wide .shot{padding:20px 20px 0}
+  .flow,.impact{grid-template-columns:1fr 1fr}.steps{grid-template-columns:1fr 1fr}
+  .demo,.more{grid-template-columns:1fr}.more a{grid-template-columns:130px 1fr}
+  nav .links{display:none}nav .btn{margin-left:auto}
+  section{padding-top:80px}
 }
-@keyframes flowy{to{background-position:50% 9px}}
+@media (max-width:520px){.flow,.impact,.steps{grid-template-columns:1fr}.eq div{min-width:0;flex:1}.eq i{font-size:28px}}
 </style>
 </head>
 <body>
-<main>
-  <div class="hero">
-    <div>
-      <h1>PlateLoop</h1>
-      <p class="lede">Our AI food scanner automatically analyses the type and amount of food served, eaten and left, so cafeteria managers know what people actually like, order the right amount of ingredients, and waste less food and money.</p>
-    </div>
-    <div class="hero-art"><img src="apps/render_scanner_hero.png" alt="The PlateLoop Scanner"><svg class="loopi lp-wave" width="150" height="162" viewBox="0 0 120 130" role="img" aria-label="Loopi"> <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/> <g class="lp-body"> <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/> <path class="" d="M26 82q-9 7-10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/><path class="lp-wave" d="M94 76q13-6 14-22" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/> <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/> <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/> <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/> <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/> <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/> <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/> <g class="lp-eye"><ellipse cx="47" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="47" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="48.6" cy="65.6" r="1.4" fill="#fff"/></g><g class="lp-eye"><ellipse cx="73" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="73" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="74.6" cy="65.6" r="1.4" fill="#fff"/></g><path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/> </g></svg></div>
-  </div>
+<nav id="nav"><div class="wrap">
+  <a class="logo" href="#top"><svg class="loopi lp-happy" width="84" height="90.72" viewBox="0 0 120 130" role="img" aria-label="Loopi"> <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/> <g class="lp-body"> <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/> <path class="" d="M26 82q-9 7-10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/><path class="" d="M94 82q9 7 10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/> <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/> <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/> <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/> <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/> <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/> <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/> <g class="lp-eye"><ellipse cx="47" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="47" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="48.6" cy="65.6" r="1.4" fill="#fff"/></g><g class="lp-eye"><ellipse cx="73" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="73" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="74.6" cy="65.6" r="1.4" fill="#fff"/></g><path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/> </g></svg><span class="w">Plate<span>Loop</span></span></a>
+  <div class="links"><a href="#video">Video</a><a href="#how">How it works</a><a href="#apps">Apps</a><a href="#research">Research</a><a href="#impact">Impact</a><a href="pitch/">Pitch deck</a></div>
+  <a class="btn primary" href="#try">Try the demo</a>
+</div></nav>
 
-  <h2>The problem</h2>
-  <div class="grid3">
-    <div class="card rv"><div class="icon-big" style="--c:var(--orange)"><svg viewBox="0 0 36 36"><path d="M10 28a7 7 0 0 1-1-14 9 9 0 0 1 17-2 7 7 0 0 1 1 16Z" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linejoin="round"/></svg></div><div class="big warn">~9%</div><b>of current emissions</b><p>Food waste is one of the main culprits of global warming.</p></div>
-    <div class="card rv"><div class="icon-big" style="--c:var(--orange)"><svg viewBox="0 0 36 36"><path d="M6 26 13 18l6 5 11-12M22 11h8v8" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="big warn">Rising</div><b>food and material costs</b><p>Food prices go up every year, and strong regulations push operators to cut waste and cost at the same time.</p></div>
-    <div class="card rv"><div class="icon-big" style="--c:var(--orange)"><svg viewBox="0 0 36 36"><circle cx="18" cy="18" r="13" fill="none" stroke="currentColor" stroke-width="2.8"/><path d="M14 14a4 4 0 1 1 5 4c-1 .5-1 1.5-1 3M18 25v.5" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round"/></svg></div><div class="big warn">Guesswork</div><b>kitchens run on experience</b><p>Without consumption data, managers overproduce, and without preference data, plates come back full.</p></div>
+<header class="hero" id="top"><div class="wrap">
+  <div>
+    <div class="eyebrow">EcoLoop Hackathon · Singapore</div>
+    <h1 style="margin-top:14px">Plate<span>Loop</span></h1>
+    <p class="tag">Know what’s eaten. <em>Waste less.</em></p>
+    <p class="lede">An AI tray scanner that measures what is served, eaten and left, so canteens cook the right amount and cut waste, cost and carbon. And everyone who eats gets their own feedback, in an app made for schools, hospitals or offices.</p>
+    <div class="cta"><a class="btn primary" href="#video">▶ Watch the 3-minute video</a><a class="btn ghost" href="dist/1-plateloop-scanner-3d.html">Explore the scanner in 3D</a></div>
   </div>
-
-  <h2>What PlateLoop does</h2>
-  <p class="sub">Each person signs in with their face and scans their tray before and after the meal. The difference is exactly what they ate, dish by dish.</p>
-  <div class="grid3">
-    <div class="card rv"><div class="big">Up to 30%</div><b>lower food material cost</b><p>We predict future consumption, so the kitchen prepares and orders only what will be eaten.</p></div>
-    <div class="card rv"><div class="big">Up to 42%</div><b>less plate waste</b><p>Plate-waste data by dish shows what people leave, so managers can redesign the menu and adjust recipes.</p></div>
-    <div class="card rv"><div class="big">Live</div><b>greenhouse gas saved</b><p>Every tray shows how much CO₂ it saved, so people see their contribution and leave less.</p></div>
+  <div class="hero-art">
+    <div class="render"><img src="apps/render_scanner_hero.png" alt="The PlateLoop Scanner, a white tray scanner with an overhead camera, a screen and a food waste bin"></div>
+    <div class="mascot"><svg class="loopi lp-point" width="84" height="90.72" viewBox="0 0 120 130" role="img" aria-label="Loopi"> <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/> <g class="lp-body"> <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/> <path class="" d="M26 82q-9 7-10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/><path class="" d="M95 80q13-1 21-7" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/> <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/> <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/> <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/> <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/> <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/> <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/> <g class="lp-eye"><ellipse cx="47" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="49.2" cy="67.5" r="4" fill="#1F2A1D"/><circle cx="50.800000000000004" cy="65.5" r="1.4" fill="#fff"/></g><g class="lp-eye"><ellipse cx="73" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="75.2" cy="67.5" r="4" fill="#1F2A1D"/><circle cx="76.8" cy="65.5" r="1.4" fill="#fff"/></g><path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/> </g></svg></div>
+    <div class="badge"><b>525 g</b>eaten, dish by dish</div>
   </div>
+</div><div class="scroll">Scroll</div></header>
 
+<main class="wrap">
 
-  <h2>How it works</h2>
-  <p class="sub">Everything heavy happens on the scanner. Photos never leave it: only grams per dish and a tray number go to the cloud, where every app reads from the same numbers.</p>
-  <div class="flow rv">
-    <div class="fcol"><h4>Sensors</h4>
-      <div class="node">Face camera<small>turns a face into a match code, never a stored photo</small></div>
-      <div class="node">Depth camera<small>0.62 m above the tray: which food, and how much of it</small></div>
-      <div class="node">Load cell<small>weighs the tray to check the camera</small></div></div>
-    <div class="farrow" aria-hidden="true"></div>
-    <div class="fcol"><h4>On the scanner</h4>
-      <div class="node core">On-device AI<small>finds each dish and its grams in about 2 seconds</small></div>
-      <div class="node">Kiosk screen<small>shows the result straight away</small></div>
-      <div class="node">Offline queue<small>keeps scanning if Wi-Fi drops, syncs later</small></div></div>
-    <div class="farrow" aria-hidden="true"><span>grams per dish<br>tray number</span></div>
-    <div class="fcol"><h4>PlateLoop cloud</h4>
-      <div class="node core">Before − after = eaten<small>per person, per dish, per meal</small></div>
-      <div class="node">Forecasts<small>learned portions × attendance, weather, school events</small></div>
-      <div class="node">Nutrition and CO₂<small>against My Healthy Plate and the carbon ledger</small></div></div>
-    <div class="farrow" aria-hidden="true"></div>
-    <div class="fcol"><h4>Apps</h4>
-      <div class="node">Kitchen<small>waste by dish, plan and order, carbon</small></div>
-      <div class="node">Loopi<small>students</small></div>
-      <div class="node">Loopi Care<small>patients and nurses</small></div>
-      <div class="node">Loopi Work<small>office workers</small></div></div>
+<section id="video" style="padding-top:20px">
+  <div class="eyebrow rv">The whole idea in 3 minutes</div>
+  <h2 class="rv">See it <em>in action.</em></h2>
+  <div class="video rv"><video controls preload="metadata" playsinline poster="docs/banner.jpg" src="video/plateloop-explainer.mp4"></video></div>
+</section>
+
+<section>
+  <div class="eyebrow rv">The problem</div>
+  <h2 class="rv">Canteens cook by <em>guesswork.</em></h2>
+  <p class="sub rv">Bins get weighed, but a bin can’t tell you which dish came back or who didn’t eat. Without that, kitchens over-order, plates come back full, and the cycle repeats.</p>
+  <div class="stats">
+    <div class="card stat rv"><b>755,000 t</b><p>of food was thrown away in Singapore in 2023. <strong>Only about 18% was recycled.</strong></p></div>
+    <div class="card stat rv" style="--d:.08s"><b>28%</b><p>of the world’s food waste comes from <strong>food service</strong>: canteens, restaurants and caterers.</p></div>
+    <div class="card stat rv" style="--d:.16s"><b>8–10%</b><p>of global greenhouse gas emissions come from <strong>food that is lost or wasted.</strong></p></div>
   </div>
-  <div class="equation rv" aria-label="Served minus left equals eaten">
-    <span class="eq"><span class="count" data-to="620">620</span> g<small>served, scanned before</small></span><span>−</span>
-    <span class="eq"><span class="count" data-to="95">95</span> g<small>left, scanned after</small></span><span>=</span>
-    <span class="eq res"><span class="count" data-to="525">525</span> g<small>eaten, dish by dish</small></span>
-  </div>
+  <p class="src">Sources: NEA waste statistics 2023; UNEP Food Waste Index Report 2024.</p>
+</section>
 
-  <h2>One tray, one lunch</h2>
-  <p class="sub">Two scans of about two seconds each. Nobody types anything or carries a card.</p>
-  <ol class="journey rv">
-    <li><b>Serve</b>Take a tray and ask for more or less of each dish.</li>
-    <li><b>Scan before</b>Look at the camera, put the tray down. That's what you were served.</li>
-    <li><b>Eat</b>Sit with friends. Nothing to do.</li>
-    <li><b>Scan after</b>Same scanner. Now it sees what's left.</li>
-    <li><b>Scrape</b>Leftovers go into the food waste bin, which weighs them too.</li>
-    <li><b>Return</b>Tray on the rack. The apps update in seconds.</li>
+<section id="how">
+  <div class="eyebrow rv">How it works</div>
+  <h2 class="rv">One scanner. <em>Two scans.</em></h2>
+  <p class="sub rv">Look at the camera and put your tray down before you eat, then again after. The difference is exactly what you ate, dish by dish, in about two seconds. Nobody types anything or carries a card.</p>
+  <div class="eq rv"><div><b><span class="count" data-to="620">620</span><small>g</small></b><span>Served</span></div><i>−</i><div><b><span class="count" data-to="95">95</span><small>g</small></b><span>Left</span></div><i>=</i><div class="res"><b><span class="count" data-to="525">525</span><small>g</small></b><span>Eaten</span></div></div>
+  <ol class="steps">
+    <li class="rv"><b>Serve</b>Ask for more or less of each dish.</li>
+    <li class="rv" style="--d:.05s"><b>Scan before</b>Look at the camera, tray down.</li>
+    <li class="rv" style="--d:.1s"><b>Eat</b>Nothing to do. Take what you’ll finish.</li>
+    <li class="rv" style="--d:.15s"><b>Scan after</b>Same scanner sees what’s left.</li>
+    <li class="rv" style="--d:.2s"><b>Scrape</b>The food waste bin weighs scraps too.</li>
+    <li class="rv" style="--d:.25s"><b>Done</b>Every app updates in seconds.</li>
   </ol>
-
-  <h2>For the kitchen</h2>
-  <p class="sub">One scanner and one dashboard, including our integrated carbon management: emissions from food waste, ingredients and kitchen operations, reported toward carbon-neutral operation.</p>
-  <div class="grid3">
-    <a class="card rv app" href="dist/1-plateloop-scanner-3d.html"><div class="tag">Hardware and kiosk</div><h3>PlateLoop Prototype</h3><p>Explore the scanner in 3D, part by part, then try the working kiosk on its own screen.</p><span>Open</span></a>
-    <a class="card rv app" href="dist/1-plateloop-scanner-3d.html?kiosk"><div class="tag">On the scanner</div><h3>Try a scan</h3><p>Face sign-in, the before and after scans, nutrition and CO₂ saved, straight on the scanner's screen.</p><span>Open</span></a>
-    <a class="card rv app" href="dist/3-plateloop-kitchen.html"><div class="tag">For managers</div><h3>Kitchen</h3><p>Live scans, waste by dish, forecasts and orders, and the carbon dashboard.</p><span>Open</span></a>
+  <div class="flow">
+    <div class="fcol rv"><h4>Sensors</h4><div class="node">Face camera<small>a match code, never a stored photo</small></div><div class="node">Depth camera<small>0.62 m above the tray: which food, how much</small></div><div class="node">Weighing platform<small>checks the camera in real grams</small></div></div>
+    <div class="fcol rv" style="--d:.08s"><h4>On the scanner</h4><div class="node core">On-device AI<small>each dish and its grams in about 2 s</small></div><div class="node">Kiosk screen<small>shows the result straight away</small></div><div class="node">Offline queue<small>keeps scanning if Wi-Fi drops</small></div></div>
+    <div class="fcol rv" style="--d:.16s"><h4>PlateLoop cloud</h4><div class="node core">Served − left = eaten<small>per person, per dish, per meal</small></div><div class="node">Forecasts<small>attendance, weather, school events</small></div><div class="node">Nutrition and CO₂<small>My Healthy Plate and a carbon ledger</small></div></div>
+    <div class="fcol rv" style="--d:.24s"><h4>Apps</h4><div class="node">Kitchen<small>orders, waste by dish, carbon</small></div><div class="node">Loopi<small>students</small></div><div class="node">Loopi Care<small>patients and nurses</small></div><div class="node">Loopi Work<small>office workers</small></div></div>
   </div>
+</section>
 
-  <h2>For the people who eat</h2>
-  <p class="sub">Once they're paired by face, everyone gets their personal intake and nutrition from every meal, in an app made for them.</p>
-  <div class="grid3">
-    <a class="card rv app" href="dist/4-loopi-student-app.html"><div class="who" style="--band:#E7F6E6"><svg class="loopi lp-point" width="84" height="90.72" viewBox="0 0 120 130" role="img" aria-label="Loopi"> <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/> <g class="lp-body"> <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/> <path class="" d="M26 82q-9 7-10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/><path class="" d="M95 80q13-1 21-7" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/> <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/> <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/> <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/> <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/> <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/> <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/> <g class="lp-eye"><ellipse cx="47" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="49.2" cy="67.5" r="4" fill="#1F2A1D"/><circle cx="50.800000000000004" cy="65.5" r="1.4" fill="#fff"/></g><g class="lp-eye"><ellipse cx="73" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="75.2" cy="67.5" r="4" fill="#1F2A1D"/><circle cx="76.8" cy="65.5" r="1.4" fill="#fff"/></g><path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/> </g></svg></div><div class="tag">Secondary schools and universities</div><h3>Loopi</h3><p>A Tamagotchi fed by the lunch you really ate. Clean trays grow Loopi up, leftovers become crumbs to sweep, lunch shows as food groups, not calories, and classes race each week on waste.</p><span>Open</span></a>
-    <a class="card rv app" href="dist/5-loopi-care-hospital.html"><div class="who" style="--band:#E6F0FB"><svg class="loopi lp-calm" width="84" height="90.72" viewBox="0 0 120 130" role="img" aria-label="Loopi"> <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/> <g class="lp-body"> <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/> <path class="" d="M26 82q-9 7-10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/><path class="" d="M94 82q9 7 10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/> <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/> <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/> <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/> <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/> <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/> <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/> <g class="lp-eye"><ellipse cx="47" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="47" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="48.6" cy="65.6" r="1.4" fill="#fff"/></g><g class="lp-eye"><ellipse cx="73" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="73" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="74.6" cy="65.6" r="1.4" fill="#fff"/></g><path d="M52 82q8 5 16 0" fill="none" stroke="#1F2A1D" stroke-width="3" stroke-linecap="round"/> </g></svg></div><div class="tag">Hospitals</div><h3>Loopi Care</h3><p>Patients choose tomorrow's meals, say why they left food, and the nurse station sees it. Intake against each diet, and a weekly report.</p><span>Open</span></a>
-    <a class="card rv app" href="dist/7-loopi-work-office.html"><div class="who" style="--band:#ECEBFB"><svg class="loopi lp-happy" width="84" height="90.72" viewBox="0 0 120 130" role="img" aria-label="Loopi"> <ellipse cx="60" cy="124" rx="30" ry="4" fill="rgba(0,0,0,.08)"/> <g class="lp-body"> <ellipse cx="47" cy="119" rx="9" ry="5" fill="#4FA844"/><ellipse cx="73" cy="119" rx="9" ry="5" fill="#4FA844"/> <path class="" d="M26 82q-9 7-10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/><path class="" d="M94 82q9 7 10 16" fill="none" stroke="#6CC25C" stroke-width="8" stroke-linecap="round"/> <path d="M60 30c27 0 43 20 43 47s-17 42-43 42-43-15-43-42 16-47 43-47Z" fill="#8FDB7E"/> <path d="M18 84c5 21 21 35 42 35s37-14 42-35c-8 13-23 21-42 21s-34-8-42-21Z" fill="#76C866"/> <ellipse cx="60" cy="94" rx="21" ry="15" fill="#D6F5CB"/> <path d="M60 31c-1-7 0-12 2-16" fill="none" stroke="#3E9B4A" stroke-width="4" stroke-linecap="round"/> <path class="lp-leaf" d="M62 16c6-10 19-10 23-5-4 8-15 10-23 5Z" fill="#4DB35B"/><path d="M60 18c-6-8-17-8-21-3 4 7 14 8 21 3Z" fill="#62C76F"/> <circle cx="38" cy="78" r="6" fill="#FF9AA8" opacity=".55"/><circle cx="82" cy="78" r="6" fill="#FF9AA8" opacity=".55"/> <g class="lp-eye"><ellipse cx="47" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="47" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="48.6" cy="65.6" r="1.4" fill="#fff"/></g><g class="lp-eye"><ellipse cx="73" cy="66" rx="7" ry="8.5" fill="#fff"/><circle cx="73" cy="67.6" r="4" fill="#1F2A1D"/><circle cx="74.6" cy="65.6" r="1.4" fill="#fff"/></g><path d="M50 80q10 10 20 0" fill="none" stroke="#1F2A1D" stroke-width="3.2" stroke-linecap="round"/> </g></svg></div><div class="tag">Offices</div><h3>Loopi Work</h3><p>Set a goal, pre-order the daily pick and skip the queue, then a 3 pm energy check-in shows which lunches leave you flat.</p><span>Open</span></a>
+<section id="apps">
+  <div class="eyebrow rv">One scan, four apps</div>
+  <h2 class="rv">Built for <em>everyone at the table.</em></h2>
+  <p class="sub rv">Each app comes from research on the people who use it. Tap any one to open the live demo.</p>
+  <div class="apps">
+    <a class="card app wide rv" href="dist/3-plateloop-kitchen.html" style="--c:#30D158"><div class="shot"><img loading="lazy" src="video/shots/3-kitchen.jpg" alt="PlateLoop Kitchen dashboard"></div>
+      <div class="body"><div class="who">For canteen staff</div><h3>PlateLoop Kitchen</h3><p>Tomorrow’s order from real attendance, weather and events. What comes back, dish by dish. Nutrition against My Healthy Plate, and a carbon ledger ready for reporting.</p><span class="go">Open the dashboard →</span></div></a>
+    <a class="card app rv" href="dist/4-loopi-student-app.html" style="--c:#30D158"><div class="shot"><img loading="lazy" src="video/shots/4-loopi-lunch-phone.jpg" alt="Loopi app with the virtual pet"></div>
+      <div class="body"><div class="who">For students</div><h3>Loopi</h3><p>A virtual pet that only eats the lunch you really ate. Less waste keeps it healthy and levels it up. Food groups, not calories, plus challenges and a class race.</p><span class="go">Open Loopi →</span></div></a>
+    <a class="card app rv" href="dist/5-loopi-care-hospital.html" style="--c:#0A84FF;--d:.08s"><div class="shot"><img loading="lazy" src="video/shots/5-care-phone.jpg" alt="Loopi Care app"></div>
+      <div class="body"><div class="who">For hospitals</div><h3>Loopi Care</h3><p>Every meal measured, no food charts. Patients choose tomorrow’s meals, and after a poor meal the nurse sees the alert with their reason.</p><span class="go">Open Loopi Care →</span></div></a>
+    <a class="card app rv" href="dist/7-loopi-work-office.html" style="--c:#7D7AFF;--d:.16s"><div class="shot"><img loading="lazy" src="video/shots/7-work-phone.jpg" alt="Loopi Work app"></div>
+      <div class="body"><div class="who">For offices</div><h3>Loopi Work</h3><p>A health goal becomes a daily canteen pick. Pre-order to skip the queue, and a 3 pm check-in shows which lunches leave you flat. Private by default.</p><span class="go">Open Loopi Work →</span></div></a>
   </div>
-  <div class="card soon" style="margin-top:14px"><div class="tag">In development</div><b>Personal eating-habit app</b><p>For everyone (B2C): photograph a meal before and after eating to get full nutrient intake. Analysing eating habits is a long-unsolved problem in the healthcare business.</p></div>
+  <div class="more">
+    <a class="card rv" href="dist/1-plateloop-scanner-3d.html"><img loading="lazy" src="docs/screenshots/1-scanner-render.jpg" alt=""><div><b>PlateLoop Prototype</b><p>Turn the scanner in 3D, tap a part to see how it works, then try the working kiosk on its screen.</p></div></a>
+    <a class="card rv" href="dist/8-plateloop-lunch-rush-3d.html" style="--d:.08s"><img loading="lazy" src="video/shots/8-lunch-rush.jpg" alt=""><div><b>Lunch Rush</b><p>A first-person 3D game of one school lunch: take a tray, scan it, eat with friends, scrape and scan again.</p></div></a>
+  </div>
+</section>
 
+<section id="research">
+  <div class="eyebrow rv">Built from research</div>
+  <h2 class="rv">What each group <em>actually needs.</em></h2>
+  <p class="sub rv">We read the studies on students, patients and office workers, then turned each finding into a feature. <a href="https://github.com/8jiwoo/plateloop/blob/main/docs/research.md">Read the research and sources →</a></p>
+  <div class="facts">
+    <div class="card fact rv" style="--c:#30D158"><div class="who">Students</div><b>13.6%</b><p>of university students in Singapore eat enough fruit and vegetables, and calorie counting can harm teens.</p><ul><li>Food groups, not calories</li><li>Class race: −35% plate waste in studies</li><li>Right portion beats a clean plate</li></ul></div>
+    <div class="card fact rv" style="--c:#0A84FF;--d:.08s"><div class="who">Hospital patients</div><b>29%</b><p>of inpatients in a Singapore hospital were malnourished, and 93% of hand-filled food charts were incomplete.</p><ul><li>Every tray measured</li><li>Patients choose their meals</li><li>Alerts with the patient’s reason</li></ul></div>
+    <div class="card fact rv" style="--c:#7D7AFF;--d:.16s"><div class="who">Office workers</div><b>6 in 10</b><p>Singapore residents eat out for lunch or dinner, and carb-heavy lunches deepen the afternoon dip.</p><ul><li>Pre-order: +51% fruit in a trial</li><li>3 pm energy check-in</li><li>Private: teams, never names</li></ul></div>
+  </div>
+</section>
 
-  <h2>When something goes wrong</h2>
-  <p class="sub">A queue of hungry students can't wait for a stuck machine. Every step has a way out, and you can try each one in the Kiosk demo.</p>
+<section>
+  <div class="eyebrow rv">Tested until it broke</div>
+  <h2 class="rv">Every step has <em>a way out.</em></h2>
+  <p class="sub rv">A queue of hungry students can’t wait for a stuck machine. We walked through every step, found where it breaks, and fixed it. You can try each one in the kiosk demo.</p>
   <div class="cases">
-    <div class="card case rv"><div class="tag">Face not found</div><b>Mask, cap or backlight</b><p>“We couldn't find you.” Try again, or type a class and register number on the keypad.</p><div class="fix">Nothing is saved from a failed match</div></div>
-    <div class="card case rv"><div class="tag">Opted out</div><b>No face sign-in</b><p>Students can switch face sign-in off in the app. The scanner goes straight to the number keypad for them.</p><div class="fix">Their match code is deleted</div></div>
-    <div class="card case rv"><div class="tag">Hand on the tray</div><b>The weight keeps changing</b><p>The scale sees it's still moving and asks for hands off, then measures again by itself.</p><div class="fix">No wrong numbers get recorded</div></div>
-    <div class="card case rv"><div class="tag">Skipped the first scan</div><b>Only an after scan</b><p>A regular portion is used as the estimate, the result is marked “estimated”, and the student is told why.</p><div class="fix">The Kitchen can see which trays are estimates</div></div>
-    <div class="card case rv"><div class="tag">Trays still out</div><b>People forget to scan back</b><p>The Kitchen sees how many trays are missing their after scan and can put a reminder on the scanner screen.</p><div class="fix">One tap in the Kitchen's to-do list</div></div>
-    <div class="card case rv"><div class="tag">Wi-Fi drops</div><b>Offline</b><p>The AI runs on the scanner, so scanning never stops. Results wait in a queue and sync when the connection is back.</p><div class="fix">By design: no cloud needed to scan</div></div>
+    <div class="card case rv"><div class="k">Face not found</div><b>Mask, cap or backlight</b><p>“We couldn’t find you.” Try again, or type a class and register number.</p><div class="fix">Nothing saved from a failed match</div></div>
+    <div class="card case rv" style="--d:.05s"><div class="k">Opted out</div><b>No face sign-in</b><p>Students can switch it off in the app; the scanner goes straight to the keypad.</p><div class="fix">Their match code is deleted</div></div>
+    <div class="card case rv" style="--d:.1s"><div class="k">Hand on the tray</div><b>The weight keeps changing</b><p>The scale waits for hands off, then measures again by itself.</p><div class="fix">No wrong numbers recorded</div></div>
+    <div class="card case rv"><div class="k">Skipped a scan</div><b>Only an after scan</b><p>A regular portion is used as the estimate and marked “estimated”.</p><div class="fix">The Kitchen sees which trays</div></div>
+    <div class="card case rv" style="--d:.05s"><div class="k">Clean-plate pressure</div><b>“Finish everything”</b><p>Students are compared with their own usual; a small plate finished scores full marks.</p><div class="fix">No reward for overeating</div></div>
+    <div class="card case rv" style="--d:.1s"><div class="k">Privacy</div><b>“Is it filming me?”</b><p>Consent on day one. Only grams per dish and a tray number leave the scanner.</p><div class="fix">No photos ever leave</div></div>
   </div>
+</section>
 
-  <h2>Privacy by design</h2>
-  <div class="grid3 priv">
-    <div class="card rv"><b>No photos leave the scanner</b><p>Only grams per dish and a tray number are sent. Faces become a match code on the device.</p></div>
-    <div class="card rv"><b>Kitchens see trays, not names</b><p>Staff work with tray numbers. A form teacher or nurse sees names only where there's a care reason.</p></div>
-    <div class="card rv"><b>Consent on day one</b><p>Every app opens with what's recorded, who sees it and switches for face sign-in and leaderboard names.</p></div>
+<section id="impact">
+  <div class="eyebrow rv">Impact · one 800-meal school, a year</div>
+  <h2 class="rv">It <em>pays for itself.</em></h2>
+  <div class="impact">
+    <div class="card rv"><b>5.7 t</b><span>less food thrown away</span></div>
+    <div class="card rv" style="--d:.06s"><b>14.3 t</b><span>CO₂e avoided</span></div>
+    <div class="card rv" style="--d:.12s"><b>S$28.5k</b><span>of ingredients saved</span></div>
+    <div class="card rv" style="--d:.18s"><b>2.4 mo</b><span>to pay back a year</span></div>
   </div>
-
-  <h2>Business model</h2>
-  <div class="grid3">
-    <div class="card"><b>Monthly subscription</b><p>The scanner and the Kitchen dashboard, billed monthly.</p></div>
-    <div class="card"><b>Program fees</b><p>For the programs on top: Loopi, Loopi Care, Loopi Work and carbon management.</p></div>
-    <div class="card"><b>Pays for itself</b><p>Customers save on food production cost with our service.</p></div>
+  <p class="src">Illustrative: 190 school days, 25% of food wasted today, PlateLoop cuts 30% of it, S$2.50 of ingredients per meal, 2.5 kg CO₂e per kg of food. To be validated in a pilot. Try your own numbers on the <a href="pitch/#21">deck’s calculator</a>.</p>
+  <div class="biz">
+    <div class="card rv"><b>Monthly subscription</b><p>The scanner and Kitchen dashboard, billed monthly, so there’s no big upfront cost.</p></div>
+    <div class="card rv" style="--d:.06s"><b>Programs on top</b><p>Loopi, Loopi Care, Loopi Work and carbon management as add-ons.</p></div>
+    <div class="card rv" style="--d:.12s"><b>Partnerships</b><p>Food service companies bring many canteens at once.</p></div>
   </div>
-  <div class="grid2" style="margin-top:14px">
-    <div class="card"><b>Partnerships</b><p>With local and global food service companies, so one partner brings many cafeterias.</p></div>
-    <div class="card"><b>Awareness</b><p>Growing awareness of the project through social media and pilot schools.</p></div>
+</section>
+
+<section id="try">
+  <div class="eyebrow rv">Try it yourself</div>
+  <h2 class="rv">A whole lunch, <em>in four clicks.</em></h2>
+  <div class="demo">
+    <ol class="card rv">
+      <li>Open <b><a href="dist/1-plateloop-scanner-3d.html?kiosk">the kiosk</a></b>, pick Wei Ling and scan her tray before lunch, then after.</li>
+      <li>Open <b><a href="dist/4-loopi-student-app.html">Loopi</a></b> in another tab: her lunch is in Loopi’s bowl. Feed it, then sweep up what she left.</li>
+      <li>Open <b><a href="dist/3-plateloop-kitchen.html">Kitchen</a></b>: the tray is in the live numbers, and Purchasing plans tomorrow.</li>
+      <li>In <b>Loopi Care</b> or <b>Loopi Work</b>, scan a meal from the demo panel and watch the report change.</li>
+    </ol>
+    <div class="dl">
+      <a class="card rv" href="pitch/"><i>🎤</i><div><b>Pitch deck</b><span>25 slides with the apps running live inside</span></div></a>
+      <a class="card rv" href="poster/plateloop-poster-A1.pdf" style="--d:.05s"><i>🖼️</i><div><b>A1 poster</b><span>print-ready PDF</span></div></a>
+      <a class="card rv" href="video/plateloop-explainer.mp4" style="--d:.1s"><i>🎬</i><div><b>Explainer video</b><span>MP4, about 3 minutes</span></div></a>
+      <a class="card rv" href="https://github.com/8jiwoo/plateloop" style="--d:.15s"><i>💻</i><div><b>Source code</b><span>GitHub: every app is one HTML file</span></div></a>
+    </div>
   </div>
-
-  <h2>Try the demo</h2>
-  <a class="card app game" href="dist/8-plateloop-lunch-rush-3d.html"><div class="tag">3D game · first person</div><h3>Lunch Rush</h3><p>Spend a lunch break in a Singapore school canteen. Take a tray, tell Mrs Lim how much of each dish you want, and scan it at the real PlateLoop scanner, read up close. Then eat with your friends, scan again, scrape your leftovers into its food waste bin and return your tray. People talk to you, and the canteen is full of sound. Your tray shows up in the other apps too.</p><span>Play</span></a>
-  <ol>
-    <li>Play <b>Lunch Rush</b> to see a whole lunch from the student's eyes, or open <b>PlateLoop Prototype</b>, tap the screen's light and <b>Try the kiosk</b>: pick Wei Ling and let her walk up before lunch, then after.</li>
-    <li>Open <b>Loopi</b>: her lunch is in Loopi's bowl. Feed it, then sweep up the crumbs from what she left.</li>
-    <li>Open <b>Kitchen</b>: the tray is in the live feed, and <b>Carbon</b> shows the whole cafeteria's footprint.</li>
-    <li>Open <b>Loopi Care</b> or <b>Loopi Work</b> and scan a meal from the demo panel to see the healthcare report change. In Loopi Work, change the goal and watch the targets and the daily pick change with it.</li>
-  </ol>
-  <div class="cta-row"><a class="all" href="apps/">Open every app in one window</a><a class="all alt" href="pitch/">See the pitch deck</a></div>
-
-  <footer>A hackathon prototype for Singapore. Schools, people and demo numbers are fictional or illustrative.</footer>
+</section>
 </main>
 
+<footer><div class="wrap"><span>PlateLoop · EcoLoop Hackathon, Singapore</span><span>A prototype: schools, people and numbers are fictional or illustrative.</span></div></footer>
+
 <script>
-/* reveal sections as they scroll in, and count the equation up once */
 (() => {
-  const els = document.querySelectorAll('.rv');
-  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const nav = document.getElementById('nav');
+  const onScroll = () => nav.classList.toggle('solid', scrollY > 30);
+  addEventListener('scroll', onScroll, { passive: true }); onScroll();
+  const els = document.querySelectorAll('.rv'), reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const count = el => { const to = +el.dataset.to, t0 = performance.now(); const f = now => { const k = Math.min(1, (now - t0) / 900), e = 1 - Math.pow(1 - k, 3); el.textContent = Math.round(to * e); if (k < 1) requestAnimationFrame(f); }; requestAnimationFrame(f); };
   if (reduce || !('IntersectionObserver' in window)) { els.forEach(e => e.classList.add('in')); return; }
-  const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; e.target.classList.add('in'); e.target.querySelectorAll('.count').forEach(count); io.unobserve(e.target); }), { threshold: .18 });
+  const io = new IntersectionObserver(es => es.forEach(e => { if (!e.isIntersecting) return; e.target.classList.add('in'); e.target.querySelectorAll('.count').forEach(count); io.unobserve(e.target); }), { threshold: .15 });
   els.forEach(e => io.observe(e));
 })();
 </script>
