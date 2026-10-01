@@ -9,7 +9,7 @@ from openpyxl.chart.label import DataLabelList
 from openpyxl.chart.layout import Layout, ManualLayout
 from openpyxl.chart.shapes import GraphicalProperties
 from openpyxl.comments import Comment
-from openpyxl.formatting.rule import DataBarRule
+from openpyxl.formatting.rule import ColorScaleRule, DataBarRule
 from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
 from openpyxl.utils import get_column_letter
 from openpyxl.worksheet.table import Table, TableStyleInfo
@@ -188,6 +188,15 @@ MEANS = {
     'Office': 'shows the nutrients in each lunch, offers pre-ordering, and keeps meal data private by default.',
 }
 
+# headline number for each key finding, in the same order as findings_formulas(): (formula, format, bar scale)
+def headlines(A):
+    lb, sh = A[('S3', 'range')]
+    return [(f'=MAX({sh})', '0%', 1), (f"={A[('S7','Food groups')]}", '0%', 1), (f"={A[('S8','avg')]}", '0.0" /5"', 5),
+            (f"={A[('S10','agree')]}", '0%', 1), (f"={A[('K2','Past experience')]}+{A[('K2','Headcount × standard portion')]}", '0%', 1),
+            (f"={A[('K3','Average')]}/100", '0%', 1), (f"={A[('K7','agree')]}", '0%', 1), (f"={A[('H3','agree')]}", '0%', 1),
+            (f"={A[('H5','Same day')]}", '0%', 1), (f"={A[('H7','agree')]}", '0%', 1), (f"={A[('O5','Often')]}+{A[('O5','Daily')]}", '0%', 1),
+            (f"={A[('O6','Yes')]}", '0%', 1), (f"={A[('O8','Yes')]}", '0%', 1)]
+
 # ================================================================ workbook
 def build(groups, data, findings_fn, path, seed):
     wb = Workbook(); A = {}
@@ -196,17 +205,28 @@ def build(groups, data, findings_fn, path, seed):
     for G in groups:
         d = wb.create_sheet(G['sheet']); df = data[G['key']]; colour = THEME[G['key']][0]
         d.sheet_properties.tabColor = 'B9C0BB'
+        qtype = {x[0]: x[2] for x in G['qs']}
         for j, h in enumerate(df.columns, 1):
-            c = d.cell(1, j, h); c.font = F(10, True, 'FFFFFF'); c.alignment = CENTER
-            q = next((x[1] for x in G['qs'] if x[0] == h), 'Respondent ID'); c.comment = Comment(q, 'PlateLoop')
+            q = next((x for x in G['qs'] if x[0] == h), None)
+            label = 'ID' if q is None else f"{h}  {q[1]}" + ('  (1–5)' if q[2] == 'lik' else '')
+            c = d.cell(1, j, label); c.font = F(9.5, True, 'FFFFFF'); c.fill = fill(colour); c.alignment = Alignment(horizontal='left', vertical='top', wrap_text=True)
+            if q is not None and q[2] == 'lik': c.comment = Comment(f'1 = {q[3][0]}, 5 = {q[3][1]}', 'PlateLoop')
+            t = qtype.get(h)
+            d.column_dimensions[get_column_letter(j)].width = 8 if t is None else 15 if t in ('lik', 'num') else 66 if t == 'text' else 28
+        d.row_dimensions[1].height = max(66, 13 * max(-(-len(str(c.value)) // 15) for c in d[1] if c.value) + 8)
         for i, row in enumerate(df.itertuples(index=False), 2):
             for j, v in enumerate(row, 1):
-                c = d.cell(i, j, v); c.font = F(10, False, '0000FF'); c.alignment = LEFT
-        last = get_column_letter(len(df.columns))
-        t = Table(displayName=f"{G['key']}Responses", ref=f'A1:{last}{len(df)+1}')
-        t.tableStyleInfo = TableStyleInfo(name='TableStyleMedium4' if G['key'] != 'Kitchen' else 'TableStyleMedium3', showRowStripes=True)
-        d.add_table(t)
-        for j in range(1, len(df.columns) + 1): d.column_dimensions[get_column_letter(j)].width = 9 if j == 1 else 22
+                t = qtype.get(df.columns[j - 1])
+                c = d.cell(i, j, v); c.font = F(10, False, '0000FF'); c.border = bottom_line
+                c.alignment = Alignment(horizontal='center' if t in ('lik', 'num') or t is None else 'left', vertical='center')
+                if i % 2: c.fill = fill(BG)
+            d.row_dimensions[i].height = 20
+        for j, h in enumerate(df.columns, 1):
+            if qtype.get(h) == 'lik':
+                col = get_column_letter(j)
+                d.conditional_formatting.add(f'{col}2:{col}{MAXROW}', ColorScaleRule(start_type='num', start_value=1, start_color='F8C9C4',
+                                                                                   mid_type='num', mid_value=3, mid_color='F2F2F2', end_type='num', end_value=5, end_color='A9DFBF'))
+        d.auto_filter.ref = f'A1:{get_column_letter(len(df.columns))}{len(df) + 1}'
         d.freeze_panes = 'B2'; d.sheet_view.showGridLines = False
     # group sheets
     tiles_rows = {}
@@ -256,19 +276,23 @@ def build(groups, data, findings_fn, path, seed):
     # ---- key findings
     findings = findings_fn(A)
     k = wb.create_sheet('Key findings', 1)
-    setup(k, [2, 16, 78, 52])
-    merge_write(k, 'B1:D1', 'Key findings', F(22, True), LEFT); k.row_dimensions[1].height = 36
-    merge_write(k, 'B2:D2', 'Calculated live from the responses. ' + NOTE, F(9, False, INK3, True), LEFT)
-    for j, h in enumerate(['Group', 'What the survey shows', 'What PlateLoop does about it'], 2):
+    setup(k, [2, 15, 11, 14, 74, 50])
+    merge_write(k, 'B1:F1', 'Key findings', F(22, True), LEFT); k.row_dimensions[1].height = 36
+    merge_write(k, 'B2:F2', 'Calculated live from the responses. ' + NOTE, F(9, False, INK3, True), LEFT)
+    for j, h in enumerate(['Group', 'Headline', '', 'What the survey shows', 'What PlateLoop does about it'], 2):
         c = k.cell(4, j, h); c.font = F(10, True, 'FFFFFF'); c.fill = fill(INK); c.alignment = LEFT
     k.row_dimensions[4].height = 24
-    for i, (grp, f, mean) in enumerate(findings, 5):
+    heads = headlines(A)
+    for i, ((grp, f, mean), (hf, fmt, scale)) in enumerate(zip(findings, heads), 5):
         colour, tint, name, _ = THEME[grp]
         c = k.cell(i, 2, name); c.font = F(10, True, 'FFFFFF'); c.fill = fill(colour); c.alignment = CENTER
-        c = k.cell(i, 3, f.replace('="{}"&', '=')); c.font = F(10.5); c.alignment = LEFT; c.fill = fill(tint)
-        c = k.cell(i, 4, mean); c.font = F(10, True, colour); c.alignment = LEFT; c.fill = fill(tint)
-        for j in (2, 3, 4): k.cell(i, j).border = Border(bottom=Side(style='medium', color='FFFFFF'))
-        k.row_dimensions[i].height = 44
+        c = k.cell(i, 3, hf); c.font = F(18, True, colour); c.alignment = CENTER; c.number_format = fmt; c.fill = fill(tint)
+        c = k.cell(i, 4, f'=C{i}/{scale}' if scale != 1 else f'=C{i}'); c.number_format = '0%'; c.fill = fill(tint)
+        c = k.cell(i, 5, f.replace('="{}"&', '=')); c.font = F(10.5); c.alignment = LEFT; c.fill = fill(tint)
+        c = k.cell(i, 6, mean); c.font = F(10, True, colour); c.alignment = LEFT; c.fill = fill(tint)
+        for j in range(2, 7): k.cell(i, j).border = Border(bottom=Side(style='medium', color='FFFFFF'))
+        k.row_dimensions[i].height = 46
+        k.conditional_formatting.add(f'D{i}', DataBarRule(start_type='num', start_value=0, end_type='num', end_value=1, color=colour, showValue=False))
     k.freeze_panes = 'A5'
     # ---- questionnaire + about
     q = wb.create_sheet('Questionnaires')
@@ -306,9 +330,13 @@ def build(groups, data, findings_fn, path, seed):
     wb.save(path)
     return A
 
-# ================================================================ one-page infographic (web: animated, PDF: still)
+# ================================================================ findings infographic (web: animated on scroll, PDF: still, 2 x A4)
 BRAND = {'Students': '#30D158', 'Kitchen': '#FF9F0A', 'Hospital': '#0A84FF', 'Office': '#7D7AFF'}
 NOTE = 'Illustrative data: sample responses created to show how the analysis works, not collected from real people.'
+SHORTQ = {'S6': 'See what I ate', 'S8': 'Scan to feed the pet', 'S9': 'Class waste competition', 'S10': 'Face sign-in is OK',
+          'K6': 'Suggested order', 'K7': 'Waste shown by dish', 'K8': 'Monthly carbon report', 'K10': 'Worried about workload',
+          'H3': 'Records are accurate', 'H7': 'Automatic intake records', 'H8': 'Alert with the reason',
+          'O4': 'Know lunch nutrients', 'O7': 'Daily lunch suggestion'}
 
 def loopi_svg(expr='happy', size=96):
     """Loopi, the PlateLoop mascot (same drawing as apps/js/visual.js)."""
@@ -343,142 +371,258 @@ LOOPI_CSS = """.loopi{display:block;overflow:visible;flex:none}
 @keyframes lpwave{0%,100%{transform:rotate(0)}50%{transform:rotate(-18deg)}}
 @keyframes lpleaf{0%,100%{transform:rotate(0)}50%{transform:rotate(-8deg)}}"""
 
+# ---------------------------------------------------------------- small SVG visuals
+def v_ring(p):
+    r, C = 25, 2 * 3.14159 * 25
+    return (f'<svg viewBox="0 0 64 64" class="vis"><circle cx="32" cy="32" r="{r}" class="trk" stroke-width="8" fill="none"/>'
+            f'<circle cx="32" cy="32" r="{r}" class="arc" fill="none" stroke-width="8" stroke-linecap="round" transform="rotate(-90 32 32)" '
+            f'style="stroke-dasharray:{C:.1f};stroke-dashoffset:{C*(1-p):.1f};--c0:{C:.1f}"/></svg>')
+
+PERSON = '<circle cx="6" cy="4" r="3.3"/><path d="M.4 18c0-5 2.6-8 5.6-8s5.6 3 5.6 8Z"/>'
+def v_people(k, n):
+    cells = ''.join(f'<g transform="translate({i*15},0)" class="pp{" on" if i < k else ""}" style="--j:{i}">{PERSON}</g>' for i in range(n))
+    return f'<svg viewBox="0 0 {n*15-3} 18" class="vis people" style="width:{min(n*15-3, 118)}px">{cells}</svg>'
+
+def v_gauge(v, mx=60):
+    L = 3.14159 * 27
+    return (f'<svg viewBox="0 0 64 38" class="vis"><path d="M5 34a27 27 0 0 1 54 0" class="trk" stroke-width="8" fill="none" stroke-linecap="round"/>'
+            f'<path d="M5 34a27 27 0 0 1 54 0" class="arc" fill="none" stroke-width="8" stroke-linecap="round" style="stroke-dasharray:{L:.1f};stroke-dashoffset:{L*(1-min(v,mx)/mx):.1f};--c0:{L:.1f}"/>'
+            f'<text x="5" y="38" class="gt" text-anchor="middle">0</text><text x="59" y="38" class="gt" text-anchor="middle">{mx}</text></svg>')
+
+LEAF = '<path d="M2 16C2 7 8 2 17 2c0 9-5 14-15 14Z"/>'
+def v_rating(v):
+    return '<svg viewBox="0 0 98 18" class="vis rating">' + ''.join(
+        f'<g transform="translate({i*20},0)" class="pp{" on" if i < round(v) else ""}" style="--j:{i}">{LEAF}</g>' for i in range(5)) + '</svg>'
+
+def v_versus(a, b):
+    return (f'<div class="vs"><div><span>Food groups</span><i style="--w:{a*100:.0f}%"></i><em>{P(a)}</em></div>'
+            f'<div class="dim"><span>Calories</span><i style="--w:{b*100:.0f}%"></i><em>{P(b)}</em></div></div>')
+
 INFO_CSS = """
 @page{size:A4;margin:0}
-:root{--bg:#040705;--card:#0D110F;--ink:#F5F5F7;--ink2:#AEB3B8;--ink3:#7A7F85;--line:rgba(255,255,255,.08);--g:#30D158;color-scheme:dark}
+:root{--bg:#040705;--card:#0D110F;--ink:#F5F5F7;--ink2:#AEB3B8;--ink3:#7A7F85;--line:rgba(255,255,255,.08);--g:#30D158;--neg:#FF6B5E;color-scheme:dark}
 *{box-sizing:border-box}
 html{background:var(--bg)}
-body{margin:0;min-height:100vh;color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-print-color-adjust:exact;print-color-adjust:exact;
-  background:radial-gradient(900px 600px at 92% -8%,rgba(48,209,88,.20),transparent 60%),radial-gradient(800px 700px at -15% 60%,rgba(48,209,88,.08),transparent 60%),radial-gradient(800px 600px at 110% 100%,rgba(10,132,255,.09),transparent 60%),var(--bg)}
+body{margin:0;color:var(--ink);font-family:Inter,system-ui,sans-serif;-webkit-font-smoothing:antialiased;-webkit-print-color-adjust:exact;print-color-adjust:exact;
+  background:radial-gradient(900px 600px at 92% -4%,rgba(48,209,88,.18),transparent 60%),radial-gradient(800px 900px at -15% 40%,rgba(48,209,88,.07),transparent 60%),radial-gradient(900px 700px at 110% 70%,rgba(10,132,255,.08),transparent 60%),var(--bg)}
 .page{position:relative;max-width:820px;margin:0 auto;padding:34px 30px 26px}
+.tag{position:absolute;top:34px;right:30px;padding:6px 11px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--ink3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
 .top{display:flex;align-items:center;gap:18px}
 .top .loopi{filter:drop-shadow(0 12px 24px rgba(48,209,88,.35))}
 .eyebrow{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--g)}
 h1{margin:4px 0 0;font-size:46px;font-weight:900;letter-spacing:-.045em;line-height:.98}
 h1 em{font-style:normal;background:linear-gradient(90deg,#4ADE80,#30D158 60%,#9BE15D);-webkit-background-clip:text;background-clip:text;color:transparent}
 .lede{margin:8px 0 0;font-size:13px;color:var(--ink2)}
-.tag{position:absolute;top:34px;right:30px;padding:6px 11px;border-radius:99px;font-size:10px;font-weight:700;letter-spacing:.03em;color:var(--ink3);box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
-.counts{display:grid;grid-template-columns:1.25fr repeat(4,1fr);gap:8px;margin:20px 0 4px}
+.counts{display:grid;grid-template-columns:1.25fr repeat(4,1fr);gap:8px;margin:20px 0 0}
 .cnt{position:relative;overflow:hidden;padding:10px 12px 10px 14px;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
 .cnt::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,#fff)}
 .cnt b{display:block;font-size:24px;font-weight:900;letter-spacing:-.03em;line-height:1;color:var(--c,#fff);font-variant-numeric:tabular-nums}
 .cnt span{font-size:10.5px;font-weight:600;color:var(--ink2)}
 .cnt.all{background:linear-gradient(135deg,rgba(48,209,88,.24),rgba(48,209,88,.06));box-shadow:inset 0 0 0 1px rgba(48,209,88,.35)}
 .cnt.all::before{display:none}
-.grp{position:relative;overflow:hidden;margin-top:10px;padding:14px 16px 11px;border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
-.grp::after{content:"";position:absolute;right:-80px;top:-90px;width:280px;height:230px;background:radial-gradient(closest-side,color-mix(in srgb,var(--c) 24%,transparent),transparent);pointer-events:none}
-.grp header{display:flex;align-items:center;gap:9px}
+.card{position:relative;overflow:hidden;margin-top:12px;padding:16px 18px 13px;border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);break-inside:avoid}
+.card::after{content:"";position:absolute;right:-90px;top:-100px;width:300px;height:250px;background:radial-gradient(closest-side,color-mix(in srgb,var(--c,#30D158) 22%,transparent),transparent);pointer-events:none}
+.card>*{position:relative;z-index:1}
+.card header{display:flex;align-items:center;gap:9px}
 .dot{width:10px;height:10px;border-radius:50%;background:var(--c);box-shadow:0 0 12px var(--c)}
 h2{margin:0;font-size:16px;font-weight:800;letter-spacing:-.02em}
 .nresp{font-size:11px;color:var(--ink3);font-weight:600}
-.app{margin-left:auto;position:relative;z-index:1;padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
-.body{display:grid;grid-template-columns:1fr 272px;gap:16px;margin-top:10px;position:relative;z-index:1}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.app{margin-left:auto;padding:4px 10px;border-radius:99px;font-size:10.5px;font-weight:700;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+h3{margin:0 0 8px;font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+/* overview: the problem vs wanting the fix */
+.ov h2{font-size:15px}.ov .sub{margin:3px 0 12px;font-size:11px;color:var(--ink2)}
+.ovrow{display:grid;grid-template-columns:118px 1fr 1fr;gap:14px;align-items:center;padding:7px 0;border-top:1px solid var(--line)}
+.ovrow:first-child{border-top:0}
+.ovrow .who{display:flex;align-items:center;gap:7px;font-size:12px;font-weight:800}
+.ovrow .who i{width:8px;height:8px;border-radius:50%;background:var(--c)}
+.ovb{display:grid;grid-template-columns:1fr 34px;gap:6px;align-items:center}
+.ovb .track{height:10px}
+.ovb em{font-style:normal;font-size:12px;font-weight:900;text-align:right;font-variant-numeric:tabular-nums}
+.ovb small{grid-column:1/-1;font-size:9.5px;color:var(--ink3);margin-top:-1px}
+.ovb.bad .track i{background:var(--neg);opacity:.85}.ovb.bad em{color:var(--neg)}
+.ovb.good .track i{background:var(--c)}.ovb.good em{color:var(--c)}
+.ovhead{display:grid;grid-template-columns:118px 1fr 1fr;gap:14px;font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
+.ovhead span:nth-child(2){color:var(--neg)}.ovhead span:nth-child(3){color:var(--g)}
+/* KPI tiles */
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.kpi{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:16px;background:rgba(255,255,255,.035);box-shadow:inset 0 0 0 1px var(--line)}
+.kpi .vis{flex:none;width:52px;height:auto;overflow:visible}
+.kpi .vis.people,.kpi .vis.rating{width:auto;height:22px}
+.kpi.col{flex-direction:column;align-items:flex-start;gap:7px}
+.trk{stroke:rgba(255,255,255,.08)}.arc{stroke:var(--c);filter:drop-shadow(0 0 4px color-mix(in srgb,var(--c) 60%,transparent))}
+.gt{font-size:7px;fill:var(--ink3);font-weight:700}
+.pp{fill:rgba(255,255,255,.13)}.pp.on{fill:var(--c)}
 .big{display:flex;align-items:baseline;gap:1px;color:var(--c)}
-.big b{font-size:34px;font-weight:900;letter-spacing:-.05em;line-height:1;font-variant-numeric:tabular-nums}
-.big small{font-size:16px;font-weight:800;letter-spacing:-.02em}
-.st p{margin:5px 0 0;font-size:11px;line-height:1.35;color:var(--ink2)}
-.st p b{color:var(--ink);font-weight:700}
-.chart h3{margin:0 0 6px;font-size:9px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--ink3)}
-.row{display:grid;grid-template-columns:134px 1fr 30px;align-items:center;gap:7px;height:16px}
-.row span{font-size:9.5px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.row em{font-style:normal;font-size:9.5px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
-.track{height:7px;border-radius:7px;background:rgba(255,255,255,.06);overflow:hidden}
-.track i{display:block;height:100%;width:var(--w);border-radius:7px;background:color-mix(in srgb,var(--c) 50%,transparent)}
+.big b{font-size:26px;font-weight:900;letter-spacing:-.045em;line-height:1;font-variant-numeric:tabular-nums}
+.big small{font-size:13px;font-weight:800}
+.kpi p{margin:3px 0 0;font-size:10.5px;line-height:1.32;color:var(--ink2)}
+.kpi p b{color:var(--ink);font-weight:700}
+.vs{width:100%;display:grid;gap:4px}
+.vs div{display:grid;grid-template-columns:62px 1fr 28px;gap:6px;align-items:center;font-size:9.5px;color:var(--ink)}
+.vs div i{height:8px;border-radius:8px;background:var(--c);width:var(--w)}
+.vs div.dim i{background:rgba(255,255,255,.22)}.vs div.dim{color:var(--ink3)}
+.vs em{font-style:normal;font-weight:800;text-align:right}
+/* charts */
+.charts{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:13px}
+.row{display:grid;grid-template-columns:128px 1fr 30px;align-items:center;gap:7px;height:17px}
+.row span{font-size:9.8px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row em{font-style:normal;font-size:9.8px;font-weight:800;text-align:right;font-variant-numeric:tabular-nums}
+.track{height:8px;border-radius:8px;background:rgba(255,255,255,.06);overflow:hidden}
+.track i{display:block;height:100%;width:var(--w);border-radius:8px;background:color-mix(in srgb,var(--c) 50%,transparent)}
 .row.lead .track i{background:var(--c);box-shadow:0 0 10px color-mix(in srgb,var(--c) 60%,transparent)}
 .row.lead span{color:var(--ink);font-weight:600}
-.grp footer{display:flex;gap:8px;align-items:baseline;margin-top:10px;padding-top:9px;border-top:1px solid var(--line);position:relative;z-index:1}
+.lk{display:grid;grid-template-columns:118px 1fr 32px;align-items:center;gap:7px;height:19px}
+.lk span{font-size:9.8px;color:var(--ink2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lk em{font-style:normal;font-size:9.8px;font-weight:800;text-align:right;color:var(--c)}
+.stack{display:flex;height:11px;border-radius:6px;overflow:hidden;gap:1px}
+.stack i{display:block;height:100%}
+.s1{background:rgba(255,107,94,.85)}.s2{background:rgba(255,107,94,.42)}.s3{background:rgba(255,255,255,.16)}.s4{background:color-mix(in srgb,var(--c) 55%,transparent)}.s5{background:var(--c)}
+.legend{display:flex;gap:10px;margin-top:6px;font-size:8.5px;color:var(--ink3);font-weight:600}
+.legend i{display:inline-block;width:8px;height:8px;border-radius:2px;margin-right:4px;vertical-align:-1px}
+.card footer{display:flex;gap:8px;align-items:baseline;margin-top:11px;padding-top:9px;border-top:1px solid var(--line)}
 .arrow{color:var(--c);font-weight:900}
-.grp footer p{margin:0;font-size:11.5px;line-height:1.4;color:var(--ink2)}
-.grp footer b{color:var(--c)}
+.card footer p{margin:0;font-size:11.5px;line-height:1.4;color:var(--ink2)}
+.card footer b{color:var(--c)}
 .foot{display:flex;justify-content:space-between;gap:14px;margin-top:12px;font-size:9.5px;color:var(--ink3)}
 .foot b{color:var(--ink2);white-space:nowrap}
+.sheet{display:flex;flex-direction:column}.p2{margin-top:12px}
+/* motion: screen only, each card animates when it scrolls into view */
 @media screen and (prefers-reduced-motion:no-preference){
-  .top,.cnt,.grp{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
+  .top,.cnt{animation:rise .8s cubic-bezier(.2,.8,.2,1) both}
   .cnt{animation-delay:calc(.15s + var(--k,0)*.07s)}
-  .grp{animation-delay:calc(.4s + var(--i)*.15s);transition:transform .25s,box-shadow .25s}
-  .track i{animation:grow 1.2s cubic-bezier(.2,.8,.2,1) var(--d) both}
+  .js .card{opacity:0;transform:translateY(26px);transition:opacity .8s cubic-bezier(.2,.8,.2,1),transform .8s cubic-bezier(.2,.8,.2,1)}
+  .js .card.in{opacity:1;transform:none}
+  .js .card.in .arc{animation:ring 1.4s cubic-bezier(.2,.8,.2,1) .35s both}
+  .js .card.in .pp{animation:popi .45s cubic-bezier(.3,1.6,.5,1) calc(.35s + var(--j)*.09s) both;transform-box:fill-box;transform-origin:50% 100%}
+  .js .card.in .track i,.js .card.in .vs i{animation:grow 1.2s cubic-bezier(.2,.8,.2,1) calc(.45s + var(--n,0)*.07s) both}
+  .js .card.in .stack{animation:wipe 1.3s cubic-bezier(.2,.8,.2,1) calc(.5s + var(--n,0)*.08s) both}
   .dot{animation:pulse 2.4s ease-in-out infinite}
-  .grp:hover{transform:translateY(-3px);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--c) 45%,transparent)}
 }
 @keyframes rise{from{opacity:0;transform:translateY(22px)}}
 @keyframes grow{from{width:0}}
+@keyframes ring{from{stroke-dashoffset:var(--c0)}}
+@keyframes popi{from{transform:scale(0)}}
+@keyframes wipe{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 0 0 0)}}
 @keyframes pulse{50%{box-shadow:0 0 0 5px color-mix(in srgb,var(--c) 18%,transparent),0 0 16px var(--c)}}
-@media print{*{animation:none!important}.page{max-width:none;width:210mm;height:297mm;padding:12mm 12mm 8mm}.tag{top:12mm;right:12mm}}
-@media (max-width:700px){.page{padding:52px 16px 22px}.tag{top:16px;right:16px}.top{gap:12px}h1{font-size:34px}.lede{font-size:12.5px}.counts{grid-template-columns:repeat(4,1fr)}.counts .all{grid-column:1/-1}
-  .body{grid-template-columns:1fr}.stats{gap:8px}.big b{font-size:28px}.top .loopi{width:64px;height:auto}.app{display:none}.foot{flex-direction:column}}
+@media print{*{animation:none!important;transition:none!important}.js .card{opacity:1!important;transform:none!important}
+  .page{max-width:none;width:210mm;padding:0 12mm}.tag{top:11mm;right:12mm}
+  .sheet{height:296mm;padding:11mm 0 8mm;justify-content:space-between;overflow:hidden}.sheet>*{margin-top:0!important}
+  .p1{justify-content:flex-start;gap:14px}.ov{flex:1;display:flex;flex-direction:column}.ovrows{flex:1;display:flex;flex-direction:column;justify-content:space-around}
+  .ov h2{font-size:20px}.ov .sub{font-size:12.5px;margin-bottom:16px}.ovhead{font-size:10.5px}.ovrow{grid-template-columns:130px 1fr 1fr;gap:20px}.ovhead{grid-template-columns:130px 1fr 1fr;gap:20px}.ovrow .who{font-size:15px}.ovrow .who i{width:12px;height:12px;box-shadow:0 0 10px var(--c)}.ovb{grid-template-columns:1fr 66px;gap:10px}.ovb .track{height:20px;border-radius:20px}.ovb .track i{border-radius:20px}.ovb em{font-size:24px;letter-spacing:-.03em}.ovb small{font-size:11.5px;margin-top:5px}.p2{break-before:page;margin-top:0}}
+@media (max-width:700px){.page{padding:52px 16px 22px}.tag{top:16px;right:16px}.top{gap:12px}h1{font-size:34px}.lede{font-size:12.5px}
+  .counts{grid-template-columns:repeat(4,1fr)}.counts .all{grid-column:1/-1}.top .loopi{width:64px;height:auto}.app{display:none}
+  .kpis,.charts{grid-template-columns:1fr}.ovrow,.ovhead{grid-template-columns:84px 1fr 1fr;gap:8px}.foot{flex-direction:column}}
 """
 
 INFO_JS = """
 (() => {
   document.querySelectorAll('.cnt').forEach((c, k) => c.style.setProperty('--k', k));
+  document.querySelectorAll('.card').forEach(card => card.querySelectorAll('.row, .lk, .ovrow').forEach((r, n) => r.querySelectorAll('.track i, .stack').forEach(x => x.style.setProperty('--n', n))));
   if (navigator.webdriver || matchMedia('print').matches || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const els = [...document.querySelectorAll('[data-to]')];
-  addEventListener('beforeprint', () => els.forEach(e => e.textContent = (+e.dataset.to).toFixed(+e.dataset.dec)));
-  els.forEach(e => {
-    const to = +e.dataset.to, dec = +e.dataset.dec, grp = e.closest('.grp');
-    const delay = grp ? 550 + (+grp.style.getPropertyValue('--i')) * 150 : 250, dur = 1300;
+  document.documentElement.classList.add('js');
+  const final = e => e.textContent = (+e.dataset.to).toFixed(+e.dataset.dec);
+  addEventListener('beforeprint', () => document.querySelectorAll('[data-to]').forEach(final));
+  const count = (e, delay) => {
+    const to = +e.dataset.to, dec = +e.dataset.dec, dur = 1300;
     e.textContent = (0).toFixed(dec);
-    setTimeout(() => {
-      const t0 = performance.now();
-      const step = t => { const p = Math.min(1, (t - t0) / dur), ease = 1 - Math.pow(1 - p, 3);
-        e.textContent = (to * ease).toFixed(dec); if (p < 1) requestAnimationFrame(step); };
-      requestAnimationFrame(step);
-    }, delay);
-  });
+    setTimeout(() => { const t0 = performance.now();
+      const step = t => { const p = Math.min(1, (t - t0) / dur);
+        e.textContent = (to * (1 - Math.pow(1 - p, 3))).toFixed(dec); if (p < 1) requestAnimationFrame(step); };
+      requestAnimationFrame(step); }, delay);
+  };
+  document.querySelectorAll('.counts [data-to]').forEach(e => count(e, 250));
+  const cards = document.querySelectorAll('.card');
+  cards.forEach(c => c.querySelectorAll('[data-to]').forEach(e => e.textContent = (0).toFixed(+e.dataset.dec)));
+  const io = new IntersectionObserver(es => es.forEach(en => {
+    if (!en.isIntersecting) return;
+    en.target.classList.add('in'); io.unobserve(en.target);
+    en.target.querySelectorAll('[data-to]').forEach(e => count(e, 350));
+  }), { threshold: .18 });
+  cards.forEach(c => io.observe(c));
 })();
 """
 
 def infographic(groups, data):
     S, K, H, O = (data[k] for k in ('Students', 'Kitchen', 'Hospital', 'Office'))
-    sh = lambda df, c, o: (df[c] == o).mean(); ag = lambda df, c: (df[c] >= 4).mean()
-    reasons = S.S3.value_counts(normalize=True); order = groups[0]['qs'][2][3]
-    top = max(order, key=lambda o: reasons.get(o, 0))
+    sh = lambda df, c, o: (df[c] == o).mean()
+    ag = lambda df, c: (df[c] >= 4).mean()
+    low = lambda df, c: (df[c] <= 3).mean()
     rnd = lambda v, q='1': Decimal(str(v)).quantize(Decimal(q), rounding=ROUND_HALF_UP)
-    pc = lambda v: (int(rnd(v * 100)), '%', 0)          # (number, suffix, decimals)
+    pc = lambda v: int(rnd(v * 100))
     gs = {G['key']: G for G in groups}
     opts = lambda k, c: next(x for x in gs[k]['qs'] if x[0] == c)[3]
     ranked = lambda df, c, o: sorted([(x, sh(df, c, x)) for x in o], key=lambda t: -t[1])
-    bands = [
-        ('Students', len(S), [(pc(sh(S, 'S3', top)), f'leave food mainly because: <b>{top.lower()}</b>'),
-                              (pc(sh(S, 'S7', 'Food groups')), 'would rather see <b>food groups</b> than calories'),
-                              ((float(rnd(S.S8.mean(), '0.1')), '/5', 1), 'interest in feeding the <b>Loopi pet</b>')],
-         'Main reason for leaving food', ranked(S, 'S3', order), True),
-        ('Kitchen', len(K), [(pc(sh(K, 'K4', 'Yes, accurately')), 'know accurately <b>which dishes come back</b>'),
-                             ((int(rnd(K.K3.mean())), '%', 0), 'of cooked food is <b>thrown away</b>, by their estimate'),
-                             (pc(ag(K, 'K7')), 'want <b>waste shown by dish</b>')],
-         'How quantities are decided', ranked(K, 'K2', opts('Kitchen', 'K2')), True),
-        ('Hospital', len(H), [(pc(ag(H, 'H3')), '<b>trust</b> their intake records'),
-                              ((int(rnd(H.H4.mean())), ' min', 0), 'a shift spent <b>writing intake records</b>'),
-                              (pc(ag(H, 'H7')), 'want <b>automatic intake</b> records')],
-         'When a patient who stops eating is noticed', [(o, sh(H, 'H5', o)) for o in opts('Hospital', 'H5')], False),
-        ('Office', len(O), [(pc(sh(O, 'O5', 'Often') + sh(O, 'O5', 'Daily')), 'feel an <b>afternoon energy dip</b> often or daily'),
-                            (pc(ag(O, 'O4')), '<b>know the nutrients</b> in their lunch'),
-                            (pc(sh(O, 'O6', 'Yes')), 'would <b>pre-order</b> to skip the queue')],
-         'Share meal data with employer?', [(o, sh(O, 'O8', o)) for o in opts('Office', 'O8')], False),
-    ]
-    total = sum(b[1] for b in bands)
-    def num(v, suf, dec):
-        return f'<b data-to="{v}" data-dec="{dec}">{v:.{dec}f}</b><small>{suf}</small>'
-    cards = ''
-    for gi, (key, n, stats, ctitle, items, lead_first) in enumerate(bands):
-        colour = BRAND[key]; name, app = THEME[key][2], THEME[key][3]; mx = max(v for _, v in items) or 1
-        st = ''.join(f'<div class="st"><div class="big">{num(*v)}</div><p>{lab}</p></div>' for v, lab in stats)
-        rows = ''.join(f'<div class="row{" lead" if lead_first and j == 0 else ""}"><span>{lab.replace(" standard portion", " portion")}</span><div class="track"><i style="--w:{v / mx * 100:.1f}%;--d:{.7 + gi * .15 + j * .08:.2f}s"></i></div><em>{P(v)}</em></div>'
-                       for j, (lab, v) in enumerate(items))
-        cards += (f'<section class="grp" style="--c:{colour};--i:{gi}">'
-                  f'<header><span class="dot"></span><h2>{name}</h2><span class="nresp">{n} responses</span><span class="app">{app}</span></header>'
-                  f'<div class="body"><div class="stats">{st}</div><div class="chart"><h3>{ctitle}</h3>{rows}</div></div>'
-                  f'<footer><span class="arrow">→</span><p><b>{app}</b> {MEANS[key]}</p></footer></section>\n')
+    reasons = S.S3.value_counts(normalize=True); order = opts('Students', 'S3')
+    top = max(order, key=lambda o: reasons.get(o, 0))
+    num = lambda v, suf='%', dec=0: f'<div class="big"><b data-to="{v}" data-dec="{dec}">{v:.{dec}f}</b><small>{suf}</small></div>'
+    def kpi(vis, big, label, col=False):
+        return f'<div class="kpi{" col" if col else ""}">{vis}<div>{big}<p>{label}</p></div></div>'
+    def bars(title, items, lead=True):
+        mx = max(v for _, v in items) or 1
+        rows = ''.join(f'<div class="row{" lead" if lead and j == 0 else ""}"><span>{lab.replace(" standard portion", " portion")}</span>'
+                       f'<div class="track"><i style="--w:{v / mx * 100:.1f}%"></i></div><em>{P(v)}</em></div>' for j, (lab, v) in enumerate(items))
+        return f'<div><h3>{title}</h3>{rows}</div>'
+    def likert(title, df, codes):
+        rows = ''
+        for c in codes:
+            dist = [(df[c] == k).mean() for k in range(1, 6)]
+            seg = ''.join(f'<i class="s{k+1}" style="width:{d*100:.1f}%"></i>' for k, d in enumerate(dist) if d > 0)
+            rows += f'<div class="lk"><span>{SHORTQ[c]}</span><div class="stack">{seg}</div><em>{P(ag(df, c))}</em></div>'
+        legend = ('<div class="legend"><span><i class="s1"></i>Disagree</span><span><i class="s3"></i>Neutral</span>'
+                  '<span><i class="s5"></i>Agree</span><span style="margin-left:auto">% = agree (4–5)</span></div>')
+        return f'<div><h3>{title}</h3>{rows}{legend}</div>'
+    def card(key, n, kpis, left, right):
+        colour = BRAND[key]; name, app = THEME[key][2], THEME[key][3]
+        return (f'<section class="card" style="--c:{colour}">'
+                f'<header><span class="dot"></span><h2>{name}</h2><span class="nresp">{n} responses</span><span class="app">{app}</span></header>'
+                f'<div class="kpis">{"".join(kpis)}</div><div class="charts">{left}{right}</div>'
+                f'<footer><span class="arrow">→</span><p><b>{app}</b> {MEANS[key]}</p></footer></section>\n')
+    k_acc = int((K.K4 == 'Yes, accurately').sum()); h_tr = int((H.H3 >= 4).sum()); o_kn = int((O.O4 >= 4).sum())
+    students = card('Students', len(S), [
+        kpi(v_ring(sh(S, 'S3', top)), num(pc(sh(S, 'S3', top))), f'leave food mainly because: <b>{top.lower()}</b>'),
+        kpi(v_versus(sh(S, 'S7', 'Food groups'), sh(S, 'S7', 'Calories')), num(pc(sh(S, 'S7', 'Food groups'))), 'would rather see <b>food groups</b> than calories', col=True),
+        kpi(v_rating(float(rnd(S.S8.mean(), '0.1'))), num(float(rnd(S.S8.mean(), '0.1')), '/5', 1), 'interest in feeding the <b>Loopi pet</b>', col=True)],
+        bars('Main reason for leaving food', ranked(S, 'S3', order)),
+        likert('How students feel', S, ['S6', 'S8', 'S9', 'S10']))
+    kitchen = card('Kitchen', len(K), [
+        kpi(v_people(k_acc, len(K)), num(k_acc, f' of {len(K)}'), 'know accurately <b>which dishes come back</b>', col=True),
+        kpi(v_ring(K.K3.mean() / 100), num(int(rnd(K.K3.mean()))), 'of cooked food is <b>thrown away</b>, by their estimate'),
+        kpi(v_ring(ag(K, 'K7')), num(pc(ag(K, 'K7'))), 'want <b>waste shown by dish</b>')],
+        bars('How quantities are decided', ranked(K, 'K2', opts('Kitchen', 'K2'))),
+        likert('How useful would this be?', K, ['K6', 'K7', 'K8', 'K10']))
+    hospital = card('Hospital', len(H), [
+        kpi(v_people(h_tr, len(H)), num(h_tr, f' of {len(H)}'), '<b>trust</b> their intake records', col=True),
+        kpi(v_gauge(H.H4.mean()), num(int(rnd(H.H4.mean())), ' min'), 'a shift spent <b>writing intake records</b>'),
+        kpi(v_ring(ag(H, 'H7')), num(pc(ag(H, 'H7'))), 'want <b>automatic intake</b> records')],
+        bars('When a patient who stops eating is noticed', [(o, sh(H, 'H5', o)) for o in opts('Hospital', 'H5')], lead=False),
+        likert('How staff feel', H, ['H3', 'H7', 'H8']))
+    office = card('Office', len(O), [
+        kpi(v_ring(sh(O, 'O5', 'Often') + sh(O, 'O5', 'Daily')), num(pc(sh(O, 'O5', 'Often') + sh(O, 'O5', 'Daily'))), 'feel an <b>afternoon energy dip</b> often or daily'),
+        kpi(v_people(o_kn, len(O)), num(o_kn, f' of {len(O)}'), '<b>know the nutrients</b> in their lunch', col=True),
+        kpi(v_ring(sh(O, 'O6', 'Yes')), num(pc(sh(O, 'O6', 'Yes'))), 'would <b>pre-order</b> to skip the queue')],
+        bars('Share meal data with employer?', [(o, sh(O, 'O8', o)) for o in opts('Office', 'O8')], lead=False),
+        likert('How office workers feel', O, ['O4', 'O7']))
+    # overview: the problem each group reports vs how many want PlateLoop's fix
+    ov = [('Students', 1 - sh(S, 'S2', 'Never') - sh(S, 'S2', 'Rarely'), 'leave food at least sometimes', ag(S, 'S6'), 'want to see what they ate'),
+          ('Kitchen', 1 - sh(K, 'K4', 'Yes, accurately'), 'don’t know accurately which dishes come back', ag(K, 'K7'), 'want waste shown by dish'),
+          ('Hospital', low(H, 'H3'), 'aren’t confident intake records are accurate', ag(H, 'H7'), 'want automatic intake records'),
+          ('Office', low(O, 'O4'), 'don’t know the nutrients in their lunch', ag(O, 'O7'), 'want a daily lunch suggestion')]
+    ovrows = ''.join(f'<div class="ovrow" style="--c:{BRAND[k]}"><div class="who"><i></i>{THEME[k][2]}</div>'
+                     f'<div class="ovb bad"><div class="track"><i style="--w:{a*100:.0f}%"></i></div><em>{P(a)}</em><small>{la}</small></div>'
+                     f'<div class="ovb good"><div class="track"><i style="--w:{b*100:.0f}%"></i></div><em>{P(b)}</em><small>{lb}</small></div></div>' for k, a, la, b, lb in ov)
+    overview = (f'<section class="card ov"><h2>The problem, and the appetite for a fix</h2><p class="sub">Each group’s biggest pain point, next to how many want what PlateLoop offers.</p>'
+                f'<div class="ovhead"><span></span><span>The problem</span><span>Want PlateLoop’s fix</span></div><div class="ovrows">{ovrows}</div></section>\n')
+    total = len(S) + len(K) + len(H) + len(O)
     counts = f'<div class="cnt all"><b data-to="{total}" data-dec="0">{total}</b><span>responses</span></div>' + ''.join(
-        f'<div class="cnt" style="--c:{BRAND[k]}"><b data-to="{n}" data-dec="0">{n}</b><span>{THEME[k][2]}</span></div>' for k, n, *_ in bands)
+        f'<div class="cnt" style="--c:{BRAND[k]}"><b data-to="{len(df)}" data-dec="0">{len(df)}</b><span>{THEME[k][2]}</span></div>'
+        for k, df in (('Students', S), ('Kitchen', K), ('Hospital', H), ('Office', O)))
     return ('<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">'
             '<title>PlateLoop survey findings</title><meta name="theme-color" content="#040705">'
             '<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>'
             '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap">'
             f'<style>{LOOPI_CSS}{INFO_CSS}</style></head><body><div class="page"><span class="tag">Illustrative data</span>'
-            f'<div class="top">{loopi_svg("cheer", 88)}<div><div class="eyebrow">PlateLoop survey · findings</div><h1>What we <em>heard.</em></h1>'
+            f'<div class="sheet p1"><div class="top">{loopi_svg("cheer", 88)}<div><div class="eyebrow">PlateLoop survey · findings</div><h1>What we <em>heard.</em></h1>'
             '<p class="lede">Students, kitchen staff, hospital staff and office workers on lunch, leftovers and nutrition.</p></div></div>'
-            f'<div class="counts">{counts}</div>\n{cards}'
-            f'<div class="foot"><span>{NOTE} With groups this small, one answer moves a percentage by several points.</span><b>8jiwoo.github.io/plateloop</b></div>'
+            f'<div class="counts">{counts}</div>\n{overview}{students}</div><div class="sheet p2">{kitchen}{hospital}{office}'
+            f'<div class="foot"><span>{NOTE} With groups this small, one answer moves a percentage by several points.</span><b>8jiwoo.github.io/plateloop</b></div></div>'
             f'</div><script>{INFO_JS}</script></body></html>')
