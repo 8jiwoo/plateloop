@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PlateLoop survey</title>
+<meta name="description" content="A 4-minute anonymous survey about canteen food, waste and nutrition, for students, kitchen staff, hospital staff and office workers.">
+<meta name="theme-color" content="#06120C">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+<style>
+:root{--g:#30D158;--g2:#1E9E4A;--ink:#F5F5F7;--ink2:#AEB3B8;--ink3:#7A7F85;--card:#111714;--card2:#18201B;--line:rgba(255,255,255,.09);color-scheme:dark}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;background:#050a07;color:var(--ink);font-family:"Inter",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+body{background:radial-gradient(70% 50% at 80% -10%,rgba(48,209,88,.18),transparent 70%),radial-gradient(60% 50% at -10% 110%,rgba(48,209,88,.08),transparent 70%),#050a07;min-height:100vh}
+button{font:inherit;color:inherit;cursor:pointer}
+.wrap{max-width:640px;margin:0 auto;padding:22px 20px 40px;min-height:100vh;display:flex;flex-direction:column}
+.top{display:flex;align-items:center;gap:10px;height:40px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:800;letter-spacing:-.02em;text-decoration:none;color:var(--ink)}
+.logo i{width:22px;height:22px;border-radius:7px;background:linear-gradient(135deg,#4ADE80,#1E9E4A)}
+.logo .w span{color:var(--g)}
+.back{margin-left:auto;border:0;background:rgba(255,255,255,.07);border-radius:99px;padding:8px 14px;font-size:14px;font-weight:600;color:var(--ink2)}
+.back:hover{color:var(--ink)}
+.bar{height:5px;border-radius:5px;background:rgba(255,255,255,.08);margin:16px 0 0;overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--g2),var(--g));transition:width .5s cubic-bezier(.2,.8,.2,1)}
+.count{margin-top:10px;font-size:13px;font-weight:700;color:var(--ink3);letter-spacing:.04em}
+.stage{flex:1;display:flex;flex-direction:column;justify-content:center;padding:24px 0}
+.screen{animation:in .45s cubic-bezier(.2,.8,.2,1) both}
+.screen.back-in{animation-name:inback}
+@keyframes in{from{opacity:0;transform:translateX(40px)}}
+@keyframes inback{from{opacity:0;transform:translateX(-40px)}}
+h1{margin:0;font-size:clamp(34px,8vw,48px);font-weight:800;letter-spacing:-.04em;line-height:1.05}
+h1 em{font-style:normal;color:var(--g)}
+.lead{margin:14px 0 0;font-size:17px;line-height:1.55;color:var(--ink2)}
+.groups{display:grid;gap:12px;margin-top:28px}
+.grp{display:flex;align-items:center;gap:16px;padding:18px;border:0;border-radius:20px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);text-align:left;transition:transform .2s,box-shadow .2s,background .2s}
+.grp:hover{transform:translateY(-2px);box-shadow:inset 0 0 0 1.5px rgba(48,209,88,.5);background:var(--card2)}
+.grp .ic{flex:none;width:52px;height:52px;border-radius:16px;display:grid;place-items:center;background:rgba(48,209,88,.13)}
+.grp .ic svg{width:26px;height:26px;color:var(--g)}
+.grp b{display:block;font-size:18px;letter-spacing:-.01em}
+.grp small{display:block;margin-top:3px;font-size:14px;color:var(--ink3)}
+.grp .arr{margin-left:auto;color:var(--ink3)}
+.fine{margin-top:22px;font-size:13px;color:var(--ink3);line-height:1.5}
+.q-code{font-size:13px;font-weight:800;color:var(--g);letter-spacing:.06em}
+.q{margin:8px 0 22px;font-size:clamp(24px,5.6vw,30px);font-weight:800;letter-spacing:-.03em;line-height:1.2}
+.opts{display:grid;gap:10px}
+.opt{display:flex;align-items:center;gap:14px;padding:16px 18px;border:0;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:17px;font-weight:600;text-align:left;transition:background .15s,box-shadow .15s,transform .15s}
+.opt:hover{background:var(--card2)}
+.opt:active{transform:scale(.98)}
+.opt .k{flex:none;width:26px;height:26px;border-radius:8px;display:grid;place-items:center;font-size:12px;font-weight:800;color:var(--ink3);box-shadow:inset 0 0 0 1.5px rgba(255,255,255,.18)}
+.opt[aria-pressed="true"]{background:rgba(48,209,88,.14);box-shadow:inset 0 0 0 2px var(--g)}
+.opt[aria-pressed="true"] .k{background:var(--g);color:#04210F;box-shadow:none}
+.scale{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.sc{aspect-ratio:1;border:0;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:24px;font-weight:800;transition:transform .15s,background .15s,box-shadow .15s}
+.sc:hover{background:var(--card2);transform:translateY(-2px)}
+.sc[aria-pressed="true"]{background:var(--g);color:#04210F;box-shadow:0 10px 26px -10px var(--g)}
+.ends{display:flex;justify-content:space-between;margin-top:10px;font-size:13.5px;font-weight:600;color:var(--ink3)}
+.num{display:flex;align-items:center;gap:12px}
+.num button{width:58px;height:58px;border:0;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);font-size:26px;font-weight:700}
+.num input{flex:1;min-width:0;height:58px;border:0;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink);font:800 26px Inter,sans-serif;text-align:center}
+.num input:focus,textarea:focus{outline:2px solid var(--g);outline-offset:0}
+textarea{width:100%;min-height:140px;padding:16px;border:0;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line);color:var(--ink);font:500 17px/1.5 Inter,sans-serif;resize:vertical}
+.nav{display:flex;gap:10px;margin-top:26px}
+.btn{flex:1;height:54px;border:0;border-radius:16px;font-size:17px;font-weight:700}
+.btn.prim{background:var(--g);color:#04210F;box-shadow:0 12px 28px -14px var(--g)}
+.btn.prim:disabled{opacity:.35;box-shadow:none;cursor:default}
+.btn.ghost{flex:0 0 auto;padding:0 22px;background:rgba(255,255,255,.07);color:var(--ink2)}
+.done{text-align:center}
+.tick{width:88px;height:88px;border-radius:50%;display:grid;place-items:center;margin:0 auto 22px;background:var(--g);color:#04210F;animation:pop .6s cubic-bezier(.3,1.6,.5,1) both}
+.tick svg{width:44px;height:44px}
+@keyframes pop{from{transform:scale(.3);opacity:0}}
+.res{display:grid;gap:12px;margin-top:22px}
+.res div{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:16px;background:var(--card);box-shadow:inset 0 0 0 1px var(--line)}
+.res b{font-size:17px;color:var(--ink)}.res span span{color:var(--ink3);font-size:14px}
+.res button{margin-left:auto;border:0;border-radius:12px;padding:10px 14px;background:var(--g);color:#04210F;font-weight:700}
+.res button:disabled{opacity:.3}
+.note{margin-top:18px;padding:14px 16px;border-radius:14px;background:rgba(255,159,10,.1);color:#FFB547;font-size:14px;line-height:1.5}
+@media (prefers-reduced-motion:reduce){.screen,.tick{animation:none}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><a class="logo" href="../"><i></i><span class="w">Plate<span>Loop</span></span></a><button class="back" id="back" hidden>← Back</button></div>
+  <div class="bar" id="bar" hidden><i id="barfill"></i></div>
+  <div class="count" id="count" hidden></div>
+  <main class="stage" id="stage"></main>
+</div>
+<script src="questions.js"></script>
+<script src="config.js"></script>
+<script>
+(() => {
+  const ICONS = {
+    Students: '<path d="M2 9l10-5 10 5-10 5Z"/><path d="M6 11v5c3 2 9 2 12 0v-5"/>',
+    Kitchen: '<path d="M6 14h12v6H6zM4 10c0-3 2-5 4-5 1-2 7-2 8 0 2 0 4 2 4 5 0 2-2 4-4 4H8c-2 0-4-2-4-4Z"/>',
+    Hospital: '<rect x="3" y="4" width="18" height="16" rx="3"/><path d="M12 8v8M8 12h8"/>',
+    Office: '<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2"/>',
+  };
+  const icon = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
+  const $ = id => document.getElementById(id), stage = $('stage');
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+  const KEY = 'plateloop-survey-responses';
+  const store = { all() { try { return JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) { return []; } },
+                  add(r) { try { const a = this.all(); a.push(r); localStorage.setItem(KEY, JSON.stringify(a)); } catch (e) {} } };
+  let G = null, i = 0, answers = {}, dir = 1;
+
+  function show(html) { stage.innerHTML = `<div class="screen ${dir < 0 ? 'back-in' : ''}">${html}</div>`; }
+  function chrome(on) {
+    $('back').hidden = !on; $('bar').hidden = !on; $('count').hidden = !on;
+    if (on) { $('barfill').style.width = `${(i / G.questions.length) * 100}%`; $('count').textContent = `QUESTION ${i + 1} OF ${G.questions.length}`; }
+  }
+
+  function home() {
+    G = null; chrome(false); dir = 1;
+    show(`<h1>Help us cut <em>canteen food waste.</em></h1>
+      <p class="lead">A 4-minute, anonymous survey about lunch, leftovers and nutrition. Pick the group that fits you best.</p>
+      <div class="groups">${SURVEY.map(g => `<button class="grp" data-g="${g.key}"><span class="ic">${icon(g.key)}</span><span><b>${esc(g.title)}</b><small>${g.questions.length} questions · about 4 minutes</small></span><span class="arr">→</span></button>`).join('')}</div>
+      <p class="fine">No names or emails are collected. Answers are used only to design PlateLoop, a student project for the EcoLoop hackathon.</p>`);
+    stage.querySelectorAll('[data-g]').forEach(b => b.onclick = () => start(b.dataset.g));
+  }
+  function start(key) { G = SURVEY.find(g => g.key === key); i = 0; answers = {}; dir = 1; history.replaceState(null, '', '#' + key.toLowerCase()); ask(); }
+
+  function ask() {
+    const q = G.questions[i]; chrome(true);
+    const v = answers[q.code];
+    let body = '', needsNext = true;
+    if (q.type === 'cat') {
+      needsNext = false;
+      body = `<div class="opts">${q.options.map((o, k) => `<button class="opt" data-v="${esc(o)}" aria-pressed="${v === o}"><span class="k">${String.fromCharCode(65 + k)}</span>${esc(o)}</button>`).join('')}</div>`;
+    } else if (q.type === 'lik') {
+      needsNext = false;
+      body = `<div class="scale">${[1, 2, 3, 4, 5].map(n => `<button class="sc" data-v="${n}" aria-pressed="${v === n}" aria-label="${n}">${n}</button>`).join('')}</div><div class="ends"><span>${esc(q.options[0])}</span><span>${esc(q.options[1])}</span></div>`;
+    } else if (q.type === 'num') {
+      body = `<div class="num"><button data-step="-1" aria-label="Less">−</button><input id="numv" type="number" inputmode="numeric" min="0" value="${v ?? ''}" placeholder="0"><button data-step="1" aria-label="More">+</button></div>`;
+    } else {
+      body = `<textarea id="txt" placeholder="Type here, or skip">${esc(v || '')}</textarea>`;
+    }
+    const last = i === G.questions.length - 1;
+    show(`<div class="q-code">${q.code}</div><div class="q">${esc(q.text)}</div>${body}
+      <div class="nav">${needsNext || v !== undefined ? `<button class="btn prim" id="next" ${q.type === 'num' && (v === undefined || v === '') ? 'disabled' : ''}>${last ? 'Submit' : 'Next'}</button>` : ''}${q.type === 'text' ? '<button class="btn ghost" id="skip">Skip</button>' : ''}</div>`);
+    stage.querySelectorAll('[data-v]').forEach(b => b.onclick = () => {
+      answers[q.code] = q.type === 'lik' ? +b.dataset.v : b.dataset.v;
+      stage.querySelectorAll('[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      setTimeout(next, 260); // auto-advance after a tap
+    });
+    const nv = $('numv');
+    if (nv) {
+      const sync = () => { answers[q.code] = nv.value === '' ? undefined : Math.max(0, Math.round(+nv.value)); $('next').disabled = answers[q.code] === undefined; };
+      nv.oninput = sync; nv.onkeydown = e => { if (e.key === 'Enter' && !$('next').disabled) next(); };
+      stage.querySelectorAll('[data-step]').forEach(b => b.onclick = () => { nv.value = Math.max(0, (+nv.value || 0) + +b.dataset.step); sync(); });
+      setTimeout(() => nv.focus(), 300);
+    }
+    const tx = $('txt'); if (tx) tx.oninput = () => { answers[q.code] = tx.value.trim(); };
+    if ($('next')) $('next').onclick = next;
+    if ($('skip')) $('skip').onclick = () => { answers[q.code] = ''; next(); };
+  }
+  function next() { if (i < G.questions.length - 1) { i++; dir = 1; ask(); } else submit(); }
+  $('back').onclick = () => { if (i > 0) { i--; dir = -1; ask(); } else home(); };
+
+  async function submit() {
+    const rec = { sheet: G.sheet, group: G.key, id: G.key[0] + Date.now().toString(36).toUpperCase(), codes: G.questions.map(q => q.code), answers, at: new Date().toISOString() };
+    store.add(rec);
+    let sent = false;
+    if (window.SURVEY_ENDPOINT) {
+      try { await fetch(window.SURVEY_ENDPOINT, { method: 'POST', mode: 'no-cors', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(rec) }); sent = true; } catch (e) {}
+    }
+    chrome(false); $('bar').hidden = false; $('barfill').style.width = '100%';
+    show(`<div class="done"><div class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></div>
+      <h1>Thank you!</h1><p class="lead">Your answers help us design PlateLoop to waste less food and give people useful feedback on their meals.</p>
+      <div class="nav"><button class="btn prim" id="again">Done</button></div></div>`);
+    $('again').onclick = () => { history.replaceState(null, '', location.pathname); home(); };
+    if (!sent && window.SURVEY_ENDPOINT) console.warn('Response saved in this browser only.');
+  }
+
+  // survey/#results: responses saved in this browser, as CSV in the analysis workbook's column order
+  function results() {
+    chrome(false);
+    const all = store.all();
+    show(`<h1>Responses</h1><p class="lead">Saved in this browser. Download a group as CSV and paste the rows into the matching tab of the analysis workbook.</p>
+      <div class="res">${SURVEY.map(g => { const n = all.filter(r => r.group === g.key).length; return `<div><span><b>${esc(g.title)}</b><br><span>${n} response${n === 1 ? '' : 's'}</span></span><button data-csv="${g.key}" ${n ? '' : 'disabled'}>CSV</button></div>`; }).join('')}</div>
+      ${window.SURVEY_ENDPOINT ? '' : '<p class="note">Online collection isn’t connected yet, so responses are only saved on the device they were filled in on. See docs/survey/HOW-TO-COLLECT-RESPONSES.md to send them to a Google Sheet.</p>'}`);
+    stage.querySelectorAll('[data-csv]').forEach(b => b.onclick = () => {
+      const g = SURVEY.find(x => x.key === b.dataset.csv), rows = all.filter(r => r.group === g.key);
+      const cell = v => { const s = v === undefined || v === null ? '' : String(v); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
+      const csv = [['ID', ...g.questions.map(q => q.code)].join(','), ...rows.map(r => [r.id, ...g.questions.map(q => r.answers[q.code])].map(cell).join(','))].join('\n');
+      const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' })); a.download = `plateloop-${g.key.toLowerCase()}-responses.csv`; a.click();
+    });
+  }
+
+  const h = location.hash.slice(1).toLowerCase();
+  if (h === 'results') results();
+  else if (SURVEY.some(g => g.key.toLowerCase() === h)) start(SURVEY.find(g => g.key.toLowerCase() === h).key);
+  else home();
+})();
+</script>
+</body>
+</html>
