@@ -1,6 +1,6 @@
 # PlateLoop pitch script
 
-About **6 minutes** with the full deck and live demos (about 850 words, spoken at a relaxed pace). For a **3-minute** version, skip the slides marked *(skip for 3 min)*. Split it between speakers however you like; suggested handovers are marked **[Speaker 2]** and so on.
+About **6½ minutes** with the full deck and live demos (about 950 words at a relaxed pace). For a **3-minute** version, skip the slides marked *(skip for 3 min)*. Split it between speakers however you like; suggested handovers are marked **[Speaker 2]** and so on.
 
 Every figure below is checked against its source in [research.md](research.md).
 
