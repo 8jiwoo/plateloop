@@ -156,6 +156,21 @@ h2 em{font-style:normal;color:var(--g)}
 .qr span{display:block;font-size:28px;font-weight:700;margin-top:6px}
 .end small{display:block;margin-top:26px;font-size:26px;color:var(--ink3)}
 #hint{position:fixed;left:12px;top:12px;z-index:99;padding:8px 14px;border-radius:10px;background:#30D158;color:#03200E;font:700 14px Inter,sans-serif}
+
+.meas-tray{position:absolute;right:130px;top:110px;width:720px}
+.meas-tray svg{width:100%;height:auto;filter:drop-shadow(0 40px 60px rgba(0,0,0,.7))}
+.dlabel{position:absolute;padding:10px 18px;border-radius:99px;background:rgba(10,14,12,.88);box-shadow:inset 0 0 0 2px rgba(48,209,88,.6);font-size:24px;font-weight:800;white-space:nowrap}
+.dlabel small{margin-left:8px;font-weight:600;color:var(--g)}
+.nutr{position:absolute;right:130px;top:600px;width:720px;display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.nut{padding:18px 22px;border-radius:22px;background:var(--card);box-shadow:inset 0 0 0 2px var(--line)}
+.nut span{display:block;font-size:20px;font-weight:700;color:var(--ink2)}
+.nut b{display:block;margin-top:4px;font-size:44px;font-weight:900;letter-spacing:-.03em;line-height:1}
+.nut b small{font-size:22px;color:var(--ink3);margin-left:4px}
+.nut i{display:block;margin-top:10px;height:8px;border-radius:8px;background:var(--fill,rgba(255,255,255,.08));overflow:hidden}
+.nut i em{display:block;height:100%;width:var(--w);border-radius:8px;background:var(--g);transform-origin:left;animation:grow 1.2s cubic-bezier(.2,.8,.2,1) calc(var(--s) + var(--o,0s) + .3s) both}
+.mcards{display:flex;flex-direction:column;gap:14px;margin-top:6px}
+.mcard{display:flex;gap:18px;align-items:center;padding:14px 22px;border-radius:24px;background:var(--card);box-shadow:inset 0 0 0 2px var(--line)}
+.mcard b{font-size:44px;line-height:1}.mcard strong{display:block;font-size:30px}.mcard span{display:block;font-size:22px;color:var(--ink2);margin-top:2px}
 </style>
 </head>
 <body>
@@ -221,8 +236,42 @@ h2 em{font-style:normal;color:var(--g)}
       <span class="pin a p" data-at="1" style="left:55%;top:10%">1</span><span class="pin a p" data-at="1" style="left:31%;top:20%;--x:.3s">2</span><span class="pin a p" data-at="1" style="left:29%;top:34%;--x:.6s">3</span><span class="pin a p" data-at="1" style="left:47%;top:44%;--x:.9s">4</span><span class="pin a p" data-at="1" style="left:66%;top:47%;--x:1.2s">5</span></div>
   </section>
 
+  <section class="sc" data-scene="measures">
+    <div class="col" style="top:120px;width:880px;gap:20px">
+      <div class="eyebrow a">What every scan measures</div>
+      <h2 class="a" style="--o:.2s;font-size:66px">Not just how much.<br><em>What, and what’s in it.</em></h2>
+      <div class="mcards">
+        <div class="mcard a l" data-at="0" style="--x:.6s"><b>🍱</b><div><strong>Food type</strong><span>the AI recognises each dish</span></div></div>
+        <div class="mcard a l" data-at="0" style="--x:1.4s"><b>⚖️</b><div><strong>Amount</strong><span>grams served, left and eaten</span></div></div>
+        <div class="mcard a l" data-at="1"><b>🧪</b><div><strong>Nutrients</strong><span>energy, protein, carbs, fat, fibre, sodium</span></div></div>
+      </div>
+      <div class="evchip a p" data-at="2" style="margin-top:4px"><b>~89%</b><span>of foods identified from before-and-after tray images</span><small>Pfisterer et al., JMIR Aging 2022 · Lu et al., 2020</small></div>
+    </div>
+    <div class="meas-tray a r" style="--o:.3s">
+      <svg viewBox="0 0 520 330" aria-hidden="true">
+        <rect x="10" y="10" width="500" height="310" rx="34" fill="#1A201C" stroke="rgba(255,255,255,.12)" stroke-width="3"/>
+        <rect x="34" y="34" width="210" height="130" rx="20" fill="#0E1210"/><rect x="266" y="34" width="220" height="130" rx="20" fill="#0E1210"/>
+        <rect x="34" y="182" width="140" height="114" rx="20" fill="#0E1210"/><rect x="190" y="182" width="140" height="114" rx="20" fill="#0E1210"/><rect x="346" y="182" width="140" height="114" rx="20" fill="#0E1210"/>
+        <ellipse cx="139" cy="104" rx="70" ry="38" fill="#C9A878"/><ellipse cx="380" cy="104" rx="60" ry="30" fill="#3F7D32"/><circle cx="104" cy="242" r="30" fill="#E8A25C"/><path d="M220 230q40-22 80 0q-40 40-80 0Z" fill="#9C5A2E"/><circle cx="416" cy="236" r="22" fill="#F2545B"/>
+      </svg>
+      <span class="dlabel a p" data-at="0" style="left:6%;top:6%;--x:2.2s">Brown rice<small>230 g</small></span>
+      <span class="dlabel a p" data-at="0" style="left:58%;top:6%;--x:3s">Kailan<small>45 g</small></span>
+      <span class="dlabel a p" data-at="0" style="left:36%;top:52%;--x:3.8s">Soy sauce chicken<small>115 g</small></span>
+      <span class="dlabel a p" data-at="0" style="left:4%;top:86%;--x:4.4s">ABC soup<small>180 g</small></span>
+      <span class="dlabel a p" data-at="0" style="left:66%;top:86%;--x:4.8s">Watermelon<small>70 g</small></span>
+    </div>
+    <div class="nutr">
+      <div class="nut a" data-at="1" style="--x:.2s"><span>Energy</span><b>642<small>kcal</small></b><i><em style="--w:92%"></em></i></div>
+      <div class="nut a" data-at="1" style="--x:.5s"><span>Protein</span><b>34<small>g</small></b><i><em style="--w:100%"></em></i></div>
+      <div class="nut a" data-at="1" style="--x:.8s"><span>Carbs</span><b>88<small>g</small></b><i><em style="--w:88%"></em></i></div>
+      <div class="nut a" data-at="1" style="--x:1.1s"><span>Fat</span><b>17<small>g</small></b><i><em style="--w:77%"></em></i></div>
+      <div class="nut a" data-at="1" style="--x:1.4s"><span>Fibre</span><b>6<small>g</small></b><i><em style="--w:60%"></em></i></div>
+      <div class="nut a" data-at="1" style="--x:1.7s"><span>Sodium</span><b>890<small>mg</small></b><i><em style="--w:45%;background:#FF9F0A"></em></i></div>
+    </div>
+  </section>
+
   <section class="sc" data-scene="evidence">
-    <div class="col" style="top:150px;width:1600px"><div class="eyebrow a">The evidence</div><h2 class="a" style="--o:.2s">Measuring food waste <em>cuts it.</em></h2></div>
+    <div class="col" style="top:150px;width:1600px"><div class="eyebrow a">The evidence</div><h2 class="a" style="--o:.2s">Measuring waste <em>cuts it.</em></h2></div>
     <div class="evid">
       <div class="ev a p" data-at="1"><b><span class="count cnt" data-at="1" style="--to:36;--x:.3s;display:inline"></span>%</b><span>less food waste in the first year, on average</span></div>
       <div class="ev sm a p" data-at="1" style="--x:4.2s"><b>6:1</b><span>return on every dollar spent</span></div>
