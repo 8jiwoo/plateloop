@@ -1,109 +1,121 @@
-# PlateLoop
+<p align="center"><img src="docs/banner.jpg" alt="PlateLoop: know what's eaten, waste less" width="100%"></p>
 
-**Live demo:** https://8jiwoo.github.io/plateloop/ · **Pitch deck:** https://8jiwoo.github.io/plateloop/pitch/
+<p align="center">
+  <a href="https://8jiwoo.github.io/plateloop/"><img alt="Live demo" src="https://img.shields.io/badge/Live_demo-open-30D158?style=for-the-badge"></a>
+  <a href="https://8jiwoo.github.io/plateloop/video/plateloop-explainer.mp4"><img alt="Explainer video" src="https://img.shields.io/badge/Video-3_min_explainer-111?style=for-the-badge"></a>
+  <a href="https://8jiwoo.github.io/plateloop/pitch/"><img alt="Pitch deck" src="https://img.shields.io/badge/Pitch_deck-25_slides-111?style=for-the-badge"></a>
+  <a href="poster/plateloop-poster-A1.pdf"><img alt="A1 poster" src="https://img.shields.io/badge/Poster-A1_PDF-111?style=for-the-badge"></a>
+</p>
 
-**An AI food scanner that analyses what is served, eaten and left, so cafeterias order the right amount, cut food waste and cost, and track their carbon emissions. Everyone who eats gets their own nutrition report, in an app made for schools, hospitals or offices.**
+**PlateLoop is an AI food scanner that measures what is served, eaten and left on every tray, so canteens cook the right amount, cut food waste and cost, and track their carbon. Everyone who eats gets their own feedback, in an app made for schools, hospitals or offices.**
 
-Built for the EcoLoop sustainability hackathon, set in Singapore: local menus, HPB nutrition guidance (under 2,000 mg sodium a day) and the Singapore grid's emission factor.
+Built for the **EcoLoop sustainability hackathon** in Singapore, with local menus, HPB nutrition guidance and the Singapore grid's emission factor.
 
-People sign in with their face and scan their tray **before** the meal (what was served) and **after** it (what's left). The difference is exactly what each person ate, dish by dish. That data drives five apps, plus a 3D game that shows the whole experience:
+---
 
-| App | File | For |
+## The problem
+
+| 755,000 t | 28% | 8–10% |
 |---|---|---|
-| **PlateLoop Prototype** | `dist/1-plateloop-scanner-3d.html` | A full-screen, cinematic 3D scanner: drag to turn, scroll to zoom, tap a glowing light on a part to fly to it and read how it works. The display's panel opens the working **Kiosk** on the scanner's own screen (face sign-in, before and after scans, nutrition, the Green Tree). Add `?kiosk` to open straight into the kiosk. |
-| **PlateLoop Kitchen** | `dist/3-plateloop-kitchen.html` | Kitchen staff and dietitian: an Apple-style admin dashboard in dark mode: a short to-do list, trays scanned, share eaten, food wasted and CO₂ avoided with trends, tomorrow's order against the standard plan and stock, what comes back on trays by dish, the 30-day waste trend and insights. Plus live scans, dishes, nutrition, environment, carbon management, plan & order, daily report |
-| **Loopi** | `dist/4-loopi-student-app.html` | Teens and university students: the home screen is Loopi, a big animated pet whose needs (full, happy, healthy, clean) come from real scans. Feed it the lunch you ate, sweep your leftovers into the bin, level up with XP, claim daily and weekly challenges, and see the week as a story. Also: a Tamagotchi fed by real lunches, food groups instead of calories (numbers only if they switch them on), a weekly class race with cheers, and school leaderboards |
-| **Loopi Care** | `dist/5-loopi-care-hospital.html` | Hospital patients: intake against their diet, choosing tomorrow's meals and portion size, an appetite check-in whose reason reaches the nurse station, read-aloud, and a weekly healthcare report for the care team |
-| **Loopi Work** | `dist/7-loopi-work-office.html` | Office workers: personal goals (build muscle, lose weight, steady energy, eat balanced), a daily canteen pick to pre-order with a pickup ticket, a 3 pm energy check-in linked to lunch, an anonymous team waste challenge and a weekly report |
-| **Lunch Rush** | `dist/8-plateloop-lunch-rush-3d.html` | A first-person 3D game of one school lunch with PlateLoop, with low-poly characters and a foggy, rainy atmosphere: take a tray, choose how much of each dish at the stall, face sign-in and scan at the real scanner model (the camera moves in to read its screen), eat with friends, scan again, scrape into the food waste bin, return the tray. Characters talk to you; synthesised positional sound. The scans are real and show up in the other apps |
+| of food thrown away in Singapore in 2023; only about 18% recycled | of the world's food waste comes from food service | of global greenhouse gas emissions come from lost or wasted food |
 
-![PlateLoop Scanner](docs/screenshots/1-plateloop-scanner-3d.png)
+Canteens cook by guesswork, because nobody measures what people actually eat. Bins get weighed, but a bin can't tell you which dish came back, or who didn't eat.
 
-Each Loopi app is built from desk research on what that group struggles with at meals. The sources, and what each app does about them, are in [docs/research.md](docs/research.md); the apps show the key figures next to the phone.
+## How it works
 
-## Pitch deck
+<img src="docs/screenshots/1-scanner-render.jpg" alt="The PlateLoop Scanner" width="46%" align="right">
 
-`pitch/index.html` is the judges' deck: 25 slides that follow design thinking (Empathise → Define → Ideate → Prototype → Test), then impact, business model, competition and the ask. The prototype slides embed the real apps live, the impact slide is a savings calculator, and the last slide has a QR code to the demo.
+1. **Sign in** by looking at the camera (a match code, never a stored photo), or type a class number.
+2. **Scan before** you eat: the depth camera and scale see what you were served.
+3. **Eat**, taking what you'll finish.
+4. **Scan after**: what's left is weighed into the food waste bin.
 
-- **← →** or click the arrows to move, **N** for speaker notes, **F** for full screen. Add `#12` to the URL to open a slide.
-- Print to PDF from the browser for a static copy (one slide per page).
-- Statistics on slides 2 and 7 cite NEA, UNEP, SFA and MSE; check the latest figures before presenting. Personas are built from observation; swap in quotes from your own interviews if you have them.
+**620 g served − 95 g left = 525 g eaten**, dish by dish, in about two seconds. That one measurement feeds everything below.
+
+<br clear="right">
+
+## One scan, four apps
+
+| | |
+|---|---|
+| <img src="docs/screenshots/3-kitchen.jpg" alt="PlateLoop Kitchen"> | **PlateLoop Kitchen** · *canteen staff*<br>Tomorrow's order from real attendance, weather and events. Waste by dish, nutrition, and a carbon ledger ready for reporting. |
+| <img src="docs/screenshots/4-loopi.jpg" alt="Loopi"> | **Loopi** · *students*<br>The home screen is a virtual pet that only eats the lunch you really ate. Less waste keeps it healthy, earns hearts and levels it up. Food groups, not calories. Daily and weekly challenges, and a class race. |
+| <img src="docs/screenshots/5-care.jpg" alt="Loopi Care"> | **Loopi Care** · *hospitals*<br>Every tray measured, no food charts. Patients choose tomorrow's meals and portion size, and after a poor meal they say why; the reason reaches the nurse station with the alert. |
+| <img src="docs/screenshots/7-work.jpg" alt="Loopi Work"> | **Loopi Work** · *offices*<br>A health goal becomes a daily canteen pick. Pre-order to skip the queue, a 3 pm energy check-in shows which lunches leave you flat, and it's private by default. |
+
+Plus **[PlateLoop Prototype](https://8jiwoo.github.io/plateloop/dist/1-plateloop-scanner-3d.html)**, an explorable 3D scanner with the working kiosk on its screen, and **[Lunch Rush](https://8jiwoo.github.io/plateloop/dist/8-plateloop-lunch-rush-3d.html)**, a first-person 3D game of one school lunch with the scanner.
+
+| App | Open | File |
+|---|---|---|
+| PlateLoop Prototype + Kiosk | [live](https://8jiwoo.github.io/plateloop/dist/1-plateloop-scanner-3d.html) · [kiosk](https://8jiwoo.github.io/plateloop/dist/1-plateloop-scanner-3d.html?kiosk) | `dist/1-plateloop-scanner-3d.html` |
+| PlateLoop Kitchen | [live](https://8jiwoo.github.io/plateloop/dist/3-plateloop-kitchen.html) | `dist/3-plateloop-kitchen.html` |
+| Loopi | [live](https://8jiwoo.github.io/plateloop/dist/4-loopi-student-app.html) | `dist/4-loopi-student-app.html` |
+| Loopi Care | [live](https://8jiwoo.github.io/plateloop/dist/5-loopi-care-hospital.html) | `dist/5-loopi-care-hospital.html` |
+| Loopi Work | [live](https://8jiwoo.github.io/plateloop/dist/7-loopi-work-office.html) | `dist/7-loopi-work-office.html` |
+| Lunch Rush | [live](https://8jiwoo.github.io/plateloop/dist/8-plateloop-lunch-rush-3d.html) | `dist/8-plateloop-lunch-rush-3d.html` |
+
+Every app is one self-contained HTML file that works offline. They share one demo save, so a tray scanned on the kiosk shows up in Kitchen and Loopi open in other tabs.
+
+## Built from research
+
+Each app answers what its users struggle with at meals ([full research and sources](docs/research.md)):
+
+- **Students:** only 13.6% of university students eat enough fruit and vegetables, and calorie counting can harm teens. Loopi shows food groups, and class competition cut plate waste by 35% in school studies.
+- **Patients:** 29% of inpatients in a Singapore hospital were malnourished, and 93% of hand-filled food charts were incomplete. Choosing your own meals raises intake.
+- **Office workers:** 6 in 10 eat out, and carb-heavy lunches deepen the afternoon dip. Pre-order nudges gave 51% more fruit in one canteen trial.
+
+We followed design thinking (Empathise, Define, Ideate, Prototype, Test), then walked every step until it broke. Six problems became features, from "face not recognised" to "is it filming me?". The [pitch deck](https://8jiwoo.github.io/plateloop/pitch/) tells the whole story.
+
+## Impact
+
+For one school serving 800 meals a day, a year (illustrative, to validate in a pilot): **5.7 t** less food thrown away, **14.3 t** CO₂e avoided, **S$28,500** of ingredients saved, paying back a year of the subscription in **2.4 months**. Try your own numbers on the deck's impact calculator.
+
+## Explainer video, pitch deck and poster
+
+| | |
+|---|---|
+| **[Explainer video](https://8jiwoo.github.io/plateloop/video/plateloop-explainer.mp4)** | about 3 minutes, narrated, with subtitles. Source: `video/film.html`, built by `video/make.py`. |
+| **[Pitch deck](https://8jiwoo.github.io/plateloop/pitch/)** | 25 slides; the prototype slides run the real apps live. ← → to move, N for notes, F for full screen. |
+| **[A1 poster](poster/plateloop-poster-A1.pdf)** | print-ready PDF, plus versions split into A4 sheets: [8 sheets, borderless](poster/plateloop-poster-A1-in-8-A4.pdf) or [15 sheets for a home printer](poster/plateloop-poster-A1-home-printer.pdf). |
 
 ## Run it
 
-**Quickest:** double-click any file in `dist/`. Each app is a single self-contained HTML file.
-
-**Live demo across apps:** the apps share one demo save in the browser. Open the Kiosk and Loopi (or Kitchen) in two tabs of the same browser, scan a tray on the Kiosk, and watch the other tab update. For the most reliable sync, serve the folder:
+Double-click any file in `dist/`. For the most reliable cross-tab demo, serve the folder:
 
 ```bash
 python -m http.server 8765
 ```
 
-Then open http://localhost:8765/dist/1-plateloop-scanner-3d.html?kiosk and http://localhost:8765/dist/4-loopi-student-app.html.
-
-**Development version** (every app in one page with a switcher): serve the repo as above, then open http://localhost:8765/apps/.
+Then open http://localhost:8765/dist/1-plateloop-scanner-3d.html?kiosk next to http://localhost:8765/dist/4-loopi-student-app.html, scan a tray on the kiosk and watch Loopi react. The development version, with every app behind one switcher, is at http://localhost:8765/apps/.
 
 ## Project layout
 
 ```
-apps/                 source for the apps
-  index.html          dev page with an app switcher
-  css/apple.css       design system (light + dark)
-  js/core.js          menu, before/after scans, nutrition, storage sync
-  js/visual.js        Loopi the guide, food drawings, tray, My Healthy Plate, gauges
-  js/game.js          the Tamagotchi's rules (lunch feeds Loopi, hearts, eggs and the Barn, cooking, Healthy Catch, crates, badges)
-  js/room.js          Loopi's animated pixel room
-  js/health.js        hospital menus, demo people, healthcare report parts
-  js/model.js         PlateLoop Prototype: the explorable 3D scanner (built in three.js), hotspots, kiosk mode
-  js/scanner.js       PlateLoop Kiosk (runs on the scanner's screen inside PlateLoop Prototype)
-  js/kitchen.js       PlateLoop Kitchen
-  js/student.js       Loopi student app
-  js/care.js          Loopi Care (hospital patients)
-  js/work.js          Loopi Work (office workers: goals, targets, daily pick, weekly report)
-  js/game3d.js        Lunch Rush: the lunch, dialogue, scanner close-ups, input (three.js, PS1-style rendering)
-  js/lunch/           Lunch Rush parts: kit (PS1 materials, painted textures), audio (synthesised soundscape),
-                      people (characters), world (the canteen), screen (the scanner's screen)
-  vendor/             three.js r128 + GLTFLoader (for offline 3D)
-  build.py            builds the standalone files in dist/
-dist/                 the standalone apps (generated, committed for convenience)
-hardware/             Blender scanner: build script, .blend, .glb, renders
-docs/                 project overview (with the system design), research and screenshots
-pitch/                the pitch deck (one HTML file)
+apps/        app sources (vanilla JS, one design system in css/apple.css); build.py makes dist/
+dist/        the six standalone apps (generated)
+pitch/       the pitch deck (one HTML file)
+poster/      the A1 poster: HTML source, PDF, PNG and A4 splits
+video/       the explainer: film.html, make.py, screenshots and the MP4
+hardware/    the scanner in Blender: build script, .blend, .glb, renders
+docs/        overview, research, screenshots
+tools/       capture.py (screenshots), poster.py (poster PDF), tiles.py (A4 splits)
 ```
 
-## Rebuild the standalone apps
-
-After editing anything in `apps/`:
+## Rebuild
 
 ```bash
-pip install pillow
-python apps/build.py dist
+pip install pillow selenium numpy imageio-ffmpeg pypdf reportlab
+python apps/build.py dist     # the standalone apps
+python tools/capture.py       # fresh screenshots
+python tools/poster.py        # poster PDF and PNG
+python tools/tiles.py         # poster split into A4 sheets
+python video/make.py          # the explainer video (Windows: uses the built-in voice)
 ```
 
-To rebuild the 3D scanner (needs Blender 4.2+):
-
-```bash
-blender --background --python hardware/build_scanner.py -- hardware
-```
-
-## Committing in small bits
-
-Keep each commit to one idea, such as "Add zero-leftover chip to kiosk" or "Fix kitchen sidebar height".
-
-```bash
-git status                  # see what changed
-git add -p apps/js/kitchen.js   # stage only the pieces that belong to this commit
-git commit -m "Add zero-leftover rate to kitchen overview"
-git push
-```
-
-Useful habits:
-- `git add -p` lets you pick individual chunks, so one file can go into two separate commits.
-- If you change something in `apps/`, rebuild `dist/` and commit the rebuilt files in their own commit, e.g. `Rebuild dist`.
-- `git log --oneline` shows the history at a glance.
+The 3D scanner model needs Blender 4.2+: `blender --background --python hardware/build_scanner.py -- hardware`.
 
 ## Notes
 
-- All names, numbers, nutrition targets and CO₂ factors are demo or illustrative values. Replace them with your national school-meal standard and published factors (e.g. EPA WARM) before presenting.
-- Students sign in only with their face. The scanner would keep a match code on the device, never a photo; the demo just simulates the match.
-- The Loopi game systems are adapted from our Eggotchi prototype. Some features (health report, environment dashboard, green tree, face sign-in) take inspiration from existing school-meal scanners such as Nuvilab.
+- Names, numbers, nutrition targets and CO₂ factors are demo or illustrative values; check the sources in [docs/research.md](docs/research.md) before quoting them.
+- The scanner would keep a face match code on the device, never a photo; the demo simulates the match.
+- The Loopi game systems are adapted from our Eggotchi prototype. Some kitchen features take inspiration from existing school-meal scanners such as Nuvilab.
